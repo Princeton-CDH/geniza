@@ -1,0 +1,264 @@
+// -----------------------------------------------------------------------------
+// Person list/browse page.
+// -----------------------------------------------------------------------------
+
+@use "../base/a11y";
+@use "../base/breakpoints";
+@use "../base/colors";
+@use "../base/fonts";
+@use "../base/spacing";
+@use "../base/typography";
+
+// TODO: standardize typography here once all redesigns are implemented
+
+main.people * {
+    max-width: none;
+    @include breakpoints.for-tablet-landscape-up {
+        max-width: 56rem; // = 896px
+    }
+}
+main.people {
+    padding: 0 1rem;
+    @include breakpoints.for-tablet-landscape-up {
+        padding: 0;
+    }
+    // Header
+    h1 {
+        width: 100%;
+        font-family: fonts.$primary;
+        font-size: typography.$text-size-5xl;
+        @include breakpoints.for-tablet-landscape-up {
+            font-size: typography.$text-size-7xl;
+        }
+        margin-bottom: 1rem;
+    }
+    // Primary container
+    section#person-list {
+        width: 100%;
+        padding-top: 1.5rem;
+        border-top: 1px solid var(--background-gray);
+        h2 {
+            @include breakpoints.for-tablet-landscape-up {
+                font-size: typography.$text-size-2xl;
+            }
+        }
+        table {
+            // display table only on desktop; will be ul on mobile
+            display: none;
+            @include breakpoints.for-tablet-landscape-up {
+                display: table;
+            }
+            margin-top: spacing.$spacing-sm;
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 spacing.$spacing-xs;
+            th {
+                text-align: left;
+                font-size: typography.$text-size-md;
+            }
+            th:first-of-type {
+                padding-left: spacing.$spacing-md;
+            }
+            th:last-of-type {
+                padding-right: spacing.$spacing-md;
+            }
+            th.related {
+                text-align: center;
+                min-width: 2rem;
+                svg {
+                    width: 15px;
+                    height: 16px;
+                    vertical-align: middle;
+                }
+                &:last-of-type {
+                    min-width: 3rem;
+                }
+            }
+            tbody tr {
+                background-color: var(--background-light);
+                td {
+                    padding: spacing.$spacing-md 0;
+                    font-size: typography.$text-size-lg;
+                    border-top: 1px solid var(--background-gray);
+                    border-bottom: 1px solid var(--background-gray);
+                }
+                td:first-of-type {
+                    padding-left: spacing.$spacing-md;
+                    border-left: 1px solid var(--background-gray);
+                    border-top-left-radius: 5px;
+                    border-bottom-left-radius: 5px;
+                }
+                td:last-of-type {
+                    padding-right: spacing.$spacing-md;
+                    min-width: 3rem;
+                    border-right: 1px solid var(--background-gray);
+                    border-top-right-radius: 5px;
+                    border-bottom-right-radius: 5px;
+                }
+                td.name,
+                td.name a {
+                    font-family: fonts.$primary-bold;
+                    font-weight: bold;
+                }
+                td.related {
+                    min-width: 2rem;
+                    text-align: center;
+                    &:last-of-type {
+                        min-width: 3rem;
+                    }
+                }
+            }
+        }
+        div.grid {
+            // TODO: implement dekstop grid view. for now, "grid" is mobile-only single column
+            @include breakpoints.for-tablet-landscape-up {
+                display: none;
+            }
+            display: flex;
+            flex-flow: column;
+            div.person {
+                display: flex;
+                flex-flow: column;
+                margin: 0.5rem 0;
+                padding: 1rem;
+                background-color: var(--background-light);
+                border: 1px solid var(--background-gray);
+                border-radius: 5px;
+                dd {
+                    font-size: typography.$text-size-md;
+                    line-height: calc(24 / 16);
+                }
+                dd.name,
+                dd.name a {
+                    @include typography.body-bold;
+                    line-height: calc(27 / 18);
+                    &:has(a) {
+                        margin-bottom: 0.5rem;
+                    }
+                }
+                dd.description {
+                    font-size: typography.$text-size-sm;
+                    line-height: calc(17 / 14);
+                    margin: 0.5rem 0;
+                }
+                dl.relations {
+                    display: flex;
+                    flex-flow: row nowrap;
+                    border-top: 1px solid colors.$gray;
+                    padding-top: 0.5rem;
+                    dd {
+                        flex: 1 0 33%;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        gap: 0.5rem;
+                        svg {
+                            width: 15px;
+                            height: 16px;
+                            vertical-align: middle;
+                        }
+                        &:not(:first-of-type) {
+                            border-left: 1px solid colors.$gray;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    .pagination-container {
+        display: flex;
+        flex-flow: row;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+        margin-top: 1rem;
+        nav.pagination {
+            margin: 0 auto;
+        }
+        @include breakpoints.for-tablet-landscape-up {
+            padding: 1rem 1.5rem;
+            border-width: 1px 0px 1px 0px;
+            border-style: solid;
+            border-color: var(--background-gray);
+            font-size: typography.$text-size-md;
+            nav.pagination {
+                margin: 0;
+                a,
+                span {
+                    font-size: typography.$text-size-md;
+                }
+                a {
+                    margin-bottom: -1px;
+                }
+                // button icons
+                .prev::before {
+                    margin: -1px spacing.$spacing-xs 0 0;
+                    font-family: "Phosphor";
+                    content: "\f0c3"; // phosphor caret-left icon
+                }
+                .next::after {
+                    margin: -1px 0 0 spacing.$spacing-xs;
+                    font-family: "Phosphor";
+                    content: "\f0c4"; // phosphor caret-right icon
+                }
+            }
+        }
+        div {
+            display: none;
+            @include breakpoints.for-tablet-landscape-up {
+                display: block;
+            }
+        }
+    }
+}
+
+// RTL overrides
+html[dir="rtl"] main.people {
+    // pagination
+    nav.pagination {
+        // Hebrew and Arabic reversed arrows
+        .prev::before {
+            margin: 0.1rem 0 0 spacing.$spacing-xs;
+            content: "\f0c4"; // phosphor caret-right icon
+        }
+        .next::after {
+            margin: 0.1rem spacing.$spacing-xs 0 0;
+            content: "\f0c3"; // phosphor caret-left icon
+        }
+    }
+    section#person-list table {
+        th:not(.related) {
+            text-align: right;
+        }
+        th:first-of-type {
+            padding-right: spacing.$spacing-md;
+            padding-left: 0;
+        }
+        th:last-of-type {
+            padding-left: spacing.$spacing-md;
+            padding-right: 0;
+        }
+        tbody tr {
+            td:first-of-type {
+                padding-right: spacing.$spacing-md;
+                padding-left: 0;
+                border-right: 1px solid var(--background-gray);
+                border-left: none;
+                border-top-right-radius: 5px;
+                border-bottom-right-radius: 5px;
+                border-top-left-radius: 0;
+                border-bottom-left-radius: 0;
+            }
+            td:last-of-type {
+                padding-left: spacing.$spacing-md;
+                padding-right: 0;
+                border-left: 1px solid var(--background-gray);
+                border-right: none;
+                border-top-left-radius: 5px;
+                border-bottom-left-radius: 5px;
+                border-top-right-radius: 0;
+                border-bottom-right-radius: 0;
+            }
+        }
+    }
+}
