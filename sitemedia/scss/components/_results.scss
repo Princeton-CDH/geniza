@@ -77,6 +77,21 @@ section#document-list {
                 mask-image: url("/static/img/ui/desktop/all/separator.svg");
             }
         }
+        .score {
+            top: 1.5rem;
+        }
+    }
+
+    // relevance score if enabled
+    .score {
+        @include typography.meta-bold;
+        display: block;
+        position: absolute;
+        right: 0;
+        top: 0;
+        background-color: var(--background-gray);
+        padding: 0.25rem;
+        border: 1px solid var(--on-background);
     }
 
     // result number in list
