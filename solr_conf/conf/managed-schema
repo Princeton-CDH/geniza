@@ -314,6 +314,14 @@
       </analyzer>
     </fieldType>
 
+    <!-- un-analyzed field for regex searches. TextField required due to KeywordField size limitations -->
+    <fieldType name="text_regex" class="solr.TextField">
+      <analyzer>
+        <tokenizer class="solr.KeywordTokenizerFactory"/>
+        <filter class="solr.LowerCaseFilterFactory" />
+      </analyzer>
+    </fieldType>
+
   <fieldType name="tfloat" class="solr.TrieFloatField" positionIncrementGap="0" docValues="true" precisionStep="8"/>
   <fieldType name="tfloats" class="solr.TrieFloatField" positionIncrementGap="0" docValues="true" multiValued="true" precisionStep="8"/>
   <fieldType name="tint" class="solr.TrieIntField" positionIncrementGap="0" docValues="true" precisionStep="8"/>
@@ -342,9 +350,10 @@
   <copyField source="tags_ss_lower" dest="tags_t" maxChars="30000" />
   <copyField source="type_s" dest="type_t" maxChars="300" />
 
-  <!-- copy description and transcription to nostem fields for exact matches -->
+  <!-- copy description and transcription to nostem and regex fields for exact matches -->
   <copyField source="description_en_bigram" dest="description_nostem" maxChars="30000" />
   <copyField source="text_transcription" dest="transcription_nostem" maxChars="30000" />
+  <copyField source="text_transcription" dest="transcription_regex" maxChars="30000" />
 
   <dynamicField name="*_descendent_path" type="descendent_path" indexed="true" stored="true"/>
   <dynamicField name="*_ancestor_path" type="ancestor_path" indexed="true" stored="true"/>
@@ -402,5 +411,6 @@
   <dynamicField name="*_p" type="location" indexed="true" stored="true"/>
   <dynamicField name="*_natsort" type="natural_sort" indexed="true" stored="true" sortMissingLast="true"/>
   <dynamicField name="*_nostem" type="text_nostem" indexed="true" stored="true" multiValued="true"/>
+  <dynamicField name="*_regex" type="text_regex" indexed="true" stored="true" multiValued="true"/>
 
 </schema>

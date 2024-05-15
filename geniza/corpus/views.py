@@ -1,3 +1,4 @@
+import re
 from ast import literal_eval
 from copy import deepcopy
 from random import randint
@@ -271,7 +272,8 @@ class DocumentSearchView(ListView, FormMixin, SolrLastModifiedMixin):
         highlights = paged_result.get_highlighting() if paged_result.count() else {}
         facet_dict = self.queryset.get_facets()
         # populate choices for facet filter fields on the form
-        context_data["form"].set_choices_from_facets(facet_dict.facet_fields)
+        if not isinstance(facet_dict, dict):
+            context_data["form"].set_choices_from_facets(facet_dict.facet_fields)
         context_data.update(
             {
                 "highlighting": highlights,
@@ -284,6 +286,69 @@ class DocumentSearchView(ListView, FormMixin, SolrLastModifiedMixin):
         )
 
         return context_data
+
+
+class DocumentRegexSearchView(PermissionRequiredMixin, DocumentSearchView):
+    permission_required = ("corpus.change_document",)
+
+    def get_queryset(self):
+        """Perform requested search and return solr queryset"""
+        # limit to documents with published status (i.e., no suppressed documents);
+        # get counts of facets, excluding type filter
+        documents = (
+            DocumentSolrQuerySet()
+            .filter(status=Document.PUBLIC_LABEL)
+            .facet(
+                "has_image",
+                "has_digital_edition",
+                "has_digital_translation",
+                "has_discussion",
+            )
+            .facet_field("type", exclude="type", sort="value")
+        )
+
+        form = self.get_form()
+        # return empty queryset if not valid
+        if not form.is_valid():
+            documents = documents.none()
+
+        # when form is valid, check for search term and filter queryset
+        else:
+            search_opts = form.cleaned_data
+
+            if search_opts["q"]:
+                documents = documents.regex_search(search_opts["q"]).also("score")
+
+            # order by sort option
+            documents = documents.order_by(self.get_solr_sort(search_opts["sort"]))
+
+            # filter by type if specified
+            if search_opts["doctype"]:
+                typelist = literal_eval(search_opts["doctype"])
+                quoted_typelist = ['"%s"' % doctype for doctype in typelist]
+                documents = documents.filter(type__in=quoted_typelist, tag="type")
+
+            # image filter
+            if search_opts["has_image"] == True:
+                documents = documents.filter(has_image=True)
+
+            # scholarship filters
+            if search_opts["has_transcription"] == True:
+                documents = documents.filter(has_digital_edition=True)
+            if search_opts["has_discussion"] == True:
+                documents = documents.filter(has_discussion=True)
+            if search_opts["has_translation"] == True:
+                documents = documents.filter(has_digital_translation=True)
+            if search_opts["docdate"]:
+                # date range filter; returns tuple of value or None for open-ended range
+                start, end = search_opts["docdate"]
+                documents = documents.filter(
+                    document_date_dr="[%s TO %s]" % (start or "*", end or "*")
+                )
+
+        self.queryset = documents
+
+        return documents
 
 
 class DocumentDetailBase(SolrLastModifiedMixin):

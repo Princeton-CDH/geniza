@@ -3,6 +3,7 @@ import re
 
 from bs4 import BeautifulSoup
 from django.apps import apps
+from django.utils.safestring import mark_safe
 from django.utils.translation import gettext as _
 from parasolr.django import AliasedSolrQuerySet
 from piffle.image import IIIFImageClient
@@ -30,7 +31,12 @@ def clean_html(html_snippet):
         else:
             html_snippet = f"<li>{ellipsis}{html_snippet}"
 
-    return BeautifulSoup(html_snippet, "html.parser").prettify(formatter="minimal")
+    return BeautifulSoup(
+        html_snippet,
+        "html.parser",
+        # ensure li and em tags don't get extra whitespace, as this may break display
+        preserve_whitespace_tags=["li", "em"],
+    ).prettify(formatter="minimal")
 
 
 class DocumentSolrQuerySet(AliasedSolrQuerySet):
@@ -78,6 +84,7 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
         "old_shelfmark": "old_shelfmark_bigram",
         "transcription_nostem": "transcription_nostem",
         "description_nostem": "description_nostem",
+        "transcription_regex": "transcription_regex",
     }
 
     # regex to convert field aliases used in search to actual solr fields
@@ -214,6 +221,19 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
             )
         return search
 
+    def regex_search(self, search_term):
+        """Build a Lucene query for searching with regex."""
+        # store original regex query
+        original_regex = search_term
+        # surround passed query with wildcards to allow non-anchored matches,
+        # and slashes so that it is interpreted as regex by Lucene
+        search_term = f"/.*{search_term}.*/"
+        # match in the non-analyzed transcription_regex field
+        search = self.search(f"transcription_regex:{search_term}").raw_query_parameters(
+            regex_query=original_regex
+        )
+        return search
+
     def related_to(self, document):
         "Return documents related to the given document (i.e. shares any shelfmarks)"
 
@@ -255,10 +275,57 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
 
         return doc
 
+    def get_regex_highlight(self, text):
+        """Helper method to manually highlight and truncate a snippet for regex matches
+        (automatic highlight unavailable due to solr regex search limitations)"""
+        pattern = f"({self.raw_params['regex_query']})"
+        # attempt split on first regex match
+        split_text = re.split(pattern, text, maxsplit=1)
+        if len(split_text) > 1:
+            # found a match, truncate text down to just context around match. ensure snippets begin
+            # or end with newlines to prevent malformed <li> tags from appearing (they get mangled
+            # when using simple n-length substrings)
+            # using newline as start boundary, get <=150 characters of context before match
+            before = split_text[0]
+            start_newline_regex = re.search(r"\n(.{1,150}$)", before, flags=re.DOTALL)
+            before = start_newline_regex.group(1) if start_newline_regex else before
+
+            # preserve matching portion unchanged
+            match = split_text[1]
+
+            # using newline as end boundary, get <=150 characters of context after match
+            after = split_text[2]
+            end_newline_regex = re.search(r"^(.{1,150})\n", after, flags=re.DOTALL)
+            after = end_newline_regex.group(1) if end_newline_regex else after
+
+            # combine truncated context with preserved match
+            snippet = before + match + after
+
+            # highlight match in context
+            return re.sub(
+                self.raw_params["regex_query"],
+                lambda m: f"<em>{m.group(0)}</em>",
+                snippet,
+            )
+        else:
+            # no match = no highlight
+            return None
+
     def get_highlighting(self):
         """highlight snippets within transcription/translation html may result in
         invalid tags that will render strangely; clean up the html before returning"""
         highlights = super().get_highlighting()
+        is_regex_search = "regex_query" in self.raw_params
+        if is_regex_search:
+            # highlight regex results manually due to solr limitation
+            highlights = {}
+            for doc in self.get_results():
+                highlights[doc["id"]] = {"transcription": []}
+                for block in doc["transcription_regex"]:
+                    highlight_snippet = self.get_regex_highlight(block)
+                    if highlight_snippet:
+                        highlights[doc["id"]]["transcription"].append(highlight_snippet)
+
         is_exact_search = "hl_query" in self.raw_params
         for doc in highlights.keys():
             # _nostem fields should take precedence over stemmed fields in the case of an
