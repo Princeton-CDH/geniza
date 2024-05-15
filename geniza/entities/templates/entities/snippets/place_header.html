@@ -1,0 +1,14 @@
+{% load i18n %}
+
+{# title #}
+<h1>{{ place }}</h1>
+
+{# edit link #}
+{% if perms.entities.change_place %}
+    <div class="edit-link-container">
+        <a class="edit-link" href="{% url 'admin:entities_place_change' place.pk %}" data-turbo="false">
+            <i class="ph-pencil"></i>
+            <span>Edit</span>
+        </a>
+    </div>
+{% endif %}

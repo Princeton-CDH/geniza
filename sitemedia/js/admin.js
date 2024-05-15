@@ -97,7 +97,7 @@ window.addEventListener("DOMContentLoaded", () => {
             latRow.parentNode.insertBefore(mapContainer, latRow);
             map = new maplibregl.Map({
                 container: "map",
-                style: `https://api.maptiler.com/maps/openstreetmap/style.json?key=${accessToken}`,
+                style: `https://api.maptiler.com/maps/5f93d3e5-e339-45bf-86fb-bf7f98a22936/style.json?key=${accessToken}`,
                 center: lonlat,
                 zoom: 9,
             });

@@ -1,6 +1,7 @@
 from ast import literal_eval
 
 from dal import autocomplete
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.contrib.postgres.aggregates import ArrayAgg
@@ -15,7 +16,7 @@ from django.views.generic import DetailView, FormView, ListView
 from django.views.generic.edit import FormMixin
 
 from geniza.entities.forms import PersonListForm, PersonMergeForm
-from geniza.entities.models import PastPersonSlug, Person, Place
+from geniza.entities.models import PastPersonSlug, PastPlaceSlug, Person, Place
 
 
 class PersonMerge(PermissionRequiredMixin, FormView):
@@ -107,9 +108,14 @@ class PlaceAutocompleteView(PermissionRequiredMixin, UnaccentedNameAutocompleteV
     model = Place
 
 
-class PersonDetailMixin(DetailView):
-    """Mixin for redirecting on past slugs, to be used on all Person pages (detail
+class SlugDetailMixin(DetailView):
+    """Mixin for redirecting on past slugs, to be used on all Person and Place pages (detail
     and related objects lists)"""
+
+    # NOTE: past_slug_model and past_slug_relatedfield are required for each inheriting model.
+    # past_slug_relatedfield must be the inheriting model's related name from past_slug_model, i.e.
+    # if past_slug_model = PastPersonSlug, then past_slug_relatedfield must be "person", because
+    # PastPersonSlug.person is the field that relates back to the Person model.
 
     def get(self, request, *args, **kwargs):
         """extend GET to check for old slug and redirect on 404"""
@@ -117,22 +123,29 @@ class PersonDetailMixin(DetailView):
             return super().get(request, *args, **kwargs)
         except Http404:
             # if not found, check for a match on a past slug
-            past_slug = PastPersonSlug.objects.filter(slug=self.kwargs["slug"]).first()
+            past_slug = self.past_slug_model.objects.filter(
+                slug=self.kwargs["slug"]
+            ).first()
             # if found, redirect to the correct url for this view
             if past_slug:
-                self.kwargs["slug"] = past_slug.person.slug
+                self.kwargs["slug"] = getattr(
+                    past_slug, self.past_slug_relatedfield
+                ).slug
                 return HttpResponsePermanentRedirect(
-                    past_slug.person.get_absolute_url()
+                    getattr(past_slug, self.past_slug_relatedfield).get_absolute_url()
                 )
             # otherwise, continue raising the 404
             raise
 
 
-class PersonDetailView(PersonDetailMixin):
+class PersonDetailView(SlugDetailMixin):
     """public display of a single :class:`~geniza.entities.models.Person`"""
 
     model = Person
     context_object_name = "person"
+    MIN_DOCUMENTS = 10
+    past_slug_model = PastPersonSlug
+    past_slug_relatedfield = "person"
 
     def page_title(self):
         """page title, for metadata; uses Person primary name"""
@@ -165,6 +178,37 @@ class PersonDetailView(PersonDetailMixin):
                 "page_title": self.page_title(),
                 "page_description": self.page_description(),
                 "page_type": "person",
+            }
+        )
+        return context_data
+
+
+class PlaceDetailView(SlugDetailMixin):
+    """public display of a single :class:`~geniza.entities.models.Place`"""
+
+    model = Place
+    context_object_name = "place"
+    past_slug_model = PastPlaceSlug
+    past_slug_relatedfield = "place"
+
+    def page_title(self):
+        """page title, for metadata; uses Place primary name"""
+        return str(self.get_object())
+
+    def page_description(self):
+        """page description, for metadata; uses truncated notes"""
+        return Truncator(self.get_object().notes).words(20)
+
+    def get_context_data(self, **kwargs):
+        """extend context data to add page metadata"""
+        context_data = super().get_context_data(**kwargs)
+
+        context_data.update(
+            {
+                "page_title": self.page_title(),
+                "page_description": self.page_description(),
+                "page_type": "place",
+                "maptiler_token": getattr(settings, "MAPTILER_API_TOKEN", ""),
             }
         )
         return context_data

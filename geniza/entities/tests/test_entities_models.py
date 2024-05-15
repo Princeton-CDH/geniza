@@ -18,6 +18,7 @@ from geniza.entities.models import (
     Event,
     Name,
     PastPersonSlug,
+    PastPlaceSlug,
     Person,
     PersonDocumentRelation,
     PersonDocumentRelationType,
@@ -463,6 +464,32 @@ class TestPlace:
         primary_name.save()
         # __str__ should use the primary name
         assert str(place) == primary_name.name
+
+    def test_save(self):
+        # test past slugs are recorded on save
+        place = Place(slug="test")
+        place.save()
+        place.slug = ""
+        place.save()
+        assert PastPlaceSlug.objects.filter(slug="test", place=place).exists()
+
+    def test_get_absolute_url(self):
+        # should get place page url in user's language by slug
+        place = Place.objects.create()
+        Name.objects.create(name="place", content_object=place)
+        place.generate_slug()
+        place.save()
+        assert place.get_absolute_url() == "/en/places/%s/" % place.slug
+
+    def test_coordinates(self):
+        # should convert coordinates from decimal to DMS, and output
+        # as a human-readable string
+        fustat = Place.objects.create(latitude=30.0050, longitude=31.2375)
+        assert fustat.coordinates == "30° 0′ 17″ N, 31° 14′ 15″ E"
+
+        # a place without coordinates should return an empty strng
+        noplace = Place.objects.create()
+        assert not noplace.coordinates
 
 
 @pytest.mark.django_db
