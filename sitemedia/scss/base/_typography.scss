@@ -16,7 +16,9 @@ $text-size-xl: 1.25rem; //   = 20px
 $text-size-2xl: 1.375rem; // = 22px
 $text-size-3xl: 1.5rem; //   = 24px
 $text-size-4xl: 1.75rem; //  = 28px
-$text-size-5xl: 2rem; //     = 32px
+$text-size-5xl: 1.875rem; // = 30px
+$text-size-6xl: 2rem; //     = 32px
+$text-size-7xl: 2.25rem; //  = 36px
 
 // Mixins to apply typographic styles to text elements.
 
@@ -329,6 +331,15 @@ $text-size-5xl: 2rem; //     = 32px
 @mixin form-option-sm-bold {
     @include meta-bold; // same font+sizes as meta-bold
     line-height: 1.2;
+}
+
+@mixin form-option-xs {
+    font-family: fonts.$primary;
+    font-size: $text-size-md;
+    @include breakpoints.for-tablet-landscape-up {
+        font-size: $text-size-md;
+    }
+    line-height: 1.5;
 }
 
 // counts next to the filter options

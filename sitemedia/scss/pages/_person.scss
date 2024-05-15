@@ -8,16 +8,54 @@
 @use "../base/spacing";
 @use "../base/typography";
 
+// TODO: standardize typography here once all redesigns are implemented
+
+main.person * {
+    max-width: none;
+    @include breakpoints.for-tablet-landscape-up {
+        max-width: 56rem; // = 896px
+    }
+}
+
 main.person,
 main.place {
     // Header
     h1 {
+        width: 100%;
         z-index: 2;
         font-size: typography.$text-size-3xl;
-        margin: spacing.$spacing-xl spacing.$spacing-md spacing.$spacing-md;
+        margin: spacing.$spacing-lg 0 spacing.$spacing-md;
+        padding-left: spacing.$spacing-md;
         @include breakpoints.for-tablet-landscape-up {
-            margin: spacing.$spacing-2xl spacing.$spacing-md spacing.$spacing-lg;
+            width: auto;
+            margin: spacing.$spacing-lg spacing.$spacing-md spacing.$spacing-lg;
             font-size: typography.$text-size-3xl;
+            padding: 0;
+        }
+    }
+    // back to browse link
+    div.breadcrumbs-link-container {
+        width: 100%;
+        z-index: 2;
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+        font-size: typography.$text-size-lg;
+        a {
+            margin-left: spacing.$spacing-md;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+            color: var(--link-primary);
+            &::before {
+                font-family: "Phosphor" !important;
+                content: "\f03b"; // phosphor arrow-left icon
+                font-size: typography.$text-size-2xl;
+            }
+            &:hover {
+                color: var(--link-secondary);
+            }
         }
     }
     // Primary container

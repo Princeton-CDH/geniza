@@ -1,3 +1,5 @@
+from ast import literal_eval
+
 from dal import autocomplete
 from django.conf import settings
 from django.contrib import messages
@@ -11,10 +13,11 @@ from django.utils.safestring import mark_safe
 from django.utils.text import Truncator
 from django.utils.translation import gettext as _
 from django.utils.translation import ngettext
-from django.views.generic import DetailView, FormView
+from django.views.generic import DetailView, FormView, ListView
+from django.views.generic.edit import FormMixin
 
 from geniza.corpus.dates import PartialDate
-from geniza.entities.forms import PersonMergeForm
+from geniza.entities.forms import PersonListForm, PersonMergeForm
 from geniza.entities.models import PastPersonSlug, PastPlaceSlug, Person, Place
 
 
@@ -164,7 +167,9 @@ class PersonDetailView(SlugDetailMixin):
                 doc_count=Count("documents", distinct=True),
             )
         )
-        return queryset.filter(Q(doc_count__gte=self.MIN_DOCUMENTS) | Q(has_page=True))
+        return queryset.filter(
+            Q(doc_count__gte=Person.MIN_DOCUMENTS) | Q(has_page=True)
+        )
 
     def get_context_data(self, **kwargs):
         """extend context data to add page metadata"""
@@ -317,3 +322,142 @@ class PlaceDocumentsView(RelatedDocumentsMixin, PlaceDetailView):
     template_name = "entities/place_related_documents.html"
     viewname = "entities:place-documents"
     relation_field = "documentplacerelation_set"
+
+
+class PersonListView(ListView, FormMixin):
+    """A list view with faceted filtering and sorting using only the Django ORM/database."""
+
+    model = Person
+    context_object_name = "people"
+    template_name = "entities/person_list.html"
+    # Translators: title of people list/browse page
+    page_title = _("People")
+    # Translators: description of people list/browse page
+    page_description = _("Browse people present in Geniza documents.")
+    paginate_by = 50
+    form_class = PersonListForm
+    applied_filter_count = 0
+
+    # ORM references to database fields to facet
+    facet_fields = ["gender", "role__name", "persondocumentrelation__type__name"]
+
+    # sort options mapped to db fields
+    sort_fields = {
+        "name": "name_unaccented",
+        "role": "role__name",
+        "documents": "documents_count",
+        "people": "people_count",
+        "places": "places_count",
+    }
+    initial = {"sort": "name", "sort_dir": "asc"}
+
+    def get_queryset(self, *args, **kwargs):
+        """modify queryset to sort and filter on people in the list"""
+        people = (
+            Person.objects.filter(names__primary=True).annotate(
+                name_unaccented=ArrayAgg("names__name__unaccent", distinct=True),
+                documents_count=Count("documents", distinct=True),
+                people_count=Count("relationships", distinct=True),
+                places_count=Count("personplacerelation", distinct=True),
+            )
+            # order people by primary name unaccented
+            .order_by("name_unaccented")
+        )
+
+        form = self.get_form()
+        # bail out if form is invalid
+        if not form.is_valid():
+            return people.none()
+
+        # filter by database fields using the Django ORM
+        search_opts = form.cleaned_data
+        self.applied_filter_count = 0
+        if search_opts.get("gender"):
+            genders = literal_eval(search_opts["gender"])
+            people = people.filter(gender__in=genders)
+            self.applied_filter_count += len(genders)
+        if search_opts.get("social_role"):
+            roles = literal_eval(search_opts["social_role"])
+            people = people.filter(role__name__in=roles)
+            self.applied_filter_count += len(roles)
+        if search_opts.get("document_relation"):
+            relations = literal_eval(search_opts["document_relation"])
+            people = people.filter(persondocumentrelation__type__name__in=relations)
+            self.applied_filter_count += len(relations)
+        if "sort" in search_opts and search_opts["sort"]:
+            order_by = self.sort_fields[search_opts["sort"]]
+            # default is ascending; handle descending by appending a - in django order_by
+            if "sort_dir" in search_opts and search_opts["sort_dir"] == "desc":
+                order_by = f"-{order_by}"
+            people = people.order_by(order_by)
+
+        return people
+
+    def get_form_kwargs(self):
+        """get form arguments from request and configured defaults"""
+        kwargs = super().get_form_kwargs()
+
+        # use GET instead of default POST/PUT for form data
+        form_data = self.request.GET.copy()
+
+        # set all form values to default
+        for key, val in self.initial.items():
+            form_data.setdefault(key, val)
+
+        kwargs["data"] = form_data
+
+        return kwargs
+
+    def get_facets(self):
+        """Generate counts for of each unique value of all fields in
+        self.facet_fields, as a dict keyed on field name. If a field value
+        is present in the database but filtered out, its count will be 0."""
+        facets = {}
+        form = self.get_form()
+        qs = self.get_queryset()
+        is_filtered = form.filters_active()
+        if is_filtered:
+            all_objects = self.model.objects.all()
+            # use pk__in to prevent filters from excluding multi-valued entries, e.g. if a Person
+            # has multiple PersonDocumentRelations with different Types, ensure that filtering on
+            # one of those Types doesn't result in a 0 value for all other Type facets
+            qs = all_objects.filter(pk__in=qs.values_list("pk"))
+        for field in self.facet_fields:
+            # get counts of each unique value for this field in the current queryset
+            facets[field] = list(
+                qs.values(field).annotate(count=Count("pk", distinct=True))
+            )
+            if is_filtered:
+                # if a filter is applied, get all values from db, not just filtered queryset
+                unfiltered_values = list(
+                    all_objects.values_list(field, flat=True).distinct()
+                )
+                # reduce to only those that are not present in filtered queryset
+                remaining_values = filter(
+                    lambda val: not any([d[field] == val for d in facets[field]]),
+                    unfiltered_values,
+                )
+                # add each remaining value as a facet with a count of 0
+                facets[field] += [{field: val, "count": 0} for val in remaining_values]
+            # sort alphabetically by value
+            facets[field] = sorted(facets[field], key=lambda d: d[field] or "")
+        return facets
+
+    def get_context_data(self, **kwargs):
+        """extend context data to add page metadata, facets"""
+        context_data = super().get_context_data(**kwargs)
+
+        # set facet labels and counts on form
+        facets = self.get_facets()
+        context_data["form"].set_choices_from_facets(facets)
+
+        context_data.update(
+            {
+                "page_title": self.page_title,
+                "page_description": self.page_description,
+                "page_type": "people",
+                "facets": facets,
+                "filter_count": self.applied_filter_count,
+            }
+        )
+        return context_data
