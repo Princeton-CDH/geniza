@@ -227,19 +227,20 @@ class TestDocumentSolrQuerySet:
         assert related_docs.filter(pgpid=join.id).count() == 1
 
     def test_clean_html(self):
-        # minimal prettifier; introduces whitespace changes
-        assert clean_html("<li>foo").replace("\n", "") == "<li> foo</li>"
-        # should open unopened </li> tag
-        assert clean_html("foo</li>").replace("\n", "") == "<li> ...foo</li>"
+        # whitespace should be unmodified within <li> tags; minimal prettifier in others
+        assert clean_html("<li>foo</li><p>bar</p>") == "<li>foo</li>\n<p>\n bar\n</p>"
+        # should open and close partial </li> tags
+        assert clean_html("<li>foo") == "<li>foo</li>"
+        assert clean_html("foo</li>") == "<li>...foo</li>"
         # should insert (value - 1) of first numbered <li>
         assert (
             clean_html('foo</li>\n<li value="3">bar</li>').replace("\n", "")
-            == '<li value="2"> ...foo</li><li value="3"> bar</li>'
+            == '<li value="2">...foo</li><li value="3">bar</li>'
         )
         # should work with paragraphs (and not insert ellipsis before paragraph)
         assert (
             clean_html('<p>foo</p>\n</li>\n<li value="3">bar</li>').replace("\n", "")
-            == '<li value="2"> <p>  foo </p></li><li value="3"> bar</li>'
+            == '<li value="2"><p>foo</p></li><li value="3">bar</li>'
         )
 
     def test_get_highlighting(self):
