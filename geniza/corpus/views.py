@@ -317,7 +317,7 @@ class DocumentRegexSearchView(PermissionRequiredMixin, DocumentSearchView):
             search_opts = form.cleaned_data
 
             if search_opts["q"]:
-                documents = documents.regex_search(search_opts["q"]).also("score")
+                documents = documents.regex_search(search_opts["q"])
 
             # order by sort option
             documents = documents.order_by(self.get_solr_sort(search_opts["sort"]))
