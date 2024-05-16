@@ -114,7 +114,6 @@ section#document-list {
             @include breakpoints.for-tablet-landscape-up {
                 flex: 1 0 60%;
                 align-self: flex-start;
-                padding-right: spacing.$spacing-sm;
             }
         }
         // document titles
@@ -251,6 +250,11 @@ section#document-list {
             @include typography.transcription-numerals;
             content: attr(value);
             height: 100%;
+        }
+        &:empty::before,
+        &:has(p:empty)::before,
+        &:has(em:empty)::before {
+            display: none;
         }
     }
     .transcription[dir="ltr"] li::before,

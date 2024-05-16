@@ -280,7 +280,7 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
         (automatic highlight unavailable due to solr regex search limitations)"""
         pattern = f"({self.raw_params['regex_query']})"
         # attempt split on first regex match
-        split_text = re.split(pattern, text, maxsplit=1)
+        split_text = re.split(pattern, text, maxsplit=1, flags=re.DOTALL)
         if len(split_text) > 1:
             # found a match, truncate text down to just context around match. ensure snippets begin
             # or end with newlines to prevent malformed <li> tags from appearing (they get mangled
@@ -290,23 +290,26 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
             start_newline_regex = re.search(r"\n(.{1,150}$)", before, flags=re.DOTALL)
             before = start_newline_regex.group(1) if start_newline_regex else before
 
-            # preserve matching portion unchanged
-            match = split_text[1]
+            # add highlight to matching portion
+            match = re.sub(pattern, lambda m: f"<em>{m.group(1)}</em>", split_text[1])
+            # for multiline matches, highlight contents of each encountered li/p/h3
+            line_regex = (
+                r"^(<li[a-z0-9\ \=\"\']*>|<p>|<h3>)*((?!<.+>).+)(</li>|</p>|</h3>)*$"
+            )
+            match = re.sub(
+                line_regex,
+                lambda m: f"{m.group(1) or ''}<em>{m.group(2)}</em>{m.group(3) or ''}",
+                match,
+                flags=re.MULTILINE,
+            )
 
             # using newline as end boundary, get <=150 characters of context after match
             after = split_text[2]
             end_newline_regex = re.search(r"^(.{1,150})\n", after, flags=re.DOTALL)
             after = end_newline_regex.group(1) if end_newline_regex else after
 
-            # combine truncated context with preserved match
-            snippet = before + match + after
-
-            # highlight match in context
-            return re.sub(
-                self.raw_params["regex_query"],
-                lambda m: f"<em>{m.group(0)}</em>",
-                snippet,
-            )
+            # combine truncated context with highlighted match
+            return before + match + after
         else:
             # no match = no highlight
             return None
