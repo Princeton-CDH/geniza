@@ -353,7 +353,6 @@
   <!-- copy description and transcription to nostem and regex fields for exact matches -->
   <copyField source="description_en_bigram" dest="description_nostem" maxChars="30000" />
   <copyField source="text_transcription" dest="transcription_nostem" maxChars="30000" />
-  <copyField source="text_transcription" dest="transcription_regex" maxChars="30000" />
 
   <dynamicField name="*_descendent_path" type="descendent_path" indexed="true" stored="true"/>
   <dynamicField name="*_ancestor_path" type="ancestor_path" indexed="true" stored="true"/>
