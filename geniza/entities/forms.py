@@ -202,13 +202,7 @@ class PersonListForm(forms.Form):
     def filters_active(self):
         """Check if any filters are active; returns true if form fields are set"""
         if self.is_valid():
-            return bool(
-                {
-                    k: v
-                    for k, v in self.cleaned_data.items()
-                    if k not in ["sort", "sort_dir"] and bool(v)
-                }
-            )
+            return bool({k: v for k, v in self.cleaned_data.items() if bool(v)})
         return False
 
 
