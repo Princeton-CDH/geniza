@@ -80,9 +80,9 @@ class TestPersonListForm:
         assert form.filters_active() == False
         form = PersonListForm({"gender": [Person.FEMALE]})
         assert form.filters_active() == True
-        # sort should not count as a filter
-        form = PersonListForm({"sort": "gender"})
-        assert form.filters_active() == False
+        # sort SHOULD count as a filter (required for accurate facet counts after sorting)
+        form = PersonListForm({"sort": "role"})
+        assert form.filters_active() == True
 
     def test_get_sort_label(self):
         form = PersonListForm({})

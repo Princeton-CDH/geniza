@@ -274,7 +274,7 @@ class PersonListView(ListView, FormMixin):
             relations = literal_eval(search_opts["document_relation"])
             people = people.filter(persondocumentrelation__type__name__in=relations)
             self.applied_filter_count += len(relations)
-        if "sort" in search_opts and search_opts["sort"]:
+        if search_opts.get("sort"):
             order_by = self.sort_fields[search_opts["sort"]]
             # default is ascending; handle descending by appending a - in django order_by
             if "sort_dir" in search_opts and search_opts["sort_dir"] == "desc":
