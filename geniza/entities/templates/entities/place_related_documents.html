@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% load i18n render_bundle_csp fullurl %}
+
+{% block meta_title %}{{ page_title }}{% endblock meta_title %}
+{% block meta_description %}{{ page_description }}{% endblock meta_description %}
+{% block extrameta %}
+    {# use English page as canonical for search engine crawlers (no redirects) #}
+    {% language "en" %}
+        <link rel="canonical" href="{% fullurl "entities:place-documents" place.slug %}" />
+    {% endlanguage %}
+    {% spaceless %}
+        {% for lang_code in PUBLIC_SITE_LANGUAGES %}
+            {% language lang_code %}
+                <link rel="alternate" hreflang="{{ lang_code }}" href="{% fullurl "entities:place-documents" place.slug %}" />
+            {% endlanguage %}
+        {% endfor %}
+    {% endspaceless %}
+{% endblock extrameta %}
+
+{% block main %}
+    <!-- person details -->
+    {% include "entities/snippets/place_header.html" %}
+    {# tabs #}
+    {% include "entities/snippets/place_tabs.html" %}
+    {% include "entities/snippets/related_documents_table.html" with relations=related_documents %}
+{% endblock main %}

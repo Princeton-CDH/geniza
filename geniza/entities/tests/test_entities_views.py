@@ -6,19 +6,18 @@ from django.test import TestCase, override_settings
 from django.urls import resolve, reverse
 from django.utils.text import Truncator
 
-from geniza.corpus.models import Document
+from geniza.corpus.dates import Calendar
+from geniza.corpus.models import Dating, Document, DocumentType, TextBlock
 from geniza.entities.forms import PersonListForm
 from geniza.entities.models import (
     Name,
     Person,
     PersonDocumentRelation,
     PersonDocumentRelationType,
-    PersonRole,
     Place,
 )
 from geniza.entities.views import (
     PersonAutocompleteView,
-    PersonDetailView,
     PersonListView,
     PersonMerge,
     PlaceAutocompleteView,
@@ -473,3 +472,138 @@ class TestPlaceDetailView:
         assert response.context["page_type"] == "place"
         # context should include the maptiler token if one exists in settings
         assert response.context["maptiler_token"] == "example"
+
+
+@pytest.mark.django_db
+class TestPersonDocumentsView:
+    def test_page_title(self, client, document):
+        # should use primary name in page title
+        person = Person.objects.create(has_page=True)
+        name1 = Name.objects.create(
+            name="Mūsā b. Yaḥyā al-Majjānī", content_object=person, primary=True
+        )
+        Name.objects.create(name="Abū 'Imrān", content_object=person, primary=False)
+        person.generate_slug()
+        person.save()
+        person.documents.add(document)
+        response = client.get(reverse("entities:person-documents", args=(person.slug,)))
+        assert response.context["page_title"] == f"Related documents for {str(name1)}"
+
+    def test_page_description(self, client, document, join):
+        # should correctly count the number of related documents
+        person = Person.objects.create(has_page=True)
+        Name.objects.create(name="Goitein", content_object=person, primary=True)
+        person.generate_slug()
+        person.save()
+        person.documents.add(document)
+        response = client.get(reverse("entities:person-documents", args=(person.slug,)))
+        assert "1 related document" in response.context["page_description"]
+        person.documents.add(join)
+        response = client.get(reverse("entities:person-documents", args=(person.slug,)))
+        assert "2 related documents" in response.context["page_description"]
+
+    def test_get_related(self, client, document, multifragment):
+        # attach a person to two documents
+        person = Person.objects.create(has_page=True)
+        Name.objects.create(name="Goitein", content_object=person, primary=True)
+        person.generate_slug()
+        person.save()
+        # first document is a Legal document, with relation Author
+        author = PersonDocumentRelationType.objects.get_or_create(name_en="Author")[0]
+        legal_doc_relation = PersonDocumentRelation.objects.create(
+            document=document, person=person, type=author
+        )
+
+        # second document is a State document, with relation Recipient
+        state_doc = Document.objects.create(
+            doctype=DocumentType.objects.get_or_create(name_en="State")[0]
+        )
+        TextBlock.objects.create(document=state_doc, fragment=multifragment)
+        state_doc_relation = PersonDocumentRelation.objects.create(
+            person=person,
+            document=state_doc,
+            type=PersonDocumentRelationType.objects.get_or_create(name_en="Recipient")[
+                0
+            ],
+        )
+
+        # get_related should return an iterable with both relationships
+        response = client.get(reverse("entities:person-documents", args=(person.slug,)))
+        related_docs_qs = response.context.get("related_documents")
+        assert legal_doc_relation in related_docs_qs
+        assert state_doc_relation in related_docs_qs
+
+        # by default, should sort alphabetically by shelfmark, ascending
+        assert response.context.get("sort") == "shelfmark_asc"
+        # legal doc shelfmark starts with CUL, state doc shelfmark starts with T-S
+        assert related_docs_qs.first().pk == legal_doc_relation.pk
+
+        # sort alphabetically by shelfmark, descending
+        response = client.get(
+            reverse("entities:person-documents", args=(person.slug,)),
+            {"sort": "shelfmark_desc"},
+        )
+        related_docs_qs = response.context.get("related_documents")
+        assert related_docs_qs.first().pk == state_doc_relation.pk
+
+        # sort alphabetically by doctype, ascending (Legal, then State)
+        response = client.get(
+            reverse("entities:person-documents", args=(person.slug,)),
+            {"sort": "doctype_asc"},
+        )
+        related_docs_qs = response.context.get("related_documents")
+        assert related_docs_qs.first().pk == legal_doc_relation.pk
+
+        # sort alphabetically by relation, ascending (Author, then Recipient)
+        response = client.get(
+            reverse("entities:person-documents", args=(person.slug,)),
+            {"sort": "relation_asc"},
+        )
+        related_docs_qs = response.context.get("related_documents")
+        assert related_docs_qs.first().pk == legal_doc_relation.pk
+
+        # add some on-document and inferred dates to the documents
+        document.doc_date_original = "5 Elul 5567"
+        document.doc_date_calendar = Calendar.ANNO_MUNDI
+        document.doc_date_standard = "1807-09-08"
+        document.save()
+        Dating.objects.create(
+            document=state_doc,
+            display_date="1800 CE",
+            standard_date="1800",
+            rationale=Dating.PALEOGRAPHY,
+            notes="a note",
+        )
+        undated_doc = Document.objects.create()
+        undated_doc_relation = PersonDocumentRelation.objects.create(
+            document=undated_doc, person=person, type=author
+        )
+
+        # sort by date ascending
+        response = client.get(
+            reverse("entities:person-documents", args=(person.slug,)),
+            {"sort": "date_asc"},
+        )
+        related_docs_qs = response.context.get("related_documents")
+        # date sort returns a list due to additional calculations needed
+        assert related_docs_qs[0].pk == state_doc_relation.pk
+        # undated should be sorted last
+        assert related_docs_qs[-1].pk == undated_doc_relation.pk
+        # sort by date descending
+        response = client.get(
+            reverse("entities:person-documents", args=(person.slug,)),
+            {"sort": "date_desc"},
+        )
+        related_docs_qs = response.context.get("related_documents")
+        assert related_docs_qs[0].pk == legal_doc_relation.pk
+        # undated should still be sorted last
+        assert related_docs_qs[-1].pk == undated_doc_relation.pk
+
+    def test_get_context_data(self, client):
+        # should 404 when no documents related to person
+        person = Person.objects.create(has_page=True)
+        Name.objects.create(name="test", content_object=person, primary=True)
+        person.generate_slug()
+        person.save()
+        response = client.get(reverse("entities:person-documents", args=(person.slug,)))
+        assert response.status_code == 404
