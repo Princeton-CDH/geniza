@@ -3,7 +3,14 @@
 import { Controller } from "@hotwired/stimulus";
 
 export default class extends Controller {
-    static targets = ["toggle", "transcription", "translation"];
+    static targets = [
+        "emptyLabel",
+        "imagePopout",
+        "toggle",
+        "transcription",
+        "translation",
+        "shortLabel",
+    ];
 
     initialize() {
         // bind "this" so we can access other methods in this controller from within event handler
@@ -18,6 +25,8 @@ export default class extends Controller {
         if (this.isDesktop()) {
             // if transcription + translation both open, align their contents line-by-line
             this.alignLines();
+            // align the header of the first image with the headers of the other two columns
+            this.alignHeaders();
         }
         // on resize, retrigger alignment
         window.addEventListener("resize", this.boundResizeHandler);
@@ -39,11 +48,27 @@ export default class extends Controller {
             this.removeAlignment();
             // when transcription and translation are both opened, align their contents line-by-line
             this.alignLines();
+            // realign headers if chanegd
+            this.alignHeaders();
         }
     }
 
+    imageAndOtherPanelOpen() {
+        // check toggle targets to find out whether both image and either
+        // transcription and translation are open
+        return (
+            this.toggleTargets.find((target) => target.id === "images-on")
+                .checked === true &&
+            ["transcription-on", "translation-on"].some(
+                (id) =>
+                    this.toggleTargets.find((target) => target.id === id)
+                        .checked === true
+            )
+        );
+    }
+
     transcriptionAndTranslationOpen() {
-        // check toggle targets to find out whether both transcription and translated are open
+        // check toggle targets to find out whether both transcription and translation are open
         return ["transcription-on", "translation-on"].every(
             (id) =>
                 this.toggleTargets.find((target) => target.id === id)
@@ -58,6 +83,31 @@ export default class extends Controller {
             el.getBoundingClientRect().height /
                 parseInt(getComputedStyle(el).getPropertyValue("line-height"))
         );
+    }
+
+    alignHeaders() {
+        // Align the header of the first image with the header row of the transcription and/or
+        // translation panels
+        if (
+            this.imageAndOtherPanelOpen() &&
+            this.emptyLabelTarget &&
+            this.imagePopoutTargets.length &&
+            this.shortLabelTargets.length
+        ) {
+            const emptyHeight = getComputedStyle(this.emptyLabelTarget).height;
+            this.imagePopoutTargets[0].style.marginTop = `-${emptyHeight}`;
+            this.imagePopoutTargets[0].style.paddingBottom = emptyHeight;
+            const shortLabel = this.shortLabelTargets[0];
+            const spanHeight = getComputedStyle(shortLabel).height;
+            const imgHeader = this.imagePopoutTargets[0].querySelector("h2");
+            imgHeader.style.height = spanHeight;
+        } else if (this.imagePopoutTargets.length) {
+            this.imagePopoutTargets[0].style.removeProperty("margin-top");
+            this.imagePopoutTargets[0].style.removeProperty("padding-bottom");
+            this.imagePopoutTargets[0]
+                .querySelector("h2")
+                .style.removeProperty("height");
+        }
     }
 
     alignLines() {
@@ -161,9 +211,10 @@ export default class extends Controller {
 
     handleResizeAlign() {
         // on resize, remove alignment and realign using new heights
-        if (this.isDesktop() && this.transcriptionAndTranslationOpen()) {
+        if (this.isDesktop()) {
             this.removeAlignment();
             this.alignLines();
+            this.alignHeaders();
         }
     }
 

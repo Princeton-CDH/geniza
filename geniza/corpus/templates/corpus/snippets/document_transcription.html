@@ -72,7 +72,7 @@
         </div>
         <div class="panel-container">
             {# label row #}
-            <div class="label-row"></div> {# unused (no image label, needed for column alignment) #}
+            <div class="label-row" data-ittpanel-target="emptyLabel"></div> {# unused (no image label, needed for column alignment) #}
             <div class="transcription-panel label-row">
                 {% if edit_mode == "transcribing" %}
                     {# show disabled details with source label in editor mode #}
@@ -85,7 +85,7 @@
                     {# dropdown is disabled by default; enable if javascript is active #}
                     <details class="itt-select" aria-expanded="false" data-transcription-target="dropdownDetails" data-relation="transcription" data-count="{{ document.digital_editions.count }}" disabled="true">
                         <summary data-action="keydown->transcription#shiftTabCloseDropdown">
-                            <span data-transcription-target="transcriptionShortLabel">
+                            <span data-transcription-target="transcriptionShortLabel" data-ittpanel-target="shortLabel">
                                 {% if document.digital_editions.0 %}
                                     {# Translators: Label for editors of a transcription #}
                                     {% blocktranslate with eds=document.digital_editions.0.source.all_authors|default:document.digital_editions.0.source count counter=document.digital_editions.0.source.authors.count trimmed %}
@@ -128,7 +128,7 @@
                     {# dropdown is disabled by default; enable if javascript is active #}
                     <details class="itt-select" aria-expanded="false" data-transcription-target="dropdownDetails" data-relation="translation" data-count="{{ document.digital_translations.count }}" disabled="true">
                         <summary data-action="keydown->transcription#shiftTabCloseDropdown">
-                            <span data-transcription-target="translationShortLabel">
+                            <span data-transcription-target="translationShortLabel" data-ittpanel-target="shortLabel">
                                 {# Translators: Label for authors of a translation #}
                                 {% blocktranslate with eds=document.default_translation.source.all_authors count counter=document.default_translation.source.authors.count trimmed %}
                                     Translator: {{ eds }}
@@ -163,7 +163,7 @@
             {% for canvas_uri, image_info in images.items %}
                 {# only images that are part of the current document are zoomable #}
                 <div class="img{% if image_info.excluded %} excluded{% endif %}{% if image_info.placeholder %} placeholder{% endif %}" id="{{ image_info.label }}"{% if not image_info.excluded %} data-controller="iiif {% if edit_mode %}annotation" data-iiif-edit-mode-value="true{% endif %}" data-canvas-url="{{ canvas_uri }}" data-iiif-target="imageContainer" data-annotation-target="imageContainer"{% endif %}>
-                    <div class="popout-container">
+                    <div class="popout-container" data-ittpanel-target="imagePopout">
                         <div class="img-header" data-iiif-target="imageHeader">
                             <h2>{{ image_info.shelfmark }} {{ image_info.label }}</h2>
                             {% if not image_info.excluded %}
