@@ -343,7 +343,7 @@ class PersonListView(ListView, FormMixin):
 
     # sort options mapped to db fields
     sort_fields = {
-        "name": "name_unaccented",
+        "name": "slug",
         "role": "role__name",
         "documents": "documents_count",
         "people": "people_count",
@@ -355,13 +355,12 @@ class PersonListView(ListView, FormMixin):
         """modify queryset to sort and filter on people in the list"""
         people = (
             Person.objects.filter(names__primary=True).annotate(
-                name_unaccented=ArrayAgg("names__name__unaccent", distinct=True),
                 documents_count=Count("documents", distinct=True),
                 people_count=Count("relationships", distinct=True),
                 places_count=Count("personplacerelation", distinct=True),
             )
-            # order people by primary name unaccented
-            .order_by("name_unaccented")
+            # order people by slug by default
+            .order_by("slug")
         )
 
         form = self.get_form()
