@@ -75,6 +75,7 @@
 
             // disabled toggle colors
             &:disabled + label {
+                background-color: var(--background-light);
                 cursor: default;
                 &:after,
                 svg {
