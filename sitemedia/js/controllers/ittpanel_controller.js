@@ -114,19 +114,34 @@ export default class extends Controller {
         if (this.transcriptionAndTranslationOpen()) {
             // get the currently selected transcription and translation
             const selectedTranscriptionInput = document.querySelector(
-                `input:checked[type="radio"][name="transcription"]`
+                'input:checked[type="radio"][name="transcription"]'
             );
-            let className = selectedTranscriptionInput.dataset.transcription;
-            const transcriptionChunks = document.querySelectorAll(
-                `.${className}`
-            );
+            let transcriptionChunks = [];
+            if (selectedTranscriptionInput) {
+                const className =
+                    selectedTranscriptionInput.dataset.transcription;
+                transcriptionChunks = document.querySelectorAll(
+                    `.${className}`
+                );
+            } else {
+                // allow alignment in transcription edit mode (i.e. no selectedTranscriptionInput)
+                transcriptionChunks = document.querySelectorAll(
+                    ".tahqiq-body-display"
+                );
+            }
             const selectedTranslationInput = document.querySelector(
                 `input:checked[type="radio"][name="translation"]`
             );
-            className = selectedTranslationInput.dataset.translation;
-            const translationChunks = document.querySelectorAll(
-                `.${className}`
-            );
+            let translationChunks = [];
+            if (selectedTranslationInput) {
+                const className = selectedTranslationInput.dataset.translation;
+                translationChunks = document.querySelectorAll(`.${className}`);
+            } else {
+                // allow alignment in translation edit mode (i.e. no selectedTranslationInput)
+                translationChunks = document.querySelectorAll(
+                    ".tahqiq-body-display"
+                );
+            }
 
             // loop through each transcription and translation block (only as many as needed)
             const minTargets = Math.min(
