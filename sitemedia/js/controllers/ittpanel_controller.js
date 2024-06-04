@@ -15,7 +15,7 @@ export default class extends Controller {
     connect() {
         document.addEventListener("tahqiq-alert", this.boundAlertHandler);
         document.addEventListener("tahqiq-cancel", this.boundCancelHandler);
-        if (this.isDesktop() && this.transcriptionAndTranslationOpen()) {
+        if (this.isDesktop()) {
             // if transcription + translation both open, align their contents line-by-line
             this.alignLines();
         }
@@ -33,38 +33,12 @@ export default class extends Controller {
         return window.innerWidth >= 900;
     }
 
-    clickToggle(evt) {
-        // when all three toggles are opened, automatically close one, depending on which you
-        // attempted to open
-        if (this.toggleTargets.every((target) => target.checked)) {
-            // NOTE: Logic for which should close and which should remain open was determined via
-            // consultation with researchers. The primary finding was that most often, researchers
-            // are not looking directly at an image while editing/working on translations.
-            switch (evt.target.id) {
-                // close transcription if you opened images
-                case "images-on":
-                    this.toggleTargets.find(
-                        (target) => target.id === "transcription-on"
-                    ).checked = false;
-                    break;
-                // close images if you opened either of the other two
-                case "transcription-on":
-                case "translation-on":
-                    this.toggleTargets.find(
-                        (target) => target.id === "images-on"
-                    ).checked = false;
-                    break;
-            }
-        }
-
+    clickToggle() {
         if (this.isDesktop()) {
-            if (this.transcriptionAndTranslationOpen()) {
-                // when transcription and translation are both opened, align their contents line-by-line
-                this.alignLines();
-            } else {
-                // when one of those two toggles is closed, alignment no longer needed
-                this.removeAlignment();
-            }
+            // reset alignment; prevents mistakes on lines that change size, clears align if not needed
+            this.removeAlignment();
+            // when transcription and translation are both opened, align their contents line-by-line
+            this.alignLines();
         }
     }
 
@@ -87,60 +61,66 @@ export default class extends Controller {
     }
 
     alignLines() {
-        // get the currently selected transcription and translation
-        const selectedTranscriptionInput = document.querySelector(
-            `input:checked[type="radio"][name="transcription"]`
-        );
-        let className = selectedTranscriptionInput.dataset.transcription;
-        const transcriptionChunks = document.querySelectorAll(`.${className}`);
-        const selectedTranslationInput = document.querySelector(
-            `input:checked[type="radio"][name="translation"]`
-        );
-        className = selectedTranslationInput.dataset.translation;
-        const translationChunks = document.querySelectorAll(`.${className}`);
+        if (this.transcriptionAndTranslationOpen()) {
+            // get the currently selected transcription and translation
+            const selectedTranscriptionInput = document.querySelector(
+                `input:checked[type="radio"][name="transcription"]`
+            );
+            let className = selectedTranscriptionInput.dataset.transcription;
+            const transcriptionChunks = document.querySelectorAll(
+                `.${className}`
+            );
+            const selectedTranslationInput = document.querySelector(
+                `input:checked[type="radio"][name="translation"]`
+            );
+            className = selectedTranslationInput.dataset.translation;
+            const translationChunks = document.querySelectorAll(
+                `.${className}`
+            );
 
-        // loop through each transcription and translation block (only as many as needed)
-        const minTargets = Math.min(
-            transcriptionChunks.length,
-            translationChunks.length
-        );
-        for (let i = 0; i < minTargets; i++) {
-            // loop through as many OLs in each transcription/translation as needed
-            const edOls = transcriptionChunks[i].querySelectorAll("ol");
-            const trOls = translationChunks[i].querySelectorAll("ol");
-            const minLists = Math.min(edOls.length, trOls.length);
-            for (let j = 0; j < minLists; j++) {
-                // first, align tops of lists (using inline styles)
-                const edOl = edOls[j];
-                const trOl = trOls[j];
-                const edTop = edOl.getBoundingClientRect().top;
-                // translation is always 1 pixel difference
-                const trTop = trOl.getBoundingClientRect().top - 1;
-                if (edTop < trTop) {
-                    edOl.style.paddingTop = `${trTop - edTop}px`;
-                    trOl.style.paddingTop = "0px";
-                } else if (trTop < edTop) {
-                    trOl.style.paddingTop = `${edTop - trTop}px`;
-                    edOl.style.paddingTop = "0px";
-                } else {
-                    trOl.style.paddingTop = "0px";
-                    edOl.style.paddingTop = "0px";
-                }
-                // then, align each line of transcription to translation
-                const edLines = edOl.querySelectorAll("li");
-                const trLines = trOl.querySelectorAll("li");
-                // only align as many lines as we need to
-                const minLines = Math.min(edLines.length, trLines.length);
-                for (let k = 0; k < minLines; k++) {
-                    if (edLines[k] && trLines[k]) {
-                        // calculate number of lines based on line height
-                        const maxLineCount = Math.max(
-                            this.getLineCount(edLines[k]),
-                            this.getLineCount(trLines[k])
-                        );
-                        // set data-lines attribute on each li according to which is longer
-                        edLines[k].setAttribute("data-lines", maxLineCount);
-                        trLines[k].setAttribute("data-lines", maxLineCount);
+            // loop through each transcription and translation block (only as many as needed)
+            const minTargets = Math.min(
+                transcriptionChunks.length,
+                translationChunks.length
+            );
+            for (let i = 0; i < minTargets; i++) {
+                // loop through as many OLs in each transcription/translation as needed
+                const edOls = transcriptionChunks[i].querySelectorAll("ol");
+                const trOls = translationChunks[i].querySelectorAll("ol");
+                const minLists = Math.min(edOls.length, trOls.length);
+                for (let j = 0; j < minLists; j++) {
+                    // first, align tops of lists (using inline styles)
+                    const edOl = edOls[j];
+                    const trOl = trOls[j];
+                    const edTop = edOl.getBoundingClientRect().top;
+                    // translation is always 1 pixel difference
+                    const trTop = trOl.getBoundingClientRect().top - 1;
+                    if (edTop < trTop) {
+                        edOl.style.paddingTop = `${trTop - edTop}px`;
+                        trOl.style.paddingTop = "0px";
+                    } else if (trTop < edTop) {
+                        trOl.style.paddingTop = `${edTop - trTop}px`;
+                        edOl.style.paddingTop = "0px";
+                    } else {
+                        trOl.style.paddingTop = "0px";
+                        edOl.style.paddingTop = "0px";
+                    }
+                    // then, align each line of transcription to translation
+                    const edLines = edOl.querySelectorAll("li");
+                    const trLines = trOl.querySelectorAll("li");
+                    // only align as many lines as we need to
+                    const minLines = Math.min(edLines.length, trLines.length);
+                    for (let k = 0; k < minLines; k++) {
+                        if (edLines[k] && trLines[k]) {
+                            // calculate number of lines based on line height
+                            const maxLineCount = Math.max(
+                                this.getLineCount(edLines[k]),
+                                this.getLineCount(trLines[k])
+                            );
+                            // set data-lines attribute on each li according to which is longer
+                            edLines[k].setAttribute("data-lines", maxLineCount);
+                            trLines[k].setAttribute("data-lines", maxLineCount);
+                        }
                     }
                 }
             }
@@ -191,10 +171,7 @@ export default class extends Controller {
         // on save, re-align transcription and translation lines
         if (this.isDesktop()) {
             const { message } = e.detail;
-            if (
-                message.includes("saved") &&
-                this.transcriptionAndTranslationOpen()
-            ) {
+            if (message.includes("saved")) {
                 this.alignLines();
             }
         }

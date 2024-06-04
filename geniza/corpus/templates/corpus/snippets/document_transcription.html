@@ -33,19 +33,19 @@
 {# only enable ITT panel if images/transcription/translation are present, or we are in edit mode #}
 {% if document.has_digital_content or edit_mode %}
     <section id="itt-panel" data-controller="ittpanel{% if not edit_mode %} transcription" data-action="click@document->transcription#clickCloseDropdown{% endif %}">
-        {# NOTE: inputs must be kept as SIBLINGS of panel-container for CSS selection/controls #}
-        {# images displayed by default; disable if no images are available #}
-        {# translators: label for checkbox toggle to show the images panel for a document #}
-        <input type="checkbox" class="toggle" id="images-on" data-ittpanel-target="toggle" data-action="ittpanel#clickToggle" aria-label="{% translate 'show images' %}" {% if "images" in default_shown %}checked="true" {% elif "images" in disabled %}disabled="true" {% endif %}/>
-        <label for="images-on"></label>
-        {# translators: label for checkbox toggle to show the transcription panel for a document #}
-        <input type="checkbox" class="toggle" id="transcription-on" data-ittpanel-target="toggle" data-action="ittpanel#clickToggle" aria-label="{% translate 'show transcription' %}" {% if "transcription" in default_shown %}checked="true" {% elif "transcription" in disabled %}disabled="true" {% endif %}/>
-        <label for="transcription-on"><svg><use xlink:href="{% static 'img/ui/all/all/transcription-toggle.svg' %}#transcription-toggle" /></svg></label>
-        {# translation displayed by default; disable if no content is available #}
-        {# translators: label for checkbox toggle to show the translation panel for a document #}
-        <input type="checkbox" class="toggle" id="translation-on" data-ittpanel-target="toggle" data-action="ittpanel#clickToggle" aria-label="{% translate 'show translation' %}" {% if "translation" in default_shown %}checked="true" {% elif "translation" in disabled %}disabled="true" {% endif %}/>
-        <label for="translation-on"><svg><use xlink:href="{% static 'img/ui/all/all/translation-toggle.svg' %}#translation-toggle" /></svg></label>
-
+        <div id="toggles">
+            {# images displayed by default; disable if no images are available #}
+            {# translators: label for checkbox toggle to show the images panel for a document #}
+            <input type="checkbox" class="toggle" id="images-on" data-ittpanel-target="toggle" data-action="ittpanel#clickToggle" aria-label="{% translate 'show images' %}" {% if "images" in default_shown %}checked="true" {% elif "images" in disabled %}disabled="true" {% endif %}/>
+            <label for="images-on"></label>
+            {# translators: label for checkbox toggle to show the transcription panel for a document #}
+            <input type="checkbox" class="toggle" id="transcription-on" data-ittpanel-target="toggle" data-action="ittpanel#clickToggle" aria-label="{% translate 'show transcription' %}" {% if "transcription" in default_shown %}checked="true" {% elif "transcription" in disabled %}disabled="true" {% endif %}/>
+            <label for="transcription-on"><svg><use xlink:href="{% static 'img/ui/all/all/transcription-toggle.svg' %}#transcription-toggle" /></svg></label>
+            {# translation displayed by default; disable if no content is available #}
+            {# translators: label for checkbox toggle to show the translation panel for a document #}
+            <input type="checkbox" class="toggle" id="translation-on" data-ittpanel-target="toggle" data-action="ittpanel#clickToggle" aria-label="{% translate 'show translation' %}" {% if "translation" in default_shown %}checked="true" {% elif "translation" in disabled %}disabled="true" {% endif %}/>
+            <label for="translation-on"><svg><use xlink:href="{% static 'img/ui/all/all/translation-toggle.svg' %}#translation-toggle" /></svg></label>
+        </div>
         {% comment %}
             TODO: Edit both transcription and translation at once.
             - Add an "edit" button by the dropdown for the non-active panel in edit_mode
@@ -53,6 +53,23 @@
             - This button will instantiate a second tahqiq for each canvas, populated by 
             annotations linked to the selected footnote
         {% endcomment %}
+        {# header row #}
+        <div id="header-row">
+            <div class="img-header">
+                {# translators: label for header above Image panel in viewer #}
+                <span>{% translate "Image" %}</span>
+            </div>
+            <div class="transcription-header">
+                <svg><use xlink:href="{% static 'img/ui/all/all/transcription-toggle.svg' %}#transcription-toggle" /></svg>
+                {# translators: label for header above Transcription panel in viewer #}
+                <span>{% translate "Transcription" %}</span>
+            </div>
+            <div class="translation-header">
+                <svg><use xlink:href="{% static 'img/ui/all/all/translation-toggle.svg' %}#translation-toggle" /></svg>
+                {# translators: label for header above Translation panel in viewer #}
+                <span>{% translate "Translation" %}</span>
+            </div>
+        </div>
         <div class="panel-container">
             {# label row #}
             <div class="label-row"></div> {# unused (no image label, needed for column alignment) #}
@@ -61,21 +78,37 @@
                     {# show disabled details with source label in editor mode #}
                     <details class="itt-select" aria-expanded="false" disabled="true">
                         <summary>
-                            <span>Edition: {{ source_label }}</span>
+                            <span>Editor{{ authors_count|pluralize }}: {{ source_label }}</span>
                         </summary>
                     </details>
-                {% else %}
+                {% elif document.digital_editions.count %}
                     {# dropdown is disabled by default; enable if javascript is active #}
                     <details class="itt-select" aria-expanded="false" data-transcription-target="dropdownDetails" data-relation="transcription" data-count="{{ document.digital_editions.count }}" disabled="true">
                         <summary data-action="keydown->transcription#shiftTabCloseDropdown">
-                            <span data-transcription-target="transcriptionShortLabel">{% if document.digital_editions.0 %}Edition: {{ document.digital_editions.0.source.all_authors|default:document.digital_editions.0.source }}{% endif %}</span>
+                            <span data-transcription-target="transcriptionShortLabel">
+                                {% if document.digital_editions.0 %}
+                                    {# Translators: Label for editors of a transcription #}
+                                    {% blocktranslate with eds=document.digital_editions.0.source.all_authors|default:document.digital_editions.0.source count counter=document.digital_editions.0.source.authors.count trimmed %}
+                                        Editor: {{ eds }}
+                                    {% plural %}
+                                        Editors: {{ eds }}
+                                    {% endblocktranslate %}
+                                {% endif %}
+                            </span>
                         </summary>
                         <ul>
                             {% for ed in document.digital_editions.all %}
                                 <li>
                                     <label for="transcription-{{ forloop.counter }}">
                                         <input type="radio" name="transcription" {% if forloop.first %} checked="true"{% endif %} value="relevance" data-action="input->transcription#changeDropdown input->ittpanel#alignLines keydown->transcription#keyboardCloseDropdown" id="transcription-{{ forloop.counter }}" data-transcription="ed-{{ ed.pk }}" />
-                                        <span>Edition: {{ ed.source.all_authors|default:ed.source }}</span>
+                                        <span>
+                                            {# Translators: Label for editors of a transcription #}
+                                            {% blocktranslate with eds=ed.source.all_authors|default:ed.source count counter=ed.source.authors.count trimmed %}
+                                                Editor: {{ eds }}
+                                            {% plural %}
+                                                Editors: {{ eds }}
+                                            {% endblocktranslate %}
+                                        </span>
                                     </label>
                                 </li>
                             {% endfor %}
@@ -88,21 +121,36 @@
                     {# show disabled details with source label in editor mode #}
                     <details class="itt-select" aria-expanded="false" disabled="true">
                         <summary>
-                            <span>Translation: {{ source_label }}</span>
+                            <span>Translator{{ authors_count|pluralize }}: {{ source_label }}</span>
                         </summary>
                     </details>
-                {% else %}
+                {% elif document.digital_translations.count %}
                     {# dropdown is disabled by default; enable if javascript is active #}
                     <details class="itt-select" aria-expanded="false" data-transcription-target="dropdownDetails" data-relation="translation" data-count="{{ document.digital_translations.count }}" disabled="true">
                         <summary data-action="keydown->transcription#shiftTabCloseDropdown">
-                            <span data-transcription-target="translationShortLabel">Translation: {{ document.default_translation.source.all_authors }} {{ document.default_translation.source.all_languages }}</span>
+                            <span data-transcription-target="translationShortLabel">
+                                {# Translators: Label for authors of a translation #}
+                                {% blocktranslate with eds=document.default_translation.source.all_authors count counter=document.default_translation.source.authors.count trimmed %}
+                                    Translator: {{ eds }}
+                                {% plural %}
+                                    Translators: {{ eds }}
+                                {% endblocktranslate %}
+                                {{ document.default_translation.source.all_languages }}
+                            </span>
                         </summary>
                         <ul>
                             {% for tr in document.digital_translations.all %}
                                 <li>
                                     <label for="translation-{{ forloop.counter }}">
                                         <input type="radio" name="translation" {% if tr.pk == document.default_translation.pk %} checked="true"{% endif %} value="relevance" data-action="input->transcription#changeDropdown input->ittpanel#alignLines keydown->transcription#keyboardCloseDropdown" id="translation-{{ forloop.counter }}" data-translation="tr-{{ tr.pk }}" />
-                                        <span>Translation: {{ tr.source.all_authors }} {{ tr.source.all_languages }}</span>
+                                        <span>
+                                            {% blocktranslate with eds=tr.source.all_authors count counter=tr.source.authors.count trimmed %}
+                                                Translator: {{ eds }}
+                                            {% plural %}
+                                                Translators: {{ eds }}
+                                            {% endblocktranslate %}
+                                            {{ tr.source.all_languages }}
+                                        </span>
                                     </label>
                                 </li>
                             {% endfor %}
@@ -196,7 +244,6 @@
                         </div>
                     {% else %}
                         {% if forloop.first %}
-                            <h2>{% translate 'Transcription' %}</h2>
                             <span data-transcription-target="transcriptionFullLabel" class="current-transcription{% if document.digital_editions.count > 1 %} multiple{% endif %}">
                                 {{ document.digital_editions.0.source.formatted_display|safe }}
                             </span>
@@ -235,7 +282,6 @@
                         </div>
                     {% else %}
                         {% if forloop.first %}
-                            <h2>{% translate 'Translation' %}</h2>
                             <span data-transcription-target="translationFullLabel" class="current-translation{% if document.digital_editions.count > 1 %} multiple{% endif %}">
                                 {{ document.default_translation.source.formatted_display|safe }}
                             </span>
@@ -261,6 +307,8 @@
             {% endfor %}
             {% if document.has_image %}
                 {% include "corpus/snippets/document_image_rights.html" %}
+                <div></div>
+                <div></div>
             {% endif %}
         </div>
     </section>
