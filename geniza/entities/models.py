@@ -1,4 +1,5 @@
 import re
+from datetime import datetime
 from math import modf
 
 from django.conf import settings
@@ -10,14 +11,21 @@ from django.core.validators import RegexValidator
 from django.db import models
 from django.forms import ValidationError
 from django.urls import reverse
+from django.utils.translation import get_language
 from django.utils.translation import gettext as _
 from gfklookupwidget.fields import GfkLookupField
 from slugify import slugify
 from unidecode import unidecode
 
 from geniza.common.models import TrackChangesModel, cached_class_property
+from geniza.common.utils import absolutize_url
 from geniza.corpus.dates import DocumentDateMixin, PartialDate, standard_date_display
-from geniza.corpus.models import DisplayLabelMixin, Document, LanguageScript
+from geniza.corpus.models import (
+    DisplayLabelMixin,
+    Document,
+    LanguageScript,
+    PermalinkMixin,
+)
 from geniza.footnotes.models import Footnote
 
 
@@ -225,7 +233,7 @@ class SlugMixin(TrackChangesModel):
         abstract = True
 
 
-class Person(SlugMixin):
+class Person(SlugMixin, PermalinkMixin):
     """A person entity that appears within the PGP corpus."""
 
     names = GenericRelation(Name, related_query_name="person")
@@ -309,6 +317,40 @@ class Person(SlugMixin):
             return str(self.names.filter(primary=True).first())
         except Name.DoesNotExist:
             return str(self.names.first() or super().__str__())
+
+    @property
+    def content_authors(self):
+        """Generate a formatted string of comma-separated names of content editors/admins who
+        worked on this Person's entity data, for use in a citation"""
+        # get all users from log entries, order by last name
+        user_pks = self.log_entries.values_list("user", flat=True)
+        users = User.objects.filter(pk__in=user_pks).order_by("last_name")
+        # join first and last names for each user
+        get_full_name = lambda user: " ".join(
+            [n for n in [user.first_name, user.last_name] if n]
+        ).strip()
+        full_name_list = [get_full_name(user) or user.username for user in users]
+        if len(full_name_list) > 1:
+            # join last two names with "and"
+            and_str = ", and " if len(full_name_list) > 2 else " and "
+            and_names = and_str.join(
+                reversed([full_name_list.pop(), full_name_list.pop()])
+            )
+            # join remaining names with comma
+            return ", ".join([*full_name_list, and_names])
+        elif full_name_list:
+            # if only one author, just return their name
+            return full_name_list[0]
+        else:
+            return None
+
+    @property
+    def formatted_citation(self):
+        """a formatted citation for display at the bottom of Person Detail pages"""
+        authors = f"{self.content_authors}, " if self.content_authors else ""
+        available_at = "available online through the Princeton Geniza Project at"
+        today = datetime.today().strftime("%B %-d, %Y")
+        return f'{authors}"{str(self)}," {available_at} {self.permalink}, accessed {today}.'
 
     def get_absolute_url(self):
         """url for this person"""

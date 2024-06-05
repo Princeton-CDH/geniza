@@ -68,5 +68,30 @@
                 <p>{{ person.description }}</p>
             </section>
         {% endif %}
+        {# tertiary metadata #}
+        <dl class="metadata-list tertiary">
+            <dt id="citation" aria-hidden="true"> {# aria hidden because redundant for screen readers #}
+                <i class="ph-quotes-fill"></i>
+                {# Translators: label for a citation for a person page #}
+                {% translate 'How to cite this record:' %}
+            </dt>
+            <dd>
+                {# Translators: accessibility label for a citation for a person #}
+                <span aria-label="{% translate 'Citation' %}">
+                    {{ person.formatted_citation }}
+                </span>
+            </dd>
+            <dt id="permalink" aria-hidden="true"> {# aria hidden because redundant for screen readers #}
+                <i class="ph-link"></i>
+                {# Translators: label for permanent link to a person #}
+                {% translate 'Link to this person:' %}
+            </dt>
+            <dd>
+                {# Translators: accessibility label for permanent link to a person #}
+                <a href="{{ person.permalink }}" rel="bookmark" aria-label="{% translate 'Permalink' %}">
+                    {{ person.permalink }}
+                </a>
+            </dd>
+        </dl>
     </div>
 {% endblock main %}
