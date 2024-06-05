@@ -499,6 +499,9 @@ class DocumentQuerySet(MultilingualQuerySet):
 
 
 class PermalinkMixin:
+    """Mixin to generate a permalink for Django model objects by removing language code
+    from the object's absolute URL."""
+
     @property
     def permalink(self):
         # generate permalink without language url so that all versions have
