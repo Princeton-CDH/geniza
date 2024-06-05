@@ -502,7 +502,7 @@ class PermalinkMixin:
     @property
     def permalink(self):
         # generate permalink without language url so that all versions have
-        # the same link and users will be directed ot their preferred language
+        # the same link and users will be directed to their preferred language
         # - get current active language, or default language if not active
         lang = get_language() or settings.LANGUAGE_CODE
         return absolutize_url(self.get_absolute_url().replace(f"/{lang}/", "/"))
