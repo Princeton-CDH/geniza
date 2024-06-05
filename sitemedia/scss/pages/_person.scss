@@ -67,9 +67,9 @@ main.place {
         padding: 0 spacing.$spacing-md spacing.$spacing-md;
         margin-bottom: spacing.$spacing-md;
         @include breakpoints.for-tablet-landscape-up {
-            max-width: 896px;
+            max-width: 56rem;
             box-sizing: content-box;
-            margin-bottom: spacing.$spacing-xl;
+            margin-bottom: 0;
         }
         section.metadata {
             max-width: 100%;
@@ -197,6 +197,40 @@ main.place {
             }
         }
     }
+    dl.metadata-list.tertiary {
+        margin-top: 2rem;
+        width: 100%;
+        @include breakpoints.for-tablet-landscape-up {
+            margin-top: 3rem;
+        }
+        // hanging phosphor icons before citation and permalink
+        dt#citation,
+        dt#permalink {
+            display: flex;
+            align-items: flex-start;
+            @include typography.meta-bold;
+            line-height: 1;
+            i {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: var(--on-secondary);
+                background-color: var(--secondary);
+                border-radius: 50%;
+                width: 2.25rem;
+                height: 2.25rem;
+                margin-right: 0.75rem;
+            }
+            & + dd {
+                @include typography.meta;
+                margin-left: 3rem;
+                margin-top: -1rem;
+                a {
+                    text-decoration: none;
+                }
+            }
+        }
+    }
 }
 main.person {
     // person tabs styling: 4 tabs!
@@ -239,5 +273,20 @@ html[dir="rtl"] main.place {
     .container dl.metadata-list dt::before {
         margin-right: 0;
         margin-left: 12px;
+    }
+    .container .description h2::before {
+        margin-right: 0;
+        margin-left: 12px;
+    }
+    .container dl.metadata-list.tertiary dt#citation,
+    .container dl.metadata-list.tertiary dt#permalink {
+        i {
+            margin-right: 0;
+            margin-left: 0.75rem;
+        }
+        & + dd {
+            margin-left: 0;
+            margin-right: 3rem;
+        }
     }
 }

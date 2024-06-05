@@ -498,7 +498,17 @@ class DocumentQuerySet(MultilingualQuerySet):
         return self.get(models.Q(id=pgpid) | models.Q(old_pgpids__contains=[pgpid]))
 
 
-class Document(ModelIndexable, DocumentDateMixin):
+class PermalinkMixin:
+    @property
+    def permalink(self):
+        # generate permalink without language url so that all versions have
+        # the same link and users will be directed ot their preferred language
+        # - get current active language, or default language if not active
+        lang = get_language() or settings.LANGUAGE_CODE
+        return absolutize_url(self.get_absolute_url().replace(f"/{lang}/", "/"))
+
+
+class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin):
     """A unified document such as a letter or legal document that
     appears on one or more fragments."""
 
@@ -721,14 +731,6 @@ class Document(ModelIndexable, DocumentDateMixin):
     def get_absolute_url(self):
         """url for this document"""
         return reverse("corpus:document", args=[str(self.id)])
-
-    @property
-    def permalink(self):
-        # generate permalink without language url so that all versions
-        # have the same link and users will be directed preferred language
-        # - get current active language, or default langue if not active
-        lang = get_language() or settings.LANGUAGE_CODE
-        return absolutize_url(self.get_absolute_url().replace(f"/{lang}/", "/"))
 
     def iiif_urls(self):
         """List of IIIF urls for images of the Document's Fragments."""

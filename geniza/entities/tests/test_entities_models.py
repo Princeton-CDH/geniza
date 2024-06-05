@@ -1,5 +1,4 @@
 from datetime import datetime
-from unittest.mock import patch
 
 import pytest
 from django.contrib.admin.models import ADDITION, CHANGE, LogEntry
@@ -367,6 +366,60 @@ class TestPerson:
         Name.objects.create(name="S.D. Goitein", content_object=person3, primary=True)
         person3.generate_slug()
         assert person3.slug == f"{person.slug}-3"
+
+    def test_content_authors(self, person):
+        # with no log entries, should have no content_authors
+        assert not person.content_authors
+
+        # create some log entries
+        person_contenttype = ContentType.objects.get_for_model(Person)
+        opts = {
+            "object_id": str(person.pk),
+            "content_type": person_contenttype,
+            "object_repr": str(person),
+        }
+        mr = User.objects.create(username="mr", first_name="Marina", last_name="Rustow")
+        LogEntry.objects.create(**opts, user=mr, action_flag=ADDITION)
+        assert person.content_authors == "Marina Rustow"
+
+        # add more authors
+        tj = User.objects.create(username="tj", first_name="Tom", last_name="Jones")
+        LogEntry.objects.create(**opts, user=tj, action_flag=CHANGE)
+        LogEntry.objects.create(**opts, user=tj, action_flag=CHANGE)
+
+        # should order the names alphabetically by last name, join with "and"
+        assert person.content_authors == "Tom Jones and Marina Rustow"
+
+        # should comma separate, including serial comma, when more than 2 names
+        zz = User.objects.create(username="zz", first_name="Zed", last_name="Zilch")
+        LogEntry.objects.create(**opts, user=zz, action_flag=CHANGE)
+        assert person.content_authors == "Tom Jones, Marina Rustow, and Zed Zilch"
+
+    def test_formatted_citation(self, person):
+        person.has_page = True
+        person.save()
+
+        citation = person.formatted_citation
+        # should start with person name in quotes if no content authors
+        assert not person.content_authors
+        assert citation.startswith(f'"{str(person)},"')
+
+        # should include today's date
+        today = datetime.today().strftime("%B %-d, %Y")
+        assert today in citation
+
+        # should include content authors if any exist
+        person_contenttype = ContentType.objects.get_for_model(Person)
+        mr = User.objects.create(username="mr", first_name="Marina", last_name="Rustow")
+        LogEntry.objects.create(
+            object_id=str(person.pk),
+            content_type=person_contenttype,
+            object_repr=str(person),
+            user=mr,
+            action_flag=ADDITION,
+        )
+        citation = person.formatted_citation
+        assert person.content_authors in citation
 
 
 @pytest.mark.django_db
