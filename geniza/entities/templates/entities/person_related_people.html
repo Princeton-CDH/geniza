@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+{% load i18n render_bundle_csp fullurl static %}
+
+{% block meta_title %}{{ page_title }}{% endblock meta_title %}
+{% block meta_description %}{{ page_description }}{% endblock meta_description %}
+{% block extrameta %}
+    {# use English page as canonical for search engine crawlers (no redirects) #}
+    {% language "en" %}
+        <link rel="canonical" href="{% fullurl "entities:person-people" person.slug %}" />
+    {% endlanguage %}
+    {% spaceless %}
+        {% for lang_code in PUBLIC_SITE_LANGUAGES %}
+            {% language lang_code %}
+                <link rel="alternate" hreflang="{{ lang_code }}" href="{% fullurl "entities:person-people" person.slug %}" />
+            {% endlanguage %}
+        {% endfor %}
+    {% endspaceless %}
+{% endblock extrameta %}
+
+{% block main %}
+    <!-- person details -->
+    {% include "entities/snippets/person_header.html" %}
+    {# tabs #}
+    {% include "entities/snippets/person_tabs.html" %}
+    <div class="container">
+        <table class="related-table related-people">
+            <thead>
+                <tr>
+                    <th{% if "name" in sort %} class="sorted"{% endif %}>
+                        <a href="?sort=name_{% if sort == "name_asc" %}desc{% else %}asc{% endif %}"{% if "name" in sort %} class="{{ sort }}"{% endif %}>
+                            {# Translators: table header for person name #}
+                            <span>{% translate 'Name' %}</span>
+                            <svg role="presentation" class="sort-icon"><use xlink:href="{% static 'img/ui/desktop/all/caret-up-down.svg' %}#caret-up-down" /></svg>
+                        </a>
+                    </th>
+                    <th{% if "relation" in sort %} class="sorted"{% endif %}>
+                        <a href="?sort=relation_{% if sort == "relation_asc" %}desc{% else %}asc{% endif %}"{% if "relation" in sort %} class="{{ sort }}"{% endif %}>
+                            {# Translators: table header for relationship types between people #}
+                            <span>{% translate 'Relation' %}</span>
+                            <svg role="presentation" class="sort-icon"><use xlink:href="{% static 'img/ui/desktop/all/caret-up-down.svg' %}#caret-up-down" /></svg>
+                        </a>
+                    </th>
+                    <th{% if "documents" in sort %} class="sorted"{% endif %}>
+                        <a href="?sort=documents_{% if sort == "documents_asc" %}desc{% else %}asc{% endif %}"{% if "documents" in sort %} class="{{ sort }}"{% endif %}>
+                            {# Translators: table header for count of shared documents between people #}
+                            <span class="sr-only">{% translate 'Number of related documents' %}</span>
+                            <svg aria-hidden="true"><use xlink:href="{% static 'img/ui/all/all/related-documents-icon.svg' %}#related-documents" /></svg>
+                            <svg role="presentation" class="sort-icon"><use xlink:href="{% static 'img/ui/desktop/all/caret-up-down.svg' %}#caret-up-down" /></svg>
+                        </a>
+                    </th>
+                    <th class="person-notes">
+                        {# Translators: table header for notes on a relationship between people #}
+                        <span>{% translate 'Notes' %}</span>
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for rel in related_people %}
+                    <tr>
+                        <td>
+                            {% if rel.to_person.get_absolute_url %}
+                                <a href="{{ rel.to_person.permalink }}" title="{{ rel.to_person }}">
+                                    {{ rel.to_person }}
+                                </a>
+                            {% else %}
+                                {{ rel.to_person }}
+                            {% endif %}
+                        </td>
+                        <td>{{ rel.type }}</td>
+                        <td>
+                            {{ rel.shared_documents }}
+                        </td>
+                        <td class="person-notes">
+                            {{ rel.notes }}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock main %}

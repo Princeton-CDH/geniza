@@ -5,7 +5,7 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.contrib.postgres.aggregates import ArrayAgg
-from django.db.models import Count, Q
+from django.db.models import Count, F, Q
 from django.forms import ValidationError
 from django.http import Http404, HttpResponsePermanentRedirect, HttpResponseRedirect
 from django.urls import reverse
@@ -275,6 +275,65 @@ class RelatedDocumentsMixin:
         return context
 
 
+class RelatedPeopleMixin:
+    def page_title(self):
+        """The title of the entity related people page"""
+        # Translators: title of entity "related people" page
+        return _("Related people for %(p)s") % {"p": str(self.get_object())}
+
+    def page_description(self):
+        """Description of an entity related people page, with count"""
+        obj = self.get_object()
+        count = getattr(obj, self.relation_field).count()
+        # Translators: description of related people page, for search engines
+        return ngettext(
+            "%(count)d related person",
+            "%(count)d related people",
+            count,
+        ) % {
+            "count": count,
+        }
+
+    def get_related(self):
+        """Get and process the queryset of related people"""
+        obj = self.get_object()
+        related_people = getattr(obj, self.relation_field).all()
+
+        sort = self.request.GET.get("sort", "name_asc")
+
+        sort_dir = "-" if sort.endswith("desc") else ""
+
+        if "name" in sort:
+            # sort by slug (stand-in for name, but diacritic insensitive)
+            related_people = related_people.order_by(
+                f"{sort_dir}{self.relation_field}__slug"
+            )
+
+        if "relation" in sort:
+            # sort by person-entity relation type name
+            related_people = related_people.order_by(f"{sort_dir}type__name")
+
+        return related_people
+
+    def get_context_data(self, **kwargs):
+        """Include list of people and sort state in context"""
+
+        obj = self.get_object()
+        # if there are no related people, don't serve out this page
+        if not getattr(obj, self.relation_field).exists():
+            raise Http404
+
+        # otherwise, add related people queryset to context
+        context = super().get_context_data(**kwargs)
+        context.update(
+            {
+                "related_people": self.get_related(),
+                "sort": self.request.GET.get("sort", "shelfmark_asc"),
+            }
+        )
+        return context
+
+
 class PersonDocumentsView(RelatedDocumentsMixin, PersonDetailView):
     """List of :class:`~geniza.corpus.models.Document` objects that are related to a specific
     :class:`~geniza.entities.models.Person` (e.g., by authorship)."""
@@ -282,6 +341,37 @@ class PersonDocumentsView(RelatedDocumentsMixin, PersonDetailView):
     template_name = "entities/person_related_documents.html"
     viewname = "entities:person-documents"
     relation_field = "persondocumentrelation_set"
+
+
+class PersonPeopleView(RelatedPeopleMixin, PersonDetailView):
+    """List of :class:`~geniza.corpus.models.Document` objects that are related to a specific
+    :class:`~geniza.entities.models.Person` (e.g., by authorship)."""
+
+    template_name = "entities/person_related_people.html"
+    viewname = "entities:person-people"
+    relation_field = "to_person"
+
+    def get_related(self):
+        # use the shared logic from RelatedPeopleMixin
+        related_people = super().get_related()
+
+        # get sort to handle additional 'documents' option for person-person relations
+        sort = self.request.GET.get("sort", "name_asc")
+        sort_dir = "-" if sort.endswith("desc") else ""
+
+        # annotate with count of documents shared between the two people
+        related_people = related_people.annotate(
+            shared_documents=Count(
+                "to_person__documents__pk",
+                filter=Q(from_person__documents__pk=F("to_person__documents__pk")),
+            )
+        ).all()
+
+        if "documents" in sort:
+            # sort by count of shared documents
+            related_people = related_people.order_by(f"{sort_dir}shared_documents")
+
+        return related_people
 
 
 class PlaceDetailView(SlugDetailMixin):
