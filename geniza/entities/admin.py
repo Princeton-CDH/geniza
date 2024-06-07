@@ -245,7 +245,16 @@ class PersonAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin):
     """Admin for Person entities in the PGP"""
 
     search_fields = ("name_unaccented", "names__name")
-    fields = ("slug", "gender", "role", "has_page", "description")
+    fields = (
+        "slug",
+        "gender",
+        "role",
+        "has_page",
+        "date",
+        "automatic_date",
+        "description",
+    )
+    readonly_fields = ("automatic_date",)
     inlines = (
         NameInline,
         FootnoteInline,
@@ -342,7 +351,9 @@ class PersonAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin):
         ]
         return urls + super().get_urls()
 
-    # -------------------------------------------------------------------------
+    def automatic_date(self, obj):
+        """Display automatically generated date/date range for an event as a formatted string"""
+        return standard_date_display(obj.documents_date_range)
 
     actions = (merge_people,)
 
@@ -560,13 +571,7 @@ class EventPlaceInline(PlaceInline):
 class EventAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin):
     """Admin for Event entities in the PGP"""
 
-    fields = (
-        "name",
-        "description",
-        "standard_date",
-        "display_date",
-        "automatic_date",
-    )
+    fields = ("name", "description", "standard_date", "display_date", "automatic_date")
     readonly_fields = ("automatic_date",)
     search_fields = ("name",)
     ordering = ("name",)

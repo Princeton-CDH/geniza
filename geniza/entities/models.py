@@ -18,7 +18,6 @@ from slugify import slugify
 from unidecode import unidecode
 
 from geniza.common.models import TrackChangesModel, cached_class_property
-from geniza.common.utils import absolutize_url
 from geniza.corpus.dates import DocumentDateMixin, PartialDate, standard_date_display
 from geniza.corpus.models import (
     DisplayLabelMixin,
@@ -93,7 +92,35 @@ class Name(models.Model):
         super().save(*args, **kwargs)
 
 
-class Event(models.Model):
+class DocumentDatableMixin:
+    """Mixin for entities that have associated documents, and thus can be automatically
+    roughly dated by the dates on those documents."""
+
+    @property
+    def documents_date_range(self):
+        """Standardized range of dates across associated documents"""
+        full_range = [None, None]
+        for doc in self.documents.all():
+            # get each doc's full range, including inferred and on-document
+            doc_range = doc.dating_range()
+            # if doc has a range, and the range is not [None, None], compare
+            # it against the current min and max
+            if doc_range and doc_range[0]:
+                start = doc_range[0]
+                end = doc_range[1] if len(doc_range) > 1 else start
+                # update full range with comparison results
+                full_range = PartialDate.get_date_range(
+                    old_range=full_range, new_range=[start, end]
+                )
+
+        # prune Nones and use isoformat for standardized representation
+        full_range = [d.isoformat() for d in full_range if d]
+        if len(full_range) == 2 and full_range[0] == full_range[1]:
+            full_range.pop(1)
+        return "/".join(full_range)
+
+
+class Event(DocumentDatableMixin, models.Model):
     """A historical event involving one or more documents, and optionally additional entities."""
 
     name = models.CharField(
@@ -137,29 +164,6 @@ class Event(models.Model):
             or standard_date_display(self.standard_date)
             or standard_date_display(self.documents_date_range)
         )
-
-    @property
-    def documents_date_range(self):
-        """Standardized range of dates across associated documents"""
-        full_range = [None, None]
-        for doc in self.documents.all():
-            # get each doc's full range, including inferred and on-document
-            doc_range = doc.dating_range()
-            # if doc has a range, and the range is not [None, None], compare
-            # it against the current min and max
-            if doc_range and doc_range[0]:
-                start = doc_range[0]
-                end = doc_range[1] if len(doc_range) > 1 else start
-                # update full range with comparison results
-                full_range = PartialDate.get_date_range(
-                    old_range=full_range, new_range=[start, end]
-                )
-
-        # prune Nones and use isoformat for standardized representation
-        full_range = [d.isoformat() for d in full_range if d]
-        if len(full_range) == 2 and full_range[0] == full_range[1]:
-            full_range.pop(1)
-        return "/".join(full_range)
 
 
 class PersonRoleManager(models.Manager):
@@ -233,7 +237,7 @@ class SlugMixin(TrackChangesModel):
         abstract = True
 
 
-class Person(SlugMixin, PermalinkMixin):
+class Person(SlugMixin, DocumentDatableMixin, PermalinkMixin):
     """A person entity that appears within the PGP corpus."""
 
     names = GenericRelation(Name, related_query_name="person")
@@ -291,6 +295,16 @@ class Person(SlugMixin, PermalinkMixin):
     )
     gender = models.CharField(max_length=1, choices=GENDER_CHOICES)
 
+    date = models.CharField(
+        "CE date range override",
+        help_text="Manual override for automatically generated date range of this person's activity. "
+        + DocumentDateMixin.standard_date_helptext,
+        blank=True,  # use automatic date range from associated documents if this is blank
+        null=True,
+        max_length=255,
+        validators=[RegexValidator(DocumentDateMixin.re_date_format)],
+    )
+
     # minimum documents to show a page if has_page is False
     MIN_DOCUMENTS = 10
 
@@ -317,6 +331,18 @@ class Person(SlugMixin, PermalinkMixin):
             return str(self.names.filter(primary=True).first())
         except Name.DoesNotExist:
             return str(self.names.first() or super().__str__())
+
+    @property
+    def date_str(self):
+        """Return a formatted string for the person's date range, for use in public site.
+        CE date override takes highest precedence, then fallback to computed date range from
+        associated documents if override is unset.
+        """
+        return (
+            standard_date_display(self.date)
+            or standard_date_display(self.documents_date_range)
+            or ""
+        )
 
     @property
     def content_authors(self):
