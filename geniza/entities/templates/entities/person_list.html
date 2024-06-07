@@ -71,10 +71,10 @@
                 <thead>
                     {# Translators: Person "name" column header on the browse page #}
                     <th>{% translate "Name" %}</th>
-                    {# Translators: Person "dates of activity" column header on the browse page #}
-                    {% comment %} <th>{% translate "Dates" %}</th> {% endcomment %}
                     {# Translators: Person "gender" column header on the browse page #}
                     <th>{% translate "Gender" %}</th>
+                    {# Translators: Person "dates of activity" column header on the browse page #}
+                    <th class="dates">{% translate "Dates" %}</th>
                     {# Translators: Person "social role" column header on the browse page #}
                     <th>{% translate "Social role" %}</th>
                     <th class="related">
@@ -103,8 +103,8 @@
                                     <span>{{ person }}</span>
                                 {% endif %}
                             </td>
-                            {% comment %} <td>{{ person.documents_date_range }}</td> {% endcomment %}
                             <td>{{ person.get_gender_display }}</td>
+                            <td class="dates">{{ person.date_str }}</td>
                             <td>{{ person.role }}</td>
                             <td class="related">{{ person.documents.count }}</td>
                             <td class="related">{{ person.relationships.count }}</td>
@@ -129,7 +129,8 @@
                             </dd>
                             <dt class="sr-only">{% translate "Gender" %}</dt>
                             <dd>{{ person.get_gender_display }}</dd>
-                            {% comment %}<dt class="sr-only">{% translate 'Dates' %}</dt><dd></dd>{% endcomment %}
+                            <dt class="sr-only">{% translate 'Dates' %}</dt>
+                            <dd>{{ person.date_str }}</dd>
                             <dt class="sr-only">{% translate "Social role" %}</dt>
                             <dd>{{ person.role }}</dd>
                             {# Translators: label for person description / bio #}
