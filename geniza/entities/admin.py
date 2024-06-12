@@ -121,11 +121,12 @@ class DocumentInline(admin.TabularInline):
     autocomplete_fields = ("document", "type")
     fields = (
         "document",
+        "dating_range",
         "document_description",
         "type",
         "notes",
     )
-    readonly_fields = ("document_description",)
+    readonly_fields = ("document_description", "dating_range")
     formfield_overrides = {
         TextField: {"widget": Textarea(attrs={"rows": 4})},
     }
@@ -133,6 +134,12 @@ class DocumentInline(admin.TabularInline):
 
     def document_description(self, obj):
         return obj.document.description
+
+    def dating_range(self, obj):
+        """Show the range of dates associated with the document (inferred and document)
+        on the admin inline to show the sources of automatic dating"""
+        dating_range = [d.isoformat() for d in obj.document.dating_range() if d]
+        return standard_date_display("/".join(dating_range)) or "-"
 
 
 class PersonDocumentInline(DocumentInline):
