@@ -153,37 +153,30 @@ class PersonListForm(forms.Form):
         widget=forms.RadioSelect,
     )
 
-    # form field name aliases for faceted django queries
-    facet_field_aliases = {
-        "role__name": "social_role",
-        "persondocumentrelation__type__name": "document_relation",
-    }
-
-    # dict of lambda functions to get (translated) labels for each facet field value
-    label_accessors = {
-        "gender": lambda k: dict(Person.GENDER_CHOICES)[k],
-        "role__name": lambda k: str(
-            PersonRole.objects_by_label.get(k, _("Unknown role"))
-        ),
-        "persondocumentrelation__type__name": lambda k: PersonDocumentRelationType.objects.get(
-            name_en=k
-        ).name,
+    # mapping of solr facet fields to form input
+    solr_facet_fields = {
+        "gender": "gender",
+        "role": "social_role",
+        "document_relations": "document_relation",
     }
 
     def set_choices_from_facets(self, facets):
         """Set choices on field from a dictionary of facets"""
-        # adapted from ppa-django;
+        # borrowed from ppa-django;
         # populate facet field choices from current facets
-        for key, facet_list in facets.items():
+        for key, facet_dict in facets.items():
             # restructure dict to set values of each key to tuples of (label, count)
+            # labels should be translated, so use original object
             facet_dict = {
-                # since filter fields are not 1:1 mapped to django fields, use accessor
-                # helper functions to get labels
-                facet[key]: (self.label_accessors[key](facet[key]), facet["count"])
-                for facet in facet_list
-                if key and facet[key]
+                # label: (
+                #     DocumentType.objects_by_label.get(label, _("Unknown type")),
+                #     count,
+                # )
+                label: (label, count)
+                for (label, count) in sorted(facet_dict.items())
             }
-            formfield = self.facet_field_aliases.get(key, key)
+            # use field from facet fields map or else field name as is
+            formfield = self.solr_facet_fields.get(key, key)
             # for each facet, set the corresponding choice field
             if formfield in self.fields:
                 self.fields[formfield].populate_from_facets(facet_dict)

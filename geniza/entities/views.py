@@ -1,3 +1,4 @@
+import re
 from ast import literal_eval
 
 from dal import autocomplete
@@ -18,7 +19,13 @@ from django.views.generic.edit import FormMixin
 
 from geniza.corpus.dates import PartialDate
 from geniza.entities.forms import PersonListForm, PersonMergeForm
-from geniza.entities.models import PastPersonSlug, PastPlaceSlug, Person, Place
+from geniza.entities.models import (
+    PastPersonSlug,
+    PastPlaceSlug,
+    Person,
+    PersonSolrQuerySet,
+    Place,
+)
 
 
 class PersonMerge(PermissionRequiredMixin, FormView):
@@ -339,41 +346,26 @@ class PersonListView(ListView, FormMixin):
     applied_filter_count = 0
 
     # ORM references to database fields to facet
-    facet_fields = ["gender", "role__name", "persondocumentrelation__type__name"]
+    # facet_fields = ["gender", "role__name", "persondocumentrelation__type__name"]
 
-    # sort options mapped to db fields
+    # sort options mapped to solr fields
     sort_fields = {
-        "name": "slug",
-        "role": "role__name",
-        "documents": "documents_count",
-        "people": "people_count",
-        "places": "places_count",
+        "name": "slug_s",
+        "role": "role_s",
+        "documents": "documents_i",
+        "people": "people_i",
+        "places": "places_i",
+        "date_asc": "start_date_i",
+        "date_desc": "-end_date_i",
     }
     initial = {"sort": "name", "sort_dir": "asc"}
 
-    def get_sort_date(self, person, mode, idx, none):
-        if person.date:
-            sort_dates = person.date.split("/")
-        elif person.documents_date_range:
-            sort_dates = person.documents_date_range.split("/")
-        else:
-            return none
-
-        return PartialDate(
-            sort_dates[idx] if len(sort_dates) > 1 else sort_dates[0]
-        ).numeric_format(mode=mode)
+    # regex to fix problematic characters in names of roles, relations, etc
+    qs_regex = r"([ \(\)])"
 
     def get_queryset(self, *args, **kwargs):
         """modify queryset to sort and filter on people in the list"""
-        people = (
-            Person.objects.filter(names__primary=True).annotate(
-                documents_count=Count("documents", distinct=True),
-                people_count=Count("relationships", distinct=True),
-                places_count=Count("personplacerelation", distinct=True),
-            )
-            # order people by slug by default
-            .order_by("slug")
-        )
+        people = PersonSolrQuerySet().facet("gender", "role", "document_relations")
 
         form = self.get_form()
         # bail out if form is invalid
@@ -389,37 +381,34 @@ class PersonListView(ListView, FormMixin):
             self.applied_filter_count += len(genders)
         if search_opts.get("social_role"):
             roles = literal_eval(search_opts["social_role"])
-            people = people.filter(role__name__in=roles)
+            roles = [re.sub(self.qs_regex, r"\\\1", r) for r in roles]
+            people = people.filter(role__in=roles)
             self.applied_filter_count += len(roles)
         if search_opts.get("document_relation"):
             relations = literal_eval(search_opts["document_relation"])
-            people = people.filter(persondocumentrelation__type__name__in=relations)
+            relations = [re.sub(self.qs_regex, r"\\\1", r) for r in relations]
+            people = people.filter(document_relations__in=relations)
             self.applied_filter_count += len(relations)
         if search_opts.get("sort"):
-            if "date" in search_opts.get("sort"):
-                # sort by start or end of date range
+            sort_field = search_opts.get("sort")
+            if "date" in sort_field:
+                # date asc and desc are different fields
                 if "sort_dir" in search_opts and search_opts["sort_dir"] == "desc":
-                    # sort nones at the bottom, i.e., give them the lowest date
-                    none = PartialDate("0001").numeric_format(mode="min")
-                    # sort by maximum possible date for the end of the range, descending
-                    (mode, idx, reverse) = ("max", 1, True)
+                    sort_field = "date_desc"
                 else:
-                    # sort nones at the bottom, i.e., give them the highest date
-                    none = PartialDate("9999").numeric_format(mode="max")
-                    # sort by minimum possible date for the start of the range, ascending
-                    (mode, idx, reverse) = ("min", 0, False)
+                    sort_field = "date_asc"
 
-                people = sorted(
-                    people,
-                    key=lambda p: self.get_sort_date(p, mode, idx, none),
-                    reverse=reverse,
-                )
-            else:
-                order_by = self.sort_fields[search_opts["sort"]]
-                # default is ascending; handle descending by appending a - in django order_by
-                if "sort_dir" in search_opts and search_opts["sort_dir"] == "desc":
-                    order_by = f"-{order_by}"
-                people = people.order_by(order_by)
+            order_by = self.sort_fields[sort_field]
+            # default is ascending; handle descending by appending a - in order_by
+            if (
+                "sort_dir" in search_opts
+                and search_opts["sort_dir"] == "desc"
+                and "date" not in sort_field
+            ):
+                order_by = f"-{order_by}"
+            people = people.order_by(order_by)
+
+        self.queryset = people
 
         return people
 
@@ -438,58 +427,20 @@ class PersonListView(ListView, FormMixin):
 
         return kwargs
 
-    def get_facets(self):
-        """Generate counts for of each unique value of all fields in
-        self.facet_fields, as a dict keyed on field name. If a field value
-        is present in the database but filtered out, its count will be 0."""
-        facets = {}
-        form = self.get_form()
-        qs = self.get_queryset()
-        is_filtered = form.filters_active()
-        if is_filtered:
-            all_objects = self.model.objects.all()
-            # use pk__in to prevent filters from excluding multi-valued entries, e.g. if a Person
-            # has multiple PersonDocumentRelations with different Types, ensure that filtering on
-            # one of those Types doesn't result in a 0 value for all other Type facets
-            if isinstance(qs, list):
-                qs = all_objects.filter(pk__in=[person.pk for person in qs])
-            else:
-                qs = all_objects.filter(pk__in=qs.values_list("pk"))
-        for field in self.facet_fields:
-            # get counts of each unique value for this field in the current queryset
-            facets[field] = list(
-                qs.values(field).annotate(count=Count("pk", distinct=True))
-            )
-            if is_filtered:
-                # if a filter is applied, get all values from db, not just filtered queryset
-                unfiltered_values = list(
-                    all_objects.values_list(field, flat=True).distinct()
-                )
-                # reduce to only those that are not present in filtered queryset
-                remaining_values = filter(
-                    lambda val: not any([d[field] == val for d in facets[field]]),
-                    unfiltered_values,
-                )
-                # add each remaining value as a facet with a count of 0
-                facets[field] += [{field: val, "count": 0} for val in remaining_values]
-            # sort alphabetically by value
-            facets[field] = sorted(facets[field], key=lambda d: d[field] or "")
-        return facets
-
     def get_context_data(self, **kwargs):
         """extend context data to add page metadata, facets"""
         context_data = super().get_context_data(**kwargs)
 
         # set facet labels and counts on form
-        facets = self.get_facets()
-        context_data["form"].set_choices_from_facets(facets)
+        facet_dict = self.queryset.get_facets()
+        # populate choices for facet filter fields on the form
+        context_data["form"].set_choices_from_facets(facet_dict.facet_fields)
 
         context_data.update(
             {
                 "page_title": self.page_title,
                 "page_description": self.page_description,
                 "page_type": "people",
-                "facets": facets,
                 "filter_count": self.applied_filter_count,
             }
         )
