@@ -351,6 +351,18 @@ class PersonListView(ListView, FormMixin):
     }
     initial = {"sort": "name", "sort_dir": "asc"}
 
+    def get_sort_date(self, person, mode, idx, none):
+        if person.date:
+            sort_dates = person.date.split("/")
+        elif person.documents_date_range:
+            sort_dates = person.documents_date_range.split("/")
+        else:
+            return none
+
+        return PartialDate(
+            sort_dates[idx] if len(sort_dates) > 1 else sort_dates[0]
+        ).numeric_format(mode=mode)
+
     def get_queryset(self, *args, **kwargs):
         """modify queryset to sort and filter on people in the list"""
         people = (
@@ -384,11 +396,30 @@ class PersonListView(ListView, FormMixin):
             people = people.filter(persondocumentrelation__type__name__in=relations)
             self.applied_filter_count += len(relations)
         if search_opts.get("sort"):
-            order_by = self.sort_fields[search_opts["sort"]]
-            # default is ascending; handle descending by appending a - in django order_by
-            if "sort_dir" in search_opts and search_opts["sort_dir"] == "desc":
-                order_by = f"-{order_by}"
-            people = people.order_by(order_by)
+            if "date" in search_opts.get("sort"):
+                # sort by start or end of date range
+                if "sort_dir" in search_opts and search_opts["sort_dir"] == "desc":
+                    # sort nones at the bottom, i.e., give them the lowest date
+                    none = PartialDate("0001").numeric_format(mode="min")
+                    # sort by maximum possible date for the end of the range, descending
+                    (mode, idx, reverse) = ("max", 1, True)
+                else:
+                    # sort nones at the bottom, i.e., give them the highest date
+                    none = PartialDate("9999").numeric_format(mode="max")
+                    # sort by minimum possible date for the start of the range, ascending
+                    (mode, idx, reverse) = ("min", 0, False)
+
+                people = sorted(
+                    people,
+                    key=lambda p: self.get_sort_date(p, mode, idx, none),
+                    reverse=reverse,
+                )
+            else:
+                order_by = self.sort_fields[search_opts["sort"]]
+                # default is ascending; handle descending by appending a - in django order_by
+                if "sort_dir" in search_opts and search_opts["sort_dir"] == "desc":
+                    order_by = f"-{order_by}"
+                people = people.order_by(order_by)
 
         return people
 
@@ -420,7 +451,10 @@ class PersonListView(ListView, FormMixin):
             # use pk__in to prevent filters from excluding multi-valued entries, e.g. if a Person
             # has multiple PersonDocumentRelations with different Types, ensure that filtering on
             # one of those Types doesn't result in a 0 value for all other Type facets
-            qs = all_objects.filter(pk__in=qs.values_list("pk"))
+            if isinstance(qs, list):
+                qs = all_objects.filter(pk__in=[person.pk for person in qs])
+            else:
+                qs = all_objects.filter(pk__in=qs.values_list("pk"))
         for field in self.facet_fields:
             # get counts of each unique value for this field in the current queryset
             facets[field] = list(

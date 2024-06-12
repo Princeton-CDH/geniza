@@ -121,7 +121,7 @@ class PersonListForm(forms.Form):
         # Translators: label for sort by name
         ("name", _("Name")),
         # Translators: label for sort by person activity dates
-        # ("date_desc", _("Date")),
+        ("date", _("Date")),
         # Translators: label for sort by social role
         ("role", _("Social Role")),
         # Translators: label for sort by number of related documents
