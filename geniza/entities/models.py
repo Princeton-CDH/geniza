@@ -1,3 +1,4 @@
+import logging
 import re
 from datetime import datetime
 from math import modf
@@ -11,14 +12,14 @@ from django.core.validators import RegexValidator
 from django.db import models
 from django.forms import ValidationError
 from django.urls import reverse
-from django.utils.translation import get_language
 from django.utils.translation import gettext as _
 from gfklookupwidget.fields import GfkLookupField
+from parasolr.django import AliasedSolrQuerySet
+from parasolr.django.indexing import ModelIndexable
 from slugify import slugify
 from unidecode import unidecode
 
 from geniza.common.models import TrackChangesModel, cached_class_property
-from geniza.common.utils import absolutize_url
 from geniza.corpus.dates import DocumentDateMixin, PartialDate, standard_date_display
 from geniza.corpus.models import (
     DisplayLabelMixin,
@@ -27,6 +28,8 @@ from geniza.corpus.models import (
     PermalinkMixin,
 )
 from geniza.footnotes.models import Footnote
+
+logger = logging.getLogger(__name__)
 
 
 class NameQuerySet(models.QuerySet):
@@ -693,7 +696,61 @@ class PersonEventRelation(models.Model):
         return f"Person-Event relation: {self.person} and {self.event}"
 
 
-class Place(SlugMixin):
+class PlaceSignalHandlers:
+    """Signal handlers for indexing :class:`Place` records when
+    related records are saved or deleted."""
+
+    # lookup from model verbose name to attribute on place
+    # for use in queryset filter
+    model_filter = {
+        "name": "names",
+        "person place relation": "personplacerelation",
+        "document place relation": "documentplacerelation",
+    }
+
+    @staticmethod
+    def related_change(instance, raw, mode):
+        """reindex all associated people when related data is changed"""
+        # common logic for save and delete
+        # raw = saved as presented; don't query the database
+        if raw or not instance.pk:
+            return
+        # get related lookup for place filter
+        model_name = instance._meta.verbose_name
+        place_attr = PlaceSignalHandlers.model_filter.get(model_name)
+        # if handler fired on an model we don't care about, warn and exit
+        if not place_attr:
+            logger.warning(
+                "Indexing triggered on %s but no place attribute is configured"
+                % model_name
+            )
+            return
+
+        place_filter = {"%s__pk" % place_attr: instance.pk}
+        places = Place.items_to_index().filter(**place_filter)
+        if places.exists():
+            logger.debug(
+                "%s %s, reindexing %d related place(s)",
+                model_name,
+                mode,
+                places.count(),
+            )
+            ModelIndexable.index_items(places)
+
+    @staticmethod
+    def related_save(sender, instance=None, raw=False, **_kwargs):
+        """reindex associated places when a related object is saved"""
+        # delegate to common method
+        PlaceSignalHandlers.related_change(instance, raw, "save")
+
+    @staticmethod
+    def related_delete(sender, instance=None, raw=False, **_kwargs):
+        """reindex associated places when a related object is deleted"""
+        # delegate to common method
+        PlaceSignalHandlers.related_change(instance, raw, "delete")
+
+
+class Place(ModelIndexable, SlugMixin):
     """A named geographical location, which may be associated with documents or people."""
 
     names = GenericRelation(Name, related_query_name="place")
@@ -771,6 +828,80 @@ class Place(SlugMixin):
         if self.longitude:
             latlon.append(self.deg_to_dms(self.longitude, "lon"))
         return ", ".join(latlon)
+
+    @classmethod
+    def total_to_index(cls):
+        """static method to efficiently count the number of people to index in Solr"""
+        # quick count for parasolr indexing (don't do prefetching just to get the total!)
+        return cls.objects.count()
+
+    @classmethod
+    def items_to_index(cls):
+        """Custom logic for finding items to be indexed when indexing in
+        bulk."""
+        return Place.objects.prefetch_related(
+            "names", "documentplacerelation_set", "personplacerelation_set"
+        )
+
+    def index_data(self):
+        """data for indexing in Solr"""
+        index_data = super().index_data()
+        index_data.update(
+            {
+                # basic metadata
+                "slug_s": self.slug,
+                "name_s": str(self),
+                "other_names_s": ", ".join(
+                    sorted([n.name for n in self.names.non_primary()])
+                ),
+                "url_s": self.get_absolute_url(),
+                # LatLonPointSpatialField takes lat,lon string
+                "location_p": (
+                    f"{self.latitude},{self.longitude}"
+                    if self.latitude and self.longitude
+                    else None
+                ),
+                # related object counts
+                "documents_i": self.documentplacerelation_set.count(),
+                "people_i": self.personplacerelation_set.count(),
+            }
+        )
+        return index_data
+
+    # signal handlers to update the index based on changes to other models
+    index_depends_on = {
+        "names": {
+            "post_save": PlaceSignalHandlers.related_save,
+            "pre_delete": PlaceSignalHandlers.related_delete,
+        },
+        "documentplacerelation_set": {
+            "post_save": PlaceSignalHandlers.related_save,
+            "pre_delete": PlaceSignalHandlers.related_delete,
+        },
+        "personplacerelation_set": {
+            "post_save": PlaceSignalHandlers.related_save,
+            "pre_delete": PlaceSignalHandlers.related_delete,
+        },
+    }
+
+
+class PlaceSolrQuerySet(AliasedSolrQuerySet):
+    """':class:`~parasolr.django.AliasedSolrQuerySet` for
+    :class:`~geniza.corpus.models.Place`"""
+
+    #: always filter to place records
+    filter_qs = ["item_type_s:place"]
+
+    #: map readable field names to actual solr fields
+    field_aliases = {
+        "slug": "slug_s",
+        "name": "name_s",
+        "other_names": "other_names_s",
+        "url": "url_s",
+        "documents": "documents_i",
+        "people": "people_i",
+        "location": "location_p",
+    }
 
 
 class PastPlaceSlug(models.Model):
