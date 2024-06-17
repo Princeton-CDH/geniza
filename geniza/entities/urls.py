@@ -21,6 +21,7 @@ urlpatterns = [
         entities_views.PersonAutocompleteView.as_view(),
         name="person-autocomplete",
     ),
+    path("places/", entities_views.PlaceListView.as_view(), name="place-list"),
     path(
         "places/<slug:slug>/",
         entities_views.PlaceDetailView.as_view(),

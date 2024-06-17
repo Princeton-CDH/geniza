@@ -1,0 +1,110 @@
+// -----------------------------------------------------------------------------
+// Place list/browse page.
+// -----------------------------------------------------------------------------
+
+@use "../base/breakpoints";
+@use "../base/colors";
+@use "../base/fonts";
+@use "../base/spacing";
+@use "../base/typography";
+
+// TODO: standardize typography here once all redesigns are implemented
+
+main.places,
+main.places * {
+    max-width: none;
+}
+main.places {
+    padding: 0 1rem;
+    overflow: hidden;
+    @include breakpoints.for-tablet-landscape-up {
+        padding: 0;
+    }
+    // Primary container
+    section#place-list {
+        padding: 1rem;
+        width: 100vw;
+        max-width: 100vw;
+        @include breakpoints.for-tablet-landscape-up {
+            width: auto;
+            padding: 2rem;
+        }
+        // Header
+        .header-row {
+            margin-bottom: 1rem;
+            gap: 0.5rem;
+            h1 {
+                flex: 0 1 auto;
+                font-family: fonts.$primary;
+                font-size: typography.$text-size-5xl;
+                @include breakpoints.for-tablet-landscape-up {
+                    font-size: typography.$text-size-7xl;
+                }
+            }
+            span {
+                flex: 1 0 auto;
+            }
+        }
+
+        // list of places
+        & > ul {
+            width: 100%;
+            max-width: none;
+            @include breakpoints.for-tablet-landscape-up {
+                width: 25.25rem;
+                max-width: 25.25rem;
+            }
+            li.place {
+                width: 100%;
+                background-color: var(--background-light);
+                border: 1px solid var(--background-gray);
+                padding: 1rem;
+                & + li.place {
+                    margin-top: 1rem;
+                }
+                dl.metadata {
+                    padding-bottom: 0.5rem;
+                    .name {
+                        @include typography.body-bold;
+                    }
+                    .other-names {
+                        @include typography.meta;
+                    }
+                }
+                dl.relations {
+                    display: grid;
+                    grid-template-columns: 1fr 5%;
+                    border-top: 1px solid colors.$gray;
+                    padding-top: 0.5rem;
+                    dt {
+                        font-size: typography.$text-size-sm;
+                        font-family: fonts.$primary-italic;
+                        font-style: italic;
+                        display: flex;
+                        align-items: center;
+                        justify-content: flex-start;
+                        gap: 0.5rem;
+                        @include breakpoints.for-tablet-landscape-up {
+                            font-size: typography.$text-size-md;
+                        }
+                    }
+                    dd {
+                        text-align: center;
+                        @include typography.meta;
+                    }
+                    svg {
+                        width: 15px;
+                        height: 16px;
+                        vertical-align: middle;
+                    }
+                }
+            }
+        }
+    }
+    .pagination-container {
+        text-align: center;
+        nav.pagination {
+            margin: 1rem 0;
+        }
+    }
+}

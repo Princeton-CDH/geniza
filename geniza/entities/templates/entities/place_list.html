@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+{% load static i18n humanize widget_tweaks %}
+
+{% block meta_title %}{{ page_title }}{% endblock meta_title %}
+{% block meta_description %}{{ page_description }}{% endblock meta_description %}
+
+{% block main %}
+    <form data-controller="search" data-turbo-frame="main" data-turbo-action="advance" data-page="person">
+        <section id="place-list" data-action="click@document->search#clickCloseDropdown">
+            <div class="header-row">
+                <h1>{{ page_title }}</h1>
+                <span>({{ paginator.count|intcomma }})</span>
+                <fieldset id="sort">
+                    <label for="{{ form.sort.auto_id }}">{{ form.sort.label }}</label>
+                    <details data-search-target="dropdownDetails">
+                        <summary>
+                            {{ form.get_sort_label|default:"Name" }}
+                        </summary>
+                        <div id="sort-options">
+                            {% render_field form.sort data-action="search#update" %}
+                            {% render_field form.sort_dir data-action="search#update" %}
+                        </div>
+                    </details>
+                </fieldset>
+            </div>
+            <ul>
+                {% for place in places %}
+                    <li class="place">
+                    {# Translators: accessible label for section showing place metadata, names #}
+                        <dl class="metadata" aria-label="{% translate 'metadata' %}">
+                            <dt class="sr-only">{% translate "Name" %}</dt>
+                            <dd class="name">
+                                {% if place.url %}
+                                    <a href="{{ place.url }}" data-turbo="false">{{ place.name }}</a>
+                                {% else %}
+                                    <span>{{ place.name }}</span>
+                                {% endif %}
+                            </dd>
+                            {% if place.other_names %}
+                                <dt class="sr-only">{% translate "Other names" %}</dt>
+                                <dd class="other-names">
+                                    {{ place.other_names }}
+                                </dd>
+                            {% endif %}
+                        </dl>
+                    {# Translators: accessible label for section showing counts of entries related to an entity #}
+                        <dl class="relations" aria-label="{% translate 'Related entries' %}">
+                            <dt>
+                                <svg aria-hidden="true"><use xlink:href="{% static 'img/ui/all/all/related-documents-icon.svg' %}#related-documents" /></svg>
+                                {% translate "Related Documents" %}</dt>
+                            <dd>
+                                <span>{{ place.documents }}</span>
+                            </dd>
+                            <dt>
+                                <svg aria-hidden="true"><use xlink:href="{% static 'img/ui/all/all/related-people-icon.svg' %}#related-people" /></svg>
+                                {% translate "Related People" %}</dt>
+                            <dd>
+                                <span>{{ place.people }}</span>
+                            </dd>
+                        </dl>
+                    </li>
+                {% endfor %}
+            </ul>
+        </section>
+    </form>
+    <div class="pagination-container">
+        {# Translators: range of search results on the current page, out of total #}
+        {% blocktranslate with start=page_obj.start_index end=page_obj.end_index count_humanized=paginator.count|intcomma %}
+            <div>{{ start }} – {{ end }} of {{ count_humanized }}</div>
+        {% endblocktranslate %}
+        {% include "corpus/snippets/pagination.html" %}
+    </div>
+{% endblock %}

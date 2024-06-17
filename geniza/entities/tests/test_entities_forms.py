@@ -4,7 +4,12 @@ import pytest
 from django.urls import reverse
 
 from geniza.corpus.forms import FacetChoiceField
-from geniza.entities.forms import PersonChoiceField, PersonListForm, PersonMergeForm
+from geniza.entities.forms import (
+    PersonChoiceField,
+    PersonListForm,
+    PersonMergeForm,
+    PlaceListForm,
+)
 from geniza.entities.models import Name, Person
 
 
@@ -90,3 +95,13 @@ class TestPersonListForm:
 
         form = PersonListForm({"sort": "role"})
         assert form.get_sort_label() == dict(PersonListForm.SORT_CHOICES)["role"]
+
+
+@pytest.mark.django_db
+class TestPlaceListForm:
+    def test_get_sort_label(self):
+        form = PlaceListForm({})
+        assert form.get_sort_label() is None
+
+        form = PlaceListForm({"sort": "name"})
+        assert form.get_sort_label() == dict(PlaceListForm.SORT_CHOICES)["name"]
