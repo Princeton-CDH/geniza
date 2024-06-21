@@ -61,3 +61,19 @@ html.dark-mode main.place .map svg#marker {
     fill: var(--primary);
     color: var(--tertiary);
 }
+
+html[dir="rtl"] main.place section.relations table.people {
+    th {
+        text-align: right;
+    }
+    th:first-of-type,
+    td:first-of-type {
+        padding-left: 0;
+        padding-right: 1rem;
+    }
+    th:last-of-type,
+    td:last-of-type {
+        padding-right: 0;
+        padding-left: 1rem;
+    }
+}

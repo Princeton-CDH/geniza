@@ -269,14 +269,15 @@ main.person {
     // person related places
     section.map {
         width: 100%;
+        margin-top: 2rem;
+        padding: 0 1rem;
         @include breakpoints.for-tablet-landscape-up {
             margin-top: (2rem + spacing.$spacing-xs);
+            padding: 0;
         }
         #map {
             width: 100%;
-            @include breakpoints.for-tablet-landscape-up {
-                height: 24.125rem;
-            }
+            height: 24.125rem;
         }
         svg#marker {
             color: var(--primary);
@@ -287,53 +288,6 @@ main.person {
                 width: 42px;
                 height: 48px;
             }
-        }
-    }
-    section.relations {
-        width: 100%;
-        table.places {
-            width: 100%;
-            thead tr {
-                @include typography.related-table;
-                text-align: left;
-                border-bottom: 1px solid var(--related-header-underline);
-                th {
-                    padding: 0 0 0.5rem;
-                    a {
-                        display: flex;
-                        align-items: center;
-                        gap: 0.25rem;
-                        text-decoration: none;
-                        svg {
-                            width: 16px;
-                            height: 16px;
-                            display: block;
-                            color: var(--disabled-on-background-light);
-                            fill: var(--disabled-on-background-light);
-                        }
-                        &[class*="asc"] svg {
-                            color: var(--on-background);
-                        }
-                        &[class*="desc"] svg {
-                            fill: var(--on-background);
-                        }
-                    }
-                    &.sorted {
-                        font-family: fonts.$primary-bold;
-                        font-weight: 700;
-                    }
-                }
-            }
-            tbody tr {
-                @include typography.meta;
-                border-bottom: 1px solid var(--tabs-bottom);
-                td {
-                    padding: 0.75rem 0;
-                }
-            }
-        }
-        @include breakpoints.for-tablet-landscape-up {
-            margin-top: 2rem;
         }
     }
 }
