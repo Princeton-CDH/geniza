@@ -19,10 +19,10 @@
             {# <li>{% if n_relpeople > 0 %}<a href="{{ relpeople_url }}"{% if request.path == relpeople_url %} aria-current="page"{% endif %}>{{ relpeople_text }}</a>{% else %}<span disabled aria-disabled="true">{{ relpeople_text }}</span>{% endif %}</li> #}
             <span disabled aria-disabled="true">{{ relpeople_text }}</span>
 
+            {% url 'entities:person-places' slug=person.slug as relplace_url %}
             {# Translators: n_relplaces is number of related places #}
             {% blocktranslate asvar relplace_text %}Related Places ({{ n_relplaces }}){% endblocktranslate %}
-            {# <li>{% if n_relplaces > 0 %}<a href="{{ relplace_url }}"{% if request.path == relplace_url %} aria-current="page"{% endif %}>{{ relplace_text }}</a>{% else %}<span disabled aria-disabled="true">{{ relplace_text }}</span>{% endif %}</li> #}
-            <span disabled aria-disabled="true">{{ relplace_text }}</span>
+            <li>{% if n_relplaces > 0 %}<a href="{{ relplace_url }}"{% if request.path == relplace_url %} aria-current="page"{% endif %} data-turbo="false">{{ relplace_text }}</a>{% else %}<span disabled aria-disabled="true">{{ relplace_text }}</span>{% endif %}</li>
         </ul>
         {# select dropdown for mobile only #}
         <select class="mobile-select" data-controller="menu" data-action="change->menu#changePage">
