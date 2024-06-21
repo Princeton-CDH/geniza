@@ -6,12 +6,12 @@
 {% block extrameta %}
     {# use English page as canonical for search engine crawlers (no redirects) #}
     {% language "en" %}
-        <link rel="canonical" href="{% fullurl "entities:person-documents" person.slug %}" />
+        <link rel="canonical" href="{% fullurl "entities:person-places" person.slug %}" />
     {% endlanguage %}
     {% spaceless %}
         {% for lang_code in PUBLIC_SITE_LANGUAGES %}
             {% language lang_code %}
-                <link rel="alternate" hreflang="{{ lang_code }}" href="{% fullurl "entities:person-documents" person.slug %}" />
+                <link rel="alternate" hreflang="{{ lang_code }}" href="{% fullurl "entities:person-places" person.slug %}" />
             {% endlanguage %}
         {% endfor %}
     {% endspaceless %}
@@ -73,7 +73,7 @@
                                 <svg role="presentation"><use xlink:href="{% static 'img/ui/desktop/all/caret-up-down.svg' %}#caret-up-down" /></svg>
                             </a>
                         </th>
-                        <th>{% translate "Notes" %}</th>
+                        <th class="notes">{% translate "Notes" %}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -81,7 +81,7 @@
                         <tr>
                             <td><a data-turbo="false" href="{{ relation.place.get_absolute_url }}">{{ relation.place }}</a></td>
                             <td>{{ relation.type }}</td>
-                            <td>{{ relation.notes }}</td>
+                            <td class="notes">{{ relation.notes }}</td>
                         </tr>
                     {% endfor %}
                 </tbody>

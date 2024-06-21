@@ -33,7 +33,9 @@
                 {{ reldoc_text }}
             </option>
             <option disabled>{{ relpeople_text }}</option>
-            <option disabled>{{ relplace_text }}</option>
+            <option value="{{ relplace_url }}"{% if n_relplaces == 0 %} disabled{% elif request.path == relplace_url %} selected{% endif %}>
+                {{ relplace_text }}
+            </option>
         </select>
     {% endwith %}
 </nav>

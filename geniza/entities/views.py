@@ -285,8 +285,8 @@ class PersonDocumentsView(RelatedDocumentsMixin, PersonDetailView):
 
 
 class PersonPlacesView(PersonDetailView):
-    """List of :class:`~geniza.corpus.models.Document` objects that are related to a specific
-    :class:`~geniza.entities.models.Person` (e.g., by authorship)."""
+    """List of :class:`~geniza.entities.models.Place` objects that are related to a specific
+    :class:`~geniza.entities.models.Person`."""
 
     template_name = "entities/person_related_places.html"
     viewname = "entities:person-places"
@@ -310,7 +310,7 @@ class PersonPlacesView(PersonDetailView):
         }
 
     def get_related(self):
-        """Get and process the queryset of related documents"""
+        """Get and process the queryset of related places"""
         person = self.get_object()
         related_places = person.personplacerelation_set.all()
 
