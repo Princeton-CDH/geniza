@@ -284,6 +284,70 @@ class PersonDocumentsView(RelatedDocumentsMixin, PersonDetailView):
     relation_field = "persondocumentrelation_set"
 
 
+class PersonPlacesView(PersonDetailView):
+    """List of :class:`~geniza.corpus.models.Document` objects that are related to a specific
+    :class:`~geniza.entities.models.Person` (e.g., by authorship)."""
+
+    template_name = "entities/person_related_places.html"
+    viewname = "entities:person-places"
+
+    def page_title(self):
+        """The title of the person related places page"""
+        # Translators: title of person "related places" page
+        return _("Related places for %(p)s") % {"p": str(self.get_object())}
+
+    def page_description(self):
+        """Description of a person related places page, with count"""
+        person = self.get_object()
+        count = person.personplacerelation_set.count()
+        # Translators: description of related places page, for search engines
+        return ngettext(
+            "%(count)d related place",
+            "%(count)d related places",
+            count,
+        ) % {
+            "count": count,
+        }
+
+    def get_related(self):
+        """Get and process the queryset of related documents"""
+        person = self.get_object()
+        related_places = person.personplacerelation_set.all()
+
+        sort = self.request.GET.get("sort", "name_asc")
+
+        sort_dir = "-" if sort.endswith("desc") else ""
+
+        if "name" in sort:
+            # sort by place name (slug)
+            related_places = related_places.order_by(f"{sort_dir}place__slug")
+
+        if "relation" in sort:
+            # sort by person-place relation type name
+            related_places = related_places.order_by(f"{sort_dir}type__name")
+
+        return related_places
+
+    def get_context_data(self, **kwargs):
+        """Include list of places and sort state in context"""
+
+        person = self.get_object()
+        # if there are no related places, don't serve out this page
+        if not person.personplacerelation_set.exists():
+            raise Http404
+
+        # otherwise, add related places queryset to context
+        context = super().get_context_data(**kwargs)
+        context.update(
+            {
+                "related_places": self.get_related(),
+                "sort": self.request.GET.get("sort", "name_asc"),
+                "maptiler_token": getattr(settings, "MAPTILER_API_TOKEN", ""),
+            }
+        )
+        return context
+
+
 class PlaceDetailView(SlugDetailMixin):
     """public display of a single :class:`~geniza.entities.models.Place`"""
 
