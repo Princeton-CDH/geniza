@@ -37,6 +37,11 @@ urlpatterns = [
         name="place-documents",
     ),
     path(
+        "places/<slug:slug>/people/",
+        entities_views.PlacePeopleView.as_view(),
+        name="place-people",
+    ),
+    path(
         "place-autocomplete/",
         entities_views.PlaceAutocompleteView.as_view(),
         name="place-autocomplete",
