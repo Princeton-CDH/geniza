@@ -159,6 +159,26 @@ class PersonListForm(forms.Form):
         "role": "social_role",
         "document_relations": "document_relation",
     }
+    # mapping of solr facet fields to db models in order to retrieve objects by label
+    solr_db_models = {
+        "role": PersonRole,
+        "document_relations": PersonDocumentRelationType,
+    }
+
+    def get_translated_label(self, field, label):
+        """Lookup translated label via db model object when applicable;
+        handle Person.gender as a special case; and otherwise just return the label"""
+        db_model = self.solr_db_models.get(field, None)
+        if db_model:
+            # use objects_by_label to find original object and use translation
+            return getattr(db_model, "objects_by_label").get(label, label)
+        elif field == "gender":
+            # gender is a ChoiceField with translated labels, keyed on first letter (M,F,U)
+            gender_key = label[0]
+            return dict(Person.GENDER_CHOICES)[gender_key]
+        else:
+            # not gender, can't find db field; just return label as-is
+            return label
 
     def set_choices_from_facets(self, facets):
         """Set choices on field from a dictionary of facets"""
@@ -168,11 +188,7 @@ class PersonListForm(forms.Form):
             # restructure dict to set values of each key to tuples of (label, count)
             # labels should be translated, so use original object
             facet_dict = {
-                # label: (
-                #     DocumentType.objects_by_label.get(label, _("Unknown type")),
-                #     count,
-                # )
-                label: (label, count)
+                label: (self.get_translated_label(key, label), count)
                 for (label, count) in sorted(facet_dict.items())
             }
             # use field from facet fields map or else field name as is

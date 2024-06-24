@@ -793,6 +793,14 @@ class PersonDocumentRelationType(models.Model):
     def __str__(self):
         return self.name
 
+    @cached_class_property
+    def objects_by_label(cls):
+        return {
+            # lookup on name_en since solr should always index in English
+            obj.name_en: obj
+            for obj in cls.objects.all()
+        }
+
 
 class PersonDocumentRelation(models.Model):
     """A relationship between a person and a document."""
