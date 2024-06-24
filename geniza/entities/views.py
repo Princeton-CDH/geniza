@@ -291,6 +291,70 @@ class PersonDocumentsView(RelatedDocumentsMixin, PersonDetailView):
     relation_field = "persondocumentrelation_set"
 
 
+class PersonPlacesView(PersonDetailView):
+    """List of :class:`~geniza.entities.models.Place` objects that are related to a specific
+    :class:`~geniza.entities.models.Person`."""
+
+    template_name = "entities/person_related_places.html"
+    viewname = "entities:person-places"
+
+    def page_title(self):
+        """The title of the person related places page"""
+        # Translators: title of person "related places" page
+        return _("Related places for %(p)s") % {"p": str(self.get_object())}
+
+    def page_description(self):
+        """Description of a person related places page, with count"""
+        person = self.get_object()
+        count = person.personplacerelation_set.count()
+        # Translators: description of related places page, for search engines
+        return ngettext(
+            "%(count)d related place",
+            "%(count)d related places",
+            count,
+        ) % {
+            "count": count,
+        }
+
+    def get_related(self):
+        """Get and process the queryset of related places"""
+        person = self.get_object()
+        related_places = person.personplacerelation_set.all()
+
+        sort = self.request.GET.get("sort", "name_asc")
+
+        sort_dir = "-" if sort.endswith("desc") else ""
+
+        if "name" in sort:
+            # sort by place name (slug)
+            related_places = related_places.order_by(f"{sort_dir}place__slug")
+
+        if "relation" in sort:
+            # sort by person-place relation type name
+            related_places = related_places.order_by(f"{sort_dir}type__name")
+
+        return related_places
+
+    def get_context_data(self, **kwargs):
+        """Include list of places and sort state in context"""
+
+        person = self.get_object()
+        # if there are no related places, don't serve out this page
+        if not person.personplacerelation_set.exists():
+            raise Http404
+
+        # otherwise, add related places queryset to context
+        context = super().get_context_data(**kwargs)
+        context.update(
+            {
+                "related_places": self.get_related(),
+                "sort": self.request.GET.get("sort", "name_asc"),
+                "maptiler_token": getattr(settings, "MAPTILER_API_TOKEN", ""),
+            }
+        )
+        return context
+
+
 class PlaceDetailView(SlugDetailMixin):
     """public display of a single :class:`~geniza.entities.models.Place`"""
 
@@ -329,6 +393,69 @@ class PlaceDocumentsView(RelatedDocumentsMixin, PlaceDetailView):
     template_name = "entities/place_related_documents.html"
     viewname = "entities:place-documents"
     relation_field = "documentplacerelation_set"
+
+
+class PlacePeopleView(PlaceDetailView):
+    """List of :class:`~geniza.entities.models.Person` objects that are related to a specific
+    :class:`~geniza.entities.models.Place`."""
+
+    template_name = "entities/place_related_people.html"
+    viewname = "entities:place-people"
+
+    def page_title(self):
+        """The title of the place related people page"""
+        # Translators: title of place "related people" page
+        return _("Related people for %(p)s") % {"p": str(self.get_object())}
+
+    def page_description(self):
+        """Description of a place related people page, with count"""
+        place = self.get_object()
+        count = place.personplacerelation_set.count()
+        # Translators: description of related people page, for search engines
+        return ngettext(
+            "%(count)d related people",
+            "%(count)d related people",
+            count,
+        ) % {
+            "count": count,
+        }
+
+    def get_related(self):
+        """Get and process the queryset of related people"""
+        place = self.get_object()
+        related_people = place.personplacerelation_set.all()
+
+        sort = self.request.GET.get("sort", "name_asc")
+
+        sort_dir = "-" if sort.endswith("desc") else ""
+
+        if "name" in sort:
+            # sort by person name (slug)
+            related_people = related_people.order_by(f"{sort_dir}person__slug")
+
+        if "relation" in sort:
+            # sort by person-place relation type name
+            related_people = related_people.order_by(f"{sort_dir}type__name")
+
+        return related_people
+
+    def get_context_data(self, **kwargs):
+        """Include list of people and sort state in context"""
+
+        place = self.get_object()
+        # if there are no related people, don't serve out this page
+        if not place.personplacerelation_set.exists():
+            raise Http404
+
+        # otherwise, add related people queryset to context
+        context = super().get_context_data(**kwargs)
+        context.update(
+            {
+                "related_people": self.get_related(),
+                "sort": self.request.GET.get("sort", "name_asc"),
+            }
+        )
+        return context
 
 
 class PersonListView(ListView, FormMixin):

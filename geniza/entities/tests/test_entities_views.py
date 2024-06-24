@@ -15,6 +15,8 @@ from geniza.entities.models import (
     Person,
     PersonDocumentRelation,
     PersonDocumentRelationType,
+    PersonPlaceRelation,
+    PersonPlaceRelationType,
     Place,
 )
 from geniza.entities.views import (
@@ -562,3 +564,163 @@ class TestPersonDocumentsView:
         person.save()
         response = client.get(reverse("entities:person-documents", args=(person.slug,)))
         assert response.status_code == 404
+
+
+@pytest.mark.django_db
+class TestPersonPlacesView:
+    def test_page_title(self, client):
+        person = Person.objects.create(has_page=True, slug="goitein")
+        place = Place.objects.create()
+        PersonPlaceRelation.objects.create(person=person, place=place)
+        response = client.get(reverse("entities:person-places", args=(person.slug,)))
+        assert response.context["page_title"] == f"Related places for {str(person)}"
+
+    def test_page_description(self, client):
+        # should use number of places as page description
+        person = Person.objects.create(has_page=True, slug="goitein")
+        place = Place.objects.create()
+        PersonPlaceRelation.objects.create(person=person, place=place)
+        place2 = Place.objects.create()
+        PersonPlaceRelation.objects.create(person=person, place=place2)
+        response = client.get(reverse("entities:person-places", args=(person.slug,)))
+        assert response.context["page_description"] == "2 related places"
+
+    def test_get_related(self, client):
+        # create some relations
+        person = Person.objects.create(has_page=True, slug="goitein")
+        aydhab = Place.objects.create(slug="aydhab")
+        Name.objects.create(name="ʿAydhāb", content_object=aydhab, primary=True)
+        (oct, _) = PersonPlaceRelationType.objects.get_or_create(
+            name="Occasional trips to"
+        )
+        aydhab_relation = PersonPlaceRelation.objects.create(
+            person=person, place=aydhab, type=oct
+        )
+        fustat = Place.objects.create(slug="fustat")
+        Name.objects.create(name="Fustat", content_object=fustat, primary=True)
+        (hb, _) = PersonPlaceRelationType.objects.get_or_create(name="Home base")
+        fustat_relation = PersonPlaceRelation.objects.create(
+            person=person, place=fustat, type=hb
+        )
+        response = client.get(reverse("entities:person-places", args=(person.slug,)))
+
+        # all should be present
+        assert aydhab_relation in response.context["related_places"]
+        assert fustat_relation in response.context["related_places"]
+
+        # aydhab should be first: alphabetical by slug by default
+        assert response.context["related_places"].first().pk == aydhab_relation.pk
+
+        # sort by name/slug descending
+        response = client.get(
+            reverse("entities:person-places", args=(person.slug,)),
+            {"sort": "name_desc"},
+        )
+        assert response.context["related_places"].first().pk == fustat_relation.pk
+
+        # sort by relation type ascending
+        response = client.get(
+            reverse("entities:person-places", args=(person.slug,)),
+            {"sort": "relation_asc"},
+        )
+        assert response.context["related_places"].first().pk == fustat_relation.pk
+
+    @override_settings(MAPTILER_API_TOKEN="example")
+    def test_get_context_data(self, client):
+        # no related places, should 404
+        person = Person.objects.create(has_page=True, slug="goitein")
+        response = client.get(reverse("entities:person-places", args=(person.slug,)))
+        assert response.status_code == 404
+
+        # related places, should 200
+        place = Place.objects.create(slug="test")
+        relation = PersonPlaceRelation.objects.create(person=person, place=place)
+
+        response = client.get(reverse("entities:person-places", args=(person.slug,)))
+        assert response.status_code == 200
+        # context should inherit "page_type": "person"
+        assert response.context["page_type"] == "person"
+        # context should include the maptiler token if one exists in settings
+        assert response.context["maptiler_token"] == "example"
+        # context should include the related places
+        assert relation in response.context["related_places"]
+
+
+@pytest.mark.django_db
+class TestPlacePeopleView:
+    def test_page_title(self, client):
+        person = Person.objects.create()
+        place = Place.objects.create(slug="place")
+        PersonPlaceRelation.objects.create(person=person, place=place)
+        response = client.get(reverse("entities:place-people", args=(place.slug,)))
+        assert response.context["page_title"] == f"Related people for {str(place)}"
+
+    def test_page_description(self, client):
+        # should use number of people as page description
+        person = Person.objects.create()
+        person2 = Person.objects.create()
+        place = Place.objects.create(slug="place")
+        PersonPlaceRelation.objects.create(person=person, place=place)
+        PersonPlaceRelation.objects.create(person=person2, place=place)
+        response = client.get(reverse("entities:place-people", args=(place.slug,)))
+        assert response.context["page_description"] == "2 related people"
+
+    def test_get_related(self, client):
+        # create some relations
+        fustat = Place.objects.create(slug="fustat")
+        nahray = Person.objects.create(slug="nahray")
+        Name.objects.create(
+            name="Nahray b. Nissim", content_object=nahray, primary=True
+        )
+        (oct, _) = PersonPlaceRelationType.objects.get_or_create(
+            name="Occasional trips to"
+        )
+        nahray_relation = PersonPlaceRelation.objects.create(
+            person=nahray, place=fustat, type=oct
+        )
+        ezra = Person.objects.create(slug="ezra-b-hillel")
+        Name.objects.create(name="ʿEzra b. Hillel", content_object=ezra, primary=True)
+        (hb, _) = PersonPlaceRelationType.objects.get_or_create(name="Home base")
+        ezra_relation = PersonPlaceRelation.objects.create(
+            person=ezra, place=fustat, type=hb
+        )
+        response = client.get(reverse("entities:place-people", args=(fustat.slug,)))
+
+        # all should be present
+        assert ezra_relation in response.context["related_people"]
+        assert nahray_relation in response.context["related_people"]
+
+        # ezra should be first: alphabetical by slug by default
+        assert response.context["related_people"].first().pk == ezra_relation.pk
+
+        # sort by name/slug descending
+        response = client.get(
+            reverse("entities:place-people", args=(fustat.slug,)),
+            {"sort": "name_desc"},
+        )
+        assert response.context["related_people"].first().pk == nahray_relation.pk
+
+        # sort by relation type ascending
+        response = client.get(
+            reverse("entities:place-people", args=(fustat.slug,)),
+            {"sort": "relation_asc"},
+        )
+        assert response.context["related_people"].first().pk == ezra_relation.pk
+
+    @override_settings(MAPTILER_API_TOKEN="example")
+    def test_get_context_data(self, client):
+        # no related people, should 404
+        place = Place.objects.create(slug="place")
+        response = client.get(reverse("entities:place-people", args=(place.slug,)))
+        assert response.status_code == 404
+
+        # related places, should 200
+        person = Person.objects.create()
+        relation = PersonPlaceRelation.objects.create(person=person, place=place)
+
+        response = client.get(reverse("entities:place-people", args=(place.slug,)))
+        assert response.status_code == 200
+        # context should inherit "page_type": "place"
+        assert response.context["page_type"] == "place"
+        # context should include the related person
+        assert relation in response.context["related_people"]
