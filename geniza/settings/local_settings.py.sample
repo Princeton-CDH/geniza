@@ -7,6 +7,7 @@ DEBUG = True
 
 FEATURE_FLAGS = [
     # "SHOW_WARNING_BANNER", # Uncomment this in test/QA site to show test banner
+    # "SHOW_RELEVANCE_SCORES", # Uncomment in test/QA site to show search result relevance scores
 ]
 # Uncomment and change these to override the default test banner message
 # WARNING_BANNER_HEADING = "This is a test site"

@@ -9,6 +9,11 @@ urlpatterns = [
         "documents/", corpus_views.DocumentSearchView.as_view(), name="document-search"
     ),
     path(
+        "documents-regex/",
+        corpus_views.DocumentRegexSearchView.as_view(),
+        name="document-regex-search",
+    ),
+    path(
         "documents/<int:pk>/",
         corpus_views.DocumentDetailView.as_view(),
         name="document",
