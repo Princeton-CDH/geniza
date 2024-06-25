@@ -17,6 +17,7 @@ from geniza.entities.models import (
     PersonDocumentRelationType,
     PersonPlaceRelation,
     PersonPlaceRelationType,
+    PersonSolrQuerySet,
     Place,
 )
 from geniza.entities.views import (
@@ -353,6 +354,21 @@ class TestPersonListView:
             }
             qs = personlist_view.get_queryset()
             assert qs[0].get("slug") == person_diacritic.slug
+
+            # sort by date asc and desc (different fields)
+            with patch.object(PersonSolrQuerySet, "order_by") as mock_order_by:
+                mock_get_form.return_value.cleaned_data = {
+                    "sort": "date",
+                    "sort_dir": "desc",
+                }
+                personlist_view.get_queryset()
+                mock_order_by.assert_called_with("-end_date_i")
+                mock_get_form.return_value.cleaned_data = {
+                    "sort": "date",
+                    "sort_dir": "asc",
+                }
+                personlist_view.get_queryset()
+                mock_order_by.assert_called_with("start_date_i")
 
     def test_get_context_data(self, client, person):
         with patch.object(PersonListForm, "set_choices_from_facets") as mock_setchoices:

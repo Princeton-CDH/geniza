@@ -668,7 +668,7 @@ class Person(ModelIndexable, SlugMixin, DocumentDatableMixin, PermalinkMixin):
                 "name_s": str(self),
                 "description_txt": self.description_en,
                 "gender_s": self.get_gender_display(),
-                "role_s": self.role.name_en,
+                "role_s": self.role.name_en if self.role else None,
                 "url_s": self.get_absolute_url(),
                 # related object counts
                 "documents_i": self.documents.count(),
