@@ -5,7 +5,11 @@ from geniza.entities.models import Name, Person, PersonRole
 
 def make_person():
     (official, _) = PersonRole.objects.get_or_create(name_en="State official")
-    person = Person.objects.create(gender=Person.FEMALE, role=official)
+    person = Person.objects.create(
+        gender=Person.FEMALE,
+        role=official,
+        description_en="A person in the PGP database.",
+    )
     Name.objects.create(name="Berakha bt. Yijū", content_object=person, primary=True)
     person.generate_slug()
     person.save()

@@ -7,7 +7,7 @@ from django.test import RequestFactory
 from django.urls import reverse
 from pytest_django.asserts import assertContains, assertNotContains
 
-from geniza.corpus.models import Document, LanguageScript
+from geniza.corpus.models import Dating, Document, LanguageScript
 from geniza.entities.admin import (
     NameInlineFormSet,
     PersonAdmin,
@@ -37,6 +37,16 @@ class TestPersonDocumentInline:
         inline = PersonDocumentInline(goitein, admin_site=admin.site)
 
         assert test_description == inline.document_description(relation)
+
+    def test_dating_range(self):
+        goitein = Person.objects.create()
+        doc = Document.objects.create()
+        relation = PersonDocumentRelation.objects.create(person=goitein, document=doc)
+        inline = PersonDocumentInline(goitein, admin_site=admin.site)
+        assert inline.dating_range(relation) == "-"
+
+        Dating.objects.create(standard_date="1000/1010", document=doc)
+        assert inline.dating_range(relation) == "1000 – 1010 CE"
 
 
 @pytest.mark.django_db

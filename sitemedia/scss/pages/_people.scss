@@ -55,6 +55,7 @@ main.people {
             th {
                 text-align: left;
                 font-size: typography.$text-size-md;
+                padding: 0 spacing.$spacing-xs;
             }
             th:first-of-type {
                 padding-left: spacing.$spacing-md;
@@ -74,13 +75,19 @@ main.people {
                     min-width: 3rem;
                 }
             }
+            th.dates,
+            td.dates {
+                max-width: 10rem;
+            }
             tbody tr {
                 background-color: var(--background-light);
                 td {
-                    padding: spacing.$spacing-md 0;
+                    padding: spacing.$spacing-md spacing.$spacing-xs;
                     font-size: typography.$text-size-lg;
                     border-top: 1px solid var(--background-gray);
                     border-bottom: 1px solid var(--background-gray);
+                    vertical-align: middle;
+                    max-width: 17rem;
                 }
                 td:first-of-type {
                     padding-left: spacing.$spacing-md;
