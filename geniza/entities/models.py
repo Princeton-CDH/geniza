@@ -10,6 +10,7 @@ from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelatio
 from django.contrib.contenttypes.models import ContentType
 from django.core.validators import RegexValidator
 from django.db import models
+from django.db.models import Q
 from django.db.models.query import Prefetch
 from django.forms import ValidationError
 from django.urls import reverse
@@ -252,6 +253,7 @@ class PersonSignalHandlers:
         "name": "names",
         "Person social role": "role",
         "document": "documents",  # documents in case dates change
+        "person person relation": ["to_person", "from_person"],
         "person place relation": "personplacerelation",
         "person document relation": "persondocumentrelation",
         "Person-Document relationship": "persondocumentrelation__type",  # relation type
@@ -275,8 +277,17 @@ class PersonSignalHandlers:
             )
             return
 
-        person_filter = {"%s__pk" % person_attr: instance.pk}
-        people = Person.items_to_index().filter(**person_filter)
+        # handle cases where there is more than one matching attr; for now this is only
+        # for person-person (self-referential), but maybe could be used for other things
+        if isinstance(person_attr, list):
+            person_filter = Q()
+            for attr in person_attr:
+                condition = {"%s__pk" % attr: instance.pk}
+                person_filter |= Q(**condition)
+            people = Person.items_to_index().filter(person_filter)
+        else:
+            person_filter = {"%s__pk" % person_attr: instance.pk}
+            people = Person.items_to_index().filter(**person_filter)
         if people.exists():
             logger.debug(
                 "%s %s, reindexing %d related person(s)",

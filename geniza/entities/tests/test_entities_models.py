@@ -29,6 +29,7 @@ from geniza.entities.models import (
     PersonPlaceRelation,
     PersonPlaceRelationType,
     PersonRole,
+    PersonSignalHandlers,
     Place,
     PlaceEventRelation,
     PlacePlaceRelation,
@@ -479,6 +480,89 @@ class TestPerson:
         assert index_data["end_date_i"] == PartialDate("1300").numeric_format(
             mode="max"
         )
+
+
+@pytest.mark.django_db
+class TestPersonSignalHandlers:
+    @patch.object(ModelIndexable, "index_items")
+    def test_related_save(self, mock_indexitems, person, person_multiname, document):
+        # unsaved name should be ignored
+        name = Name(name="test name")
+        PersonSignalHandlers.related_save(Name, name)
+        mock_indexitems.assert_not_called()
+        # raw - ignore
+        PersonSignalHandlers.related_save(Name, name, raw=True)
+        mock_indexitems.assert_not_called()
+        # name associated with a person
+        name.content_object = person
+        name.save()
+        PersonSignalHandlers.related_save(Name, name)
+        assert mock_indexitems.call_count == 1
+        assert person in mock_indexitems.call_args[0][0]
+
+        # role
+        role = person.role
+        role.name_en = "changed"
+        role.save()
+        mock_indexitems.reset_mock()
+        PersonSignalHandlers.related_save(PersonRole, role)
+        assert mock_indexitems.call_count == 1
+        assert person in mock_indexitems.call_args[0][0]
+
+        # person person relation
+        (ppr_type, _) = PersonPersonRelationType.objects.get_or_create(name="test")
+        person_rel = PersonPersonRelation(
+            from_person=person, to_person=person_multiname, type=ppr_type
+        )
+        person_rel.save()
+        mock_indexitems.reset_mock()
+        PersonSignalHandlers.related_save(PersonPersonRelation, person_rel)
+        assert mock_indexitems.call_count == 1
+        assert person in mock_indexitems.call_args[0][0]
+
+        # person place relation
+        rel_place = Place.objects.create()
+        ppr = PersonPlaceRelation(person=person, place=rel_place)
+        ppr.save()
+        mock_indexitems.reset_mock()
+        PersonSignalHandlers.related_save(PersonPlaceRelation, ppr)
+        assert mock_indexitems.call_count == 1
+        assert person in mock_indexitems.call_args[0][0]
+
+        # person document relation
+        pdr = PersonDocumentRelation(document=document, person=person)
+        pdr.save()
+        mock_indexitems.reset_mock()
+        PersonSignalHandlers.related_save(PersonDocumentRelation, pdr)
+        assert mock_indexitems.call_count == 1
+        assert person in mock_indexitems.call_args[0][0]
+
+        # unhandled model should be ignored, no error
+        mock_indexitems.reset_mock()
+        PersonSignalHandlers.related_save(Person, person)
+        mock_indexitems.assert_not_called()
+
+    @pytest.mark.django_db
+    @patch.object(ModelIndexable, "index_items")
+    def test_related_delete(self, mock_indexitems, person, document):
+        # delegates to same method as save, just check a few cases
+
+        # Name associated with a person
+        name = Name(name="test name", content_object=person)
+        name.save()
+        # delete
+        mock_indexitems.reset_mock()
+        PersonSignalHandlers.related_delete(Name, name)
+        assert mock_indexitems.call_count == 1
+        assert person in mock_indexitems.call_args[0][0]
+
+        # person document relation
+        pdr = PersonDocumentRelation(document=document, person=person)
+        pdr.save()
+        mock_indexitems.reset_mock()
+        PersonSignalHandlers.related_delete(PersonDocumentRelation, pdr)
+        assert mock_indexitems.call_count == 1
+        assert person in mock_indexitems.call_args[0][0]
 
 
 @pytest.mark.django_db
