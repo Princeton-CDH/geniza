@@ -39,6 +39,7 @@ main.people {
             gap: 0.25rem 0.5rem;
             padding: 0;
             @include breakpoints.for-tablet-landscape-up {
+                flex: 1 1 100%;
                 padding: 0 1.5rem;
             }
             &::before {
@@ -72,6 +73,26 @@ main.people {
                 &:active {
                     background-color: var(--filter-chip-bg-active);
                 }
+            }
+        }
+        button#clear-filters {
+            display: none;
+            @include breakpoints.for-tablet-landscape-up {
+                display: block;
+            }
+            cursor: pointer;
+            color: var(--disabled-on-background-light);
+            background-color: transparent;
+            border: none;
+            height: 2rem;
+            min-width: 4.5rem;
+            @include typography.meta;
+            transition: color 0.15s ease-in-out;
+            &:hover {
+                color: var(--date-placeholder);
+            }
+            &:active {
+                color: var(--on-background);
             }
         }
     }

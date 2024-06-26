@@ -95,6 +95,15 @@ export default class extends Controller {
         }
     }
 
+    clearFilters(e) {
+        // clear all filters
+        e.preventDefault();
+        const appliedFilters =
+            this.filterModalTarget.querySelectorAll("input[checked]");
+        appliedFilters.forEach((f) => (f.checked = false));
+        this.element.requestSubmit();
+    }
+
     // doctype filter <details> element
     toggleDoctypeFilter() {
         // "open" attribute is null when collapsed, empty string when open

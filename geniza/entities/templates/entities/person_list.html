@@ -30,6 +30,10 @@
                         </button>
                     {% endfor %}
                 </div>
+                <button id="clear-filters" data-action="click->search#clearFilters">
+                    {# Translators: label for button to clear all applied filters #}
+                    {% translate "Clear all" %}
+                </button>
             {% endif %}
         </div>
         <div class="modal-backdrop" aria-hidden="true" data-action="click->search#closeFilters"></div>
