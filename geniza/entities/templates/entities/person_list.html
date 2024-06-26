@@ -8,13 +8,34 @@
     <h1>{{ page_title }}</h1>
 
     <form data-controller="search" data-turbo-frame="main" data-turbo-action="advance" data-page="person">
-        <a href="#filters" role="button" id="filters-button" data-action="click->search#openFilters"{% if filter_count %} class="active"{% endif %}>
-            <svg><use xlink:href="{% static 'img/ui/all/all/search-filter-icon.svg' %}#filter-icon" /></svg>
-            <span>{% translate "Filters" %}</span>
-            {% if filter_count %}
-                <span class="filter-count">{{ filter_count }}</span>
+        <div id="filters-header">
+            <a href="#filters" role="button" id="filters-button" data-search-target="filtersButton" data-action="click->search#toggleFiltersOpen">
+                <svg><use xlink:href="{% static 'img/ui/all/all/search-filter-icon.svg' %}#filter-icon" /></svg>
+                <span>{% translate "Filters" %}</span>
+                {% if filters %}
+                    <span class="filter-count">{{ filters|length }}</span>
+                {% endif %}
+            </a>
+            {% if filters %}
+                {# convenient unapply filter buttons; aria role set to presentation as functionality duplicated below #}
+                <div id="applied-filters" role="presentation">
+                    {% for filter in filters %}
+                        <button
+                            data-field="{{ filter.field }}"
+                            value="{{ filter.value }}"
+                            data-action="click->search#unapplyFilter"
+                        >
+                            {{ filter.label }}
+                            <i class="ph-x"></i>
+                        </button>
+                    {% endfor %}
+                </div>
+                <button id="clear-filters" data-action="click->search#clearFilters">
+                    {# Translators: label for button to clear all applied filters #}
+                    {% translate "Clear all" %}
+                </button>
             {% endif %}
-        </a>
+        </div>
         <div class="modal-backdrop" aria-hidden="true" data-action="click->search#closeFilters"></div>
         <fieldset id="filters" aria-expanded="false" data-search-target="filterModal">
             <legend>{% translate "Filters" %}</legend>
@@ -22,13 +43,6 @@
                 {# Translators: label for 'filters' close button for mobile navigation #}
                 {% translate "Close filter options" as close_button %}
                 <span class="sr-only">{{ close_button }}</span>
-            </a>
-            <a href="#" role="button" id="close-filters-button" data-action="click->search#closeFilters"{% if filter_count %} class="active"{% endif %}>
-                <svg><use xlink:href="{% static 'img/ui/all/all/search-filter-icon.svg' %}#filter-icon" /></svg>
-                <span>{% translate "Filters" %}</span>
-                {% if filter_count %}
-                    <span class="filter-count">{{ filter_count }}</span>
-                {% endif %}
             </a>
             <label for="{{ form.gender.auto_id }}">
                 <span class="fieldname">{{ form.gender.label }}</span>

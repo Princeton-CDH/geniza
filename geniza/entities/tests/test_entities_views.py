@@ -390,6 +390,28 @@ class TestPersonListView:
         response = client.get(reverse("entities:person-list"), {"sort": sort_role})
         assert response.context["form"].cleaned_data["sort"] == sort_role
 
+    def test_get_applied_filter_labels(self):
+        # should return list of dicts with field, value, translated label
+        form = Mock()
+        form.get_translated_label.side_effect = ["מְחַבֵּר", "סוֹפֵר"]
+        doc_relation_filters = PersonListView.get_applied_filter_labels(
+            None, form, "document_relation", ["Author", "Scribe"]
+        )
+        assert doc_relation_filters == [
+            {"field": "document_relation", "value": "Author", "label": "מְחַבֵּר"},
+            {"field": "document_relation", "value": "Scribe", "label": "סוֹפֵר"},
+        ]
+
+        # should remove escape characters
+        form = Mock()
+        form.get_translated_label.return_value = "פקיד המדינה"
+        social_role_filters = PersonListView.get_applied_filter_labels(
+            None, form, "social_role", ["State\ official"]
+        )
+        assert social_role_filters == [
+            {"field": "social_role", "value": "State official", "label": "פקיד המדינה"}
+        ]
+
 
 @pytest.mark.django_db
 class TestSlugDetailMixin:
