@@ -87,6 +87,9 @@ $off-white: #f7f7f7;
     --alert-error-text: #f7f7f7;
     // table header bottom border
     --related-header-underline: #161616;
+    // filter chips
+    --filter-chip-bg-hover: #e0e0e0;
+    --filter-chip-bg-active: #bdbdbd;
 }
 
 // Dark mode theme colors
@@ -159,6 +162,9 @@ $off-white: #f7f7f7;
     --alert-error-text: #f7f7f7;
     // related entities table bottom borders
     --related-header-underline: #595959;
+    // filter chips
+    --filter-chip-bg-hover: #424242;
+    --filter-chip-bg-active: #616161;
 }
 
 html {

@@ -470,7 +470,7 @@ class PersonListView(ListView, FormMixin):
     page_description = _("Browse people present in Geniza documents.")
     paginate_by = 50
     form_class = PersonListForm
-    applied_filter_count = 0
+    applied_filter_labels = []
 
     # ORM references to database fields to facet
     # facet_fields = ["gender", "role__name", "persondocumentrelation__type__name"]
@@ -490,6 +490,19 @@ class PersonListView(ListView, FormMixin):
     # regex to fix problematic characters in names of roles, relations, etc
     qs_regex = r"([ \(\)])"
 
+    def get_applied_filter_labels(self, form, field, filters):
+        """return a list of objects with field/value pairs, and translated labels,
+        one for each applied filter"""
+        labels = []
+        for value in filters:
+            # remove escape characters
+            value = value.replace("\\", "")
+            # get translated label using form helper method
+            label = form.get_translated_label(field, value)
+            # return object with original field and value, so we can unapply programmatically
+            labels.append({"field": field, "value": value, "label": label})
+        return labels
+
     def get_queryset(self, *args, **kwargs):
         """modify queryset to sort and filter on people in the list"""
         people = PersonSolrQuerySet().facet("gender", "role", "document_relations")
@@ -501,21 +514,27 @@ class PersonListView(ListView, FormMixin):
 
         # filter by database fields using the Django ORM
         search_opts = form.cleaned_data
-        self.applied_filter_count = 0
+        self.applied_filter_labels = []
         if search_opts.get("gender"):
             genders = literal_eval(search_opts["gender"])
             people = people.filter(gender__in=genders)
-            self.applied_filter_count += len(genders)
+            self.applied_filter_labels += self.get_applied_filter_labels(
+                form, "gender", genders
+            )
         if search_opts.get("social_role"):
             roles = literal_eval(search_opts["social_role"])
             roles = [re.sub(self.qs_regex, r"\\\1", r) for r in roles]
             people = people.filter(role__in=roles)
-            self.applied_filter_count += len(roles)
+            self.applied_filter_labels += self.get_applied_filter_labels(
+                form, "social_role", roles
+            )
         if search_opts.get("document_relation"):
             relations = literal_eval(search_opts["document_relation"])
             relations = [re.sub(self.qs_regex, r"\\\1", r) for r in relations]
             people = people.filter(document_relations__in=relations)
-            self.applied_filter_count += len(relations)
+            self.applied_filter_labels += self.get_applied_filter_labels(
+                form, "document_relation", relations
+            )
         if search_opts.get("sort"):
             sort_field = search_opts.get("sort")
             if "date" in sort_field:
@@ -568,7 +587,7 @@ class PersonListView(ListView, FormMixin):
                 "page_title": self.page_title,
                 "page_description": self.page_description,
                 "page_type": "people",
-                "filter_count": self.applied_filter_count,
+                "filters": self.applied_filter_labels,
             }
         )
         return context_data
