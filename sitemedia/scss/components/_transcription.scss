@@ -38,25 +38,39 @@
                 display: inline-flex;
                 align-items: center;
                 justify-content: center;
+                gap: 0.5rem;
                 margin: 0;
                 height: 80px;
                 width: 80px;
                 border-radius: 5px;
                 @include breakpoints.for-tablet-landscape-up {
-                    transition: all 300ms ease;
+                    transition: background-color 300ms ease, color 300ms ease;
                     cursor: pointer;
+                    &:active {
+                        background-color: var(--disabled);
+                    }
                 }
             }
 
-            &:checked + label {
-                background-color: var(--secondary);
-                color: var(--on-secondary);
+            @include breakpoints.for-tablet-landscape-up {
+                &:checked + label {
+                    background-color: var(--secondary);
+                    color: var(--on-secondary);
+                    &:active {
+                        background-color: var(--filter-active);
+                    }
+                }
+                &:focus-visible + label {
+                    border: 2px solid var(--button-focus);
+                }
+                &:checked:focus-visible + label {
+                    border: 2px solid var(--button-focus);
+                }
             }
 
             // checkmark icons (mobile only)
             & + label:after {
                 content: "\f0e8"; // phosphor check-circle icon
-                margin-right: 11px;
             }
             &:checked + label:after {
                 content: "\f851"; // phosphor check-circle-fill icon
@@ -65,7 +79,6 @@
             &:checked + label:after {
                 display: block;
                 color: var(--secondary);
-                float: right;
                 @include typography.icon-button-md;
                 // disable on desktop
                 @include breakpoints.for-tablet-landscape-up {
@@ -132,13 +145,18 @@
                     content: "\f0c2"; // phosphor caret-down icon
                     @include typography.icon-button-md;
                     float: right;
+                    margin-right: 1rem;
+                    @include breakpoints.for-tablet-landscape-up {
+                        margin-right: 0;
+                    }
                 }
             }
         }
         // List of transcription options
         ul {
             position: absolute;
-            top: 4rem;
+            top: 3.5rem;
+            left: 0.333rem;
             z-index: 20;
             width: calc(100% - 0.667rem);
             padding: spacing.$spacing-sm 0;
@@ -251,16 +269,21 @@
             display: none;
         }
     }
-    #toggles:has(*:checked) ~ #header-row {
-        display: grid;
-    }
 
-    #toggles:has(#images-on:checked) ~ #header-row div.img-header,
-    #toggles:has(#transcription-on:checked)
-        ~ #header-row
-        div.transcription-header,
-    #toggles:has(#translation-on:checked) ~ #header-row div.translation-header {
-        display: flex;
+    @include breakpoints.for-tablet-landscape-up {
+        #toggles:has(*:checked) ~ #header-row {
+            display: grid;
+        }
+
+        #toggles:has(#images-on:checked) ~ #header-row div.img-header,
+        #toggles:has(#transcription-on:checked)
+            ~ #header-row
+            div.transcription-header,
+        #toggles:has(#translation-on:checked)
+            ~ #header-row
+            div.translation-header {
+            display: flex;
+        }
     }
 
     #toggles:has(#images-on:checked) ~ #header-row,
@@ -269,6 +292,7 @@
     #toggles:has(#transcription-on:checked) ~ .panel-container,
     #toggles:has(#translation-on:checked) ~ #header-row,
     #toggles:has(#translation-on:checked) ~ .panel-container {
+        /* one enabled: always 1 column */
         grid-template-columns: 100%;
     }
     #toggles:has(#images-on:checked ~ #transcription-on:checked) ~ #header-row,
@@ -281,7 +305,12 @@
         ~ #header-row,
     #toggles:has(#transcription-on:checked ~ #translation-on:checked)
         ~ .panel-container {
-        grid-template-columns: 50% 50%;
+        /* for mobile, set to full-width; content will stack in order */
+        grid-template-columns: 100%;
+        @include breakpoints.for-tablet-landscape-up {
+            /* desktop: two column layout */
+            grid-template-columns: 50% 50%;
+        }
     }
     #toggles:has(#images-on:checked
             ~ #transcription-on:checked
@@ -291,7 +320,12 @@
             ~ #transcription-on:checked
             ~ #translation-on:checked)
         ~ .panel-container {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
+        /* for mobile, set to full-width; content will stack in order */
+        grid-template-columns: 100%;
+        @include breakpoints.for-tablet-landscape-up {
+            /* desktop: three column layout */
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
     }
 
     .panel-container {
@@ -316,6 +350,7 @@
         }
         @include breakpoints.for-tablet-landscape-up {
             padding: 0;
+            display: grid;
         }
     }
 
@@ -457,7 +492,6 @@
     /* both image & translation checked */
     #toggles:has(#images-on:checked ~ #translation-on:checked)
         ~ .panel-container {
-        /* for mobile, set to full-width; content will stack in order */
         justify-items: stretch;
         @include breakpoints.for-tablet-landscape-up {
             div.translation-panel > div,
@@ -627,10 +661,11 @@
         }
         .img-header {
             display: flex;
-            flex-flow: row wrap;
+            flex-flow: row nowrap;
             align-items: center;
             margin-bottom: 8px;
             @include breakpoints.for-tablet-landscape-up {
+                flex-flow: row wrap;
                 margin-bottom: 12px;
                 justify-content: space-between;
             }
@@ -639,8 +674,9 @@
                 text-align: left;
                 margin: 8px;
                 display: inline-block;
-                flex: 1 0 100%;
+                flex: 1 1 auto;
                 @include breakpoints.for-tablet-landscape-up {
+                    flex: 1 0 100%;
                     display: flex;
                     align-items: center;
                     padding: 20px 0;
@@ -653,10 +689,7 @@
                 flex-flow: row;
                 align-items: center;
                 justify-content: flex-end;
-                flex: 1 0 auto;
-                @include breakpoints.for-tablet-landscape-up {
-                    flex: 0 1 auto;
-                }
+                flex: 0 1 auto;
             }
             // zoom control (desktop)
             input[type="range"][id^="zoom-slider"] {
@@ -972,10 +1005,12 @@
             padding-top: 0;
             margin-top: 1px; /* show a line between space and dropdown */
             max-width: none;
-            @include breakpoints.for-tablet-landscape-up {
-            }
-            & span {
+            span {
                 width: 100%;
+                margin: 0.5rem;
+                @include breakpoints.for-tablet-landscape-up {
+                    margin: 0;
+                }
             }
         }
 

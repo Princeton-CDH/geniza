@@ -100,7 +100,7 @@
                             {% for ed in document.digital_editions.all %}
                                 <li>
                                     <label for="transcription-{{ forloop.counter }}">
-                                        <input type="radio" name="transcription" {% if forloop.first %} checked="true"{% endif %} value="relevance" data-action="input->transcription#changeDropdown input->ittpanel#alignLines keydown->transcription#keyboardCloseDropdown" id="transcription-{{ forloop.counter }}" data-transcription="ed-{{ ed.pk }}" />
+                                        <input type="radio" name="transcription" {% if forloop.first %} checked="true"{% endif %} value="relevance" data-action="input->transcription#changeDropdown input->ittpanel#clickToggle keydown->transcription#keyboardCloseDropdown" id="transcription-{{ forloop.counter }}" data-transcription="ed-{{ ed.pk }}" />
                                         <span>
                                             {# Translators: Label for editors of a transcription #}
                                             {% blocktranslate with eds=ed.source.all_authors|default:ed.source count counter=ed.source.authors.count trimmed %}
@@ -142,7 +142,7 @@
                             {% for tr in document.digital_translations.all %}
                                 <li>
                                     <label for="translation-{{ forloop.counter }}">
-                                        <input type="radio" name="translation" {% if tr.pk == document.default_translation.pk %} checked="true"{% endif %} value="relevance" data-action="input->transcription#changeDropdown input->ittpanel#alignLines keydown->transcription#keyboardCloseDropdown" id="translation-{{ forloop.counter }}" data-translation="tr-{{ tr.pk }}" />
+                                        <input type="radio" name="translation" {% if tr.pk == document.default_translation.pk %} checked="true"{% endif %} value="relevance" data-action="input->transcription#changeDropdown input->ittpanel#clickToggle keydown->transcription#keyboardCloseDropdown" id="translation-{{ forloop.counter }}" data-translation="tr-{{ tr.pk }}" />
                                         <span>
                                             {% blocktranslate with eds=tr.source.all_authors count counter=tr.source.authors.count trimmed %}
                                                 Translator: {{ eds }}
@@ -307,6 +307,7 @@
             {% endfor %}
             {% if document.has_image %}
                 {% include "corpus/snippets/document_image_rights.html" %}
+                {# empty divs for grid completion #}
                 <div></div>
                 <div></div>
             {% endif %}
