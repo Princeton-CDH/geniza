@@ -164,6 +164,28 @@ main.place {
                 margin-right: 12px;
             }
         }
+        // bibliography
+        section.bibliography {
+            margin: 2rem 0 0;
+            padding-top: 3rem;
+            border-top: 1px solid colors.$gray;
+            ol {
+                counter-reset: item;
+                list-style-type: none;
+                padding-left: 1.25rem;
+            }
+            li {
+                display: flex;
+                gap: 1.125rem;
+                padding-bottom: 1rem;
+                border-bottom: 1px solid colors.$gray;
+            }
+            li:before {
+                content: counter(item) "  ";
+                counter-increment: item;
+                @include typography.body-bold;
+            }
+        }
     }
     nav#tabs {
         max-width: none;
