@@ -68,6 +68,21 @@
                 <p>{{ person.description }}</p>
             </section>
         {% endif %}
+        {% if person.footnotes.all|length %}
+            <section class="description bibliography">
+                <h2>
+                    {# Translators: label for person bibliography #}
+                    {% translate 'Select bibliography' %}
+                </h2>
+                <ol>
+                    {% for footnote in person.footnotes.all %}
+                        <li>
+                            <span>{{ footnote.source.formatted_display|safe }}</span>
+                        </li>
+                    {% endfor %}
+                </ol>
+            </section>
+        {% endif %}
         {# tertiary metadata #}
         <dl class="metadata-list tertiary">
             <dt id="citation" aria-hidden="true"> {# aria hidden because redundant for screen readers #}
