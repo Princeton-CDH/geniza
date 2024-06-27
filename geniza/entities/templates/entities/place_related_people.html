@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+{% load i18n render_bundle_csp fullurl static %}
+
+{% block meta_title %}{{ page_title }}{% endblock meta_title %}
+{% block meta_description %}{{ page_description }}{% endblock meta_description %}
+{% block extrameta %}
+    {# use English page as canonical for search engine crawlers (no redirects) #}
+    {% language "en" %}
+        <link rel="canonical" href="{% fullurl "entities:place-people" place.slug %}" />
+    {% endlanguage %}
+    {% spaceless %}
+        {% for lang_code in PUBLIC_SITE_LANGUAGES %}
+            {% language lang_code %}
+                <link rel="alternate" hreflang="{{ lang_code }}" href="{% fullurl "entities:place-people" place.slug %}" />
+            {% endlanguage %}
+        {% endfor %}
+    {% endspaceless %}
+{% endblock extrameta %}
+
+{% block main %}
+    <!-- place details -->
+    {% include "entities/snippets/place_header.html" %}
+    {# tabs #}
+    {% include "entities/snippets/place_tabs.html" %}
+    <section class="relations">
+        <h2 class="sr-only">
+            {# Translators: accessibility label for people list #}
+            {% translate "Related People" %}
+        </h2>
+        <turbo-frame id="people">
+            <table class="people">
+                <thead>
+                    <tr>
+                        <th{% if "name" in sort %} class="sorted"{% endif %}>
+                            <a href="?sort=name_{% if sort == "name_asc" %}desc{% else %}asc{% endif %}"{% if "name" in sort %} class="{{ sort }}"{% endif %}>
+                                {# Translators: table header for person name #}
+                                <span>{% translate 'Name' %}</span>
+                                <svg role="presentation"><use xlink:href="{% static 'img/ui/desktop/all/caret-up-down.svg' %}#caret-up-down" /></svg>
+                            </a>
+                        </th>
+                        <th{% if "relation" in sort %} class="sorted"{% endif %}>
+                            <a href="?sort=relation_{% if sort == "relation_asc" %}desc{% else %}asc{% endif %}"{% if "relation" in sort %} class="{{ sort }}"{% endif %}>
+                                {# Translators: table header for person-place relation type #}
+                                <span>{% translate 'Relation to place' %}</span>
+                                <svg role="presentation"><use xlink:href="{% static 'img/ui/desktop/all/caret-up-down.svg' %}#caret-up-down" /></svg>
+                            </a>
+                        </th>
+                        <th class="notes">{% translate "Notes" %}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for relation in related_people %}
+                        <tr>
+                            <td>
+                                {% if relation.person.get_absolute_url %}
+                                    <a data-turbo="false" href="{{ relation.person.get_absolute_url }}">{{ relation.person }}</a>
+                                {% else %}
+                                    {{ relation.person }}
+                                {% endif %}
+                            </td>
+                            <td>{{ relation.type }}</td>
+                            <td class="notes">{{ relation.notes }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </turbo-frame>
+    </section>
+{% endblock main %}

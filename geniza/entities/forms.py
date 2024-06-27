@@ -121,7 +121,7 @@ class PersonListForm(forms.Form):
         # Translators: label for sort by name
         ("name", _("Name")),
         # Translators: label for sort by person activity dates
-        # ("date_desc", _("Date")),
+        ("date", _("Date")),
         # Translators: label for sort by social role
         ("role", _("Social Role")),
         # Translators: label for sort by number of related documents
@@ -153,37 +153,46 @@ class PersonListForm(forms.Form):
         widget=forms.RadioSelect,
     )
 
-    # form field name aliases for faceted django queries
-    facet_field_aliases = {
-        "role__name": "social_role",
-        "persondocumentrelation__type__name": "document_relation",
+    # mapping of solr facet fields to form input
+    solr_facet_fields = {
+        "gender": "gender",
+        "role": "social_role",
+        "document_relations": "document_relation",
+    }
+    # mapping of solr facet fields to db models in order to retrieve objects by label
+    solr_db_models = {
+        "role": PersonRole,
+        "document_relations": PersonDocumentRelationType,
     }
 
-    # dict of lambda functions to get (translated) labels for each facet field value
-    label_accessors = {
-        "gender": lambda k: dict(Person.GENDER_CHOICES)[k],
-        "role__name": lambda k: str(
-            PersonRole.objects_by_label.get(k, _("Unknown role"))
-        ),
-        "persondocumentrelation__type__name": lambda k: PersonDocumentRelationType.objects.get(
-            name_en=k
-        ).name,
-    }
+    def get_translated_label(self, field, label):
+        """Lookup translated label via db model object when applicable;
+        handle Person.gender as a special case; and otherwise just return the label"""
+        db_model = self.solr_db_models.get(field, None)
+        if db_model:
+            # use objects_by_label to find original object and use translation
+            return getattr(db_model, "objects_by_label").get(label, label)
+        elif field == "gender":
+            # gender is a ChoiceField with translated labels, keyed on first letter (M,F,U)
+            gender_key = label[0]
+            return dict(Person.GENDER_CHOICES)[gender_key]
+        else:
+            # not gender, can't find db field; just return label as-is
+            return label
 
     def set_choices_from_facets(self, facets):
         """Set choices on field from a dictionary of facets"""
-        # adapted from ppa-django;
+        # borrowed from ppa-django;
         # populate facet field choices from current facets
-        for key, facet_list in facets.items():
+        for key, facet_dict in facets.items():
             # restructure dict to set values of each key to tuples of (label, count)
+            # labels should be translated, so use original object
             facet_dict = {
-                # since filter fields are not 1:1 mapped to django fields, use accessor
-                # helper functions to get labels
-                facet[key]: (self.label_accessors[key](facet[key]), facet["count"])
-                for facet in facet_list
-                if key and facet[key]
+                label: (self.get_translated_label(key, label), count)
+                for (label, count) in sorted(facet_dict.items())
             }
-            formfield = self.facet_field_aliases.get(key, key)
+            # use field from facet fields map or else field name as is
+            formfield = self.solr_facet_fields.get(key, key)
             # for each facet, set the corresponding choice field
             if formfield in self.fields:
                 self.fields[formfield].populate_from_facets(facet_dict)

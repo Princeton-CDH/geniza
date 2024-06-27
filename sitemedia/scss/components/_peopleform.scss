@@ -4,6 +4,7 @@
 
 @use "../base/a11y";
 @use "../base/breakpoints";
+@use "../base/colors";
 @use "../base/fonts";
 @use "../base/typography";
 
@@ -13,12 +14,90 @@ main.people {
         display: flex;
         flex-flow: column;
         width: 100%;
-        padding: 0.25rem 0 0;
+        padding: 0;
         border-top: 1px solid var(--background-gray);
     }
-    // buttons for opening and closing the filter modal
-    a#filters-button,
-    a#close-filters-button {
+    div#filters-header {
+        display: flex;
+        flex-flow: row nowrap;
+        align-items: center;
+        padding: 0.25rem 0;
+        gap: 1.5rem;
+        &:not(:has(#applied-filters)) {
+            height: 0;
+            padding: 0;
+            @include breakpoints.for-tablet-landscape-up {
+                height: auto;
+                padding: 0.25rem 0;
+            }
+        }
+        // filter chips container
+        #applied-filters {
+            display: flex;
+            flex-flow: row wrap;
+            align-items: center;
+            gap: 0.25rem 0.5rem;
+            padding: 0;
+            @include breakpoints.for-tablet-landscape-up {
+                flex: 1 1 100%;
+                padding: 0 1.5rem;
+            }
+            &::before {
+                content: "";
+                height: 1rem;
+                position: absolute;
+                margin-left: -1.5rem;
+                border-left: 1px solid colors.$gray;
+            }
+            // filter chip
+            button {
+                border: none;
+                outline: none;
+                cursor: pointer;
+                border-radius: 50px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 0.5rem;
+                height: 2rem;
+                padding: 0 1rem;
+                @include typography.form-option-xs;
+                line-height: 1.25;
+                color: var(--on-background-gray);
+                background-color: var(--background-gray);
+                transition: background-color 0.15s ease-in-out,
+                    color 0.15s ease-in-out;
+                &:hover {
+                    background-color: var(--filter-chip-bg-hover);
+                }
+                &:active {
+                    background-color: var(--filter-chip-bg-active);
+                }
+            }
+        }
+        button#clear-filters {
+            display: none;
+            @include breakpoints.for-tablet-landscape-up {
+                display: block;
+            }
+            cursor: pointer;
+            color: var(--disabled-on-background-light);
+            background-color: transparent;
+            border: none;
+            height: 2rem;
+            min-width: 4.5rem;
+            @include typography.meta;
+            transition: color 0.15s ease-in-out;
+            &:hover {
+                color: var(--date-placeholder);
+            }
+            &:active {
+                color: var(--on-background);
+            }
+        }
+    }
+    // button for opening and closing the filter panel/modal
+    a#filters-button {
         text-decoration: none;
         @include typography.meta-bold;
         display: flex;
@@ -26,8 +105,25 @@ main.people {
         min-height: 48px;
         padding: 0 0.5rem;
         border-radius: 5px;
+        position: absolute;
+        top: 9rem;
+        right: 1rem;
+        align-self: flex-start;
+        flex: 0 1 auto;
+        margin: auto 0;
         @include breakpoints.for-tablet-landscape-up {
+            position: relative;
+            top: auto;
+            right: auto;
             padding: 0 2rem 0 0.5rem;
+            span:last-of-type:after {
+                content: "\f0c2"; // phosphor caret-down icon
+            }
+            &:has(~ fieldset#filters:target),
+            &:has(~ fieldset#filters[aria-expanded="true"]) {
+                // prevent display and focus when expanded, maintain flow/spacing
+                visibility: hidden;
+            }
         }
         svg {
             width: 20px;
@@ -62,41 +158,20 @@ main.people {
             background-color: var(--background-gray);
             border-radius: 0.25rem;
         }
-    }
-    a#filters-button {
-        align-self: flex-start;
-        flex: 0 1 auto;
-        margin-bottom: 0.25rem;
-        &.active svg {
-            color: var(--filter-active);
-        }
-        @include breakpoints.for-tablet-landscape-up {
-            span:last-of-type:after {
-                content: "\f0c2"; // phosphor caret-down icon
-            }
-            &:has(~ fieldset#filters:target),
-            &:has(~ fieldset#filters[aria-expanded="true"]) {
-                // prevent display and focus when expanded, maintain flow/spacing
-                visibility: hidden;
-            }
-        }
-    }
-    // close button
-    a#close-filters-button {
-        display: none;
-        @include breakpoints.for-tablet-landscape-up {
-            display: flex;
-            position: absolute;
-            margin-top: -4.81rem;
-            margin-left: -1.5rem;
-            background-color: var(--secondary);
-            color: var(--on-secondary);
-            fill: var(--on-secondary);
-            span:last-of-type:after {
-                content: "\f0c5"; // phosphor caret-up icon
-            }
-            span.filter-count {
-                background-color: var(--primary);
+        // close button
+        &.open {
+            display: none;
+            @include breakpoints.for-tablet-landscape-up {
+                display: flex;
+                background-color: var(--secondary);
+                color: var(--on-secondary);
+                fill: var(--on-secondary);
+                span:last-of-type:after {
+                    content: "\f0c5"; // phosphor caret-up icon
+                }
+                span.filter-count {
+                    background-color: var(--primary);
+                }
             }
         }
     }
@@ -356,8 +431,7 @@ main.people {
 }
 // RTL overrides
 html[dir="rtl"] main.people {
-    a#filters-button,
-    a#close-filters-button {
+    a#filters-button {
         padding: 0 0.5rem;
         @include breakpoints.for-tablet-landscape-up {
             padding: 0 0.5rem 0 2rem;
@@ -369,12 +443,6 @@ html[dir="rtl"] main.people {
                 right: auto;
                 left: -1.5rem;
             }
-        }
-    }
-    a#close-filters-button {
-        @include breakpoints.for-tablet-landscape-up {
-            margin-left: 0;
-            margin-right: -1.5rem;
         }
     }
     a#close-filters-modal {

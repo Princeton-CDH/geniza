@@ -9,6 +9,7 @@ export default class extends Controller {
         "query",
         "sort",
         "filterModal",
+        "filtersButton",
         "doctypeFilter",
         "dropdownDetails",
     ];
@@ -36,7 +37,23 @@ export default class extends Controller {
         window.sessionStorage.setItem(`${searchPage}-filters-expanded`, "true");
     }
 
+    toggleFiltersOpen(e) {
+        // toggle filters modal/panel open and closed
+        e.preventDefault();
+        e.currentTarget.classList.toggle("open");
+        const filtersOpen =
+            this.filterModalTarget.getAttribute("aria-expanded");
+        const newFiltersOpen = filtersOpen === "true" ? "false" : "true";
+        this.filterModalTarget.setAttribute("aria-expanded", newFiltersOpen);
+        const searchPage = this.element.dataset.page;
+        window.sessionStorage.setItem(
+            `${searchPage}-filters-expanded`,
+            newFiltersOpen
+        );
+    }
+
     closeFilters(e) {
+        // close filter modal / panel if open
         e.preventDefault();
         this.filterModalTarget.setAttribute("aria-expanded", "false");
         const searchPage = this.element.dataset.page;
@@ -44,6 +61,7 @@ export default class extends Controller {
             `${searchPage}-filters-expanded`,
             "false"
         );
+        this.filtersButtonTarget.classList.remove("open");
         this.navBackToSearch();
     }
 
@@ -58,7 +76,32 @@ export default class extends Controller {
                 "aria-expanded",
                 savedFilterState
             );
+            if (savedFilterState === "true") {
+                this.filtersButtonTarget.classList.add("open");
+            }
         }
+    }
+
+    unapplyFilter(e) {
+        // unapply a filter by field and value pair
+        const filterName = e.currentTarget.dataset.field;
+        const filterValue = e.currentTarget.value;
+        const searchParams = new URLSearchParams(window.location.search);
+        if (searchParams.has(filterName, filterValue)) {
+            const appliedFilter = this.filterModalTarget.querySelector(
+                `label[for*="${filterName}"] input[value*="${filterValue}"]`
+            );
+            appliedFilter.checked = false;
+        }
+    }
+
+    clearFilters(e) {
+        // clear all filters
+        e.preventDefault();
+        const appliedFilters =
+            this.filterModalTarget.querySelectorAll("input[checked]");
+        appliedFilters.forEach((f) => (f.checked = false));
+        this.element.requestSubmit();
     }
 
     // doctype filter <details> element

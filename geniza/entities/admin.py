@@ -121,11 +121,12 @@ class DocumentInline(admin.TabularInline):
     autocomplete_fields = ("document", "type")
     fields = (
         "document",
+        "dating_range",
         "document_description",
         "type",
         "notes",
     )
-    readonly_fields = ("document_description",)
+    readonly_fields = ("document_description", "dating_range")
     formfield_overrides = {
         TextField: {"widget": Textarea(attrs={"rows": 4})},
     }
@@ -133,6 +134,12 @@ class DocumentInline(admin.TabularInline):
 
     def document_description(self, obj):
         return obj.document.description
+
+    def dating_range(self, obj):
+        """Show the range of dates associated with the document (inferred and document)
+        on the admin inline to show the sources of automatic dating"""
+        dating_range = [d.isoformat() for d in obj.document.dating_range() if d]
+        return standard_date_display("/".join(dating_range)) or "-"
 
 
 class PersonDocumentInline(DocumentInline):
@@ -245,7 +252,16 @@ class PersonAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin):
     """Admin for Person entities in the PGP"""
 
     search_fields = ("name_unaccented", "names__name")
-    fields = ("slug", "gender", "role", "has_page", "description")
+    fields = (
+        "slug",
+        "gender",
+        "role",
+        "has_page",
+        "date",
+        "automatic_date",
+        "description",
+    )
+    readonly_fields = ("automatic_date",)
     inlines = (
         NameInline,
         FootnoteInline,
@@ -342,7 +358,9 @@ class PersonAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin):
         ]
         return urls + super().get_urls()
 
-    # -------------------------------------------------------------------------
+    def automatic_date(self, obj):
+        """Display automatically generated date/date range for an event as a formatted string"""
+        return standard_date_display(obj.documents_date_range)
 
     actions = (merge_people,)
 
@@ -560,13 +578,7 @@ class EventPlaceInline(PlaceInline):
 class EventAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin):
     """Admin for Event entities in the PGP"""
 
-    fields = (
-        "name",
-        "description",
-        "standard_date",
-        "display_date",
-        "automatic_date",
-    )
+    fields = ("name", "description", "standard_date", "display_date", "automatic_date")
     readonly_fields = ("automatic_date",)
     search_fields = ("name",)
     ordering = ("name",)
