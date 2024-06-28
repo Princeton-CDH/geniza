@@ -178,18 +178,32 @@
                                     </button>
                                     {# tahqiq toolbar for switching annotation tools #}
                                     <fieldset class="tahqiq-toolbar"></fieldset>
-                                {% else %}
+                                {% endif %}
+                                {# tablet 3-up: zoom slider toggle button #}
+                                <input data-ittpanel-target="zoomSliderToggle" data-action="ittpanel#toggleZoomSlider" id="zoom-slider-toggle-{{ forloop.counter0 }}" type="checkbox" name="zoom-slider-toggle" />
+                                <label for="zoom-slider-toggle-{{ forloop.counter0 }}"><i class="ph ph-magnifying-glass"></i></label>
+                                {# tablet 3-up: rotation slider toggle button #}
+                                <input data-ittpanel-target="rotationSliderToggle" data-action="ittpanel#toggleRotationSlider" id="rotation-slider-toggle-{{ forloop.counter0 }}" type="checkbox" name="rotation-slider-toggle" />
+                                <label for="rotation-slider-toggle-{{ forloop.counter0 }}"><i class="ph ph-arrows-clockwise"></i></label>
+                                <div class="img-controls">
+                                    <div class="zoom-control">
+                                        {# tablet/desktop: zoom slider #}
+                                        <input data-iiif-target="zoomSlider" data-action="iiif#handleDeepZoom" id="zoom-slider-{{ forloop.counter0 }}" type="range" name="zoom-slider" min="1" max="100" value="0" step="0.01" />
+                                        <label data-iiif-target="zoomSliderLabel" for="zoom-slider-{{ forloop.counter0 }}">100%</label>
+                                    </div>
+                                    <div class="rotation-control">
+                                        {# tablet/desktop: rotation slider #}
+                                        <input data-iiif-target="rotation" data-action="iiif#handleDeepZoom" id="rotation-{{ forloop.counter0 }}" type="range" name="rotation-slider" min="0" max="360" value="{{ image_info.rotation }}" step="1" />
+                                        <label for="rotation-{{ forloop.counter0 }}" data-iiif-target="rotationLabel">{{ image_info.rotation }}&deg;</label>
+                                    </div>
+                                    {# mobile: zoom/rotate toggle #}
+                                    <input data-iiif-target="zoomToggle" data-action="iiif#handleDeepZoom" id="zoom-toggle-{{ forloop.counter0 }}" type="checkbox" name="zoom-toggle" />
+                                    <label for="zoom-toggle-{{ forloop.counter0 }}">{% translate 'Zoom and Rotate' %}</label>
+                                </div>
+                                {% if not edit_mode %}
                                     {# enlarge button #}
                                     <button class="enlarge-button" type="button"><span class="sr-only">Enlarge image</span></button>
                                 {% endif %}
-                                <div class="img-controls">
-                                    <input data-iiif-target="zoomSlider" data-action="iiif#handleDeepZoom" id="zoom-slider-{{ forloop.counter0 }}" type="range" name="zoom-slider" min="1" max="100" value="0" step="0.01" />
-                                    <label data-iiif-target="zoomSliderLabel" for="zoom-slider-{{ forloop.counter0 }}">100%</label>
-                                    <input data-iiif-target="zoomToggle" data-action="iiif#handleDeepZoom" id="zoom-toggle-{{ forloop.counter0 }}" type="checkbox" name="zoom-toggle" />
-                                    <label for="zoom-toggle-{{ forloop.counter0 }}">{% translate 'Zoom and Rotate' %}</label>
-                                    <div id="rotation-{{ forloop.counter0 }}" class="rotation" data-iiif-target="rotation" data-action="input->iiif#handleDeepZoom change->iiif#handleDeepZoom"></div>
-                                    <label for="rotation-{{ forloop.counter0 }}" data-iiif-target="rotationLabel">{{ image_info.rotation }}&deg;</label>
-                                </div>
                             {% endif %}
                         </div>
                         <div class="deep-zoom-container">

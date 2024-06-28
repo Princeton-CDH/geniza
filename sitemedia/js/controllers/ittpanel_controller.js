@@ -9,7 +9,9 @@ export default class extends Controller {
         "toggle",
         "transcription",
         "translation",
+        "rotationSliderToggle",
         "shortLabel",
+        "zoomSliderToggle",
     ];
 
     initialize() {
@@ -50,6 +52,21 @@ export default class extends Controller {
             this.alignLines();
             // realign headers if chanegd
             this.alignHeaders();
+        }
+    }
+
+    toggleZoomSlider(e) {
+        if (
+            e.currentTarget.checked &&
+            this.rotationSliderToggleTarget.checked
+        ) {
+            this.rotationSliderToggleTarget.checked = false;
+        }
+    }
+
+    toggleRotationSlider(e) {
+        if (e.currentTarget.checked && this.zoomSliderToggleTarget.checked) {
+            this.zoomSliderToggleTarget.checked = false;
         }
     }
 

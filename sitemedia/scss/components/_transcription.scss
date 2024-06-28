@@ -2,6 +2,7 @@
 @use "../base/a11y";
 @use "../base/breakpoints";
 @use "../base/colors";
+@use "../base/fonts";
 @use "../base/spacing";
 @use "../base/typography";
 @use "../components/searchform";
@@ -399,12 +400,13 @@
                     border: none;
                     background: transparent;
                     padding: 0;
-                    margin: 0;
+                    margin: 0 0 1.2rem;
                     z-index: 2;
                     &::after {
                         color: var(--on-background);
                         content: "\f118";
-                        @include typography.icon-button-lg;
+                        margin-left: 1rem;
+                        @include typography.icon-button-md;
                     }
                     &:active::after {
                         color: var(--primary);
@@ -618,6 +620,73 @@
         @include breakpoints.for-tablet-landscape-up {
             padding: 0;
             gap: 0 0.5rem;
+            div.img .img-header {
+                gap: 0 0.5rem;
+                width: 100%;
+                h2 {
+                    flex: 1 1 auto;
+                }
+                input[name="zoom-slider-toggle"] + label,
+                input[name="rotation-slider-toggle"] + label {
+                    cursor: pointer;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    min-width: 42px;
+                    max-width: 42px;
+                    height: 32px;
+                    border-radius: 5px;
+                    color: var(--on-background);
+                    background-color: var(--background-gray);
+                    font-size: typography.$text-size-xl;
+                }
+                input[name="zoom-slider-toggle"]:checked + label,
+                input[name="rotation-slider-toggle"]:checked + label {
+                    color: var(--on-secondary);
+                    background-color: var(--secondary);
+                }
+                .zoom-control,
+                .rotation-control {
+                    display: none;
+                }
+                input[name="zoom-slider-toggle"]:checked
+                    ~ div.img-controls
+                    .zoom-control {
+                    display: flex;
+                }
+                input[name="rotation-slider-toggle"]:checked
+                    ~ div.img-controls
+                    .rotation-control {
+                    display: flex;
+                }
+                input[name="zoom-slider-toggle"]:not(:checked)
+                    ~ input[name="rotation-slider-toggle"]:not(:checked)
+                    ~ div.img-controls {
+                    display: none;
+                }
+            }
+        }
+        @include breakpoints.for-desktop-up {
+            div.img .img-header {
+                h2 {
+                    padding-bottom: 0.5rem;
+                }
+                input[name="zoom-slider-toggle"] + label,
+                input[name="rotation-slider-toggle"] + label {
+                    display: none;
+                }
+                input[name="zoom-slider-toggle"]:not(:checked)
+                    ~ input[name="rotation-slider-toggle"]:not(:checked)
+                    ~ div.img-controls {
+                    display: flex;
+                }
+                .zoom-control {
+                    display: flex;
+                }
+                .rotation-control {
+                    display: flex;
+                }
+            }
         }
     }
 
@@ -666,7 +735,7 @@
             margin-bottom: 8px;
             @include breakpoints.for-tablet-landscape-up {
                 flex-flow: row wrap;
-                margin-bottom: 12px;
+                margin-bottom: 0;
                 justify-content: space-between;
             }
             h2 {
@@ -679,32 +748,70 @@
                     flex: 1 0 100%;
                     display: flex;
                     align-items: center;
-                    padding: 20px 0;
+                    padding: 0.8rem 0;
                     margin: 0;
                 }
             }
             // collect image controls in a div
             div.img-controls {
                 display: flex;
+                max-width: 100%;
                 flex-flow: row;
                 align-items: center;
                 justify-content: flex-end;
-                flex: 0 1 auto;
+                flex: 1 1 auto;
+                gap: 1rem;
+            }
+            input[name="zoom-slider-toggle"],
+            input[name="zoom-slider-toggle"] + label,
+            input[name="rotation-slider-toggle"],
+            input[name="rotation-slider-toggle"] + label {
+                display: none;
+                & + label {
+                    display: none;
+                }
             }
             // zoom control (desktop)
-            input[type="range"][id^="zoom-slider"] {
+            .zoom-control,
+            .rotation-control {
+                flex: 1 1 auto;
+                width: calc(50% - 1rem);
+                display: none;
+                @include breakpoints.for-tablet-landscape-up {
+                    display: flex;
+                }
+                gap: 0.25rem;
+                flex-flow: row nowrap;
+                align-items: center;
+                background-color: var(--background-gray);
+                padding: 0 0.875rem;
+                height: 2rem;
+                border-radius: 5px;
+                margin-bottom: 1.2rem;
+                &::before {
+                    font-family: "Phosphor" !important;
+                    font-size: 1.25rem;
+                    margin-right: 0.5rem;
+                }
+            }
+            .zoom-control::before {
+                content: "\f20a"; // phosphor magnifying glass icon
+            }
+            .rotation-control::before {
+                content: "\f045"; // phosphor arrows clockwise icon
+            }
+            input[type="range"] {
                 display: none;
                 @include breakpoints.for-tablet-landscape-up {
                     display: block;
                 }
+                flex: 1 1 auto;
                 -webkit-appearance: none;
                 appearance: none;
-                background: colors.$gray;
+                background: var(--zoom-control-bg);
                 height: 4px;
                 border-radius: 4px;
                 cursor: pointer;
-                width: 180px;
-                flex: 0 1 175px;
 
                 // range slider control circle/"thumb"
                 // sadly, these are still vendor-prefixed and can't be combined to reduce redunancy :(
@@ -714,17 +821,16 @@
                     background-color: var(--filter-active);
                     transition: background-color 300ms ease;
                     border-radius: 20px;
-                    height: 40px;
-                    width: 40px;
-                    border: 4px solid var(--on-background-light-alt);
+                    height: 12px;
+                    width: 12px;
                 }
                 &::-moz-range-thumb {
                     background-color: var(--filter-active);
                     transition: background-color 300ms ease;
                     border-radius: 20px;
-                    height: 32px;
-                    width: 32px;
-                    border: 4px solid var(--on-background-light-alt);
+                    height: 12px;
+                    width: 12px;
+                    border: none;
                 }
                 &.active-thumb {
                     &::-webkit-slider-thumb {
@@ -735,13 +841,19 @@
                     }
                 }
             }
-            label[for^="zoom-slider"] {
-                min-width: 60px;
-                max-width: 60px;
+            .zoom-control input[type="range"] {
+                max-width: calc(100% - 1rem - 60px);
             }
-            label[for^="rotation"] {
+            .rotation-control input[type="range"] {
+                max-width: calc(100% - 1rem - 50px);
+            }
+            label[for^="zoom-slider"] {
                 min-width: 40px;
                 max-width: 40px;
+            }
+            label[for^="rotation"] {
+                min-width: 30px;
+                max-width: 30px;
             }
             label[for^="zoom-slider"],
             label[for^="rotation"] {
@@ -750,50 +862,13 @@
                     display: block;
                 }
                 text-align: right;
-                flex: 0 1 60px;
+                flex: 0 1 40px;
                 color: var(--on-background);
-                @include typography.body-bold;
-            }
-            // desktop rotation controls
-            div.rotation {
-                display: none;
-                @include breakpoints.for-tablet-landscape-up {
-                    display: block;
-                }
-                margin: 0 0 0 spacing.$spacing-md;
-                position: relative;
-                border-radius: 50%;
-                height: 40px;
-                width: 40px;
-                min-width: 40px;
-                background-color: var(--background-gray);
-                border: 4px solid var(--on-background-light-alt);
-                cursor: pointer;
-                span.angle-input-pivot {
-                    position: absolute;
-                    left: 0;
-                    right: 0;
-                    top: 50%;
-                    margin-top: -1px;
-                    height: 2px;
-                    &::before {
-                        content: "";
-                        position: absolute;
-                        right: 0;
-                        top: 50%;
-                        margin-top: -8px;
-                        background-color: var(--filter-active);
-                        width: 16px;
-                        height: 16px;
-                        border-radius: 50%;
-                    }
-                }
-                &.active span.angle-input-pivot::before {
-                    background-color: var(--link-primary);
-                }
+                font-family: fonts.$primary;
+                font-size: typography.$text-size-sm;
             }
             label[for^="rotation"] {
-                flex: 0 1 45px;
+                flex: 0 1 30px;
             }
             // zoom control (mobile)
             input[type="checkbox"][id^="zoom-toggle"] {
@@ -1392,9 +1467,6 @@ html[dir="rtl"] #itt-panel {
         }
         label {
             text-align: left;
-        }
-        div.rotation {
-            margin: 0 1rem 0 0;
         }
         input[type="checkbox"][id^="zoom-toggle"] + label[for^="zoom-toggle"] {
             padding-right: 0;
