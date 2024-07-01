@@ -7,7 +7,9 @@ django-taggit>=1.5.1,<2.0
 # TODO: unpin piffle from 0.4 once breaking changes with piffle.iiif are handled
 piffle==0.4
 taggit-selectize
-django-multiselectfield
+# NOTE: as of 2024-07-91, django-multiselectfield 0.1.13 causes an error in unit
+# tests and loaddata for loading fixtures
+django-multiselectfield==0.1.12
 # NOTE: as of 2022-04-29, modeltranslation v0.17.6 causes an error in Django admin
 # TypeError: Cannot use multi-field values as a filter value.
 django-modeltranslation==0.17.5
