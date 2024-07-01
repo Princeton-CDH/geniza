@@ -366,8 +366,8 @@ class DocumentDetailView(DocumentDetailBase, DetailView):
                 "images": images,
                 # first image for twitter/opengraph meta tags
                 "meta_image": list(images.values())[0]["image"] if images else None,
-                # show the first two available panels by default (in order of priority)
-                "default_shown": available_panels[:2],
+                # show all available panels by default
+                "default_shown": available_panels,
                 # disable any fully unavailable panels
                 "disabled": [
                     panel
@@ -897,6 +897,7 @@ class DocumentTranscribeView(PermissionRequiredMixin, DocumentDetailView):
                 if source
                 else "",
                 "source_label": source_label if source_label else "",
+                "authors_count": source.authors.count() if source else 0,
                 "page_type": "document annotating",
                 "disabled": disabled,
                 "default_shown": default_shown,

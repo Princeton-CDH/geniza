@@ -168,13 +168,12 @@ class TestDocumentDetailView:
             doc_relation=Footnote.DIGITAL_TRANSLATION,
         )
         response = client.get(reverse("corpus:document", args=(document.pk,)))
-        # document has image (via fragment.iiif_url) and translation, so should show those
+        # document has image (via fragment.iiif_url) and translation, so should show all three
         assert "translation" in response.context["default_shown"]
         assert "images" in response.context["default_shown"]
         assert "translation" not in response.context["disabled"]
         assert "images" not in response.context["disabled"]
-        # should not show OR disable transcription
-        assert "transcription" not in response.context["default_shown"]
+        assert "transcription" in response.context["default_shown"]
         assert "transcription" not in response.context["disabled"]
 
 

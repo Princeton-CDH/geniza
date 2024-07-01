@@ -97,11 +97,6 @@ module.exports = (env, options) => ({
                     ? "[name]-[contenthash].min.css"
                     : "[name].css",
         }),
-        new IgnorePlugin({
-            // ignore unneeded jquery dependency in angle-input
-            resourceRegExp: /jquery/u,
-            contextRegExp: /angle-input/u,
-        }),
     ],
     // configuration for dev server (run using `npm start`)
     // https://webpack.js.org/configuration/dev-server/
