@@ -102,14 +102,16 @@ export default class extends Controller {
         );
     }
 
-    alignHeaders() {
+    alignHeaders(forceAlign) {
         // Align the header of the first image with the header row of the transcription and/or
         // translation panels
         if (
             this.imageAndOtherPanelOpen() &&
             this.emptyLabelTarget &&
             this.imagePopoutTargets.length &&
-            this.shortLabelTargets.length
+            this.shortLabelTargets.length &&
+            (!this.imagePopoutTargets[0].classList.contains("open") ||
+                forceAlign)
         ) {
             const emptyHeight = getComputedStyle(this.emptyLabelTarget).height;
             this.imagePopoutTargets[0].style.marginTop = `-${emptyHeight}`;
@@ -119,6 +121,22 @@ export default class extends Controller {
             const imgHeader = this.imagePopoutTargets[0].querySelector("h2");
             imgHeader.style.height = spanHeight;
         } else if (this.imagePopoutTargets.length) {
+            this.imagePopoutTargets[0].style.removeProperty("margin-top");
+            this.imagePopoutTargets[0].style.removeProperty("padding-bottom");
+            this.imagePopoutTargets[0]
+                .querySelector("h2")
+                .style.removeProperty("height");
+        }
+    }
+
+    popOut(e) {
+        // handle img panel alignment when opening and closing the popout container
+        if (
+            e.currentTarget.classList.contains("active") ||
+            e.currentTarget.classList.contains("popout-close-button")
+        ) {
+            alignHeaders(true);
+        } else {
             this.imagePopoutTargets[0].style.removeProperty("margin-top");
             this.imagePopoutTargets[0].style.removeProperty("padding-bottom");
             this.imagePopoutTargets[0]

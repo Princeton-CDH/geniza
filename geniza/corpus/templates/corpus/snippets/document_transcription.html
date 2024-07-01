@@ -168,16 +168,18 @@
                             <h2>{{ image_info.shelfmark }} {{ image_info.label }}</h2>
                             {% if not image_info.excluded %}
                                 {% if edit_mode %}
-                                    {# popout and close button #}
-                                    <button class="primary popout-close-button" type="button" aria-label="Close"><i class="ph-x"></i></button>
-                                    <button class="popout-button" type="button">
-                                        <svg>
-                                            <use xlink:href="{% static 'img/ui/desktop/all/pop-out.svg' %}#pop-out-icon" />
-                                        </svg>
-                                        <span class="sr-only">Pop out</span>
-                                    </button>
-                                    {# tahqiq toolbar for switching annotation tools #}
-                                    <fieldset class="tahqiq-toolbar"></fieldset>
+                                    <div class="edit-mode-controls">
+                                        {# popout and close button #}
+                                        <button class="primary popout-close-button" type="button" aria-label="Close" data-action="ittpanel#popOut"><i class="ph-x"></i></button>
+                                        <button class="popout-button" type="button" data-action="ittpanel#popOut">
+                                            <svg>
+                                                <use xlink:href="{% static 'img/ui/desktop/all/pop-out.svg' %}#pop-out-icon" />
+                                            </svg>
+                                            <span class="sr-only">Pop out</span>
+                                        </button>
+                                        {# tahqiq toolbar for switching annotation tools #}
+                                        <fieldset class="tahqiq-toolbar"></fieldset>
+                                    </div>
                                 {% endif %}
                                 {# tablet 3-up: zoom slider toggle button #}
                                 <input data-ittpanel-target="zoomSliderToggle" data-action="ittpanel#toggleZoomSlider" id="zoom-slider-toggle-{{ forloop.counter0 }}" type="checkbox" name="zoom-slider-toggle" />

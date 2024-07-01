@@ -636,6 +636,7 @@
                     max-width: 42px;
                     height: 32px;
                     border-radius: 5px;
+                    margin-bottom: 1.2rem;
                     color: var(--on-background);
                     background-color: var(--background-gray);
                     font-size: typography.$text-size-xl;
@@ -664,6 +665,10 @@
                     ~ div.img-controls {
                     display: none;
                 }
+                .edit-mode-controls {
+                    margin-bottom: 1.2rem;
+                    justify-content: flex-start;
+                }
             }
         }
         @include breakpoints.for-desktop-up {
@@ -685,6 +690,10 @@
                 }
                 .rotation-control {
                     display: flex;
+                }
+                .edit-mode-controls {
+                    margin-bottom: 0;
+                    justify-content: flex-end;
                 }
             }
         }
@@ -745,11 +754,14 @@
                 display: inline-block;
                 flex: 1 1 auto;
                 @include breakpoints.for-tablet-landscape-up {
-                    flex: 1 0 100%;
+                    flex: 1 0 calc(100% - 7.25rem - 0.5rem);
                     display: flex;
                     align-items: center;
                     padding: 0.8rem 0;
                     margin: 0;
+                }
+                @media (min-width: 1360px) {
+                    flex: 1 0 100%;
                 }
             }
             // collect image controls in a div
@@ -769,6 +781,20 @@
                 display: none;
                 & + label {
                     display: none;
+                }
+            }
+            // editor controls
+            .edit-mode-controls {
+                display: none;
+                @include breakpoints.for-tablet-landscape-up {
+                    display: flex;
+                }
+                flex-flow: row nowrap;
+                justify-content: flex-end;
+                flex: 1 1 7.25rem;
+                @media (min-width: 1360px) {
+                    margin-bottom: 1.2rem;
+                    justify-content: flex-start;
                 }
             }
             // zoom control (desktop)
