@@ -113,6 +113,10 @@ export default class extends Controller {
         const appliedFilters =
             this.filterModalTarget.querySelectorAll("input[checked]");
         appliedFilters.forEach((f) => (f.checked = false));
+        const dateFilters = this.filterModalTarget.querySelectorAll(
+            "input[type='number']"
+        );
+        dateFilters.forEach((f) => (f.value = ""));
         this.element.requestSubmit();
     }
 
