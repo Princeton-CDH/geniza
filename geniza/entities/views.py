@@ -18,6 +18,7 @@ from django.views.generic import DetailView, FormView, ListView
 from django.views.generic.edit import FormMixin
 
 from geniza.corpus.dates import PartialDate
+from geniza.corpus.views import SolrDateRangeMixin
 from geniza.entities.forms import PersonListForm, PersonMergeForm
 from geniza.entities.models import (
     PastPersonSlug,
@@ -458,7 +459,7 @@ class PlacePeopleView(PlaceDetailView):
         return context
 
 
-class PersonListView(ListView, FormMixin):
+class PersonListView(ListView, FormMixin, SolrDateRangeMixin):
     """A list view with faceted filtering and sorting using only the Django ORM/database."""
 
     model = Person
@@ -521,6 +522,22 @@ class PersonListView(ListView, FormMixin):
             self.applied_filter_labels += self.get_applied_filter_labels(
                 form, "gender", genders
             )
+        if search_opts.get("date_range"):
+            # date range filter; returns tuple of value or None for open-ended range
+            start, end = search_opts["date_range"]
+            people = people.filter(date_dr="[%s TO %s]" % (start or "*", end or "*"))
+            label = "%s–%s" % (start, end)
+            if start and not end:
+                label = _("After %s") % start
+            elif end and not start:
+                label = _("Before %s") % end
+            self.applied_filter_labels += [
+                {
+                    "field": "date_range",
+                    "value": search_opts["date_range"],
+                    "label": label,
+                }
+            ]
         if search_opts.get("social_role"):
             roles = literal_eval(search_opts["social_role"])
             roles = [re.sub(self.qs_regex, r"\\\1", r) for r in roles]
@@ -570,6 +587,10 @@ class PersonListView(ListView, FormMixin):
             form_data.setdefault(key, val)
 
         kwargs["data"] = form_data
+        # get min/max configuration for person date range field
+        kwargs["range_minmax"] = self.get_range_stats(
+            queryset_cls=PersonSolrQuerySet, field_name="date_range"
+        )
 
         return kwargs
 

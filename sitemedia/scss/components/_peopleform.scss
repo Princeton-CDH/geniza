@@ -272,6 +272,7 @@ main.people {
                 padding-bottom: 1rem;
                 @include breakpoints.for-tablet-landscape-up {
                     border: none;
+                    padding-bottom: 0;
                 }
             }
         }
@@ -309,13 +310,41 @@ main.people {
             padding-right: 0.5rem;
             margin-top: -1px;
         }
-        input:active + span::before,
-        input:checked + span::before {
+        input[type="checkbox"]:active + span::before,
+        input[type="checkbox"]:checked + span::before {
             content: "\f851"; // phosphor check-circle-fill icon
             color: var(--secondary);
         }
-        input:checked:active + span::before {
+        input[type="checkbox"]:checked:active + span::before {
             content: "\f0ec"; // phosphor circle icon
+        }
+        div.fieldset-left-column {
+            width: 100%;
+            gap: 1rem;
+            @include breakpoints.for-tablet-landscape-up {
+                width: auto;
+                gap: 3rem;
+            }
+            display: flex;
+            flex-flow: column;
+            div.inputs {
+                display: flex;
+                width: 100%;
+                flex-flow: row nowrap;
+                gap: 0.5rem;
+                label {
+                    // TODO: add sr-only class in HTML after doc search redesign
+                    @include a11y.sr-only;
+                }
+                input[type="number"] {
+                    flex: 1 1 auto;
+                    height: 2.25rem;
+                    padding: 0 0.5rem 0 1rem;
+                    background-color: var(--background-light);
+                    border: none;
+                    @include typography.meta;
+                }
+            }
         }
     }
     // header row (result count and sort options)

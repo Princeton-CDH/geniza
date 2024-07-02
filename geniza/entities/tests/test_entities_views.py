@@ -277,6 +277,10 @@ class TestPersonListView:
         PersonDocumentRelation.objects.create(
             person=person_multiname, document=join, type=author
         )
+        person.date = "990/1020"
+        person.save()
+        person_diacritic.date = "1150"
+        person_diacritic.save()
 
         SolrClient().update.index(
             [
@@ -340,6 +344,38 @@ class TestPersonListView:
             }
             qs = personlist_view.get_queryset()
             assert qs.count() == 1
+
+            # filter by dates
+            mock_get_form.return_value.cleaned_data = {
+                "date_range": ("1000", "1200"),
+            }
+            qs = personlist_view.get_queryset()
+            assert qs.count() == 2
+            assert any(
+                f["label"] == "1000–1200" for f in personlist_view.applied_filter_labels
+            )
+
+            mock_get_form.return_value.cleaned_data = {
+                "date_range": ("1100", None),
+            }
+            qs = personlist_view.get_queryset()
+            assert qs.count() == 1
+            assert qs[0].get("slug") == person_diacritic.slug
+            assert any(
+                f["label"] == "After 1100"
+                for f in personlist_view.applied_filter_labels
+            )
+
+            mock_get_form.return_value.cleaned_data = {
+                "date_range": (None, "1100"),
+            }
+            qs = personlist_view.get_queryset()
+            assert qs.count() == 1
+            assert qs[0].get("slug") == person.slug
+            assert any(
+                f["label"] == "Before 1100"
+                for f in personlist_view.applied_filter_labels
+            )
 
             # ---- sort ----
             # sort by related documents: ascending

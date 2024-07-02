@@ -61,7 +61,9 @@ export default class extends Controller {
             `${searchPage}-filters-expanded`,
             "false"
         );
-        this.filtersButtonTarget.classList.remove("open");
+        if (this.hasFiltersButtonTarget) {
+            this.filtersButtonTarget.classList.remove("open");
+        }
         this.navBackToSearch();
     }
 
@@ -76,7 +78,7 @@ export default class extends Controller {
                 "aria-expanded",
                 savedFilterState
             );
-            if (savedFilterState === "true") {
+            if (this.hasFiltersButtonTarget && savedFilterState === "true") {
                 this.filtersButtonTarget.classList.add("open");
             }
         }
@@ -92,6 +94,16 @@ export default class extends Controller {
                 `label[for*="${filterName}"] input[value*="${filterValue}"]`
             );
             appliedFilter.checked = false;
+        } else if (
+            filterName === "date_range" &&
+            (searchParams.has("date_range_0") ||
+                searchParams.has("date_range_1"))
+        ) {
+            // special handling for date range filter
+            const appliedFilters = this.filterModalTarget.querySelectorAll(
+                `label[for*="${filterName}"] input`
+            );
+            appliedFilters.forEach((f) => (f.value = ""));
         }
     }
 

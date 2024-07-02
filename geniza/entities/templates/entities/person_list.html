@@ -44,10 +44,16 @@
                 {% translate "Close filter options" as close_button %}
                 <span class="sr-only">{{ close_button }}</span>
             </a>
-            <label for="{{ form.gender.auto_id }}">
-                <span class="fieldname">{{ form.gender.label }}</span>
-                {% render_field form.gender data-action="search#update" %}
-            </label>
+            <div class="fieldset-left-column">
+                <label for="{{ form.gender.auto_id }}">
+                    <span class="fieldname">{{ form.gender.label }}</span>
+                    {% render_field form.gender data-action="search#update" %}
+                </label>
+                <label for="{{ form.date_range.auto_id }}">
+                    <span class="fieldname">{{ form.date_range.label }}</span>
+                    {% render_field form.date_range data-action="search#update" %}
+                </label>
+            </div>
             <label for="{{ form.social_role.auto_id }}">
                 <span class="fieldname">{{ form.social_role.label }}</span>
                 {% render_field form.social_role data-action="search#update" %}

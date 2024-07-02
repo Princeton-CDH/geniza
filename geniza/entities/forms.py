@@ -3,7 +3,8 @@ from django import forms
 from django.template.loader import get_template
 from django.utils.translation import gettext_lazy as _
 
-from geniza.corpus.forms import FacetChoiceField
+from geniza.common.fields import RangeField, RangeForm
+from geniza.corpus.forms import FacetChoiceField, YearRangeWidget
 from geniza.entities.models import (
     Person,
     PersonDocumentRelationType,
@@ -112,10 +113,12 @@ class PlacePlaceForm(forms.ModelForm):
         }
 
 
-class PersonListForm(forms.Form):
+class PersonListForm(RangeForm):
     gender = FacetChoiceField(label=_("Gender"))
     social_role = FacetChoiceField(label=_("Social role"))
     document_relation = FacetChoiceField(label=_("Relation to documents"))
+    # translators: label for person activity dates field
+    date_range = RangeField(label=_("Dates"), required=False, widget=YearRangeWidget())
 
     SORT_CHOICES = [
         # Translators: label for sort by name
