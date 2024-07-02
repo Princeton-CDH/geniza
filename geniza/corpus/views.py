@@ -40,7 +40,38 @@ from geniza.footnotes.forms import SourceChoiceForm
 from geniza.footnotes.models import Footnote, Source
 
 
-class DocumentSearchView(ListView, FormMixin, SolrLastModifiedMixin):
+class SolrDateRangeMixin:
+    """Mixin for solr-based views with start and end date fields to get
+    the full range of dates across the solr queryset."""
+
+    # NOTE: should cache this, shouldn't really change that frequently
+    def get_range_stats(self, queryset_cls, field_name):
+        """Return the min and max for range fields based on Solr stats.
+
+        :returns: Dictionary keyed on form field name with a tuple of
+            (min, max) as integers. If stats are not returned from the field,
+            the key is not added to a dictionary.
+        :rtype: dict
+        """
+        stats = queryset_cls().stats("start_date_i", "end_date_i").get_stats()
+        if stats.get("stats_fields"):
+            # use minimum from start date and max from end date
+            # - we're storing YYYYMMDD as 8-digit number for this we only want year
+            # convert to str, take first 4 digits, then convert back to int
+            min_val = stats["stats_fields"]["start_date_i"]["min"]
+            max_val = stats["stats_fields"]["end_date_i"]["max"]
+
+            # trim from the end to handle 3-digit years; includes .0 at end
+            min_year = int(str(min_val)[:-6]) if min_val else None
+            max_year = int(str(max_val)[:-6]) if max_val else None
+            return {field_name: (min_year, max_year)}
+
+        return {}
+
+
+class DocumentSearchView(
+    ListView, FormMixin, SolrLastModifiedMixin, SolrDateRangeMixin
+):
     model = Document
     form_class = DocumentSearchForm
     context_object_name = "documents"
@@ -93,30 +124,6 @@ class DocumentSearchView(ListView, FormMixin, SolrLastModifiedMixin):
             return "random_%s" % randint(1000, 9999)
         return self.solr_sort[sort_option]
 
-    # NOTE: should cache this, shouldn't really change that frequently
-    def get_range_stats(self):
-        """Return the min and max for range fields based on Solr stats.
-
-        :returns: Dictionary keyed on form field name with a tuple of
-            (min, max) as integers. If stats are not returned from the field,
-            the key is not added to a dictionary.
-        :rtype: dict
-        """
-        stats = DocumentSolrQuerySet().stats("start_date_i", "end_date_i").get_stats()
-        if stats.get("stats_fields"):
-            # use minimum from start date and max from end date
-            # - we're storing YYYYMMDD as 8-digit number for this we only want year
-            # convert to str, take first 4 digits, then convert back to int
-            min_val = stats["stats_fields"]["start_date_i"]["min"]
-            max_val = stats["stats_fields"]["end_date_i"]["max"]
-
-            # trim from the end to handle 3-digit years; includes .0 at end
-            min_year = int(str(min_val)[:-6]) if min_val else None
-            max_year = int(str(max_val)[:-6]) if max_val else None
-            return {"docdate": (min_year, max_year)}
-
-        return {}
-
     def get_form_kwargs(self):
         """get form arguments from request and configured defaults"""
         kwargs = super().get_form_kwargs()
@@ -140,7 +147,9 @@ class DocumentSearchView(ListView, FormMixin, SolrLastModifiedMixin):
 
         kwargs["data"] = form_data
         # get min/max configuration for document date range field
-        kwargs["range_minmax"] = self.get_range_stats()
+        kwargs["range_minmax"] = self.get_range_stats(
+            queryset_cls=DocumentSolrQuerySet, field_name="docdate"
+        )
 
         return kwargs
 
