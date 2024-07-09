@@ -273,11 +273,12 @@ class Fragment(TrackChangesModel):
             " ".join(
                 # include label as title for now; include canvas as data attribute for reordering
                 # on Document
-                '<div class="admin-thumbnail%s" %s><img src="%s" loading="lazy" height="200" title="%s" /></div>'
+                '<div class="admin-thumbnail%s" %s><img src="%s" loading="lazy" height="%d" title="%s" /></div>'
                 % (
                     " selected" if i in selected else "",
                     f'data-canvas="{list(canvases)[i]}"' if canvases else "",
                     img,
+                    img.size.options["height"] if hasattr(img, "size") else 200,
                     labels[i],
                 )
                 for i, img in enumerate(images)
@@ -497,7 +498,20 @@ class DocumentQuerySet(MultilingualQuerySet):
         return self.get(models.Q(id=pgpid) | models.Q(old_pgpids__contains=[pgpid]))
 
 
-class Document(ModelIndexable, DocumentDateMixin):
+class PermalinkMixin:
+    """Mixin to generate a permalink for Django model objects by removing language code
+    from the object's absolute URL."""
+
+    @property
+    def permalink(self):
+        # generate permalink without language url so that all versions have
+        # the same link and users will be directed to their preferred language
+        # - get current active language, or default language if not active
+        lang = get_language() or settings.LANGUAGE_CODE
+        return absolutize_url(self.get_absolute_url().replace(f"/{lang}/", "/"))
+
+
+class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin):
     """A unified document such as a letter or legal document that
     appears on one or more fragments."""
 
@@ -721,14 +735,6 @@ class Document(ModelIndexable, DocumentDateMixin):
         """url for this document"""
         return reverse("corpus:document", args=[str(self.id)])
 
-    @property
-    def permalink(self):
-        # generate permalink without language url so that all versions
-        # have the same link and users will be directed preferred language
-        # - get current active language, or default langue if not active
-        lang = get_language() or settings.LANGUAGE_CODE
-        return absolutize_url(self.get_absolute_url().replace(f"/{lang}/", "/"))
-
     def iiif_urls(self):
         """List of IIIF urls for images of the Document's Fragments."""
         return list(
@@ -833,6 +839,23 @@ class Document(ModelIndexable, DocumentDateMixin):
             iiif_images  # add any remaining images after ordered ones
         )
         return ordered_images
+
+    def list_thumbnail(self):
+        """generate html for thumbnail of first image, for display in related documents lists"""
+        iiif_images = self.iiif_images()
+        if not iiif_images:
+            return ""
+        img = list(iiif_images.values())[0]
+        return Fragment.admin_thumbnails(
+            images=[
+                img["image"]
+                .size(height=60, width=60)
+                .rotation(degrees=img["rotation"])
+                .region(square=True)
+            ],
+            labels=[img["label"]],
+            canvases=iiif_images.keys(),
+        )
 
     def admin_thumbnails(self):
         """generate html for thumbnails of all iiif images, for image reordering UI in admin"""

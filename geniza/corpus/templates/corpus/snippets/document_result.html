@@ -58,6 +58,7 @@
                     {% if document_highlights.description %}
                         {% for snippet in document_highlights.description %}
                             {{ snippet|safe }}
+                            {% if not forloop.last %}[…]{% endif %}
                         {% endfor %}
                     {% else %}
                             {# otherwise, display truncated description #}

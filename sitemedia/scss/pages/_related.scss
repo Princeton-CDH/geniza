@@ -1,9 +1,272 @@
 // -----------------------------------------------------------------------------
-// List of documents related to a given document.
+// List of documents related to a given document, person, or place.
 // -----------------------------------------------------------------------------
 
+@use "../base/breakpoints";
 @use "../base/container";
+@use "../base/fonts";
+@use "../base/spacing";
+@use "../base/typography";
 
 section#document-list.related-documents {
     @include container.two-column;
+}
+
+main.person table.related-documents,
+main.place table.related-documents {
+    @include typography.related-table;
+    max-width: none;
+    margin-top: 1.5rem;
+    // display the table like a grid
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem;
+    @include breakpoints.for-tablet-landscape-up {
+        margin-top: (2rem + spacing.$spacing-xs);
+        background-color: var(--background-light);
+        grid-template-columns: 34% 25% 25% 1fr;
+        gap: 0;
+    }
+    tbody {
+        // required if we want to use display: grid in table
+        display: contents;
+    }
+    thead {
+        // hide the headers on mobile
+        display: none;
+        @include breakpoints.for-tablet-landscape-up {
+            display: contents;
+        }
+    }
+    // sortable headers
+    th {
+        display: flex;
+        align-items: center;
+        text-align: left;
+        padding: 1rem 0 0.5rem;
+        border-bottom: 1px solid var(--disabled);
+        a {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            text-decoration: none;
+            svg {
+                width: 16px;
+                height: 16px;
+                display: block;
+                color: var(--disabled-on-background-light);
+                fill: var(--disabled-on-background-light);
+            }
+            &[class*="asc"] svg {
+                color: var(--on-background);
+            }
+            &[class*="desc"] svg {
+                fill: var(--on-background);
+            }
+        }
+        &.sorted {
+            font-family: fonts.$primary-bold;
+            font-weight: 700;
+        }
+    }
+    // row: flex column on mobile, display contents on desktop
+    tr {
+        max-width: none;
+        display: flex;
+        flex-flow: column;
+        background-color: var(--background-light);
+        padding: 1rem;
+        @include breakpoints.for-tablet-landscape-up {
+            display: contents;
+            background-color: transparent;
+            padding: 0;
+        }
+    }
+    // cell: flex column on mobile, flex row on desktop
+    td {
+        display: flex;
+        flex-flow: column;
+        line-height: (24 / 14);
+        @include breakpoints.for-tablet-landscape-up {
+            padding-right: 1.5rem;
+            flex-flow: row;
+            align-items: center;
+            gap: 1.5rem;
+            min-height: 88px;
+            border: solid var(--background-gray);
+            border-width: 1px 0 0;
+            line-height: 1.5;
+        }
+        a {
+            font-family: fonts.$primary-bold;
+            font-weight: 700;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
+        }
+        // specific document metadata styling
+        &.document-date {
+            flex-flow: column;
+            gap: 0;
+            align-items: flex-start;
+            justify-content: center;
+        }
+        &.document-title {
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+            @include breakpoints.for-tablet-landscape-up {
+                gap: 1.5rem;
+                margin-bottom: 0;
+            }
+            img,
+            .no-image {
+                width: 60px;
+                height: 60px;
+            }
+            // placeholder for no image: text on image
+            .no-image {
+                box-sizing: border-box;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                text-align: center;
+                background-image: url("/static/img/ui/all/all/no-image-square.png");
+                font-family: fonts.$primary-bold;
+                font-weight: 700;
+                color: var(--on-background-light-alt);
+                font-size: 0.75rem;
+                padding: 0 0.5rem;
+                line-height: 0.875rem;
+            }
+        }
+    }
+    .admin-thumbnail {
+        max-height: 60px;
+    }
+
+    // desktop-only spacing
+    @include breakpoints.for-tablet-landscape-up {
+        tr:first-child td {
+            border-top: none;
+        }
+        th:first-of-type,
+        td:first-of-type {
+            padding-left: 2rem;
+        }
+        th:last-of-type,
+        td:last-of-type {
+            padding-right: 2rem;
+        }
+    }
+}
+main.person,
+main.place {
+    section.relations {
+        width: 100%;
+        padding: 0 1rem;
+        @include breakpoints.for-tablet-landscape-up {
+            padding: 0;
+        }
+        table.places,
+        table.people {
+            width: 100%;
+            thead tr {
+                border-bottom: 1px solid var(--related-header-underline);
+                @include typography.related-table;
+                text-align: left;
+                th {
+                    padding: 0 0 0.5rem;
+                    a {
+                        display: flex;
+                        align-items: center;
+                        gap: 0.25rem;
+                        text-decoration: none;
+                        svg {
+                            width: 16px;
+                            height: 16px;
+                            display: block;
+                            color: var(--disabled-on-background-light);
+                            fill: var(--disabled-on-background-light);
+                        }
+                        &[class*="asc"] svg {
+                            color: var(--on-background);
+                        }
+                        &[class*="desc"] svg {
+                            fill: var(--on-background);
+                        }
+                    }
+                    &.sorted {
+                        font-family: fonts.$primary-bold;
+                        font-weight: 700;
+                    }
+                }
+            }
+            tbody tr {
+                @include typography.meta;
+                border-bottom: 1px solid var(--tabs-bottom);
+                td {
+                    padding: 0.75rem 0;
+                }
+            }
+            // hide notes on mobile
+            th.notes,
+            td.notes {
+                display: none;
+                @include breakpoints.for-tablet-landscape-up {
+                    display: table-cell;
+                }
+            }
+        }
+        margin: 1.5rem 0 9rem;
+        @include breakpoints.for-tablet-landscape-up {
+            margin: 2rem 0 0;
+        }
+    }
+}
+main.place section.relations {
+    margin: 1.5rem 0 9rem;
+    @include breakpoints.for-tablet-landscape-up {
+        margin: (2rem + spacing.$spacing-xs) 0 0;
+    }
+    table.people {
+        @include breakpoints.for-tablet-landscape-up {
+            background-color: var(--background-light);
+            thead tr {
+                border-bottom: 1px solid var(--disabled);
+                th {
+                    padding: 1rem 0 0.5rem;
+                }
+            }
+            th:first-of-type,
+            td:first-of-type {
+                padding-left: 1rem;
+            }
+            th:last-of-type,
+            td:last-of-type {
+                padding-right: 1rem;
+            }
+        }
+    }
+}
+
+// RTL overrides
+html[dir="rtl"] main.person table.related-documents,
+html[dir="rtl"] main.place table.related-documents {
+    @include breakpoints.for-tablet-landscape-up {
+        td {
+            padding-left: 1.5rem;
+            padding-right: 0;
+        }
+        th:first-of-type,
+        td:first-of-type {
+            padding-right: 2rem;
+            padding-left: 0;
+        }
+        th:last-of-type,
+        td:last-of-type {
+            padding-left: 2rem;
+            padding-right: 0;
+        }
+    }
 }

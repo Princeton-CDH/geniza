@@ -99,7 +99,7 @@ class TestDocumentDetailTemplate:
         # should contain header label for this translation
         assertContains(
             response,
-            f'<span data-transcription-target="translationShortLabel">Translation: {unpublished_editions.all_authors()} {unpublished_editions.all_languages()}</span>',
+            f'<span data-transcription-target="translationShortLabel" data-ittpanel-target="shortLabel">Translator: {unpublished_editions.all_authors()} {unpublished_editions.all_languages()}</span>',
             html=True,
         )
 

@@ -335,6 +335,10 @@ main.search form {
                         flex: 1 0 14%;
                     }
                 }
+                input + span {
+                    // TODO: when redesigned, make this span visible
+                    @include a11y.sr-only;
+                }
                 input[type="number"] {
                     flex: 1 0 66%;
                     height: 2.9375rem;

@@ -168,13 +168,12 @@ class TestDocumentDetailView:
             doc_relation=Footnote.DIGITAL_TRANSLATION,
         )
         response = client.get(reverse("corpus:document", args=(document.pk,)))
-        # document has image (via fragment.iiif_url) and translation, so should show those
+        # document has image (via fragment.iiif_url) and translation, so should show all three
         assert "translation" in response.context["default_shown"]
         assert "images" in response.context["default_shown"]
         assert "translation" not in response.context["disabled"]
         assert "images" not in response.context["disabled"]
-        # should not show OR disable transcription
-        assert "transcription" not in response.context["default_shown"]
+        assert "transcription" in response.context["default_shown"]
         assert "transcription" not in response.context["disabled"]
 
 
@@ -479,7 +478,9 @@ class TestDocumentSearchView:
             docsearch_view.request = Mock()
 
             # should not error if solr returns none
-            stats = docsearch_view.get_range_stats()
+            stats = docsearch_view.get_range_stats(
+                queryset_cls=mock_queryset_cls, field_name="docdate"
+            )
             assert stats == {"docdate": (None, None)}
             mock_queryset_cls.return_value.stats.assert_called_with(
                 "start_date_i", "end_date_i"
@@ -492,14 +493,18 @@ class TestDocumentSearchView:
                     "end_date_i": {"max": 10421231.0},
                 }
             }
-            stats = docsearch_view.get_range_stats()
+            stats = docsearch_view.get_range_stats(
+                queryset_cls=mock_queryset_cls, field_name="docdate"
+            )
             assert stats == {"docdate": (1038, 1042)}
 
             # test three-digit year
             mock_queryset_cls.return_value.get_stats.return_value["stats_fields"][
                 "start_date_i"
             ]["min"] = 8430101.0
-            stats = docsearch_view.get_range_stats()
+            stats = docsearch_view.get_range_stats(
+                queryset_cls=mock_queryset_cls, field_name="docdate"
+            )
             assert stats == {"docdate": (843, 1042)}
 
     @pytest.mark.usefixtures("mock_solr_queryset")

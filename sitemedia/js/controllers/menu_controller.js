@@ -1,6 +1,7 @@
 // controllers/menu_controller.js
 
 import { Controller } from "@hotwired/stimulus";
+import * as Turbo from "@hotwired/turbo";
 
 export default class extends Controller {
     // Adapted from W3C web accessibility tutorials:
@@ -25,6 +26,13 @@ export default class extends Controller {
         const link = e.currentTarget;
         if (link.getAttribute("aria-expanded") === "true") {
             link.setAttribute("aria-expanded", "false");
+        }
+    }
+    changePage(e) {
+        // used for navigating during select elements, where
+        // e.target.value is the url to navigate to
+        if (e.target.value) {
+            Turbo.visit(e.target.value);
         }
     }
 }
