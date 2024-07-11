@@ -6,6 +6,17 @@ import {
     AnnotationServerStorage,
 } from "annotorious-tahqiq";
 
+// required imports for self-hosted tinyMCE
+import "tinymce/tinymce";
+import "tinymce/icons/default";
+import "tinymce/themes/silver";
+import "tinymce/plugins/lists";
+import contentUiCss from "tinymce/skins/ui/oxide/content.css";
+import contentCss from "tinymce/skins/content/default/content.css";
+import skinCss from "tinymce/skins/ui/oxide/skin.min.css";
+import skinShadowDomCss from "tinymce/skins/ui/oxide/skin.shadowdom.min.css";
+import skinContentCss from "tinymce/skins/ui/oxide/content.min.css";
+
 export default class extends Controller {
     static targets = ["image", "imageContainer"];
 
@@ -128,6 +139,35 @@ export default class extends Controller {
             config.text_direction,
             config.tiny_api_key
         );
+
+        if (window.tinyConfig) {
+            // add extra tinyMCE configuration required for self-hosted instance
+            window.tinyConfig = {
+                ...window.tinyConfig,
+                // disable attempts to load tinyMCE css from CDN or server; load as modules insetad
+                skin: false,
+                content_css: false,
+                // use css modules for tinyMCE editor inner content style
+                content_style: `${contentUiCss} ${contentCss}
+                    ::marker { margin-left: 1em; }
+                    li { padding-right: 1em; } ins { color: gray; }`,
+                setup: (editor) => {
+                    editor.on("init", () => {
+                        // place imported CSS modules into <style> element inside shadow root.
+                        // (hacky but required to get self-hosted tinyMCE webcomponent to see CSS)
+                        const editorNode = editor.targetElm;
+                        if (!editorNode.parentNode.querySelector("style")) {
+                            const style = document.createElement("style");
+                            style.textContent = `${skinCss} ${skinContentCss} ${skinShadowDomCss}`;
+                            editorNode.parentNode.insertBefore(
+                                style,
+                                editorNode.nextSibling
+                            );
+                        }
+                    });
+                },
+            };
+        }
 
         // add some special handling to hide the OSD navigator while drawing
         anno.on("startSelection", () => this.setNavigatorVisible(false));

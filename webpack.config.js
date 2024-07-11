@@ -41,9 +41,21 @@ module.exports = (env, options) => ({
     },
     module: {
         rules: [
+            // load tinyMCE css as ES modules so we can use them in JS code
+            {
+                test: /(skin|content|shadowdom)(\.min)?\.css$/i,
+                use: [
+                    {
+                        loader: "css-loader",
+                        options: {
+                            esModule: true,
+                        },
+                    },
+                ],
+            },
             // styles configuration: handle .sass, .scss, .css files and apply autoprefixer
             {
-                test: /\.(sa|sc|c)ss$/,
+                test: /(?<!skin|content|shadowdom)(?<!\.min)\.(sa|sc|c)ss$/,
                 use: [
                     // extract all styles into a single file in prod; serve directly from memory in dev
                     options.mode == "production"
@@ -125,5 +137,15 @@ module.exports = (env, options) => ({
             "...", // shorthand; minify JS using the default TerserPlugin
             new CssMinimizerPlugin(), // also minify CSS
         ],
+        // chunking required for tinyMCE JS and CSS bundling
+        splitChunks: {
+            chunks: "all",
+            cacheGroups: {
+                tinymceVendor: {
+                    test: /[\/]node_moduleslink:tinymce[\/]link:.*js|.*skin.css[\/]|[\/]plugins[\/]/,
+                    name: "tinymce",
+                },
+            },
+        },
     },
 });
