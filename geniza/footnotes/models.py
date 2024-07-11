@@ -634,11 +634,17 @@ class Footnote(TrackChangesModel):
             )
 
     @cached_property
-    def content_html_canvases(self):
-        "content as a list of HTML strings, one per canvas"
+    def content_text_canvases(self):
+        "content as a list of strings, one per canvas"
         content_html = self.content_html
         if content_html:
-            return ["\n".join(canvas_annos) for canvas_annos in content_html.values()]
+            return [
+                # convert each annotation from html to plaintext
+                "\n".join(
+                    [BeautifulSoup(a, features="lxml").get_text() for a in canvas_annos]
+                )
+                for canvas_annos in content_html.values()
+            ]
 
     @staticmethod
     def explicit_line_numbers(html):

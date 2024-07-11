@@ -1270,10 +1270,9 @@ class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin):
                 content = fn.content_html_str
                 if content:
                     transcription_texts.append(Footnote.explicit_line_numbers(content))
-                    for canvas in fn.content_html_canvases:
-                        transcription_texts_regex.append(
-                            Footnote.explicit_line_numbers(canvas)
-                        )
+                    for canvas in fn.content_text_canvases:
+                        # index plaintext only for regex
+                        transcription_texts_regex.append(canvas)
             elif Footnote.DIGITAL_TRANSLATION in fn.doc_relation:
                 content = fn.content_html_str
                 if content:
