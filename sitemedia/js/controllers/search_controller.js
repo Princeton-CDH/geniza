@@ -215,4 +215,12 @@ export default class extends Controller {
             }
         });
     }
+
+    preventEnterKeypress(e) {
+        // text input elements like the date range will try to click buttons in the form
+        // if Enter is pressed while they are focused, so prevent that behavior
+        if (e.key === "Enter") {
+            e.preventDefault();
+        }
+    }
 }
