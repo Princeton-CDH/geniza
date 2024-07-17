@@ -1273,6 +1273,7 @@ class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin):
                     for canvas in fn.content_text_canvases:
                         # index plaintext only for regex
                         transcription_texts_regex.append(canvas)
+                        print(canvas)
             elif Footnote.DIGITAL_TRANSLATION in fn.doc_relation:
                 content = fn.content_html_str
                 if content:

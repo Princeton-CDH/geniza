@@ -641,7 +641,10 @@ class Footnote(TrackChangesModel):
             return [
                 # convert each annotation from html to plaintext
                 "\n".join(
-                    [BeautifulSoup(a, features="lxml").get_text() for a in canvas_annos]
+                    [
+                        BeautifulSoup(a, features="lxml").get_text().replace("\n", " ")
+                        for a in canvas_annos
+                    ]
                 )
                 for canvas_annos in content_html.values()
             ]

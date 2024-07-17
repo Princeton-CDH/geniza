@@ -282,12 +282,10 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
         # attempt split on first regex match
         split_text = re.split(pattern, text, maxsplit=1, flags=re.DOTALL)
         if len(split_text) > 1:
-            # found a match, truncate text down to just context around match. ensure snippets begin
-            # or end with newlines to prevent malformed <li> tags from appearing (they get mangled
-            # when using simple n-length substrings)
-            # using newline as start boundary, get <=150 characters of context before match
+            # found a match, truncate text down to just context around match
+            # using word boundary as start, get <=150 characters of context before match
             before = split_text[0]
-            start_newline_regex = re.search(r"\n(.{1,150}$)", before, flags=re.DOTALL)
+            start_newline_regex = re.search(r"\b(.{1,150}$)", before, flags=re.DOTALL)
             before = start_newline_regex.group(1) if start_newline_regex else before
 
             # add highlight to matching portion
@@ -303,9 +301,9 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
                 flags=re.MULTILINE,
             )
 
-            # using newline as end boundary, get <=150 characters of context after match
+            # get <=150 characters of context after match, using word boundary as end
             after = split_text[2]
-            end_newline_regex = re.search(r"^(.{1,150})\n", after, flags=re.DOTALL)
+            end_newline_regex = re.search(r"^(.{1,150})\b", after, flags=re.DOTALL)
             after = end_newline_regex.group(1) if end_newline_regex else after
 
             # combine truncated context with highlighted match
