@@ -1159,6 +1159,8 @@ class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin):
             "languages",
             "log_entries",
             "dating_set",
+            "persondocumentrelation_set",
+            "documentplacerelation_set",
             Prefetch(
                 "textblock_set",
                 queryset=TextBlock.objects.select_related(
@@ -1237,6 +1239,7 @@ class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin):
                 "old_pgpids_is": self.old_pgpids,
                 "language_code_s": self.primary_lang_code,
                 "language_script_s": self.primary_script,
+                "language_name_ss": [str(l) for l in self.languages.all()],
                 # use image info link without trailing info.json to easily convert back to iiif image client
                 # NOTE: if/when piffle supports initializing from full image uris, we could simplify this
                 # code to index the full image url, with rotation overrides applied
@@ -1247,6 +1250,8 @@ class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin):
                 "iiif_labels_ss": [img["label"] for img in images],
                 "iiif_rotations_is": [img["rotation"] for img in images],
                 "has_image_b": len(images) > 0,
+                "people_count_i": self.persondocumentrelation_set.count(),
+                "places_count_i": self.documentplacerelation_set.count(),
             }
         )
 
@@ -1283,11 +1288,13 @@ class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin):
                 fn.doc_relation
             )
 
-        # make sure digital editions are also counted as editions,
-        # whether or not there is a separate edition footnote
+        # make sure digital editions/translations are also counted,
+        # whether or not there is a separate edition/translation footnote
         for source, doc_relations in source_relations.items():
             if Footnote.DIGITAL_EDITION in doc_relations:
                 source_relations[source].add(Footnote.EDITION)
+            if Footnote.DIGITAL_TRANSLATION in doc_relations:
+                source_relations[source].add(Footnote.TRANSLATION)
 
         # flatten sets of relations by source into a list of relations
         for relation in list(chain(*source_relations.values())):

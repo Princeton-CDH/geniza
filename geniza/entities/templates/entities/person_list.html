@@ -12,14 +12,14 @@
             <a href="#filters" role="button" id="filters-button" data-search-target="filtersButton" data-action="click->search#toggleFiltersOpen">
                 <svg><use xlink:href="{% static 'img/ui/all/all/search-filter-icon.svg' %}#filter-icon" /></svg>
                 <span>{% translate "Filters" %}</span>
-                {% if filters %}
-                    <span class="filter-count">{{ filters|length }}</span>
+                {% if applied_filters %}
+                    <span class="filter-count">{{ applied_filters|length }}</span>
                 {% endif %}
             </a>
-            {% if filters %}
+            {% if applied_filters %}
                 {# convenient unapply filter buttons; aria role set to presentation as functionality duplicated below #}
                 <div id="applied-filters" role="presentation">
-                    {% for filter in filters %}
+                    {% for filter in applied_filters %}
                         <button
                             data-field="{{ filter.field }}"
                             value="{{ filter.value }}"
@@ -66,13 +66,17 @@
         <section id="person-list" data-action="click@document->search#clickCloseDropdown">
             <div class="header-row">
                 <h2>
+                    {# Translators: search results section header #}
+                    {% translate "Results" %}
+                </h2>
+                <span class="result-count">
                     {# Translators: number of results #}
                     {% blocktranslate with count_humanized=paginator.count|intcomma count counter=paginator.count trimmed %}
                         1 result
                     {% plural %}
                         {{ count_humanized }} results
                     {% endblocktranslate %}
-                </h2>
+                </span>
                 <fieldset id="sort">
                     <label for="{{ form.sort.auto_id }}">{{ form.sort.label }}</label>
                     <details data-search-target="dropdownDetails">
@@ -97,18 +101,15 @@
                     <th class="dates">{% translate "Dates" %}</th>
                     {# Translators: Person "social role" column header on the browse page #}
                     <th>{% translate "Social role" %}</th>
-                    <th class="related">
-                        <svg aria-hidden="true"><use xlink:href="{% static 'img/ui/all/all/related-documents-icon.svg' %}#related-documents" /></svg>
+                    <th class="related documents">
                         {# Translators: Person "document count" column header on the browse page #}
                         <span class="sr-only">{% translate "Number of related documents" %}</span>
                     </th>
-                    <th class="related">
-                        <svg aria-hidden="true"><use xlink:href="{% static 'img/ui/all/all/related-people-icon.svg' %}#related-people" /></svg>
+                    <th class="related people">
                         {# Translators: Person "related people count" column header on the browse page #}
                         <span class="sr-only">{% translate "Number of related people" %}</span>
                     </th>
-                    <th class="related">
-                        <svg aria-hidden="true"><use xlink:href="{% static 'img/ui/all/all/related-places-icon.svg' %}#related-places" /></svg>
+                    <th class="related places">
                         {# Translators: Person "related place count" column header on the browse page #}
                         <span class="sr-only">{% translate "Number of related places" %}</span>
                     </th>
@@ -160,18 +161,15 @@
                         {# Translators: accessible label for section showing counts of entries related to an entity #}
                         <dl class="relations" aria-label="{% translate 'Related entries' %}">
                             <dt class="sr-only">{% translate "Number of related people" %}</dt>
-                            <dd>
-                                <svg aria-hidden="true"><use xlink:href="{% static 'img/ui/all/all/related-people-icon.svg' %}#related-people" /></svg>
+                            <dd class="people">
                                 <span>{{ person.people }}</span>
                             </dd>
                             <dt class="sr-only">{% translate "Number of related places" %}</dt>
-                            <dd>
-                                <svg aria-hidden="true"><use xlink:href="{% static 'img/ui/all/all/related-places-icon.svg' %}#related-places" /></svg>
+                            <dd class="places">
                                 <span>{{ person.places }}</span>
                             </dd>
                             <dt class="sr-only">{% translate "Number of related documents" %}</dt>
-                            <dd>
-                                <svg aria-hidden="true"><use xlink:href="{% static 'img/ui/all/all/related-documents-icon.svg' %}#related-documents" /></svg>
+                            <dd class="documents">
                                 <span>{{ person.documents }}</span>
                             </dd>
                         </dl>

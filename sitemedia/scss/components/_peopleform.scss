@@ -6,207 +6,11 @@
 @use "../base/breakpoints";
 @use "../base/colors";
 @use "../base/fonts";
+@use "../base/spacing";
 @use "../base/typography";
 
-main.people {
-    // Form with filters
-    form {
-        display: flex;
-        flex-flow: column;
-        width: 100%;
-        padding: 0;
-        border-top: 1px solid var(--background-gray);
-    }
-    div#filters-header {
-        display: flex;
-        flex-flow: row nowrap;
-        align-items: center;
-        padding: 0.25rem 0;
-        gap: 1.5rem;
-        &:not(:has(#applied-filters)) {
-            height: 0;
-            padding: 0;
-            @include breakpoints.for-tablet-landscape-up {
-                height: auto;
-                padding: 0.25rem 0;
-            }
-        }
-        // filter chips container
-        #applied-filters {
-            display: flex;
-            flex-flow: row wrap;
-            align-items: center;
-            gap: 0.25rem 0.5rem;
-            padding: 0;
-            @include breakpoints.for-tablet-landscape-up {
-                flex: 1 1 100%;
-                padding: 0 1.5rem;
-            }
-            &::before {
-                content: "";
-                height: 1rem;
-                position: absolute;
-                margin-left: -1.5rem;
-                border-left: 1px solid colors.$gray;
-            }
-            // filter chip
-            button {
-                border: none;
-                outline: none;
-                cursor: pointer;
-                border-radius: 50px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                gap: 0.5rem;
-                height: 2rem;
-                padding: 0 1rem;
-                @include typography.form-option-xs;
-                line-height: 1.25;
-                color: var(--on-background-gray);
-                background-color: var(--background-gray);
-                transition: background-color 0.15s ease-in-out,
-                    color 0.15s ease-in-out;
-                &:hover {
-                    background-color: var(--filter-chip-bg-hover);
-                }
-                &:active {
-                    background-color: var(--filter-chip-bg-active);
-                }
-            }
-        }
-        button#clear-filters {
-            display: none;
-            @include breakpoints.for-tablet-landscape-up {
-                display: block;
-            }
-            cursor: pointer;
-            color: var(--disabled-on-background-light);
-            background-color: transparent;
-            border: none;
-            height: 2rem;
-            min-width: 4.5rem;
-            @include typography.meta;
-            transition: color 0.15s ease-in-out;
-            &:hover {
-                color: var(--date-placeholder);
-            }
-            &:active {
-                color: var(--on-background);
-            }
-        }
-    }
-    // button for opening and closing the filter panel/modal
-    a#filters-button {
-        text-decoration: none;
-        @include typography.meta-bold;
-        display: flex;
-        align-items: center;
-        min-height: 48px;
-        padding: 0 0.5rem;
-        border-radius: 5px;
-        position: absolute;
-        top: 9rem;
-        right: 1rem;
-        align-self: flex-start;
-        flex: 0 1 auto;
-        margin: auto 0;
-        @include breakpoints.for-tablet-landscape-up {
-            position: relative;
-            top: auto;
-            right: auto;
-            padding: 0 2rem 0 0.5rem;
-            span:last-of-type:after {
-                content: "\f0c2"; // phosphor caret-down icon
-            }
-            &:has(~ fieldset#filters:target),
-            &:has(~ fieldset#filters[aria-expanded="true"]) {
-                // prevent display and focus when expanded, maintain flow/spacing
-                visibility: hidden;
-            }
-        }
-        svg {
-            width: 20px;
-            height: 20px;
-        }
-        &:focus {
-            outline: 0.125rem solid var(--focus);
-        }
-        // text that reads "Filters"
-        span {
-            position: relative;
-            margin-left: 0.25rem;
-            display: flex;
-            align-items: center;
-            // caret to indicate opening and closing
-            &:last-of-type:after {
-                position: absolute;
-                font-family: "Phosphor";
-                font-size: typography.$text-size-md;
-                right: -1.5rem;
-                font-weight: 600;
-            }
-        }
-        // count of active filters
-        span.filter-count {
-            justify-content: center;
-            min-width: 1.25rem;
-            height: 1.25rem;
-            font-family: fonts.$primary;
-            font-weight: 400;
-            font-size: typography.$text-size-md;
-            background-color: var(--background-gray);
-            border-radius: 0.25rem;
-        }
-        // close button
-        &.open {
-            display: none;
-            @include breakpoints.for-tablet-landscape-up {
-                display: flex;
-                background-color: var(--secondary);
-                color: var(--on-secondary);
-                fill: var(--on-secondary);
-                span:last-of-type:after {
-                    content: "\f0c5"; // phosphor caret-up icon
-                }
-                span.filter-count {
-                    background-color: var(--primary);
-                }
-            }
-        }
-    }
-    a#close-filters-modal {
-        text-decoration: none;
-        position: absolute;
-        right: 0.25rem;
-        top: 0.25rem;
-        @include typography.icon-button-md;
-        width: 3rem;
-        height: 3rem;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        &::before {
-            content: "\f36d"; // phosphor X icon
-        }
-        @include breakpoints.for-tablet-landscape-up {
-            display: none;
-        }
-    }
-    // filter modal backdrop (mobile)
-    .modal-backdrop:has(~ fieldset#filters:target),
-    .modal-backdrop:has(~ fieldset#filters[aria-expanded="true"]) {
-        position: fixed;
-        top: 0;
-        left: 0;
-        z-index: 7;
-        min-width: 100vw;
-        min-height: 100vh;
-        background-color: var(--modal-backdrop);
-        @include breakpoints.for-tablet-landscape-up {
-            display: none;
-        }
-    }
+main.people,
+main.search {
     // filters section
     fieldset#filters {
         // only display if targeted/expanded
@@ -235,8 +39,7 @@ main.people {
                 display: grid;
                 grid-template-columns: 1fr 1fr 1fr;
                 gap: 2rem;
-                padding: 1.5rem;
-                border-top: 1px solid var(--background-gray);
+                padding: 1.5rem 0;
                 // desktop: in flow
                 overflow-y: auto;
                 top: auto;
@@ -246,8 +49,8 @@ main.people {
                 height: auto;
             }
         }
-        legend {
-            // legend should be visible on mobile, sr-only on desktop
+        & > legend {
+            // outermost legend should be visible on mobile, sr-only on desktop
             @include breakpoints.for-tablet-landscape-up {
                 @include a11y.sr-only;
             }
@@ -258,14 +61,15 @@ main.people {
             font-size: 1.5rem;
             line-height: 1.4166;
         }
-        label {
+        label,
+        fieldset legend {
             width: 100%;
             span.fieldname {
                 display: block;
                 @include typography.form-option-sm-bold;
                 font-size: typography.$text-size-lg;
                 line-height: 1.166;
-                margin-bottom: 0.75rem;
+                margin-bottom: 0.25rem;
             }
             &:not(last-of-type) {
                 border-bottom: 1px solid var(--background-gray);
@@ -341,8 +145,27 @@ main.people {
                     height: 2.25rem;
                     padding: 0 0.5rem 0 1rem;
                     background-color: var(--background-light);
+                    color: var(--on-background-light);
                     border: none;
                     @include typography.meta;
+                    &::placeholder {
+                        color: var(--date-placeholder);
+                    }
+                }
+            }
+        }
+        .includes-fields {
+            width: 100%;
+            legend {
+                border: none;
+                padding: 0;
+            }
+            ul {
+                border-bottom: 1px solid var(--background-gray);
+                padding-bottom: 1rem;
+                @include breakpoints.for-tablet-landscape-up {
+                    border: none;
+                    padding: 0;
                 }
             }
         }
@@ -352,6 +175,17 @@ main.people {
         display: flex;
         flex-flow: row;
         justify-content: space-between;
+        align-items: center;
+        gap: 0.75rem;
+        padding-top: 1.5rem;
+        @include breakpoints.for-tablet-landscape-up {
+            gap: 1rem;
+        }
+        span.result-count {
+            flex-grow: 1;
+            @include typography.meta;
+            font-weight: normal;
+        }
         fieldset#sort {
             display: flex;
             align-items: center;
@@ -363,7 +197,7 @@ main.people {
                     content: ":";
                 }
             }
-            // sort "dropdown" (actually details/summary)
+            // people sort "dropdown" (actually details/summary)
             details {
                 position: relative;
                 summary {
@@ -455,15 +289,64 @@ main.people {
                     }
                 }
             }
+            &:has(select) {
+                gap: 0.25rem;
+            }
+            select {
+                // A reset of styles, including removing the default dropdown arrow
+                // @link https://moderncss.dev/custom-select-styles-with-pure-css/
+                -webkit-appearance: none;
+                -moz-appearance: none;
+                appearance: none;
+                border: none;
+                font-family: inherit;
+                font-size: inherit;
+                border-radius: 0;
+                // Remove dropdown arrow in IE10 & IE11
+                // @link https://www.filamentgroup.com/lab/select-css.html
+                &::-ms-expand {
+                    display: none;
+                }
+                @include typography.meta;
+                position: relative;
+                cursor: pointer;
+                padding-left: 0.25rem;
+                padding-right: 2.25rem;
+                margin-right: spacing.$spacing-3xs;
+                background: transparent;
+                color: var(--on-background);
+                max-width: 33vw;
+                text-overflow: ellipsis;
+                @include breakpoints.for-tablet-landscape-up {
+                    max-width: none;
+                }
+            }
+            i.ph-caret-down {
+                @include typography.icon-button-md;
+                margin-left: -2.25rem;
+                margin-right: -0.25rem;
+                z-index: 1;
+                pointer-events: none;
+            }
         }
     }
 }
 // RTL overrides
-html[dir="rtl"] main.people {
+html[dir="rtl"] main.people,
+html[dir="rtl"] main.search {
+    div#filters-header #applied-filters::before {
+        margin-left: 0;
+        border-left: none;
+        margin-right: -1.5rem;
+        border-right: 1px solid colors.$gray;
+    }
     a#filters-button {
         padding: 0 0.5rem;
+        right: auto;
+        left: 1rem;
         @include breakpoints.for-tablet-landscape-up {
             padding: 0 0.5rem 0 2rem;
+            left: auto;
         }
         span {
             margin-left: auto;
@@ -488,15 +371,27 @@ html[dir="rtl"] main.people {
         right: auto;
         left: 0;
     }
-    div.header-row fieldset#sort details {
-        summary::after {
-            margin-right: 0.5rem;
-            margin-left: 0;
-            float: left;
+    div.header-row fieldset#sort {
+        details {
+            summary::after {
+                margin-right: 0.5rem;
+                margin-left: 0;
+                float: left;
+            }
+            div#sort-options {
+                right: auto;
+                left: 0;
+            }
         }
-        div#sort-options {
-            right: auto;
-            left: 0;
+        select {
+            padding-right: 0.25rem;
+            padding-left: 2.25rem;
+            margin-left: spacing.$spacing-3xs;
+            margin-right: 0;
+        }
+        i.ph-caret-down {
+            margin-right: -2.25rem;
+            margin-left: -0.25rem;
         }
     }
 }
