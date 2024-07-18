@@ -23,16 +23,19 @@ main.search form {
             border-radius: 5px;
             border-top-right-radius: 0;
             border-bottom-right-radius: 0;
-            height: 2.5rem;
+            height: 3rem;
             padding: 0 1rem;
             @include typography.body;
             background-color: var(--background-light);
             color: var(--on-background-light);
+            @include breakpoints.for-tablet-landscape-up {
+                height: 2.5rem;
+            }
         }
         button[type="submit"] {
             cursor: pointer;
-            width: auto;
-            height: 2.5rem;
+            width: 3rem;
+            height: 3rem;
             border-radius: 5px;
             border-top-left-radius: 0;
             border-bottom-left-radius: 0;
@@ -50,7 +53,10 @@ main.search form {
             // Magnifying glass icon
             &::after {
                 content: "\f5e6"; // phosphor magnifying glass bold icon
-                @include typography.icon-button-sm;
+                @include typography.icon-button-md;
+                @include breakpoints.for-tablet-landscape-up {
+                    @include typography.icon-button-sm;
+                }
             }
         }
     }

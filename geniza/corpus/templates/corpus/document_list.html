@@ -116,7 +116,7 @@
                         {{ count_humanized }} results
                     {% endblocktranslate %}
                 </span>
-                <fieldset id="sort">
+                <fieldset id="sort-field">
                     <label for="{{ form.sort.html_name }}">{{ form.sort.label }}</label>
                     {% render_field form.sort id="sort" data-search-target="sort" data-action="input->search#update" %}
                     {# caret icon for <select>; since we also have the select element, role=presentation #}

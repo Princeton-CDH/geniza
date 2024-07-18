@@ -186,7 +186,7 @@ main.search {
             @include typography.meta;
             font-weight: normal;
         }
-        fieldset#sort {
+        fieldset#sort-field {
             display: flex;
             align-items: center;
             flex-flow: row nowrap;
@@ -371,7 +371,7 @@ html[dir="rtl"] main.search {
         right: auto;
         left: 0;
     }
-    div.header-row fieldset#sort {
+    div.header-row fieldset#sort-field {
         details {
             summary::after {
                 margin-right: 0.5rem;
