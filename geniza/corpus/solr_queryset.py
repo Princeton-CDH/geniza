@@ -76,6 +76,7 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
         "has_digital_translation": "has_digital_translation_b",
         "has_discussion": "has_discussion_b",
         "old_shelfmark": "old_shelfmark_bigram",
+        "old_shelfmark_t": "old_shelfmark_t",
         "transcription_nostem": "transcription_nostem",
         "description_nostem": "description_nostem",
     }
@@ -277,4 +278,16 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
                 highlights[doc]["translation"] = [
                     clean_html(s) for s in highlights[doc]["translation"]
                 ]
+
+            # handle old shelfmark highlighting; sometimes it's on one or the other
+            # field, and sometimes one of the highlight results is empty
+            if "old_shelfmark" in highlights[doc]:
+                highlights[doc]["old_shelfmark"] = ", ".join(
+                    [h for h in highlights[doc]["old_shelfmark"] if h]
+                )
+            elif "old_shelfmark_t" in highlights[doc]:
+                highlights[doc]["old_shelfmark"] = ", ".join(
+                    [h for h in highlights[doc]["old_shelfmark_t"] if h]
+                )
+
         return highlights

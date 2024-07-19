@@ -221,6 +221,7 @@ class DocumentSearchView(
                     )
                     # highlight old shelfmark so we can show match in results
                     .highlight("old_shelfmark", requireFieldMatch=True)
+                    .highlight("old_shelfmark_t", requireFieldMatch=True)
                     .also("score")
                 )  # include relevance score in results
 
