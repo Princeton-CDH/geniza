@@ -2,21 +2,31 @@
 <!-- document detail page navigation -->
 {# Translators: accessibility text label for document detail view tabs navigation #}
 <nav aria-label="{% translate "tabs" %}" id="tabs">
-    <ul class="tabs">
-        {% url 'corpus:document' pk=document.pk as document_url %}
-        <li><a href="{{ document_url }}"{% if request.path == document_url %} aria-current="page"{% endif %}>{% translate "Document Details" %}</a></li>
-        {% with n_records=document.sources|length %}
+    {% with n_records=document.sources|length n_reldocs=document.related_documents.count %}
+        <ul class="tabs">
+            {% url 'corpus:document' pk=document.pk as document_url %}
+            {% translate "Document Details" as details_text %}
+            <li><a href="{{ document_url }}"{% if request.path == document_url %} aria-current="page"{% endif %}>{{ details_text }}</a></li>
             {# Translators: n_records is number of scholarship records #}
             {% blocktranslate asvar srec_text %}Scholarship Records ({{ n_records }}){% endblocktranslate %}
             {% url 'corpus:document-scholarship' pk=document.pk as scholarship_url %}
             <li>{% if n_records > 0 %}<a href="{{ scholarship_url }}"{% if request.path == scholarship_url %} aria-current="page"{% endif %}>{{ srec_text }}</a>{% else %}<span disabled aria-disabled="true">{{ srec_text }}</span>{% endif %}</li>
-        {% endwith %}
-
-        {# Translators: n_reldocs is number of related documents #}
-        {% with n_reldocs=document.related_documents.count %}
+            {# Translators: n_reldocs is number of related documents #}
             {% blocktranslate asvar reldoc_text %}Related Documents ({{ n_reldocs }}){% endblocktranslate %}
             {% url 'corpus:related-documents' pk=document.pk as reldoc_url %}
             <li>{% if n_reldocs > 0 %}<a href="{{ reldoc_url }}"{% if request.path == reldoc_url %} aria-current="page"{% endif %}>{{ reldoc_text }}</a>{% else %}<span disabled aria-disabled="true">{{ reldoc_text }}</span>{% endif %}</li>
-        {% endwith %}
-    </ul>
+        </ul>
+        {# select dropdown for mobile only #}
+        <select class="mobile-select" data-controller="menu" data-action="change->menu#changePage">
+            <option value="{{ document_url }}"{% if request.path == document_url %} selected{% endif %}>
+                {{ details_text }}
+            </option>
+            <option value="{{ scholarship_url }}"{% if n_records == 0 %} disabled{% elif request.path == scholarship_url %} selected{% endif %}>
+                {{ srec_text }}
+            </option>
+            <option value="{{ reldoc_url }}"{% if n_reldocs == 0 %} disabled{% elif request.path == reldoc_url %} selected{% endif %}>
+                {{ reldoc_text }}
+            </option>
+        </select>
+    {% endwith %}
 </nav>

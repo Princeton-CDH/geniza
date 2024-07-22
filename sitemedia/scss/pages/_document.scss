@@ -8,21 +8,34 @@
 @use "../base/spacing";
 @use "../base/typography";
 
+@mixin meta-marker {
+    // marker next to metadata headings
+    content: " ";
+    display: inline-block;
+    width: 8px;
+    height: 18px;
+    background-color: var(--secondary);
+    margin-right: 12px;
+}
+
 main.document {
+    max-width: 100vw;
+    @include breakpoints.for-tablet-landscape-up {
+        box-sizing: content-box;
+        * {
+            max-width: 896px;
+        }
+    }
     // Primary container
     .container {
         display: flex;
         flex-direction: column;
-        padding: 0 spacing.$spacing-md spacing.$spacing-md;
-        margin-bottom: spacing.$spacing-md;
-        @include breakpoints.for-tablet-landscape-up {
-            margin-bottom: spacing.$spacing-xl;
-        }
+        padding: 0 spacing.$spacing-md 0;
         section.metadata {
             display: flex;
             flex-direction: column;
             @include breakpoints.for-tablet-landscape-up {
-                margin-top: spacing.$spacing-3xl;
+                margin-top: 2.5rem;
                 flex-direction: row;
                 justify-content: flex-start;
             }
@@ -31,31 +44,20 @@ main.document {
         dl.metadata-list {
             display: flex;
             flex-direction: column;
-            margin: spacing.$spacing-2xl spacing.$spacing-md 0;
+            margin: 1.375rem 0 0;
             @include typography.meta;
             @include breakpoints.for-tablet-landscape-up {
                 flex: 1 1 50%;
                 padding-right: 0;
                 margin: 0 0 0;
             }
-            // Lighter color metadata; secondary class on dl or dd/dt
-            .tertiary,
-            &.tertiary dd,
-            &.tertiary dt {
-                color: var(--on-background-alt);
-            }
             dt {
                 margin-bottom: spacing.$spacing-3xs;
-                @include typography.meta-bold;
+                @include typography.meta-header;
                 display: flex;
                 align-items: center;
                 &::before {
-                    content: " ";
-                    display: inline-block;
-                    width: 8px;
-                    height: 18px;
-                    background-color: var(--filter-active);
-                    margin-right: 12px;
+                    @include meta-marker;
                 }
             }
             dd {
@@ -77,7 +79,7 @@ main.document {
                 margin-left: 35px;
             }
             :first-child {
-                margin-top: spacing.$spacing-sm;
+                margin-top: spacing.$spacing-md;
                 @include breakpoints.for-tablet-landscape-up {
                     margin-top: 0px;
                 }
@@ -85,42 +87,40 @@ main.document {
         }
         // Document tags
         ul.tags {
-            margin: 45px spacing.$spacing-md 0;
+            margin: 2rem 0 0;
             align-self: flex-start;
             text-align: left;
+            border-bottom: 1px solid var(--disabled);
+            padding-bottom: 2rem;
             @include breakpoints.for-tablet-landscape-up {
                 flex: 1 0 100%;
                 padding-left: 0;
-                margin: spacing.$spacing-3xl 0 0;
+                margin: 2rem 0 0;
                 align-self: flex-start;
                 margin-left: 0;
-            }
-        }
-        // Additional metadata section, like input date ("In PGP since") and historical shelfmark
-        section.extra-metadata {
-            margin: 12px spacing.$spacing-md 0;
-            @include breakpoints.for-tablet-landscape-up {
-                margin: 12px 0 0;
-            }
-            @include typography.meta;
-            color: var(--extra-metadata-text);
-            dl {
-                display: grid;
-                grid-template-columns: 3fr 7fr;
-                dt {
-                    font-weight: bold;
-                }
+                padding: 0 spacing.$spacing-md 2rem;
             }
         }
         // "Description" header and content
         section.description {
-            margin: 64px 0 spacing.$spacing-md;
-            h2 {
-                @include typography.body-bold;
+            padding-bottom: 2rem;
+            margin: spacing.$spacing-md 0 0;
+            border-bottom: 1px solid var(--disabled);
+            @include breakpoints.for-tablet-landscape-up {
+                margin: 2rem 0 0;
             }
-
+            h2 {
+                @include typography.meta-header;
+                display: flex;
+                align-items: center;
+                margin: 0;
+                &::before {
+                    @include meta-marker;
+                }
+            }
             p {
                 white-space: pre-line;
+                padding-left: 1.25rem;
             }
         }
         // link to download transcription
@@ -132,39 +132,25 @@ main.document {
         }
     }
     dl.metadata-list.tertiary {
-        margin-top: 51px;
-        padding: 0 20px;
+        padding: 0 1rem;
+    }
+    // Additional metadata section, like input date ("In PGP since") and historical shelfmark
+    section.extra-metadata {
         width: 100%;
+        padding: 0 spacing.$spacing-md;
+        margin: 2rem 0;
         @include breakpoints.for-tablet-landscape-up {
-            margin-top: 53px;
-            max-width: none;
-            padding: 0 10rem;
+            width: 896px;
+            margin: 2rem 0;
         }
-        // extra style for hiding the theme toggle on desktop only
-        @include breakpoints.for-desktop-up {
-            z-index: 3;
-            background-color: var(--background);
-            margin-top: 0;
-            margin-bottom: -120px;
-            padding: 53px 10rem 120px;
-        }
-        // hanging "link" phosphor icon before permalink label
-        dt#permalink {
-            display: flex;
-            align-items: center;
-            @include typography.meta-bold;
-            svg {
-                color: var(--permalink-icon);
-                fill: var(--permalink-icon-bg);
-                width: 22px;
-                height: 22px;
-                margin-right: 12px;
-            }
-            & + dd {
-                margin-left: 34px;
-                a {
-                    text-decoration: none;
-                }
+        @include typography.body;
+        color: var(--extra-metadata-text);
+        dl {
+            display: grid;
+            grid-template-columns: 3fr 7fr;
+            gap: 0.75rem;
+            dt {
+                @include typography.body-bold;
             }
         }
     }
@@ -176,24 +162,6 @@ main.document {
     .description {
         p {
             white-space: pre-line;
-        }
-    }
-}
-
-// RTL variant
-html[dir="rtl"] main.document {
-    .container dl.metadata-list dt::before {
-        margin-right: 0;
-        margin-left: 12px;
-    }
-    dl.metadata-list.tertiary dt#permalink {
-        svg {
-            margin-right: 0;
-            margin-left: 12px;
-        }
-        & + dd {
-            margin-left: 0;
-            margin-right: 34px;
         }
     }
 }

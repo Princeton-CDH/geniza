@@ -8,15 +8,43 @@
 @use "../base/typography";
 
 nav#tabs {
-    max-width: 60ch;
-    padding: spacing.$spacing-md spacing.$spacing-md 0;
+    max-width: none;
+    width: 100%;
+    padding: 0 1rem 0;
+    // hide tabs on mobile
+    .tabs {
+        display: none;
+    }
+    // show <select> on mobile instead
+    .mobile-select {
+        max-width: 100vw;
+        display: block;
+        width: 100%;
+        height: 2.5rem;
+        @include typography.meta;
+        background-color: var(--background-light);
+        color: var(--on-background);
+        border-radius: 5px;
+        border: 1px solid var(--background-gray);
+        padding: 0 1rem;
+    }
+    @include breakpoints.for-tablet-landscape-up {
+        box-sizing: content-box;
+        max-width: 896px;
+        .tabs {
+            display: grid;
+        }
+        .mobile-select {
+            display: none;
+        }
+    }
 }
 .tabs {
     display: grid;
     // on mobile, ensure third tab has enough space
     grid-template-columns: 0.9fr 0.9fr 1.2fr;
     @include breakpoints.for-tablet-landscape-up {
-        grid-template-columns: 1fr 1fr 1fr;
+        grid-template-columns: 33% 33% 1fr;
     }
     align-content: stretch;
     justify-content: center;
@@ -35,8 +63,8 @@ nav#tabs {
         padding-bottom: spacing.$spacing-xs;
         border-bottom: 4px solid var(--tabs-bottom);
         @include breakpoints.for-tablet-landscape-up {
-            padding-left: spacing.$spacing-xl;
-            padding-right: spacing.$spacing-xl;
+            padding-left: 6rem;
+            padding-right: 6rem;
         }
     }
     // Link-specific tabs styling
