@@ -4,7 +4,7 @@
 {% elif perms.corpus.change_document %}
     {% for ed in document.digital_editions.all %}
         {# TODO: Make machine learning model editions editable once line-level editing implemented #}
-        <a class="editor-navigation" href="{% url 'corpus:document-transcribe' document.id ed.source.pk %}" data-turbo="false">
+        <a class="editor-add" href="{% url 'corpus:document-transcribe' document.id ed.source.pk %}" data-turbo="false">
             <i class="ph-pencil"></i>
             {% if not 'model' in ed.source.source_type.type %}
                 <span>Edit {% for auth in ed.source.authorship_set.all %}{% include "snippets/comma.html" %}{{ auth.creator.last_name }}{% empty %}[unknown]{% endfor %}'s edition</span>
@@ -14,17 +14,17 @@
         </a>
     {% endfor %}
     {% for tr in document.digital_translations.all %}
-        <a class="editor-navigation" href="{% url 'corpus:document-translate' document.id tr.source.pk %}" data-turbo="false">
+        <a class="editor-add" href="{% url 'corpus:document-translate' document.id tr.source.pk %}" data-turbo="false">
             <i class="ph-pencil"></i>
             <span>Edit {% for auth in tr.source.authorship_set.all %}{% include "snippets/comma.html" %}{{ auth.creator.last_name }}{% empty %}[unknown]{% endfor %}'s translation</span>
         </a>
     {% endfor %}
     {% if document.id %}
-        <a class="editor-navigation" href="{% url 'corpus:document-add-transcription' document.id %}" data-turbo="false">
+        <a class="editor-add" href="{% url 'corpus:document-add-transcription' document.id %}" data-turbo="false">
             <i class="ph-plus-circle"></i>
             <span>Add a new transcription</span>
         </a>
-        <a class="editor-navigation" href="{% url 'corpus:document-add-translation' document.id %}" data-turbo="false">
+        <a class="editor-add" href="{% url 'corpus:document-add-translation' document.id %}" data-turbo="false">
             <i class="ph-plus-circle"></i>
             <span>Add a new translation</span>
         </a>

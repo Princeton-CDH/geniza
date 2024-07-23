@@ -8,6 +8,10 @@
 @use "../components/searchform";
 
 #itt-panel {
+    * {
+        max-width: 100vw;
+    }
+    margin-top: 5.125rem;
     max-width: 100vw;
     overflow: hidden;
     width: 100%;
@@ -1291,14 +1295,23 @@
         }
     }
 }
-.editor-navigation {
+.editor-navigation,
+.editor-add {
     span {
         @include typography.link;
     }
     i {
         text-decoration: none;
     }
+}
+.editor-navigation {
     margin: -1rem 0 2rem;
+}
+.editor-add {
+    margin: 0 0 1rem;
+}
+.editor-add + #itt-panel {
+    margin-top: 2rem;
 }
 
 // general transcription/translation styles

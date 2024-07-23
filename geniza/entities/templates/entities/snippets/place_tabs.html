@@ -19,7 +19,8 @@
             <li>{% if n_relpeople > 0 %}<a href="{{ relpeople_url }}"{% if request.path == relpeople_url %} aria-current="page"{% endif %}>{{ relpeople_text }}</a>{% else %}<span disabled aria-disabled="true">{{ relpeople_text }}</span>{% endif %}</li>
         </ul>
         {# select dropdown for mobile only #}
-        <select class="mobile-select" data-controller="menu" data-action="change->menu#changePage">
+        {# Translators: accessibility text label for place pages navigation on mobile devices #}
+        <select aria-label="{% translate "page select" %}" class="mobile-select" data-controller="menu" data-action="change->menu#changePage">
             <option value="{{ place_url }}"{% if request.path == place_url %} selected{% endif %}>
                 {{ details_text }}
             </option>
