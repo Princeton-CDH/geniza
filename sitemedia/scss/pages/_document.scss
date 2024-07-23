@@ -195,6 +195,10 @@ main.document {
     }
     dl.metadata-list.tertiary {
         padding: 0 1rem;
+        max-width: 896px;
+        @include breakpoints.for-tablet-landscape-up {
+            width: 896px;
+        }
     }
     // Additional metadata section, like input date ("In PGP since") and historical shelfmark
     section.extra-metadata {
