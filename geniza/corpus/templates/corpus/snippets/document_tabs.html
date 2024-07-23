@@ -17,7 +17,8 @@
             <li>{% if n_reldocs > 0 %}<a href="{{ reldoc_url }}"{% if request.path == reldoc_url %} aria-current="page"{% endif %}>{{ reldoc_text }}</a>{% else %}<span disabled aria-disabled="true">{{ reldoc_text }}</span>{% endif %}</li>
         </ul>
         {# select dropdown for mobile only #}
-        <select class="mobile-select" data-controller="menu" data-action="change->menu#changePage">
+        {# Translators: accessibility text label for document navigation on mobile devices #}
+        <select aria-label="{% translate "page select" %}" class="mobile-select" data-controller="menu" data-action="change->menu#changePage">
             <option value="{{ document_url }}"{% if request.path == document_url %} selected{% endif %}>
                 {{ details_text }}
             </option>
