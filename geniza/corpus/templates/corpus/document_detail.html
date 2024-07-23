@@ -123,6 +123,39 @@
             </dl>
         </section>
 
+        {% if document.has_image or document.digital_editions.count or document.digital_translations.count %}
+            {% with n_transcriptions=document.digital_editions.count n_translations=document.digital_translations.count %}
+                <section class="content-stats">
+                    {# Translators: label for document content stats (number of translations, transcriptions, images) #}
+                    <h2>{% translate "What's in the PGP" %}</h2>
+                    <ul>
+                        {# translators: indicator that a document has an image #}
+                        {% if document.has_image %}<li class="has-image">{% translate 'Image' %}</li>{% endif %}
+                        {% if n_transcriptions > 0 %}
+                            {# translators: n_transcriptions is the number of a document's digitized transcriptions #}
+                            <li class="transcription-count">
+                                {% blocktranslate count counter=n_transcriptions trimmed %}
+                                    {{ n_transcriptions }} Transcription
+                                {% plural %}
+                                    {{ n_transcriptions }} Transcriptions
+                                {% endblocktranslate %}
+                            </li>
+                        {% endif %}
+                        {% if n_translations > 0 %}
+                            {# translators: n_translations is the number of a document's digitized translations #}
+                            <li class="translation-count">
+                                {% blocktranslate count counter=n_translations trimmed %}
+                                    {{ n_translations }} Translation
+                                {% plural %}
+                                    {{ n_translations }} Translations
+                                {% endblocktranslate %}
+                            </li>
+                        {% endif %}
+                    </ul>
+                </section>
+            {% endwith %}
+        {% endif %}
+
         <section class="description">
             {# Translators: label for document description #}
             <h2>{% translate 'Description' %}</h2>
