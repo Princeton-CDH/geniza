@@ -433,6 +433,44 @@ class TestDocumentScholarshipTemplate:
         )
         assertNotContains(response, "p. 25")  # should not show when removed
 
+    def test_whats_in_pgp(self, client, document, source, unpublished_editions):
+        """Document detail template should show what's in the PGP"""
+        # has no image, transcription or translation
+        empty_doc = Document.objects.create()
+        response = client.get(empty_doc.get_absolute_url())
+        assertNotContains(response, "What's in the PGP")
+
+        # has image but no transcription or translation
+        response = client.get(document.get_absolute_url())
+        assertContains(response, "What's in the PGP")
+        assertContains(response, '<li class="has-image">Image</li>')
+        assertNotContains(response, '<li class="transcription-count">')
+        assertNotContains(response, '<li class="translation-count">')
+
+        # add a footnote with a digital edition
+        Footnote.objects.create(
+            content_object=document,
+            source=unpublished_editions,
+            doc_relation=[Footnote.DIGITAL_EDITION],
+        )
+        response = client.get(document.get_absolute_url())
+        assertContains(response, '<li class="transcription-count">')
+        assertContains(response, "1 Transcription")
+
+        # add two footnotes with digital translation
+        Footnote.objects.create(
+            content_object=document,
+            source=source,
+            doc_relation=[Footnote.DIGITAL_TRANSLATION],
+        )
+        Footnote.objects.create(
+            content_object=document,
+            source=unpublished_editions,
+            doc_relation=[Footnote.DIGITAL_TRANSLATION],
+        )
+        response = client.get(document.get_absolute_url())
+        assertContains(response, "2 Translations")
+
 
 class TestDocumentTabsSnippet:
     def test_detail_link(self, client, document):

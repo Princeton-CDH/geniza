@@ -21,9 +21,11 @@
 main.document {
     max-width: 100vw;
     @include breakpoints.for-tablet-landscape-up {
-        box-sizing: content-box;
-        * {
-            max-width: 896px;
+        .container,
+        .container *,
+        section,
+        section * {
+            max-width: calc(896px + 2rem);
         }
     }
     // Primary container
@@ -98,14 +100,12 @@ main.document {
                 margin: 2rem 0 0;
                 align-self: flex-start;
                 margin-left: 0;
-                padding: 0 spacing.$spacing-md 2rem;
             }
         }
-        // "Description" header and content
+        // "what's in the PGP" and "description"
+        section.content-stats,
         section.description {
-            padding-bottom: 2rem;
             margin: spacing.$spacing-md 0 0;
-            border-bottom: 1px solid var(--disabled);
             @include breakpoints.for-tablet-landscape-up {
                 margin: 2rem 0 0;
             }
@@ -118,6 +118,68 @@ main.document {
                     @include meta-marker;
                 }
             }
+        }
+        // what's in the pgp
+        section.content-stats ul {
+            display: flex;
+            flex-flow: row wrap;
+            margin-left: 1.25rem;
+            gap: 1rem;
+            @include breakpoints.for-tablet-landscape-up {
+                gap: 1.5rem;
+            }
+            li + li {
+                border-left: 1px solid var(--disabled);
+                padding-left: 1rem;
+                @include breakpoints.for-tablet-landscape-up {
+                    padding-left: 1.5rem;
+                }
+            }
+            li {
+                display: flex;
+                align-items: center;
+                gap: 0.625rem;
+                &::before {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    border-radius: 4px;
+                    background-color: var(--background-light);
+                    width: 1.5rem;
+                    height: 1.5rem;
+                    @include breakpoints.for-tablet-landscape-up {
+                        width: 2rem;
+                        height: 2rem;
+                    }
+                }
+            }
+            li.has-image::before {
+                content: "\f1dd"; // phosphor ph-image icon
+                @include typography.icon-button-sm;
+                @include breakpoints.for-tablet-landscape-up {
+                    @include typography.icon-button-md;
+                }
+            }
+            li.transcription-count::before {
+                content: "a";
+                font-size: typography.$text-size-xl;
+                @include breakpoints.for-tablet-landscape-up {
+                    font-size: typography.$text-size-4xl;
+                }
+            }
+            li.translation-count::before {
+                content: "א";
+                @include typography.transcription;
+                @include breakpoints.for-tablet-landscape-up {
+                    font-size: typography.$text-size-4xl;
+                    padding-bottom: 2px;
+                }
+            }
+        }
+        // Description
+        section.description {
+            padding-bottom: 2rem;
+            border-bottom: 1px solid var(--disabled);
             p {
                 white-space: pre-line;
                 padding-left: 1.25rem;
@@ -142,6 +204,7 @@ main.document {
         @include breakpoints.for-tablet-landscape-up {
             width: 896px;
             margin: 2rem 0;
+            padding: 0;
         }
         @include typography.body;
         color: var(--extra-metadata-text);
