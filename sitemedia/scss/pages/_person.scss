@@ -292,7 +292,7 @@ html[dir="rtl"] main.person,
 html[dir="rtl"] main.place,
 html[dir="rtl"] main.document {
     .container dl.metadata-list dt::before,
-    .container .description h2::before {
+    .container section > h2::before {
         margin-right: 0;
         margin-left: 12px;
     }

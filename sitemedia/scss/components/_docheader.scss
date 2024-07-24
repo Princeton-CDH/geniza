@@ -37,7 +37,7 @@ html[lang="ar"] span#formatted-title {
 
 // Edit link for admins
 .edit-link-container {
-    @include container.measure;
+    max-width: calc(896px + 2rem);
     top: spacing.$spacing-4xl;
     position: absolute;
     width: 100%;

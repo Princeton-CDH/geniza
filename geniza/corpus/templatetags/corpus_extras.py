@@ -183,6 +183,8 @@ def has_location_or_url(footnotes):
 
 @register.filter
 def all_doc_relations(footnotes):
-    """For scholarship records list: join doc relations for all footnotes
-    by a comma."""
-    return ", ".join(sorted(set([str(fn.doc_relation) for fn in footnotes])))
+    """For scholarship records list: list doc relations for all footnotes."""
+    relations = set()
+    for fn in footnotes:
+        relations.update(set([n.strip() for n in str(fn.doc_relation).split(",")]))
+    return sorted(relations)

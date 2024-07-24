@@ -23,36 +23,36 @@
                             <dd>
                                 {{ source.grouper.formatted_display|safe }}
                             </dd>
-                            <dt class="relation">
-                                {# Translators: label for included document relations for a single footnote #}
-                                {% translate "includes" as includes_text %}
-                                {% if source.list|has_location_or_url %}
-                                    {# Translators: label for document relations in list of footnotes #}
-                                    {% blocktranslate with relation=source.list|all_doc_relations|lower trimmed %}
-                                        for {{ relation }} see
-                                    {% endblocktranslate%}
-                                {% else %}
-                                    {# Translators: label for document relations for one footnote with no location or URL #}
-                                    {% blocktranslate with relation=source.list|all_doc_relations|lower trimmed %}
-                                        includes {{ relation }}
-                                    {% endblocktranslate%}
-                                {% endif %}
-                            </dt>
                             {% if source.list|has_location_or_url %}
-                                <dd class="relation">
-                                    <ul>
+                                {# Translators: accessibility label for the specific location of a citation in a source record #}
+                                <dt class="sr-only">{% translate "Location in source" %}</dt>
+                                <dd>
+                                    <ul class="locations">
                                         {% for fn in source.list %}
                                             {% ifchanged %}{# omit duplicate footnote locations #}
-                                                <li class="location">{% include "corpus/snippets/footnote_location.html" %}</li>
+                                                <li>{% include "corpus/snippets/footnote_location.html" %}</li>
                                             {% endifchanged %}
                                         {% endfor %}
                                     </ul>
                                 </dd>
                             {% endif %}
+
+                            {# Translators: accessibility label for the relationship(s) of a source to a document #}
+                            <dt class="sr-only">{% translate "Relation to document" %}</dt>
+                            <dd>
+                                <ul class="relations">
+                                    {% for relation in source.list|all_doc_relations %}
+                                        <li>{{ relation }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </dd>
                         </dl>
                     </li>
                 {% endspaceless %}
             {% endfor %}
         </ol>
     </div>
+
+    {# viewer #}
+    {% include "corpus/snippets/document_transcription.html" %}
 {% endblock main %}
