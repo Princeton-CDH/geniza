@@ -80,8 +80,8 @@ main.document {
             @include breakpoints.for-tablet-landscape-up {
                 margin-left: 35px;
             }
-            :first-child {
-                margin-top: spacing.$spacing-md;
+            > :first-child {
+                margin-top: spacing.$spacing-sm;
                 @include breakpoints.for-tablet-landscape-up {
                     margin-top: 0px;
                 }
@@ -102,9 +102,10 @@ main.document {
                 margin-left: 0;
             }
         }
-        // "what's in the PGP" and "description"
+        // "what's in the PGP", "description", "related people/places"
         section.content-stats,
-        section.description {
+        section.description,
+        section.related {
             margin: spacing.$spacing-md 0 0;
             @include breakpoints.for-tablet-landscape-up {
                 margin: 2rem 0 0;
@@ -165,6 +166,7 @@ main.document {
                 font-size: typography.$text-size-xl;
                 @include breakpoints.for-tablet-landscape-up {
                     font-size: typography.$text-size-4xl;
+                    padding-bottom: 2px;
                 }
             }
             li.translation-count::before {
@@ -184,6 +186,44 @@ main.document {
                 white-space: pre-line;
                 padding-left: 1.25rem;
             }
+        }
+        // related entities
+        section.related {
+            dl {
+                margin: 0 0 0 1.25rem;
+                dt {
+                    padding-top: 0.5rem;
+                    @include typography.body-italic;
+                }
+                dd + dt {
+                    padding-top: 1rem;
+                    margin-top: 1rem;
+                    border-top: 1px solid var(--tabs-bottom);
+                }
+                dd {
+                    @include typography.body-sm;
+                }
+                @include breakpoints.for-tablet-landscape-up {
+                    display: grid;
+                    grid-template-columns: 33% 1fr;
+                    margin: 1.25rem 0 0 1.25rem;
+                    gap: 0.5rem 0;
+                    dt,
+                    dd {
+                        padding-top: 0;
+                        @include typography.body;
+                        font-style: normal;
+                    }
+                    dd + dt,
+                    dd + dt + dd {
+                        margin-top: 0;
+                        padding-top: 0.5rem;
+                        border-top: 1px solid var(--tabs-bottom);
+                    }
+                }
+            }
+            padding-bottom: 2rem;
+            border-bottom: 1px solid var(--disabled);
         }
         // link to download transcription
         section.transcription-link {

@@ -384,6 +384,13 @@ class DocumentDetailView(DocumentDetailBase, DetailView):
                     for panel in ["images", "translation", "transcription"]
                     if panel not in available_panels
                 ],
+                # related entities: sorted by type for grouping, and slug for alphabetization
+                "related_people": self.object.persondocumentrelation_set.order_by(
+                    "type__name", "person__slug"
+                ),
+                "related_places": self.object.documentplacerelation_set.order_by(
+                    "type__name", "place__slug"
+                ),
             }
         )
         return context_data
