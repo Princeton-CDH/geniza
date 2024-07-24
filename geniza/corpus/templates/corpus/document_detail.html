@@ -162,6 +162,44 @@
             <p>{{ document.description|pgp_urlize }}</p>
         </section>
 
+        {# related people #}
+        {% if related_people.exists %}
+            <section class="related">
+                {# Translators: heading label for document related people #}
+                <h2>{% translate "Related People" %}</h2>
+                <dl>
+                    {% regroup related_people by type as person_relations %}
+                    {% for relation_type in person_relations %}
+                        <dt>{{ relation_type.grouper }}</dt>
+                        <dd>
+                            {% for relation in relation_type.list %}
+                                {% if relation.person.get_absolute_url %}<a data-turbo="false" href="{{ relation.person.get_absolute_url }}">{{ relation.person }}</a>{% else %}{{ relation.person }}{% endif %}{% if not forloop.last %}, {% endif %}
+                            {% endfor %}
+                        </dd>
+                    {% endfor %}
+                </dl>
+            </section>
+        {% endif %}
+
+        {# related places #}
+        {% if related_places.exists %}
+            <section class="related">
+                {# Translators: heading label for document related places #}
+                <h2>{% translate "Related Places" %}</h2>
+                <dl>
+                    {% regroup related_places.all by type as place_relations %}
+                    {% for relation_type in place_relations %}
+                        <dt>{{ relation_type.grouper }}</dt>
+                        <dd>
+                            {% for relation in relation_type.list %}
+                                <a data-turbo="false" href="{{ relation.place.get_absolute_url }}">{{ relation.place }}</a>{% if not forloop.last %}, {% endif %}
+                            {% endfor %}
+                        </dd>
+                    {% endfor %}
+                </dl>
+            </section>
+        {% endif %}
+
         {% if document.tags.exists %}
             <section>
                 {# Translators: label for tags on a document #}

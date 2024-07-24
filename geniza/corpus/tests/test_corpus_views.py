@@ -36,6 +36,13 @@ from geniza.corpus.views import (
     old_pgp_tabulate_data,
     pgp_metadata_for_old_site,
 )
+from geniza.entities.models import (
+    DocumentPlaceRelation,
+    Person,
+    PersonDocumentRelation,
+    PersonDocumentRelationType,
+    Place,
+)
 from geniza.footnotes.forms import SourceChoiceForm
 from geniza.footnotes.models import Creator, Footnote, Source, SourceType
 
@@ -175,6 +182,76 @@ class TestDocumentDetailView:
         assert "images" not in response.context["disabled"]
         assert "transcription" in response.context["default_shown"]
         assert "transcription" not in response.context["disabled"]
+
+        # related people and places should be empty querysets
+        assert response.context["related_people"].count() == 0
+        assert response.context["related_places"].count() == 0
+
+        # add related people
+        abu = Person.objects.create(slug="abu-imran")
+        ezra = Person.objects.create(slug="ezra-b-hillel")
+        nahray = Person.objects.create(slug="nahray")
+        (author, _) = PersonDocumentRelationType.objects.get_or_create(name="Author")
+        (recipient, _) = PersonDocumentRelationType.objects.get_or_create(
+            name="Recipient"
+        )
+        PersonDocumentRelation.objects.create(
+            person=ezra, type=recipient, document=document
+        )
+        PersonDocumentRelation.objects.create(
+            person=abu, type=recipient, document=document
+        )
+        PersonDocumentRelation.objects.create(
+            person=nahray, type=author, document=document
+        )
+        response = client.get(reverse("corpus:document", args=(document.pk,)))
+        assert response.context["related_people"].count() == 3
+        # should sort alphabetically by type, then slug (name)
+        assert response.context["related_people"].first().person.pk == nahray.pk
+        assert response.context["related_people"][1].person.pk == abu.pk
+
+        # add related place
+        fustat = Place.objects.create(slug="fustat")
+        DocumentPlaceRelation.objects.create(place=fustat, document=document)
+        assert response.context["related_places"].count() == 1
+        assert response.context["related_places"].first().place.pk == fustat.pk
+
+    def test_related_entities(
+        self, client, document, person, person_diacritic, person_multiname
+    ):
+        # add related people
+        person.has_page = True
+        person.save()
+        (author, _) = PersonDocumentRelationType.objects.get_or_create(name="Author")
+        (recipient, _) = PersonDocumentRelationType.objects.get_or_create(
+            name="Recipient"
+        )
+        PersonDocumentRelation.objects.create(
+            person=person_multiname, type=recipient, document=document
+        )
+        PersonDocumentRelation.objects.create(
+            person=person_diacritic, type=recipient, document=document
+        )
+        PersonDocumentRelation.objects.create(
+            person=person, type=author, document=document
+        )
+        # add related place
+        fustat = Place.objects.create(slug="fustat")
+        DocumentPlaceRelation.objects.create(place=fustat, document=document)
+
+        # should group "recipient" people together and join their names by comma
+        response = client.get(reverse("corpus:document", args=(document.pk,)))
+        # should be "Halfon, Zed" = recipients
+        print(response.content)
+        assertContains(response, f"{person_diacritic}, {person_multiname}", html=True)
+        # should link to author because has_page=True
+        assertContains(
+            response, f'<a data-turbo="false" href="{person.get_absolute_url()}">'
+        )
+        # should link to place
+        assertContains(
+            response, f'<a data-turbo="false" href="{fustat.get_absolute_url()}">'
+        )
 
 
 @pytest.mark.django_db

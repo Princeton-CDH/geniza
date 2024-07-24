@@ -265,6 +265,17 @@ $text-size-7xl: 2.25rem; //  = 36px
     line-height: 1.5;
 }
 
+// small body text, e.g. for descriptions in search results
+@mixin body-sm {
+    font-family: fonts.$primary;
+    font-size: $text-size-sm;
+    line-height: 17 / 14;
+    @include breakpoints.for-tablet-landscape-up {
+        font-size: $text-size-lg;
+        line-height: 25 / 18;
+    }
+}
+
 // label for unpublished records in scholarship records view
 @mixin unpublished {
     @include caption;

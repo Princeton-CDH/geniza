@@ -96,6 +96,7 @@
                 background-color: var(--background-light);
                 cursor: default;
                 &:after,
+                &:before,
                 svg {
                     color: var(--disabled);
                 }
