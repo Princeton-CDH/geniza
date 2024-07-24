@@ -8,7 +8,7 @@
             {% translate "Document Details" as details_text %}
             <li><a href="{{ document_url }}"{% if request.path == document_url %} aria-current="page"{% endif %}>{{ details_text }}</a></li>
             {# Translators: n_records is number of scholarship records #}
-            {% blocktranslate asvar srec_text %}Scholarship Records ({{ n_records }}){% endblocktranslate %}
+            {% blocktranslate asvar srec_text %}Select Bibliography ({{ n_records }}){% endblocktranslate %}
             {% url 'corpus:document-scholarship' pk=document.pk as scholarship_url %}
             <li>{% if n_records > 0 %}<a href="{{ scholarship_url }}"{% if request.path == scholarship_url %} aria-current="page"{% endif %}>{{ srec_text }}</a>{% else %}<span disabled aria-disabled="true">{{ srec_text }}</span>{% endif %}</li>
             {# Translators: n_reldocs is number of related documents #}

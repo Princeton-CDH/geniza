@@ -63,8 +63,8 @@ nav#tabs {
         padding-bottom: spacing.$spacing-xs;
         border-bottom: 4px solid var(--tabs-bottom);
         @include breakpoints.for-tablet-landscape-up {
-            padding-left: 6rem;
-            padding-right: 6rem;
+            padding-left: 5.5rem;
+            padding-right: 5.5rem;
         }
     }
     // Link-specific tabs styling

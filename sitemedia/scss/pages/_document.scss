@@ -273,6 +273,22 @@ main.document {
     }
 }
 
+// RTL tweaks
+html[dir="rtl"] main.document section.content-stats ul {
+    margin-right: 1.25rem;
+    margin-left: 0;
+    li + li {
+        border-left: none;
+        border-right: 1px solid var(--disabled);
+        padding-left: 0;
+        padding-right: 1rem;
+        @include breakpoints.for-tablet-landscape-up {
+            padding-left: 0;
+            padding-right: 1.5rem;
+        }
+    }
+}
+
 // Hebrew variant
 html[lang="he"] main.document {
     .container section.description h3 {
