@@ -123,21 +123,13 @@
                     <i class="ph-caret-down" role="presentation"></i>
                 </fieldset>
             </div>
-            {% if is_paginated %}
-                {% include "corpus/snippets/pagination.html" %}
-            {% endif %}
             <ol>
                 {% for document in documents %}
                     {% include "corpus/snippets/document_result.html" %}
                 {% endfor %}
             </ol>
             {% if is_paginated %}
-                {# Translators: screen reader label for pagination navigation displayed after search results #}
-                {% translate "secondary pagination" as pagination_label %}
-                {# don't include footer pagination on random sort, since it's disabled #}
-                {% if form.sort.value != 'random' %}
-                    {% include "corpus/snippets/pagination.html" with aria_label=pagination_label %}
-                {% endif %}
+                {% include "corpus/snippets/pagination.html" %}
             {% endif %}
         </section>
     </form>
