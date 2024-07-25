@@ -12,7 +12,7 @@ from parasolr.django.indexing import ModelIndexable
 from slugify import slugify
 from unidecode import unidecode
 
-from geniza.corpus.dates import standard_date_display
+from geniza.corpus.dates import PartialDate, standard_date_display
 from geniza.corpus.models import Dating, Document
 from geniza.entities.models import (
     DocumentPlaceRelation,
@@ -30,6 +30,7 @@ from geniza.entities.models import (
     PersonPlaceRelation,
     PersonPlaceRelationType,
     PersonRole,
+    PersonSignalHandlers,
     Place,
     PlaceEventRelation,
     PlacePlaceRelation,
@@ -424,6 +425,146 @@ class TestPerson:
         )
         citation = person.formatted_citation
         assert person.content_authors in citation
+
+    def test_date_str(self, person, document):
+        # no date: empty string
+        assert not person.date_str
+        # document dates: should use those
+        document.doc_date_standard = "1200/1300"
+        document.save()
+        PersonDocumentRelation.objects.create(person=person, document=document)
+        assert person.date_str == standard_date_display(document.doc_date_standard)
+        # person date override
+        person.date = "1255"
+        person.save()
+        assert person.date_str == standard_date_display("1255")
+
+    def test_solr_date_range(self, person, document):
+        # no date: returns None
+        assert not person.solr_date_range()
+        # document dates: should use those
+        document.doc_date_standard = "1200/1300"
+        document.save()
+        PersonDocumentRelation.objects.create(person=person, document=document)
+        assert person.solr_date_range() == "[1200 TO 1300]"
+        # person date override
+        person.date = "1255"
+        person.save()
+        assert person.solr_date_range() == "1255"
+
+    def test_total_to_index(self, person, person_multiname):
+        assert Person.total_to_index() == 2
+
+    def test_index_data(self, person, document):
+        document.doc_date_standard = "1200/1300"
+        document.save()
+        (pdrtype, _) = PersonDocumentRelationType.objects.get_or_create(name="test")
+        PersonDocumentRelation.objects.create(
+            person=person, document=document, type=pdrtype
+        )
+        index_data = person.index_data()
+        assert index_data["slug_s"] == person.slug
+        assert index_data["name_s"] == str(person)
+        assert index_data["description_txt"] == person.description_en
+        assert index_data["gender_s"] == person.get_gender_display()
+        assert index_data["role_s"] == str(person.role)
+        assert not index_data["url_s"]
+        person.has_page = True
+        person.save()
+        index_data = person.index_data()
+        assert index_data["url_s"] == person.get_absolute_url()
+        assert index_data["documents_i"] == 1
+        assert index_data["people_i"] == index_data["places_i"] == 0
+        assert index_data["document_relation_ss"] == [str(pdrtype)]
+        assert index_data["date_dr"] == person.solr_date_range()
+        assert index_data["date_str_s"] == person.date_str
+        assert index_data["start_date_i"] == PartialDate("1200").numeric_format()
+        assert index_data["end_date_i"] == PartialDate("1300").numeric_format(
+            mode="max"
+        )
+
+
+@pytest.mark.django_db
+class TestPersonSignalHandlers:
+    @patch.object(ModelIndexable, "index_items")
+    def test_related_save(self, mock_indexitems, person, person_multiname, document):
+        # unsaved name should be ignored
+        name = Name(name="test name")
+        PersonSignalHandlers.related_save(Name, name)
+        mock_indexitems.assert_not_called()
+        # raw - ignore
+        PersonSignalHandlers.related_save(Name, name, raw=True)
+        mock_indexitems.assert_not_called()
+        # name associated with a person
+        name.content_object = person
+        name.save()
+        PersonSignalHandlers.related_save(Name, name)
+        assert mock_indexitems.call_count == 1
+        assert person in mock_indexitems.call_args[0][0]
+
+        # role
+        role = person.role
+        role.name_en = "changed"
+        role.save()
+        mock_indexitems.reset_mock()
+        PersonSignalHandlers.related_save(PersonRole, role)
+        assert mock_indexitems.call_count == 1
+        assert person in mock_indexitems.call_args[0][0]
+
+        # person person relation
+        (ppr_type, _) = PersonPersonRelationType.objects.get_or_create(name="test")
+        person_rel = PersonPersonRelation(
+            from_person=person, to_person=person_multiname, type=ppr_type
+        )
+        person_rel.save()
+        mock_indexitems.reset_mock()
+        PersonSignalHandlers.related_save(PersonPersonRelation, person_rel)
+        assert mock_indexitems.call_count == 1
+        assert person in mock_indexitems.call_args[0][0]
+
+        # person place relation
+        rel_place = Place.objects.create()
+        ppr = PersonPlaceRelation(person=person, place=rel_place)
+        ppr.save()
+        mock_indexitems.reset_mock()
+        PersonSignalHandlers.related_save(PersonPlaceRelation, ppr)
+        assert mock_indexitems.call_count == 1
+        assert person in mock_indexitems.call_args[0][0]
+
+        # person document relation
+        pdr = PersonDocumentRelation(document=document, person=person)
+        pdr.save()
+        mock_indexitems.reset_mock()
+        PersonSignalHandlers.related_save(PersonDocumentRelation, pdr)
+        assert mock_indexitems.call_count == 1
+        assert person in mock_indexitems.call_args[0][0]
+
+        # unhandled model should be ignored, no error
+        mock_indexitems.reset_mock()
+        PersonSignalHandlers.related_save(Person, person)
+        mock_indexitems.assert_not_called()
+
+    @pytest.mark.django_db
+    @patch.object(ModelIndexable, "index_items")
+    def test_related_delete(self, mock_indexitems, person, document):
+        # delegates to same method as save, just check a few cases
+
+        # Name associated with a person
+        name = Name(name="test name", content_object=person)
+        name.save()
+        # delete
+        mock_indexitems.reset_mock()
+        PersonSignalHandlers.related_delete(Name, name)
+        assert mock_indexitems.call_count == 1
+        assert person in mock_indexitems.call_args[0][0]
+
+        # person document relation
+        pdr = PersonDocumentRelation(document=document, person=person)
+        pdr.save()
+        mock_indexitems.reset_mock()
+        PersonSignalHandlers.related_delete(PersonDocumentRelation, pdr)
+        assert mock_indexitems.call_count == 1
+        assert person in mock_indexitems.call_args[0][0]
 
 
 @pytest.mark.django_db

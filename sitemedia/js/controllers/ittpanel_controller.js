@@ -3,7 +3,16 @@
 import { Controller } from "@hotwired/stimulus";
 
 export default class extends Controller {
-    static targets = ["toggle", "transcription", "translation"];
+    static targets = [
+        "emptyLabel",
+        "imagePopout",
+        "toggle",
+        "transcription",
+        "translation",
+        "rotationSliderToggle",
+        "shortLabel",
+        "zoomSliderToggle",
+    ];
 
     initialize() {
         // bind "this" so we can access other methods in this controller from within event handler
@@ -15,9 +24,11 @@ export default class extends Controller {
     connect() {
         document.addEventListener("tahqiq-alert", this.boundAlertHandler);
         document.addEventListener("tahqiq-cancel", this.boundCancelHandler);
-        if (this.isDesktop() && this.transcriptionAndTranslationOpen()) {
+        if (this.isDesktop()) {
             // if transcription + translation both open, align their contents line-by-line
             this.alignLines();
+            // align the header of the first image with the headers of the other two columns
+            this.alignHeaders();
         }
         // on resize, retrigger alignment
         window.addEventListener("resize", this.boundResizeHandler);
@@ -33,43 +44,48 @@ export default class extends Controller {
         return window.innerWidth >= 900;
     }
 
-    clickToggle(evt) {
-        // when all three toggles are opened, automatically close one, depending on which you
-        // attempted to open
-        if (this.toggleTargets.every((target) => target.checked)) {
-            // NOTE: Logic for which should close and which should remain open was determined via
-            // consultation with researchers. The primary finding was that most often, researchers
-            // are not looking directly at an image while editing/working on translations.
-            switch (evt.target.id) {
-                // close transcription if you opened images
-                case "images-on":
-                    this.toggleTargets.find(
-                        (target) => target.id === "transcription-on"
-                    ).checked = false;
-                    break;
-                // close images if you opened either of the other two
-                case "transcription-on":
-                case "translation-on":
-                    this.toggleTargets.find(
-                        (target) => target.id === "images-on"
-                    ).checked = false;
-                    break;
-            }
-        }
-
+    clickToggle() {
         if (this.isDesktop()) {
-            if (this.transcriptionAndTranslationOpen()) {
-                // when transcription and translation are both opened, align their contents line-by-line
-                this.alignLines();
-            } else {
-                // when one of those two toggles is closed, alignment no longer needed
-                this.removeAlignment();
-            }
+            // reset alignment; prevents mistakes on lines that change size, clears align if not needed
+            this.removeAlignment();
+            // when transcription and translation are both opened, align their contents line-by-line
+            this.alignLines();
+            // realign headers if chanegd
+            this.alignHeaders();
         }
     }
 
+    toggleZoomSlider(e) {
+        if (
+            e.currentTarget.checked &&
+            this.rotationSliderToggleTarget.checked
+        ) {
+            this.rotationSliderToggleTarget.checked = false;
+        }
+    }
+
+    toggleRotationSlider(e) {
+        if (e.currentTarget.checked && this.zoomSliderToggleTarget.checked) {
+            this.zoomSliderToggleTarget.checked = false;
+        }
+    }
+
+    imageAndOtherPanelOpen() {
+        // check toggle targets to find out whether both image and either
+        // transcription and translation are open
+        return (
+            this.toggleTargets.find((target) => target.id === "images-on")
+                .checked === true &&
+            ["transcription-on", "translation-on"].some(
+                (id) =>
+                    this.toggleTargets.find((target) => target.id === id)
+                        .checked === true
+            )
+        );
+    }
+
     transcriptionAndTranslationOpen() {
-        // check toggle targets to find out whether both transcription and translated are open
+        // check toggle targets to find out whether both transcription and translation are open
         return ["transcription-on", "translation-on"].every(
             (id) =>
                 this.toggleTargets.find((target) => target.id === id)
@@ -86,61 +102,125 @@ export default class extends Controller {
         );
     }
 
-    alignLines() {
-        // get the currently selected transcription and translation
-        const selectedTranscriptionInput = document.querySelector(
-            `input:checked[type="radio"][name="transcription"]`
-        );
-        let className = selectedTranscriptionInput.dataset.transcription;
-        const transcriptionChunks = document.querySelectorAll(`.${className}`);
-        const selectedTranslationInput = document.querySelector(
-            `input:checked[type="radio"][name="translation"]`
-        );
-        className = selectedTranslationInput.dataset.translation;
-        const translationChunks = document.querySelectorAll(`.${className}`);
+    alignHeaders(forceAlign) {
+        // Align the header of the first image with the header row of the transcription and/or
+        // translation panels
+        if (
+            this.imageAndOtherPanelOpen() &&
+            this.emptyLabelTarget &&
+            this.imagePopoutTargets.length &&
+            this.shortLabelTargets.length &&
+            (!this.imagePopoutTargets[0].classList.contains("open") ||
+                forceAlign)
+        ) {
+            const emptyHeight = getComputedStyle(this.emptyLabelTarget).height;
+            this.imagePopoutTargets[0].style.marginTop = `-${emptyHeight}`;
+            this.imagePopoutTargets[0].style.paddingBottom = emptyHeight;
+            const shortLabel = this.shortLabelTargets[0];
+            const spanHeight = getComputedStyle(shortLabel).height;
+            const imgHeader = this.imagePopoutTargets[0].querySelector("h2");
+            imgHeader.style.height = spanHeight;
+        } else if (this.imagePopoutTargets.length) {
+            this.imagePopoutTargets[0].style.removeProperty("margin-top");
+            this.imagePopoutTargets[0].style.removeProperty("padding-bottom");
+            this.imagePopoutTargets[0]
+                .querySelector("h2")
+                .style.removeProperty("height");
+        }
+    }
 
-        // loop through each transcription and translation block (only as many as needed)
-        const minTargets = Math.min(
-            transcriptionChunks.length,
-            translationChunks.length
-        );
-        for (let i = 0; i < minTargets; i++) {
-            // loop through as many OLs in each transcription/translation as needed
-            const edOls = transcriptionChunks[i].querySelectorAll("ol");
-            const trOls = translationChunks[i].querySelectorAll("ol");
-            const minLists = Math.min(edOls.length, trOls.length);
-            for (let j = 0; j < minLists; j++) {
-                // first, align tops of lists (using inline styles)
-                const edOl = edOls[j];
-                const trOl = trOls[j];
-                const edTop = edOl.getBoundingClientRect().top;
-                // translation is always 1 pixel difference
-                const trTop = trOl.getBoundingClientRect().top - 1;
-                if (edTop < trTop) {
-                    edOl.style.paddingTop = `${trTop - edTop}px`;
-                    trOl.style.paddingTop = "0px";
-                } else if (trTop < edTop) {
-                    trOl.style.paddingTop = `${edTop - trTop}px`;
-                    edOl.style.paddingTop = "0px";
-                } else {
-                    trOl.style.paddingTop = "0px";
-                    edOl.style.paddingTop = "0px";
-                }
-                // then, align each line of transcription to translation
-                const edLines = edOl.querySelectorAll("li");
-                const trLines = trOl.querySelectorAll("li");
-                // only align as many lines as we need to
-                const minLines = Math.min(edLines.length, trLines.length);
-                for (let k = 0; k < minLines; k++) {
-                    if (edLines[k] && trLines[k]) {
-                        // calculate number of lines based on line height
-                        const maxLineCount = Math.max(
-                            this.getLineCount(edLines[k]),
-                            this.getLineCount(trLines[k])
-                        );
-                        // set data-lines attribute on each li according to which is longer
-                        edLines[k].setAttribute("data-lines", maxLineCount);
-                        trLines[k].setAttribute("data-lines", maxLineCount);
+    popOut(e) {
+        // handle img panel alignment when opening and closing the popout container
+        if (
+            e.currentTarget.classList.contains("active") ||
+            e.currentTarget.classList.contains("popout-close-button")
+        ) {
+            alignHeaders(true);
+        } else {
+            this.imagePopoutTargets[0].style.removeProperty("margin-top");
+            this.imagePopoutTargets[0].style.removeProperty("padding-bottom");
+            this.imagePopoutTargets[0]
+                .querySelector("h2")
+                .style.removeProperty("height");
+        }
+    }
+
+    alignLines() {
+        if (this.transcriptionAndTranslationOpen()) {
+            // get the currently selected transcription and translation
+            const selectedTranscriptionInput = document.querySelector(
+                'input:checked[type="radio"][name="transcription"]'
+            );
+            let transcriptionChunks = [];
+            if (selectedTranscriptionInput) {
+                const className =
+                    selectedTranscriptionInput.dataset.transcription;
+                transcriptionChunks = document.querySelectorAll(
+                    `.${className}`
+                );
+            } else {
+                // allow alignment in transcription edit mode (i.e. no selectedTranscriptionInput)
+                transcriptionChunks = document.querySelectorAll(
+                    ".tahqiq-body-display"
+                );
+            }
+            const selectedTranslationInput = document.querySelector(
+                `input:checked[type="radio"][name="translation"]`
+            );
+            let translationChunks = [];
+            if (selectedTranslationInput) {
+                const className = selectedTranslationInput.dataset.translation;
+                translationChunks = document.querySelectorAll(`.${className}`);
+            } else {
+                // allow alignment in translation edit mode (i.e. no selectedTranslationInput)
+                translationChunks = document.querySelectorAll(
+                    ".tahqiq-body-display"
+                );
+            }
+
+            // loop through each transcription and translation block (only as many as needed)
+            const minTargets = Math.min(
+                transcriptionChunks.length,
+                translationChunks.length
+            );
+            for (let i = 0; i < minTargets; i++) {
+                // loop through as many OLs in each transcription/translation as needed
+                const edOls = transcriptionChunks[i].querySelectorAll("ol");
+                const trOls = translationChunks[i].querySelectorAll("ol");
+                const minLists = Math.min(edOls.length, trOls.length);
+                for (let j = 0; j < minLists; j++) {
+                    // first, align tops of lists (using inline styles)
+                    const edOl = edOls[j];
+                    const trOl = trOls[j];
+                    const edTop = edOl.getBoundingClientRect().top;
+                    // translation is always 1 pixel difference
+                    const trTop = trOl.getBoundingClientRect().top - 1;
+                    if (edTop < trTop) {
+                        edOl.style.paddingTop = `${trTop - edTop}px`;
+                        trOl.style.paddingTop = "0px";
+                    } else if (trTop < edTop) {
+                        trOl.style.paddingTop = `${edTop - trTop}px`;
+                        edOl.style.paddingTop = "0px";
+                    } else {
+                        trOl.style.paddingTop = "0px";
+                        edOl.style.paddingTop = "0px";
+                    }
+                    // then, align each line of transcription to translation
+                    const edLines = edOl.querySelectorAll("li");
+                    const trLines = trOl.querySelectorAll("li");
+                    // only align as many lines as we need to
+                    const minLines = Math.min(edLines.length, trLines.length);
+                    for (let k = 0; k < minLines; k++) {
+                        if (edLines[k] && trLines[k]) {
+                            // calculate number of lines based on line height
+                            const maxLineCount = Math.max(
+                                this.getLineCount(edLines[k]),
+                                this.getLineCount(trLines[k])
+                            );
+                            // set data-lines attribute on each li according to which is longer
+                            edLines[k].setAttribute("data-lines", maxLineCount);
+                            trLines[k].setAttribute("data-lines", maxLineCount);
+                        }
                     }
                 }
             }
@@ -181,9 +261,10 @@ export default class extends Controller {
 
     handleResizeAlign() {
         // on resize, remove alignment and realign using new heights
-        if (this.isDesktop() && this.transcriptionAndTranslationOpen()) {
+        if (this.isDesktop()) {
             this.removeAlignment();
             this.alignLines();
+            this.alignHeaders();
         }
     }
 
@@ -191,10 +272,7 @@ export default class extends Controller {
         // on save, re-align transcription and translation lines
         if (this.isDesktop()) {
             const { message } = e.detail;
-            if (
-                message.includes("saved") &&
-                this.transcriptionAndTranslationOpen()
-            ) {
+            if (message.includes("saved")) {
                 this.alignLines();
             }
         }

@@ -1,3 +1,4 @@
+import re
 from ast import literal_eval
 
 from dal import autocomplete
@@ -17,11 +18,13 @@ from django.views.generic import DetailView, FormView, ListView
 from django.views.generic.edit import FormMixin
 
 from geniza.corpus.dates import PartialDate
+from geniza.corpus.views import SolrDateRangeMixin
 from geniza.entities.forms import PersonListForm, PersonMergeForm, PlaceListForm
 from geniza.entities.models import (
     PastPersonSlug,
     PastPlaceSlug,
     Person,
+    PersonSolrQuerySet,
     Place,
     PlaceSolrQuerySet,
 )
@@ -290,6 +293,70 @@ class PersonDocumentsView(RelatedDocumentsMixin, PersonDetailView):
     relation_field = "persondocumentrelation_set"
 
 
+class PersonPlacesView(PersonDetailView):
+    """List of :class:`~geniza.entities.models.Place` objects that are related to a specific
+    :class:`~geniza.entities.models.Person`."""
+
+    template_name = "entities/person_related_places.html"
+    viewname = "entities:person-places"
+
+    def page_title(self):
+        """The title of the person related places page"""
+        # Translators: title of person "related places" page
+        return _("Related places for %(p)s") % {"p": str(self.get_object())}
+
+    def page_description(self):
+        """Description of a person related places page, with count"""
+        person = self.get_object()
+        count = person.personplacerelation_set.count()
+        # Translators: description of related places page, for search engines
+        return ngettext(
+            "%(count)d related place",
+            "%(count)d related places",
+            count,
+        ) % {
+            "count": count,
+        }
+
+    def get_related(self):
+        """Get and process the queryset of related places"""
+        person = self.get_object()
+        related_places = person.personplacerelation_set.all()
+
+        sort = self.request.GET.get("sort", "name_asc")
+
+        sort_dir = "-" if sort.endswith("desc") else ""
+
+        if "name" in sort:
+            # sort by place name (slug)
+            related_places = related_places.order_by(f"{sort_dir}place__slug")
+
+        if "relation" in sort:
+            # sort by person-place relation type name
+            related_places = related_places.order_by(f"{sort_dir}type__name")
+
+        return related_places
+
+    def get_context_data(self, **kwargs):
+        """Include list of places and sort state in context"""
+
+        person = self.get_object()
+        # if there are no related places, don't serve out this page
+        if not person.personplacerelation_set.exists():
+            raise Http404
+
+        # otherwise, add related places queryset to context
+        context = super().get_context_data(**kwargs)
+        context.update(
+            {
+                "related_places": self.get_related(),
+                "sort": self.request.GET.get("sort", "name_asc"),
+                "maptiler_token": getattr(settings, "MAPTILER_API_TOKEN", ""),
+            }
+        )
+        return context
+
+
 class PlaceDetailView(SlugDetailMixin):
     """public display of a single :class:`~geniza.entities.models.Place`"""
 
@@ -330,7 +397,70 @@ class PlaceDocumentsView(RelatedDocumentsMixin, PlaceDetailView):
     relation_field = "documentplacerelation_set"
 
 
-class PersonListView(ListView, FormMixin):
+class PlacePeopleView(PlaceDetailView):
+    """List of :class:`~geniza.entities.models.Person` objects that are related to a specific
+    :class:`~geniza.entities.models.Place`."""
+
+    template_name = "entities/place_related_people.html"
+    viewname = "entities:place-people"
+
+    def page_title(self):
+        """The title of the place related people page"""
+        # Translators: title of place "related people" page
+        return _("Related people for %(p)s") % {"p": str(self.get_object())}
+
+    def page_description(self):
+        """Description of a place related people page, with count"""
+        place = self.get_object()
+        count = place.personplacerelation_set.count()
+        # Translators: description of related people page, for search engines
+        return ngettext(
+            "%(count)d related people",
+            "%(count)d related people",
+            count,
+        ) % {
+            "count": count,
+        }
+
+    def get_related(self):
+        """Get and process the queryset of related people"""
+        place = self.get_object()
+        related_people = place.personplacerelation_set.all()
+
+        sort = self.request.GET.get("sort", "name_asc")
+
+        sort_dir = "-" if sort.endswith("desc") else ""
+
+        if "name" in sort:
+            # sort by person name (slug)
+            related_people = related_people.order_by(f"{sort_dir}person__slug")
+
+        if "relation" in sort:
+            # sort by person-place relation type name
+            related_people = related_people.order_by(f"{sort_dir}type__name")
+
+        return related_people
+
+    def get_context_data(self, **kwargs):
+        """Include list of people and sort state in context"""
+
+        place = self.get_object()
+        # if there are no related people, don't serve out this page
+        if not place.personplacerelation_set.exists():
+            raise Http404
+
+        # otherwise, add related people queryset to context
+        context = super().get_context_data(**kwargs)
+        context.update(
+            {
+                "related_people": self.get_related(),
+                "sort": self.request.GET.get("sort", "name_asc"),
+            }
+        )
+        return context
+
+
+class PersonListView(ListView, FormMixin, SolrDateRangeMixin):
     """A list view with faceted filtering and sorting using only the Django ORM/database."""
 
     model = Person
@@ -342,32 +472,42 @@ class PersonListView(ListView, FormMixin):
     page_description = _("Browse people present in Geniza documents.")
     paginate_by = 50
     form_class = PersonListForm
-    applied_filter_count = 0
+    applied_filter_labels = []
 
     # ORM references to database fields to facet
-    facet_fields = ["gender", "role__name", "persondocumentrelation__type__name"]
+    # facet_fields = ["gender", "role__name", "persondocumentrelation__type__name"]
 
-    # sort options mapped to db fields
+    # sort options mapped to solr fields
     sort_fields = {
-        "name": "slug",
-        "role": "role__name",
-        "documents": "documents_count",
-        "people": "people_count",
-        "places": "places_count",
+        "name": "slug_s",
+        "role": "role_s",
+        "documents": "documents_i",
+        "people": "people_i",
+        "places": "places_i",
+        "date_asc": "start_date_i",
+        "date_desc": "-end_date_i",
     }
     initial = {"sort": "name", "sort_dir": "asc"}
 
+    # regex to fix problematic characters in names of roles, relations, etc
+    qs_regex = r"([ \(\)])"
+
+    def get_applied_filter_labels(self, form, field, filters):
+        """return a list of objects with field/value pairs, and translated labels,
+        one for each applied filter"""
+        labels = []
+        for value in filters:
+            # remove escape characters
+            value = value.replace("\\", "")
+            # get translated label using form helper method
+            label = form.get_translated_label(field, value)
+            # return object with original field and value, so we can unapply programmatically
+            labels.append({"field": field, "value": value, "label": label})
+        return labels
+
     def get_queryset(self, *args, **kwargs):
         """modify queryset to sort and filter on people in the list"""
-        people = (
-            Person.objects.filter(names__primary=True).annotate(
-                documents_count=Count("documents", distinct=True),
-                people_count=Count("relationships", distinct=True),
-                places_count=Count("personplacerelation", distinct=True),
-            )
-            # order people by slug by default
-            .order_by("slug")
-        )
+        people = PersonSolrQuerySet().facet("gender", "role", "document_relations")
 
         form = self.get_form()
         # bail out if form is invalid
@@ -376,25 +516,63 @@ class PersonListView(ListView, FormMixin):
 
         # filter by database fields using the Django ORM
         search_opts = form.cleaned_data
-        self.applied_filter_count = 0
+        self.applied_filter_labels = []
         if search_opts.get("gender"):
             genders = literal_eval(search_opts["gender"])
             people = people.filter(gender__in=genders)
-            self.applied_filter_count += len(genders)
+            self.applied_filter_labels += self.get_applied_filter_labels(
+                form, "gender", genders
+            )
+        if search_opts.get("date_range"):
+            # date range filter; returns tuple of value or None for open-ended range
+            start, end = search_opts["date_range"]
+            people = people.filter(date_dr="[%s TO %s]" % (start or "*", end or "*"))
+            label = "%s–%s" % (start, end)
+            if start and not end:
+                label = _("After %s") % start
+            elif end and not start:
+                label = _("Before %s") % end
+            self.applied_filter_labels += [
+                {
+                    "field": "date_range",
+                    "value": search_opts["date_range"],
+                    "label": label,
+                }
+            ]
         if search_opts.get("social_role"):
             roles = literal_eval(search_opts["social_role"])
-            people = people.filter(role__name__in=roles)
-            self.applied_filter_count += len(roles)
+            roles = [re.sub(self.qs_regex, r"\\\1", r) for r in roles]
+            people = people.filter(role__in=roles)
+            self.applied_filter_labels += self.get_applied_filter_labels(
+                form, "social_role", roles
+            )
         if search_opts.get("document_relation"):
             relations = literal_eval(search_opts["document_relation"])
-            people = people.filter(persondocumentrelation__type__name__in=relations)
-            self.applied_filter_count += len(relations)
+            relations = [re.sub(self.qs_regex, r"\\\1", r) for r in relations]
+            people = people.filter(document_relations__in=relations)
+            self.applied_filter_labels += self.get_applied_filter_labels(
+                form, "document_relation", relations
+            )
         if search_opts.get("sort"):
-            order_by = self.sort_fields[search_opts["sort"]]
-            # default is ascending; handle descending by appending a - in django order_by
-            if "sort_dir" in search_opts and search_opts["sort_dir"] == "desc":
+            sort_field = search_opts.get("sort")
+            if "date" in sort_field:
+                # date asc and desc are different fields
+                if "sort_dir" in search_opts and search_opts["sort_dir"] == "desc":
+                    sort_field = "date_desc"
+                else:
+                    sort_field = "date_asc"
+
+            order_by = self.sort_fields[sort_field]
+            # default is ascending; handle descending by appending a - in order_by
+            if (
+                "sort_dir" in search_opts
+                and search_opts["sort_dir"] == "desc"
+                and "date" not in sort_field
+            ):
                 order_by = f"-{order_by}"
             people = people.order_by(order_by)
+
+        self.queryset = people
 
         return people
 
@@ -410,59 +588,28 @@ class PersonListView(ListView, FormMixin):
             form_data.setdefault(key, val)
 
         kwargs["data"] = form_data
+        # get min/max configuration for person date range field
+        kwargs["range_minmax"] = self.get_range_stats(
+            queryset_cls=PersonSolrQuerySet, field_name="date_range"
+        )
 
         return kwargs
-
-    def get_facets(self):
-        """Generate counts for of each unique value of all fields in
-        self.facet_fields, as a dict keyed on field name. If a field value
-        is present in the database but filtered out, its count will be 0."""
-        facets = {}
-        form = self.get_form()
-        qs = self.get_queryset()
-        is_filtered = form.filters_active()
-        if is_filtered:
-            all_objects = self.model.objects.all()
-            # use pk__in to prevent filters from excluding multi-valued entries, e.g. if a Person
-            # has multiple PersonDocumentRelations with different Types, ensure that filtering on
-            # one of those Types doesn't result in a 0 value for all other Type facets
-            qs = all_objects.filter(pk__in=qs.values_list("pk"))
-        for field in self.facet_fields:
-            # get counts of each unique value for this field in the current queryset
-            facets[field] = list(
-                qs.values(field).annotate(count=Count("pk", distinct=True))
-            )
-            if is_filtered:
-                # if a filter is applied, get all values from db, not just filtered queryset
-                unfiltered_values = list(
-                    all_objects.values_list(field, flat=True).distinct()
-                )
-                # reduce to only those that are not present in filtered queryset
-                remaining_values = filter(
-                    lambda val: not any([d[field] == val for d in facets[field]]),
-                    unfiltered_values,
-                )
-                # add each remaining value as a facet with a count of 0
-                facets[field] += [{field: val, "count": 0} for val in remaining_values]
-            # sort alphabetically by value
-            facets[field] = sorted(facets[field], key=lambda d: d[field] or "")
-        return facets
 
     def get_context_data(self, **kwargs):
         """extend context data to add page metadata, facets"""
         context_data = super().get_context_data(**kwargs)
 
         # set facet labels and counts on form
-        facets = self.get_facets()
-        context_data["form"].set_choices_from_facets(facets)
+        facet_dict = self.queryset.get_facets()
+        # populate choices for facet filter fields on the form
+        context_data["form"].set_choices_from_facets(facet_dict.facet_fields)
 
         context_data.update(
             {
                 "page_title": self.page_title,
                 "page_description": self.page_description,
                 "page_type": "people",
-                "facets": facets,
-                "filter_count": self.applied_filter_count,
+                "filters": self.applied_filter_labels,
             }
         )
         return context_data

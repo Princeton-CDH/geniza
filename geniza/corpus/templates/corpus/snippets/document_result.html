@@ -31,7 +31,7 @@
                     {% if document_highlights.old_shelfmark %}
                         {# Translators: label for historical/old shelfmark on document fragments #}
                         <dt>{% translate "Historical shelfmark" %}</dt>
-                        <dd>{{ document_highlights.old_shelfmark.0|striptags }}</dd>
+                        <dd>{{ document_highlights.old_shelfmark|striptags }}</dd>
                     {% endif %}
                 {% endwith %}
                 {# Translators: Date document was first added to the PGP #}
@@ -52,6 +52,7 @@
                     {% if document_highlights.description %}
                         {% for snippet in document_highlights.description %}
                             {{ snippet|safe }}
+                            {% if not forloop.last %}[…]{% endif %}
                         {% endfor %}
                     {% else %}
                             {# otherwise, display truncated description #}

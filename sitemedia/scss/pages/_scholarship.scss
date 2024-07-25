@@ -6,6 +6,13 @@
 @use "../base/spacing";
 
 main.scholarship {
+    max-width: 100vw;
+    @include breakpoints.for-tablet-landscape-up {
+        .container,
+        .container * {
+            max-width: calc(896px + 2rem);
+        }
+    }
     // Primary container
     div.container {
         display: flex;
@@ -17,9 +24,19 @@ main.scholarship {
     }
     ol {
         counter-reset: search-counter;
-        margin: spacing.$spacing-2xl 0 spacing.$spacing-xl spacing.$spacing-lg;
+        margin: 3rem 0 spacing.$spacing-xl spacing.$spacing-lg;
         @include breakpoints.for-tablet-landscape-up {
-            margin: spacing.$spacing-3xl 0 0;
+            margin: calc(2rem + 10px) 0 0;
+        }
+    }
+}
+
+// RTL overrides
+html[dir="rtl"] main.scholarship {
+    ol {
+        margin: 3rem spacing.$spacing-lg spacing.$spacing-xl 0;
+        @include breakpoints.for-tablet-landscape-up {
+            margin: calc(2rem + 10px) 0 0;
         }
     }
 }

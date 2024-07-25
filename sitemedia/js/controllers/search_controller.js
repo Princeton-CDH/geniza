@@ -9,6 +9,7 @@ export default class extends Controller {
         "query",
         "sort",
         "filterModal",
+        "filtersButton",
         "doctypeFilter",
         "dropdownDetails",
     ];
@@ -36,7 +37,23 @@ export default class extends Controller {
         window.sessionStorage.setItem(`${searchPage}-filters-expanded`, "true");
     }
 
+    toggleFiltersOpen(e) {
+        // toggle filters modal/panel open and closed
+        e.preventDefault();
+        e.currentTarget.classList.toggle("open");
+        const filtersOpen =
+            this.filterModalTarget.getAttribute("aria-expanded");
+        const newFiltersOpen = filtersOpen === "true" ? "false" : "true";
+        this.filterModalTarget.setAttribute("aria-expanded", newFiltersOpen);
+        const searchPage = this.element.dataset.page;
+        window.sessionStorage.setItem(
+            `${searchPage}-filters-expanded`,
+            newFiltersOpen
+        );
+    }
+
     closeFilters(e) {
+        // close filter modal / panel if open
         e.preventDefault();
         this.filterModalTarget.setAttribute("aria-expanded", "false");
         const searchPage = this.element.dataset.page;
@@ -44,6 +61,9 @@ export default class extends Controller {
             `${searchPage}-filters-expanded`,
             "false"
         );
+        if (this.hasFiltersButtonTarget) {
+            this.filtersButtonTarget.classList.remove("open");
+        }
         this.navBackToSearch();
     }
 
@@ -58,7 +78,46 @@ export default class extends Controller {
                 "aria-expanded",
                 savedFilterState
             );
+            if (this.hasFiltersButtonTarget && savedFilterState === "true") {
+                this.filtersButtonTarget.classList.add("open");
+            }
         }
+    }
+
+    unapplyFilter(e) {
+        // unapply a filter by field and value pair
+        const filterName = e.currentTarget.dataset.field;
+        const filterValue = e.currentTarget.value;
+        const searchParams = new URLSearchParams(window.location.search);
+        if (searchParams.has(filterName, filterValue)) {
+            const appliedFilter = this.filterModalTarget.querySelector(
+                `label[for*="${filterName}"] input[value*="${filterValue}"]`
+            );
+            appliedFilter.checked = false;
+        } else if (
+            filterName === "date_range" &&
+            (searchParams.has("date_range_0") ||
+                searchParams.has("date_range_1"))
+        ) {
+            // special handling for date range filter
+            const appliedFilters = this.filterModalTarget.querySelectorAll(
+                `label[for*="${filterName}"] input`
+            );
+            appliedFilters.forEach((f) => (f.value = ""));
+        }
+    }
+
+    clearFilters(e) {
+        // clear all filters
+        e.preventDefault();
+        const appliedFilters =
+            this.filterModalTarget.querySelectorAll("input[checked]");
+        appliedFilters.forEach((f) => (f.checked = false));
+        const dateFilters = this.filterModalTarget.querySelectorAll(
+            "input[type='number']"
+        );
+        dateFilters.forEach((f) => (f.value = ""));
+        this.element.requestSubmit();
     }
 
     // doctype filter <details> element
@@ -155,5 +214,13 @@ export default class extends Controller {
                 target.removeAttribute("open");
             }
         });
+    }
+
+    preventEnterKeypress(e) {
+        // text input elements like the date range will try to click buttons in the form
+        // if Enter is pressed while they are focused, so prevent that behavior
+        if (e.key === "Enter") {
+            e.preventDefault();
+        }
     }
 }

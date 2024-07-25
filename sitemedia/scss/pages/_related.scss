@@ -160,6 +160,95 @@ main.place table.related-documents {
         }
     }
 }
+main.person,
+main.place {
+    section.relations {
+        width: 100%;
+        padding: 0 1rem;
+        @include breakpoints.for-tablet-landscape-up {
+            padding: 0;
+        }
+        table.places,
+        table.people {
+            width: 100%;
+            thead tr {
+                border-bottom: 1px solid var(--related-header-underline);
+                @include typography.related-table;
+                text-align: left;
+                th {
+                    padding: 0 0 0.5rem;
+                    a {
+                        display: flex;
+                        align-items: center;
+                        gap: 0.25rem;
+                        text-decoration: none;
+                        svg {
+                            width: 16px;
+                            height: 16px;
+                            display: block;
+                            color: var(--disabled-on-background-light);
+                            fill: var(--disabled-on-background-light);
+                        }
+                        &[class*="asc"] svg {
+                            color: var(--on-background);
+                        }
+                        &[class*="desc"] svg {
+                            fill: var(--on-background);
+                        }
+                    }
+                    &.sorted {
+                        font-family: fonts.$primary-bold;
+                        font-weight: 700;
+                    }
+                }
+            }
+            tbody tr {
+                @include typography.meta;
+                border-bottom: 1px solid var(--tabs-bottom);
+                td {
+                    padding: 0.75rem 0;
+                }
+            }
+            // hide notes on mobile
+            th.notes,
+            td.notes {
+                display: none;
+                @include breakpoints.for-tablet-landscape-up {
+                    display: table-cell;
+                }
+            }
+        }
+        margin: 1.5rem 0 9rem;
+        @include breakpoints.for-tablet-landscape-up {
+            margin: 2rem 0 0;
+        }
+    }
+}
+main.place section.relations {
+    margin: 1.5rem 0 9rem;
+    @include breakpoints.for-tablet-landscape-up {
+        margin: (2rem + spacing.$spacing-xs) 0 0;
+    }
+    table.people {
+        @include breakpoints.for-tablet-landscape-up {
+            background-color: var(--background-light);
+            thead tr {
+                border-bottom: 1px solid var(--disabled);
+                th {
+                    padding: 1rem 0 0.5rem;
+                }
+            }
+            th:first-of-type,
+            td:first-of-type {
+                padding-left: 1rem;
+            }
+            th:last-of-type,
+            td:last-of-type {
+                padding-right: 1rem;
+            }
+        }
+    }
+}
 
 // RTL overrides
 html[dir="rtl"] main.person table.related-documents,

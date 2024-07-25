@@ -58,7 +58,7 @@ jobs:
           restore-keys: |
             npm-${{ hashFiles('package-lock.json') }}
             npm-
-      - run: npm install -g @lhci/cli
+      - run: npm install -g @lhci/cli@0.13.0 # NOTE: pinned due to globalThis.fetch error
       - run: npm ci
       - run: npm run build
       - run: python manage.py migrate

@@ -85,6 +85,13 @@ $off-white: #f7f7f7;
     --alert-success: #7bac7b;
     --alert-error: #ce2029;
     --alert-error-text: #f7f7f7;
+    // table header bottom border
+    --related-header-underline: #161616;
+    // filter chips
+    --filter-chip-bg-hover: #e0e0e0;
+    --filter-chip-bg-active: #bdbdbd;
+    // zoom control
+    --zoom-control-bg: #d9d9d9;
 }
 
 // Dark mode theme colors
@@ -155,6 +162,13 @@ $off-white: #f7f7f7;
     --alert-success: #436043;
     --alert-error: #ce2029;
     --alert-error-text: #f7f7f7;
+    // related entities table bottom borders
+    --related-header-underline: #595959;
+    // filter chips
+    --filter-chip-bg-hover: #424242;
+    --filter-chip-bg-active: #616161;
+    // zoom control
+    --zoom-control-bg: #d9d9d9;
 }
 
 html {

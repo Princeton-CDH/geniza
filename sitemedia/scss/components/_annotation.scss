@@ -69,9 +69,10 @@ main.annotating {
             padding: 0;
             margin: 0;
             z-index: 2;
-            width: 40px;
-            min-width: 40px;
-            height: 40px;
+            width: 2rem;
+            min-width: 2rem;
+            height: 2rem;
+            border-radius: 5px;
             svg {
                 fill: var(--on-background);
                 width: 20px;
@@ -95,14 +96,22 @@ main.annotating {
             }
         }
         button.popout-close-button {
-            font-size: 32px;
-            display: none;
+            font-size: 1rem;
+            height: 1rem;
+            width: 2rem;
+            background-color: transparent;
+            border: none;
             position: absolute;
-            top: 5rem;
+            top: 0;
             right: 0;
             z-index: 2;
+            display: none;
+            color: var(--on-background);
             &.visible {
                 display: flex;
+            }
+            &:hover {
+                outline: 1px solid var(--primary);
             }
         }
         // opened "pop out" view of an image
@@ -127,18 +136,18 @@ main.annotating {
         fieldset.tahqiq-toolbar {
             display: flex;
             align-items: center;
-            margin: 0 0.5rem;
-            padding-left: 0.5rem;
-            border-left: 2px solid var(--extra-metadata-text);
-            gap: 0.5rem;
+            margin: 0 0 0 0.5rem;
             label.tahqiq-tool {
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                width: 40px;
-                height: 40px;
+                min-width: 2rem;
+                height: 2rem;
+                border-radius: 5px;
+                padding: 0 0.5rem;
                 cursor: pointer;
                 color: var(--on-background);
+                background-color: var(--background-gray);
                 &.active-tool,
                 &:hover,
                 &:active {
@@ -162,6 +171,14 @@ main.annotating {
                 // tools are icon-only, so make labels sr-only
                 span {
                     @include a11y.sr-only;
+                }
+                &:first-of-type {
+                    border-top-right-radius: 0;
+                    border-bottom-right-radius: 0;
+                }
+                &:last-of-type {
+                    border-top-left-radius: 0;
+                    border-bottom-left-radius: 0;
                 }
             }
             label.rectangle-tool::before {

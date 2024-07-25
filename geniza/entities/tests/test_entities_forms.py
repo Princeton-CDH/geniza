@@ -1,7 +1,7 @@
 from unittest.mock import Mock, patch
 
 import pytest
-from django.urls import reverse
+from django.utils.translation import activate, get_language
 
 from geniza.corpus.forms import FacetChoiceField
 from geniza.entities.forms import (
@@ -10,7 +10,7 @@ from geniza.entities.forms import (
     PersonMergeForm,
     PlaceListForm,
 )
-from geniza.entities.models import Name, Person
+from geniza.entities.models import Name, Person, PersonRole
 
 
 class TestPersonChoiceField:
@@ -57,27 +57,52 @@ class TestPersonListForm:
         form = PersonListForm()
         with patch.object(FacetChoiceField, "populate_from_facets"):
             facets = {
-                "gender": [
-                    {"gender": Person.MALE, "count": 1},
-                    {"gender": Person.FEMALE, "count": 2},
-                ],
+                "gender": {"Male": 1, "Female": 2},
             }
             # should set labels and counts
             form.set_choices_from_facets(facets)
             form.fields["gender"].populate_from_facets.assert_called_with(
                 {
-                    Person.FEMALE: (person.get_gender_display(), 2),
-                    Person.MALE: (person_diacritic.get_gender_display(), 1),
+                    "Female": ("Female", 2),
+                    "Male": ("Male", 1),
                 }
             )
             # should get translated labels
             facets = {
-                "role__name": [{"role__name": person.role.name_en, "count": 1}],
+                "role": {person.role.name_en: 1},
             }
             form.set_choices_from_facets(facets)
             form.fields["social_role"].populate_from_facets.assert_called_with(
-                {person.role.name_en: (person.role.name, 1)}
+                {person.role.name_en: (person.role, 1)}
             )
+
+    def test_get_translated_label(self):
+        form = PersonListForm()
+        # invalidate cached property (it is computed in other tests in the suite)
+        if "objects_by_label" in PersonRole.__dict__:
+            # __dict__["objects_by_label"] returns a classmethod
+            # __func__ returns a property
+            # fget returns the actual cached function
+            PersonRole.__dict__["objects_by_label"].__func__.fget.cache_clear()
+
+        # set lang to hebrew
+        current_lang = get_language()
+        activate("he")
+        # PersonRole should be able to find the translated label
+        pr = PersonRole.objects.create(
+            name_en="Author", display_label_en="Author", display_label_he="מְחַבֵּר"
+        )
+        assert str(pr) == "מְחַבֵּר"
+        assert str(form.get_translated_label("role", "Author")) == "מְחַבֵּר"
+        # Gender should be able to find the translated label
+        with patch("geniza.entities.models.Person") as mock_person:
+            mock_person.GENDER_CHOICES = {"M": "test"}
+            form.get_translated_label("gender", "Male") == "test"
+        # Any other field not present in db mapping should return label as-is
+        assert form.get_translated_label("no_field", "Test") == "Test"
+
+        # set lang back for remaining tests
+        activate(current_lang)
 
     def test_filters_active(self):
         # should correctly ascertain if filters are active
