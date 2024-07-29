@@ -86,7 +86,7 @@ main.place table.related-documents {
     td {
         display: flex;
         flex-flow: column;
-        line-height: (24 / 14);
+        line-height: calc(24 / 14);
         @include breakpoints.for-tablet-landscape-up {
             padding-right: 1.5rem;
             flex-flow: row;

@@ -1,8 +1,8 @@
 {% load i18n static %}
 
-<label id="theme-toggle-{% if is_mobile == "true" %}mobile{% else %}desktop{% endif %}" for="theme-toggle-checkbox{% if is_mobile == "true" %}-mobile{% endif %}" tabindex="0" data-theme-target="toggleLabel" data-action="keydown->theme#toggleThemeKeyboard">
+<label id="theme-toggle" for="theme-toggle-checkbox" tabindex="0" data-theme-target="toggleLabel" data-action="keydown->theme#toggleThemeKeyboard">
     {# Translators: label for dark mode/light mode theme switcher #}
     <span class="sr-only">{% translate "Enable dark mode" %}</span>
-    <input type="checkbox" id="theme-toggle-checkbox{% if is_mobile == "true" %}-mobile{% endif %}" tabindex="-1" data-theme-target="toggleCheckbox" data-action="change->theme#toggleTheme" />
+    <input type="checkbox" id="theme-toggle-checkbox" tabindex="-1" data-theme-target="toggleCheckbox" data-action="change->theme#toggleTheme" />
     <span aria-hidden="true"></span>
 </label>

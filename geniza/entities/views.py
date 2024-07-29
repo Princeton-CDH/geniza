@@ -686,6 +686,7 @@ class PlaceListView(ListView, FormMixin):
                 "page_title": self.page_title,
                 "page_description": self.page_description,
                 "page_type": "places",
+                "maptiler_token": getattr(settings, "MAPTILER_API_TOKEN", ""),
             }
         )
         return context_data

@@ -36,13 +36,14 @@ footer {
     @include breakpoints.for-tablet-landscape-up {
         position: relative;
         margin-top: spacing.$spacing-2xl;
-        padding-top: spacing.$spacing-3xl;
-        display: grid;
-        grid-template-areas:
-            "nav links"
-            "legal legal";
-        flex-flow: row wrap;
-        justify-content: space-between;
+        padding: spacing.$spacing-3xl 4.75rem 0;
+        display: flex;
+        flex-flow: column;
+        div.first-row {
+            display: flex;
+            flex-flow: row nowrap;
+            justify-content: space-between;
+        }
     }
     // extra style for hiding the theme toggle on desktop only
     @include breakpoints.for-desktop-up {
@@ -52,6 +53,9 @@ footer {
     // footer site navigation (mobile)
     nav#footer-nav {
         margin: 25% 17.5% 0; // Use percentages to scale with background
+        @include breakpoints.for-tablet-landscape-up {
+            margin: 0;
+        }
         text-align: left;
         ul {
             display: grid;
@@ -64,74 +68,120 @@ footer {
                     @include typography.nav-bold;
                 }
             }
-            li {
-                margin-bottom: spacing.$spacing-xs;
+            li.menu-label {
+                margin-bottom: spacing.$spacing-2xs;
+                text-transform: uppercase;
+                font-size: typography.$text-size-md;
+                font-weight: 600;
+                @include breakpoints.for-tablet-landscape-up {
+                    font-size: typography.$text-size-sm;
+                }
             }
             li.has-submenu {
                 grid-row-end: span 20; // Hack to get tight grid
                 ul {
                     display: flex;
                     flex-flow: column;
-                    li.menu-item {
-                        margin-left: 1rem;
-                    }
                 }
             }
-        }
-        // footer site navigation (desktop)
-        @include breakpoints.for-tablet-landscape-up {
-            margin: 0 0 0 spacing.$spacing-3xl;
         }
     }
 
     // footer links to PGL, CDH
+    svg {
+        fill: var(--logo);
+        &#pgl-logo {
+            width: 177px;
+            height: 85px;
+        }
+        &#cdh-logo {
+            width: 108px;
+            height: 80px;
+        }
+    }
     ul#footer-links {
         & > li {
             margin-top: spacing.$spacing-lg;
         }
-        svg {
-            fill: var(--logo);
-            &#pgl-logo {
-                width: 177px;
-                height: 85px;
-            }
-            &#cdh-logo {
-                width: 108px;
-                height: 80px;
+
+        border-top: 1px solid var(--disabled);
+        margin: 1.25rem 1.5rem;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 1.875rem;
+        a.logo {
+            display: flex;
+            align-items: center;
+            &::after {
+                content: "";
+                display: block;
+                width: 1px;
+                height: 4rem;
+                background-color: var(--disabled);
+                margin-left: 1.875rem;
             }
         }
-
-        // social links
-        ul.social {
-            li {
-                @include icon-and-text;
-                a.twitter::before {
-                    content: "\f341"; // phosphor twitter-logo icon
-                }
-                a.instagram::before {
-                    content: "\f1e1"; // phosphor instagram-logo icon
-                }
-                @include breakpoints.for-tablet-landscape-up {
-                    text-align: right;
-                }
-            }
-            @include breakpoints.for-tablet-landscape-up {
-                margin: spacing.$spacing-lg 0 spacing.$spacing-xs;
-            }
+        li:last-of-type a.logo::after {
+            display: none;
         }
         // footer links (desktop)
         @include breakpoints.for-tablet-landscape-up {
-            display: flex;
+            flex: 1 0 auto;
             justify-content: flex-end;
-            margin-right: spacing.$spacing-3xl;
+            border: none;
+            margin: 0;
+            gap: 0;
             & > li {
                 margin: spacing.$spacing-md spacing.$spacing-lg 0 0;
             }
             a.logo {
-                display: flex;
-                align-items: center;
                 height: 90px;
                 margin-bottom: spacing.$spacing-md;
+                &::after {
+                    margin-left: 2rem;
+                }
+            }
+            li:last-of-type a.logo::after {
+                display: block;
+            }
+        }
+    }
+    // social links
+    section.social {
+        display: flex;
+        flex-flow: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        margin: 0 auto;
+        ul {
+            text-align: left;
+        }
+        @include breakpoints.for-tablet-landscape-up {
+            text-align: left;
+            display: flex;
+            flex-flow: column;
+            align-items: flex-start;
+            justify-content: center;
+        }
+        h2 {
+            @include typography.body-bold;
+            font-size: typography.$text-size-md;
+            @include breakpoints.for-tablet-landscape-up {
+                font-size: typography.$text-size-md;
+            }
+        }
+        li {
+            @include icon-and-text;
+            font-size: typography.$text-size-sm;
+            line-height: 1.1;
+            a.twitter::before {
+                content: "\f341"; // phosphor twitter-logo icon
+            }
+            a.instagram::before {
+                content: "\f1e1"; // phosphor instagram-logo icon
             }
         }
     }
@@ -140,24 +190,25 @@ footer {
     ul#legal {
         padding-top: spacing.$spacing-lg;
         margin: spacing.$spacing-md spacing.$spacing-xs;
-        border-top: 1px solid var(--on-background);
+        &:not(:first-child) {
+            border-top: 1px solid var(--disabled);
+        }
         @include breakpoints.for-tablet-landscape-up {
-            margin: spacing.$spacing-md spacing.$spacing-md 0;
+            font-size: typography.$text-size-md;
+            height: 3.625rem;
+            margin: 1rem 0 0;
             padding-top: 0;
-            grid-area: legal;
             display: flex;
             align-items: center;
+            gap: 1.5rem;
             li {
                 // accessibility link li
                 &:first-child {
                     text-align: left;
-                    padding-left: spacing.$spacing-3xl;
-                    margin-left: -#{spacing.$spacing-md};
                 }
                 // Princeton logo li
                 &:last-child {
                     text-align: right;
-                    padding-right: spacing.$spacing-3xl;
                     margin-right: -#{spacing.$spacing-md};
                 }
             }
@@ -180,9 +231,8 @@ footer {
                 content: "\f115"; // phosphor copyright icon
             }
             @include breakpoints.for-tablet-landscape-up {
-                margin: 0 0 0 2rem;
+                margin: 0;
                 text-align: left;
-                flex: 0 1 auto;
             }
         }
 
@@ -198,7 +248,7 @@ footer {
                 width: 2rem;
             }
             @include breakpoints.for-tablet-landscape-up {
-                margin: spacing.$spacing-2xs spacing.$spacing-sm 0;
+                margin: 0;
             }
             a {
                 text-decoration: none;
@@ -208,8 +258,13 @@ footer {
         li#license {
             min-height: 48px;
             @include breakpoints.for-tablet-landscape-up {
+                min-height: 0;
                 flex: 1 0 auto;
                 justify-content: flex-start;
+                a {
+                    display: flex;
+                    height: 1rem;
+                }
             }
         }
 
@@ -222,17 +277,50 @@ footer {
                 a {
                     padding-bottom: 0;
                 }
-                margin: 0 0 0 1.5rem;
+                margin: 0;
                 flex: 0 1 auto;
             }
         }
 
         // Princeton logo
-        svg#princeton-logo {
-            margin-top: 5px;
-            fill: var(--logo);
-            width: 185px;
-            height: 63px;
+        a#princeton-logo {
+            display: block;
+            height: 34px;
+            svg {
+                fill: var(--logo);
+                width: 120px;
+                height: 34px;
+            }
+        }
+    }
+}
+
+// tweaks for places page (map)
+#main:has(main.places) ~ footer {
+    display: none; // Hide footer on mobile
+    @include breakpoints.for-tablet-landscape-up {
+        padding: 3.75rem 4.75rem 1.1rem;
+        display: flex;
+        margin: 0;
+        ul#legal {
+            a.logo {
+                display: flex;
+                align-items: center;
+                svg {
+                    height: 4.25rem;
+                    &#pgl-logo {
+                        width: 133px;
+                    }
+                }
+                &::after {
+                    content: "";
+                    display: block;
+                    width: 1px;
+                    height: 1.5rem;
+                    background-color: var(--disabled);
+                    margin-left: 1.875rem;
+                }
+            }
         }
     }
 }
@@ -357,7 +445,7 @@ html[dir="rtl"] footer {
         url("/static/img/ui/desktop/dark/ltr/footer-image.png") top right,
         url("/static/img/ui/desktop/dark/ltr/footer-base.svg") top right;
     background-repeat: no-repeat, no-repeat, no-repeat;
-    &:before {
+    &::before {
         @include before-footer-desktop;
         background: url("/static/img/ui/desktop/dark/all/footer-filler.svg")
             repeat-x;
@@ -371,7 +459,7 @@ html[dir="rtl"] footer {
         url("/static/img/ui/desktop/dark/rtl/footer-image.png") top left,
         url("/static/img/ui/desktop/dark/rtl/footer-base.svg") top left;
     background-repeat: no-repeat, no-repeat, no-repeat;
-    &:before {
+    &::before {
         @include before-footer-desktop;
         background: url("/static/img/ui/desktop/dark/all/footer-filler.svg")
             repeat-x;
@@ -386,7 +474,7 @@ html[dir="rtl"] footer {
         url("/static/img/ui/desktop/light/ltr/footer-image.png") top right,
         url("/static/img/ui/desktop/light/ltr/footer-base.svg") top right;
     background-repeat: no-repeat, no-repeat, no-repeat;
-    &:before {
+    &::before {
         @include before-footer-desktop;
         background: url("/static/img/ui/desktop/light/all/footer-filler.svg")
             repeat-x;
@@ -400,7 +488,7 @@ html[dir="rtl"] footer {
         url("/static/img/ui/desktop/light/rtl/footer-image.png") top left,
         url("/static/img/ui/desktop/light/rtl/footer-base.svg") top left;
     background-repeat: no-repeat, no-repeat, no-repeat;
-    &:before {
+    &::before {
         @include before-footer-desktop;
         background: url("/static/img/ui/desktop/light/all/footer-filler.svg")
             repeat-x;

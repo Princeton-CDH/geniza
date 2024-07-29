@@ -10,6 +10,15 @@
 
 // TODO: standardize typography here once all redesigns are implemented
 
+// 100vh - header - footer
+$content-height-desktop: calc(100vh - 8rem - 3rem);
+
+html:has(main.places) {
+    max-height: 100vh;
+    @include breakpoints.for-tablet-landscape-up {
+        overflow: hidden;
+    }
+}
 main.places,
 main.places * {
     max-width: none;
@@ -19,6 +28,67 @@ main.places {
     overflow: hidden;
     @include breakpoints.for-tablet-landscape-up {
         padding: 0;
+        margin-top: -6rem;
+        margin-bottom: -4.5rem;
+        height: $content-height-desktop;
+        max-height: $content-height-desktop;
+    }
+    form {
+        @include breakpoints.for-tablet-landscape-up {
+            display: grid;
+            grid-template-columns: 1fr 404px;
+            overflow: hidden;
+            width: 100vw;
+        }
+    }
+    section#map-container {
+        display: block;
+        width: 100%;
+        #map {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+        a {
+            text-underline-offset: auto;
+            text-decoration-thickness: 1px;
+        }
+        svg.marker {
+            color: var(--map-pin-disabled-outline);
+            fill: var(--map-pin-disabled);
+            width: 22px;
+            height: 28px;
+            cursor: pointer;
+            .selected-pin {
+                display: none;
+            }
+            &.selected-place {
+                filter: drop-shadow(0px 1px 3px rgba(0, 0, 0, 0.33));
+                color: var(--primary);
+                fill: var(--tertiary);
+                width: 33px;
+                height: 42px;
+                z-index: 2;
+                transition: width 0.3s ease-out, height 0.3s ease-out,
+                    filter 0.3s ease-out;
+                @include breakpoints.for-tablet-landscape-up {
+                    width: 42px;
+                    height: 48px;
+                }
+                .pin {
+                    display: none;
+                }
+                .selected-pin {
+                    display: block;
+                }
+            }
+        }
+        .maplibregl-ctrl-top-right {
+            margin: 5rem 2rem 0 0;
+        }
+        .maplibregl-ctrl-bottom-right {
+            margin: 0 2rem 3.5rem 0;
+        }
     }
     // Primary container
     section#place-list {
@@ -26,8 +96,11 @@ main.places {
         width: 100vw;
         max-width: 100vw;
         @include breakpoints.for-tablet-landscape-up {
-            width: auto;
-            padding: 2rem;
+            width: 100%;
+            padding: 4.75rem 2rem 3.5rem;
+            max-height: 100%;
+            height: 100%;
+            overflow: scroll;
         }
         // Header
         .header-row {
@@ -44,21 +117,37 @@ main.places {
             span {
                 flex: 1 0 auto;
             }
+            details summary span {
+                overflow: hidden;
+                white-space: nowrap;
+                max-width: 100px;
+                text-overflow: ellipsis;
+            }
+            div#sort-options {
+                z-index: 2;
+            }
         }
 
         // list of places
         & > ul {
+            position: relative;
             width: 100%;
             max-width: none;
             @include breakpoints.for-tablet-landscape-up {
-                width: 25.25rem;
-                max-width: 25.25rem;
+                width: 100%;
+                max-width: 100%;
             }
             li.place {
                 width: 100%;
                 background-color: var(--background-light);
                 border: 1px solid var(--background-gray);
+                transition: border 0.3s ease-in-out;
                 padding: 1rem;
+                scroll-margin-top: 8rem;
+                border-radius: 5px;
+                &.selected-place {
+                    border: 3px solid var(--primary);
+                }
                 & + li.place {
                     margin-top: 1rem;
                 }
@@ -103,6 +192,7 @@ main.places {
     }
     .pagination-container {
         text-align: center;
+        margin: 1rem 0 0;
         nav.pagination {
             margin: 1rem 0;
         }

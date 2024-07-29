@@ -133,7 +133,7 @@ nav#site-nav {
             flex: 1 0 auto;
             flex-flow: row nowrap;
             justify-content: flex-end;
-            margin: 0 spacing.$spacing-4xl 0 spacing.$spacing-xl;
+            margin: 0 13.5rem 0 spacing.$spacing-xl;
             pointer-events: all;
             & > li.menu-item + li.menu-item {
                 margin-left: spacing.$spacing-sm;
@@ -220,7 +220,7 @@ nav#site-nav {
             flex: 0 0 auto;
             align-items: center;
             display: flex;
-            margin: spacing.$spacing-sm spacing.$spacing-xs 0 0;
+            margin: spacing.$spacing-sm 0 0 0;
             a {
                 min-width: 117px; // Width of the hover indicator
                 display: flex;
