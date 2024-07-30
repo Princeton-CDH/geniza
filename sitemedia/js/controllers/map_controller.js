@@ -78,7 +78,10 @@ export default class extends Controller {
         e.currentTarget.classList.add("selected-place");
         const slug = e.currentTarget.dataset.slug;
         const element = document.querySelector(`[data-slug-anchor="${slug}"]`);
-        element.scrollIntoView({ behavior: "smooth" });
+        const isMobile = window.innerWidth <= 900;
+        if (!isMobile) {
+            element.scrollIntoView({ behavior: "smooth" });
+        }
         element.classList.add("selected-place");
     }
 }

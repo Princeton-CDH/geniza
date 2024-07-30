@@ -35,7 +35,7 @@
         <section id="place-list" data-action="click@document->search#clickCloseDropdown">
             <div class="header-row">
                 <h1>{{ page_title }}</h1>
-                <span>({{ paginator.count|intcomma }})</span>
+                <span>(<span class="mobile-only">{{ paginator.per_page }} of </span>{{ paginator.count|intcomma }})</span>
                 <fieldset id="sort">
                     <label for="{{ form.sort.auto_id }}">{{ form.sort.label }}</label>
                     <details data-search-target="dropdownDetails">
@@ -95,5 +95,12 @@
                 {% include "corpus/snippets/pagination.html" %}
             </div>
         </section>
+        <label id="mobile-mode-toggle" data-search-target="placesMode">
+            <input type="checkbox" data-action="search#onToggleMap" />
+            {# Translators: label for Places list mode button on mobile devices #}
+            <span id="list-mode-label">{% translate 'List' %}</span>
+            {# Translators: label for Places map mode button on mobile devices #}
+            <span id="map-mode-label">{% translate 'Map' %}</span>
+        </label>
     </form>
 {% endblock %}
