@@ -6,13 +6,6 @@
         {% translate "footer navigation" as footer_nav_label %}
         <nav id="footer-nav">
             <ul role="menu">
-                <li class="menu-item" role="none">
-                    {% if not skip_nav %}
-                        {% pageurl site.root_page.localized as root_url %}
-                    {% endif %}
-                    {# Translators: label for 'home' link in footer navigation #}
-                    <a href="{{ root_url|default:"/" }}" role="menuitem"{% if not skip_nav and request.path == root_url %} aria-current="page"{% endif %}>{% translate "Home" %}</a>
-                </li>
                 {% include "snippets/menu.html" %}
             </ul>
         </nav>

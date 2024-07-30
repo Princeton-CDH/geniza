@@ -1,10 +1,29 @@
 {% load i18n wagtailcore_tags %}
 
+<li class="menu-label" role="none">
+    <span>{% translate 'Search' %}</span>
+</li>
+
 <li class="menu-item" role="none">
-    {% url "corpus:document-search" as search_url %}
-    <a href="{{ search_url }}"{% if request.path == search_url %} aria-current="page"{% endif %} role="menuitem">
-        {# Translators: label for link to 'Search' page in main navigation #}
-        <span>{% translate "Search" %}</span>
+    {% url "corpus:document-search" as docsearch_url %}
+    <a href="{{ docsearch_url }}"{% if request.path == docsearch_url %} aria-current="page"{% endif %} role="menuitem">
+        {# Translators: label for link to document search page in main navigation #}
+        <span>{% translate "Documents" %}</span>
+    </a>
+</li>
+
+<li class="menu-item" role="none">
+    {% url "entities:person-list" as people_url %}
+    <a href="{{ people_url }}"{% if request.path == people_url %} aria-current="page"{% endif %} role="menuitem">
+        {# Translators: label for link to people browse page in main navigation #}
+        <span>{% translate "People" %}</span>
+    </a>
+</li>
+<li class="menu-item" role="none">
+    {% url "entities:place-list" as places_url %}
+    <a href="{{ places_url }}"{% if request.path == places_url %} aria-current="page"{% endif %} role="menuitem">
+        {# Translators: label for link to places browse page in main navigation #}
+        <span>{% translate "Places" %}</span>
     </a>
 </li>
 
@@ -14,18 +33,18 @@
             <li class="menu-item has-submenu" role="none">
                 {% if in_header == "true" %}
                     <a id="open-{{ top_level_page.slug }}-menu"
-                        class="open-sub-menu"
-                        href="#{{ top_level_page.slug }}-menu"
-                        aria-haspopup="true"
-                        aria-expanded="false"
-                        role="button"
-                        data-turbo="false"
-                        {% for child_page in top_level_page.localized.get_children.live.in_menu %}
-                            {% pageurl child_page.localized as child_page_url %}
-                            {% if request.path == child_page_url %}aria-current="page"{% endif %}
-                        {% endfor %}
-                        data-action="click->menu#clickSubmenu mouseover->menu#openSubmenu mouseout->menu#closeSubmenu"
-                        >
+                       class="open-sub-menu"
+                       href="#{{ top_level_page.slug }}-menu"
+                       aria-haspopup="true"
+                       aria-expanded="false"
+                       role="button"
+                       data-turbo="false"
+                       {% for child_page in top_level_page.localized.get_children.live.in_menu %}
+                           {% pageurl child_page.localized as child_page_url %}
+                           {% if request.path == child_page_url %}aria-current="page"{% endif %}
+                       {% endfor %}
+                       data-action="click->menu#clickSubmenu mouseover->menu#openSubmenu mouseout->menu#closeSubmenu"
+                    >
                         {{ top_level_page.localized.title }}
                     </a>
                 {% endif %}
