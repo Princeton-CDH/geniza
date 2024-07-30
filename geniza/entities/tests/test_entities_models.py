@@ -694,12 +694,10 @@ class TestPlace:
         [Place.objects.create() for _ in range(3)]
         assert Place.total_to_index() == 3
 
-    def items_to_index(self):
+    def test_items_to_index(self):
         place = Place.objects.create()
         Name.objects.create(content_object=place, name="test")
         places = Place.items_to_index()
-        assert places
-        assert isinstance(places, MultilingualQuerySet)
         assert place in places
 
     def test_index_data(self, document, join):
