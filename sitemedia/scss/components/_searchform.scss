@@ -6,487 +6,57 @@
 @use "../base/breakpoints";
 @use "../base/colors";
 @use "../base/container";
+@use "../base/fonts";
 @use "../base/spacing";
 @use "../base/typography";
 
-/*
- * Mixin to add a box-shadow given a color.
- * @param {color} $color - The color variable
-*/
-@mixin box-shadow($color) {
-    box-shadow: 0px 2px 4px $color;
-}
-
-/*
- * Mixin for form button colors in all four states:
- * default, focus, hover, active.
- */
-@mixin form-button-colors {
-    color: var(--secondary);
-    background-color: var(--background-light);
-    @include box-shadow(var(--on-background-25));
-    &:focus {
-        outline: none;
-        @include box-shadow(var(--secondary-80));
-    }
-    &:hover {
-        box-shadow: none;
-        color: var(--on-secondary);
-        background-color: var(--secondary);
-    }
-    &:active {
-        box-shadow: none;
-        color: var(--on-primary);
-        background-color: var(--primary);
-    }
-    transition: background-color 0.15s ease-in-out, color 0.15s ease,
-        box-shadow 0.15s ease;
-}
-
-/*
- * Mixin for form drop shadow in three states:
- * default, focus, active.
- */
-@mixin form-drop-shadow($with-default: "true") {
-    transition: box-shadow 0.15s ease;
-    @include box-shadow(var(--on-background-25));
-    &:focus,
-    &:focus-within {
-        outline: none;
-        @include box-shadow(var(--secondary-80));
-    }
-    &:active {
-        @include box-shadow(var(--primary-80));
-    }
-}
-
 // search form
 main.search form {
-    // apply to all fieldsets
-    fieldset {
-        @include container.two-column;
-        max-width: 100%;
-        display: flex;
-        flex-flow: row wrap;
-        align-items: center;
-        justify-content: flex-start;
-    }
     // search query box and button
     fieldset#query {
-        order: 1;
+        display: flex;
+        margin-bottom: 1.5rem;
         // search box
         input[type="search"] {
-            max-width: calc(100% - 2.75rem - #{spacing.$spacing-sm});
-            flex: 1 1 auto;
+            flex-basis: 100%;
             border: none;
-            margin-right: spacing.$spacing-sm;
-            height: 2.5rem;
-            padding: 0 0 0 spacing.$spacing-sm;
-            @include typography.form-option;
+            border-radius: 5px;
+            border-top-right-radius: 0;
+            border-bottom-right-radius: 0;
+            height: 3rem;
+            padding: 0 1rem;
+            @include typography.body;
             background-color: var(--background-light);
             color: var(--on-background-light);
-            @include form-drop-shadow;
-            &::placeholder {
-                color: var(--on-background);
-            }
-            &:hover::placeholder,
-            &:active::placeholder {
-                color: var(--on-background-light-alt);
+            @include breakpoints.for-tablet-landscape-up {
+                height: 2.5rem;
             }
         }
         button[type="submit"] {
-            position: relative;
-            flex: 0 1 2.5rem;
-            width: auto;
-            height: 2.5rem;
-            border-radius: 0;
+            cursor: pointer;
+            width: 3rem;
+            height: 3rem;
+            border-radius: 5px;
+            border-top-left-radius: 0;
+            border-bottom-left-radius: 0;
             display: flex;
             align-items: center;
             justify-content: center;
             border: none;
             margin-left: 0; // Needed to prevent wrapping on mobile
-            @include form-button-colors;
+            background-color: var(--secondary);
+            color: var(--on-secondary);
             @include breakpoints.for-tablet-landscape-up {
-                flex-basis: 3rem;
                 height: 2.5rem;
+                width: 2.5rem;
             }
             // Magnifying glass icon
             &::after {
                 content: "\f5e6"; // phosphor magnifying glass bold icon
-                @include typography.icon-button-sm;
-                @include breakpoints.for-tablet-landscape-up {
-                    content: "\f20a"; // phosphor magnifying glass icon
-                    @include typography.icon-button-md;
-                }
-            }
-        }
-    }
-
-    // sort field and label
-    fieldset#sort-fieldset {
-        order: 4;
-        display: flex;
-        select {
-            // A reset of styles, including removing the default dropdown arrow
-            // @link https://moderncss.dev/custom-select-styles-with-pure-css/
-            -webkit-appearance: none;
-            -moz-appearance: none;
-            appearance: none;
-            border: none;
-            font-family: inherit;
-            font-size: inherit;
-            border-radius: 0;
-            // Remove dropdown arrow in IE10 & IE11
-            // @link https://www.filamentgroup.com/lab/select-css.html
-            &::-ms-expand {
-                display: none;
-            }
-
-            @include typography.form-option-sm;
-            @include form-drop-shadow;
-            position: relative;
-            flex: 1 1 auto;
-            min-height: 2.5rem;
-            max-width: 100%;
-            @include breakpoints.for-tablet-landscape-up {
-                min-width: auto;
-                max-width: 23rem;
-            }
-            margin-top: spacing.$spacing-sm;
-            cursor: pointer;
-            background-color: var(--background-light);
-            color: var(--on-background-light);
-            padding: 0.55rem 0.75rem;
-            margin-right: spacing.$spacing-3xs;
-        }
-        i.ph-caret-down {
-            @include typography.icon-button-md;
-            margin-left: -37px;
-            margin-top: 8px;
-            z-index: 1;
-            pointer-events: none;
-        }
-        // Focus styles using box-shadow
-        &:focus select,
-        &:focus-within select {
-            @include box-shadow(var(--secondary-80));
-        }
-        label[for="sort"] {
-            max-width: 100%;
-            flex: 1 0 100%;
-            margin-top: spacing.$spacing-lg;
-            @include typography.form-option;
-        }
-    }
-
-    // buttons for opening and closing the filter modal
-    a#filters-button,
-    a#close-filters-button {
-        margin: spacing.$spacing-md 0 spacing.$spacing-lg;
-        text-decoration: none;
-        @include typography.body-bold;
-        display: flex;
-        align-items: center;
-        svg {
-            fill: var(--logo);
-            color: var(--logo);
-            width: 26px;
-            height: 26px;
-            margin-right: spacing.$spacing-2xs;
-        }
-        &.active svg {
-            color: var(--filter-active);
-        }
-        &:focus {
-            outline: 0.125rem solid var(--focus);
-        }
-    }
-    a#filters-button {
-        align-self: flex-start;
-        order: 2;
-        margin: spacing.$spacing-xl 0 spacing.$spacing-sm;
-    }
-
-    // filter modal
-    fieldset#filters {
-        background-color: var(--background);
-        max-width: none;
-        z-index: 8;
-        position: fixed;
-        width: 100vw;
-        height: 100vh;
-        top: 0;
-        left: 0;
-        pointer-events: none;
-        display: none;
-        overflow-y: scroll;
-        padding: 0;
-        flex-flow: column;
-        pointer-events: all;
-        align-items: flex-start;
-        // expand form on desktop
-        @include breakpoints.for-tablet-landscape-up {
-            order: 3;
-            position: relative;
-            width: 900px;
-            max-width: container.$two-column;
-            overflow-y: auto;
-            padding: spacing.$spacing-sm 1.275rem spacing.$spacing-sm
-                spacing.$spacing-sm;
-            margin: -4.2rem 0 0 -#{spacing.$spacing-sm};
-            height: auto;
-        }
-        // show when targeted
-        &:target,
-        &[aria-expanded="true"] {
-            display: flex;
-        }
-        // close button
-        a#close-filters-modal {
-            text-decoration: none;
-            margin-top: -#{spacing.$spacing-xs};
-            @include typography.icon-button-xl;
-            &::before {
-                content: "\f36d"; // phosphor X icon
-            }
-            @include breakpoints.for-tablet-landscape-up {
-                display: none;
-            }
-        }
-        // all filter form inputs that are not nested within a details
-        & > label:not(.date-range-label) {
-            flex: 0 0 2.5rem;
-            max-width: 100%;
-            width: 100%;
-            display: flex;
-            flex-flow: row nowrap;
-            align-items: center;
-            justify-content: flex-start;
-            cursor: pointer;
-            @include typography.form-option;
-            background-color: var(--background-light);
-            color: var(--on-background-light);
-            @include box-shadow(var(--on-background-25));
-            padding: 0 spacing.$spacing-sm;
-            @include breakpoints.for-tablet-landscape-up {
-                padding: 0 spacing.$spacing-md;
-            }
-            border-top: 1px solid transparent;
-            border-bottom: 1px solid var(--filter-border);
-            &:focus-within,
-            &:active {
-                border: none;
-                outline: 2px solid var(--link-primary);
-                z-index: 3;
-            }
-            input[type="checkbox"] {
-                @include a11y.sr-only;
-            }
-            span.label {
-                white-space: nowrap;
-            }
-            span.count {
-                flex: 1 1 100%;
-                max-width: none;
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                padding-left: 1rem;
-                @include typography.meta;
-            }
-            span.count::after {
-                display: block;
-                content: "\f0e8"; // phosphor check-circle icon
                 @include typography.icon-button-md;
-                transition: transform 0.75s ease;
-                float: right;
-                color: var(--secondary);
-            }
-            input:active + span + span.count::after,
-            input:checked + span + span.count::after {
-                content: "\f851"; // phosphor check-circle-fill icon
-            }
-            input:checked:active + span + span.count::after {
-                content: "\f0e8"; // phosphor check-circle icon
-            }
-        }
-        // Date range label and input
-        & > label.date-range-label {
-            max-width: 100%;
-            width: 100%;
-            cursor: default;
-            span {
-                margin: 0 spacing.$spacing-sm;
                 @include breakpoints.for-tablet-landscape-up {
-                    margin: 0;
+                    @include typography.icon-button-sm;
                 }
-            }
-            div.inputs {
-                display: flex;
-                flex-flow: row wrap;
-                margin-top: spacing.$spacing-xs;
-                label {
-                    flex: 1 0 33%;
-                    display: flex;
-                    align-items: center;
-                    padding: 0 spacing.$spacing-sm;
-                    @include breakpoints.for-tablet-landscape-up {
-                        padding: 0 spacing.$spacing-md;
-                        flex: 1 0 14%;
-                    }
-                }
-                input + span {
-                    // TODO: when redesigned, make this span visible
-                    @include a11y.sr-only;
-                }
-                input[type="number"] {
-                    flex: 1 0 66%;
-                    height: 2.9375rem;
-                    max-width: 100%;
-                    width: 100%;
-                    @include typography.form-option;
-                    background-color: var(--background-light);
-                    color: var(--on-background-light);
-                    @include form-drop-shadow;
-                    border-left: none;
-                    border-right: none;
-                    border-top: 1px solid transparent;
-                    border-bottom: 1px solid var(--filter-border);
-                    padding: 0 spacing.$spacing-sm;
-                    @include breakpoints.for-tablet-landscape-up {
-                        flex: 1 0 86%;
-                        padding: 0 spacing.$spacing-md;
-                    }
-                    &::placeholder {
-                        color: var(--date-placeholder);
-                    }
-                    &:focus-within,
-                    &:active {
-                        z-index: 3;
-                    }
-                }
-            }
-            margin-bottom: 0.75rem;
-        }
-        // document type filter
-        details.doctype-filter {
-            flex: 0 1 2.9375rem;
-            max-width: 100%;
-            width: 100%;
-            @include typography.form-option;
-            background-color: var(--background-light);
-            color: var(--on-background-light);
-            @include box-shadow(var(--on-background-25));
-            transition: box-shadow 0.15s ease;
-            // Label for document type filter
-            summary {
-                border-top: 1px solid transparent;
-                display: flex;
-                flex-flow: row nowrap;
-                align-items: center;
-                justify-content: space-between;
-                height: 2.9375rem;
-                max-width: 100%;
-                padding: 0 spacing.$spacing-sm;
-                @include breakpoints.for-tablet-landscape-up {
-                    padding: 0 spacing.$spacing-md;
-                }
-                list-style-type: none;
-                cursor: pointer;
-                // Suppress default details marker
-                &::-webkit-details-marker {
-                    display: none;
-                }
-                &::after {
-                    content: "\f0c2"; // phosphor caret-down icon
-                    @include typography.icon-button-md;
-                    transition: transform 0.75s ease;
-                    float: right;
-                }
-                transition: box-shadow 0.15s ease;
-                &:focus {
-                    outline: none;
-                    @include box-shadow(var(--secondary-80));
-                }
-            }
-            &[open] summary {
-                @include box-shadow(var(--on-background-125));
-                // Expanded details marker
-                &::after {
-                    transform: rotate(-180deg);
-                }
-                &:focus {
-                    outline: none;
-                    @include box-shadow(var(--secondary-80));
-                }
-            }
-            &[open] {
-                @include box-shadow(var(--secondary-80));
-                summary {
-                    @include box-shadow(var(--secondary-80));
-                }
-            }
-
-            // List of filter options
-            ul#id_doctype {
-                max-width: 100%;
-                list-style-type: none;
-                padding: 0.25rem 0 0;
-                li {
-                    max-width: 100%;
-                    label {
-                        max-width: 100%;
-                        display: flex;
-                        span {
-                            display: flex;
-                            align-items: center;
-                            max-width: 100%;
-                            flex: 1 0 auto;
-                            padding: 0 spacing.$spacing-md;
-                            height: 2.25rem;
-                            @include breakpoints.for-tablet-landscape-up {
-                                height: 2.5rem;
-                            }
-                            transition: background-color 0.15s ease,
-                                color 0.15s ease;
-                        }
-                        .count {
-                            @include typography.filter-count;
-                            flex: 0 1 auto;
-                            margin-left: auto;
-                            padding: 0 spacing.$spacing-md;
-                            height: auto;
-                        }
-                        &:hover span,
-                        &:focus-within span {
-                            background-color: var(--background-gray);
-                            color: var(--on-background-gray);
-                        }
-                        &:hover input[type="checkbox"]:checked + span,
-                        &:hover input[type="checkbox"]:checked + span + .count,
-                        input[type="checkbox"]:checked:focus + span,
-                        input[type="checkbox"]:checked:focus + span + .count {
-                            background-color: var(--secondary);
-                            color: var(--on-secondary);
-                        }
-                        input[type="checkbox"] {
-                            @include a11y.sr-only;
-                            &:checked + span,
-                            &:checked + span + .count {
-                                background-color: var(--tertiary);
-                                color: var(--on-tertiary);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        // "apply" button
-        button.primary {
-            margin: spacing.$spacing-2xl 0 spacing.$spacing-md;
-            align-self: center;
-            @include breakpoints.for-tablet-landscape-up {
-                display: none;
             }
         }
     }
@@ -500,76 +70,229 @@ main.search form {
     }
 }
 
+main.search,
+main.people {
+    // Form with filters
+    form {
+        display: flex;
+        flex-flow: column;
+        width: 100%;
+        padding: 0;
+    }
+    div#filters-header {
+        display: flex;
+        flex-flow: row nowrap;
+        align-items: center;
+        padding: 0.25rem 0;
+        gap: 1.5rem;
+        &:has(#applied-filters) {
+            border-top: 1px solid var(--background-gray);
+            border-bottom: 1px solid var(--background-gray);
+        }
+        &:not(:has(#applied-filters)) {
+            height: 0;
+            padding: 0;
+            @include breakpoints.for-tablet-landscape-up {
+                height: auto;
+                padding: 0.25rem 0;
+                border-top: 1px solid var(--background-gray);
+                border-bottom: 1px solid var(--background-gray);
+            }
+        }
+        // filter chips container
+        #applied-filters {
+            display: flex;
+            flex-flow: row wrap;
+            align-items: center;
+            gap: 0.25rem 0.5rem;
+            padding: 0;
+            @include breakpoints.for-tablet-landscape-up {
+                flex: 1 1 100%;
+                padding: 0 1.5rem;
+            }
+            &::before {
+                content: "";
+                height: 1rem;
+                position: absolute;
+                margin-left: -1.5rem;
+                border-left: 1px solid colors.$gray;
+            }
+            // filter chip
+            button {
+                border: none;
+                outline: none;
+                cursor: pointer;
+                border-radius: 50px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 0.5rem;
+                height: 2rem;
+                padding: 0 1rem;
+                @include typography.form-option-xs;
+                line-height: 1.25;
+                color: var(--on-background-gray);
+                background-color: var(--background-gray);
+                transition: background-color 0.15s ease-in-out,
+                    color 0.15s ease-in-out;
+                &:hover {
+                    background-color: var(--filter-chip-bg-hover);
+                }
+                &:active {
+                    background-color: var(--filter-chip-bg-active);
+                }
+            }
+        }
+        button#clear-filters {
+            display: none;
+            @include breakpoints.for-tablet-landscape-up {
+                display: block;
+            }
+            cursor: pointer;
+            color: var(--disabled-on-background-light);
+            background-color: transparent;
+            border: none;
+            height: 2rem;
+            min-width: 4.5rem;
+            @include typography.meta;
+            transition: color 0.15s ease-in-out;
+            &:hover {
+                color: var(--date-placeholder);
+            }
+            &:active {
+                color: var(--on-background);
+            }
+        }
+    }
+    // button for opening and closing the filter panel/modal
+    a#filters-button {
+        text-decoration: none;
+        @include typography.meta-bold;
+        display: flex;
+        align-items: center;
+        min-height: 48px;
+        padding: 0 0.5rem;
+        border-radius: 5px;
+        position: absolute;
+        top: 9rem;
+        right: 1rem;
+        align-self: flex-start;
+        flex: 0 1 auto;
+        margin: auto 0;
+        @include breakpoints.for-tablet-landscape-up {
+            position: relative;
+            top: auto;
+            right: auto;
+            padding: 0 2rem 0 0.5rem;
+            span:last-of-type:after {
+                content: "\f0c2"; // phosphor caret-down icon
+            }
+            &:has(~ fieldset#filters:target),
+            &:has(~ fieldset#filters[aria-expanded="true"]) {
+                // prevent display and focus when expanded, maintain flow/spacing
+                visibility: hidden;
+            }
+        }
+        svg {
+            width: 20px;
+            height: 20px;
+        }
+        &:focus {
+            outline: 0.125rem solid var(--focus);
+        }
+        // text that reads "Filters"
+        span {
+            position: relative;
+            margin-left: 0.25rem;
+            display: flex;
+            align-items: center;
+            // caret to indicate opening and closing
+            &:last-of-type:after {
+                position: absolute;
+                font-family: "Phosphor";
+                font-size: typography.$text-size-md;
+                right: -1.5rem;
+                font-weight: 600;
+            }
+        }
+        // count of active filters
+        span.filter-count {
+            justify-content: center;
+            min-width: 1.25rem;
+            height: 1.25rem;
+            font-family: fonts.$primary;
+            font-weight: 400;
+            font-size: typography.$text-size-md;
+            background-color: var(--background-gray);
+            border-radius: 0.25rem;
+        }
+        // close button
+        &.open {
+            display: none;
+            @include breakpoints.for-tablet-landscape-up {
+                display: flex;
+                background-color: var(--secondary);
+                color: var(--on-secondary);
+                fill: var(--on-secondary);
+                span:last-of-type:after {
+                    content: "\f0c5"; // phosphor caret-up icon
+                }
+                span.filter-count {
+                    background-color: var(--primary);
+                }
+            }
+        }
+    }
+    a#close-filters-modal {
+        text-decoration: none;
+        position: absolute;
+        right: 0.25rem;
+        top: 0.25rem;
+        @include typography.icon-button-md;
+        width: 3rem;
+        height: 3rem;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        &::before {
+            content: "\f36d"; // phosphor X icon
+        }
+        @include breakpoints.for-tablet-landscape-up {
+            display: none;
+        }
+    }
+    // filter modal backdrop (mobile)
+    .modal-backdrop:has(~ fieldset#filters:target),
+    .modal-backdrop:has(~ fieldset#filters[aria-expanded="true"]) {
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 7;
+        min-width: 100vw;
+        min-height: 100vh;
+        background-color: var(--modal-backdrop);
+        @include breakpoints.for-tablet-landscape-up {
+            display: none;
+        }
+    }
+}
+
 // tweaks for RTL search form for hebrew, arabic
 html[dir="rtl"] main.search form {
     // search query box and button
     fieldset#query {
         // search box
         input[type="search"] {
-            margin-right: 0;
-            margin-left: spacing.$spacing-sm;
-            text-align: right;
+            border-radius: 5px;
+            border-top-left-radius: 0;
+            border-bottom-left-radius: 0;
         }
         button[type="submit"] {
-            margin-right: 0; // Needed to prevent wrapping on mobile
-        }
-    }
-    // sort field and label
-    fieldset#sort-fieldset {
-        // sort options select (uses details/summary)
-        details.sort-select {
-            summary span {
-                margin-right: 0;
-                margin-left: spacing.$spacing-sm;
-            }
-        }
-    }
-
-    // buttons for opening and closing the filter modal
-    a#filters-button,
-    a#close-filters-button {
-        svg {
+            border-radius: 5px;
+            border-top-right-radius: 0;
+            border-bottom-right-radius: 0;
+            margin-left: 0;
             margin-right: 0;
-            margin-left: spacing.$spacing-2xs;
-        }
-    }
-
-    // filter modal
-    fieldset#filters {
-        left: auto;
-        right: 0;
-        // expand form on desktop
-        @include breakpoints.for-tablet-landscape-up {
-            padding: spacing.$spacing-sm spacing.$spacing-sm spacing.$spacing-sm
-                1.275rem;
-            margin: -4.2rem -#{spacing.$spacing-sm} 0 0;
-        }
-        // all filter form inputs that are not nested within a details
-        & > label {
-            span.count {
-                padding-left: 0;
-                padding-right: 1rem;
-            }
-            span.count::after {
-                float: left;
-            }
-        }
-        // document type filter
-        details.doctype-filter {
-            // Label for document type filter
-            summary {
-                &::after {
-                    float: left;
-                }
-            }
-        }
-    }
-
-    // sort field and label
-    fieldset#sort-fieldset {
-        i.ph-caret-down {
-            margin-left: auto;
-            margin-right: -35px;
         }
     }
 }

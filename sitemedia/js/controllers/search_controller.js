@@ -90,14 +90,20 @@ export default class extends Controller {
         const filterValue = e.currentTarget.value;
         const searchParams = new URLSearchParams(window.location.search);
         if (searchParams.has(filterName, filterValue)) {
+            let selector = `value*="${filterValue}"`;
+            if (filterValue === "on") {
+                selector = "checked";
+            }
             const appliedFilter = this.filterModalTarget.querySelector(
-                `label[for*="${filterName}"] input[value*="${filterValue}"]`
+                `label[for*="${filterName}"] input[${selector}]`
             );
             appliedFilter.checked = false;
         } else if (
-            filterName === "date_range" &&
+            ["date_range", "docdate"].includes(filterName) &&
             (searchParams.has("date_range_0") ||
-                searchParams.has("date_range_1"))
+                searchParams.has("date_range_1") ||
+                searchParams.has("docdate_0") ||
+                searchParams.has("docdate_1"))
         ) {
             // special handling for date range filter
             const appliedFilters = this.filterModalTarget.querySelectorAll(

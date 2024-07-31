@@ -7,14 +7,13 @@
                 {{ forloop.counter0|add:start_adjust }}
             {% endwith %}
         </span>
+        {# title #}
+        <h2 class="title">
+            {# type and shelfmark #}
+            <span class="doctype">{{ document.type }}</span>
+            <span class="shelfmark">{{ document.shelfmark|shelfmark_wrap }}</span>
+        </h2>
         <section class="{% if document.iiif_images %}has-image{% endif %}">
-            {# title #}
-            <h2 class="title">
-                {# type and shelfmark #}
-                <span class="doctype">{{ document.type }}</span>
-                <span class="shelfmark">{{ document.shelfmark|shelfmark_wrap }}</span>
-            </h2>
-
             {# metadata #}
             <dl class="metadata-list">
                 {% if document.document_date %}
@@ -27,21 +26,17 @@
                         </time>
                     </dd>
                 {% endif %}
-                {% with document_highlights=highlighting|dict_item:document.id %}
-                    {% if document_highlights.old_shelfmark %}
-                        {# Translators: label for historical/old shelfmark on document fragments #}
-                        <dt>{% translate "Historical shelfmark" %}</dt>
-                        <dd>{{ document_highlights.old_shelfmark|striptags }}</dd>
-                    {% endif %}
-                {% endwith %}
-                {# Translators: Date document was first added to the PGP #}
-                <dt>{% translate "In PGP since" %}</dt>
-                {# Translators: label for unknown date for date added to PGP #}
-                {% translate "unknown" as unknown %}
-                <dd>{{ document.input_year|default:unknown }}</dd>
-                {# NOTE: Intentionally left untranslated #}
-                <dt lang="en">PGP ID</dt>
-                <dd>{{ document.pgpid }}</dd>
+                {% if document.languages|length %}
+                    <dt>
+                        {# Translators: Primary language label #}
+                        {% blocktranslate count counter=document.languages|length trimmed %}
+                            Primary language
+                        {% plural %}
+                            Primary languages
+                        {% endblocktranslate %}
+                    </dt>
+                    <dd>{{ document.languages|join:", " }}</dd>
+                {% endif %}
             </dl>
 
                 {# description #}
@@ -94,7 +89,41 @@
                 {% endif %}
             {% endwith %}
 
-                {# scholarship records #}
+            {# related documents and entities #}
+            {% if document.related_documents or document.related_people or document.related_places %}
+                <dl class="related">
+                    {% if document.related_people %}
+                        <dt class="people">{% translate "Related People" %}</dt>
+                        <dd>{{ document.related_people }}</dd>
+                    {% endif %}
+                    {% if document.related_places %}
+                        <dt class="places">{% translate "Related Places" %}</dt>
+                        <dd>{{ document.related_places }}</dd>
+                    {% endif %}
+                    {% if document.related_documents %}
+                        <dt class="documents">{% translate "Related Documents" %}</dt>
+                        <dd>{{ document.related_documents }}</dd>
+                    {% endif %}
+                </dl>
+            {% endif %}
+
+            {# tags #}
+            {% if document.tags %}
+                    {# Translators: label for tags on a document #}
+                <h3 class="sr-only">{% translate 'Tags' %}</h3>
+                <ul class="tags">
+                    {% spaceless %}
+                        {% for tag in document.tags|alphabetize|slice:":5" %}
+                            <li><a href='{% url "corpus:document-search" %}?q=tag:"{{ tag }}"'>{{ tag }}</a></li>
+                        {% endfor %}
+                        {% if document.tags|length > 5 %}
+                            <li class="more">(+ {{ document.tags|length|add:"-5" }} {% translate 'more' %})</li>
+                        {% endif %}
+                    {% endspaceless %}
+                </ul>
+            {% endif %}
+
+            {# scholarship records #}
             <p class="scholarship">
                 {% if document.scholarship_count %}
                     {% if document.num_editions %}
@@ -131,44 +160,53 @@
                     {% translate 'No Scholarship Records' %}
                 {% endif %}
             </p>
-
-                {# tags #}
-            {% if document.tags %}
-                    {# Translators: label for tags on a document #}
-                <h3 class="sr-only">{% translate 'Tags' %}</h3>
-                <ul class="tags">
-                    {% spaceless %}
-                        {% for tag in document.tags|alphabetize|slice:":5" %}
-                            <li><a href='{% url "corpus:document-search" %}?q=tag:"{{ tag }}"'>{{ tag }}</a></li>
-                        {% endfor %}
-                        {% if document.tags|length > 5 %}
-                            <li class="more">(+ {{ document.tags|length|add:"-5" }} {% translate 'more' %})</li>
-                        {% endif %}
-                    {% endspaceless %}
-                </ul>
-            {% endif %}
         </section>
 
-        {% if document.iiif_images %}
-            <ul class="images">
-                    {# list of tuples of (IIIF image, label, rotation) #}
-                {% for image in document.iiif_images|slice:":3" %}
-                    {% with deg=image.2|stringformat:"i" %}
-                        {% with rotation="rotation:degrees="|add:deg %}
-                            <li class="image-{{ forloop.counter }}">
-                                <img src="{{ image.0|iiif_image:"size:width=250"|iiif_image:rotation }}" loading="lazy" alt="{{ image.1 }}">
-                            </li>
+        <div class="right-column">
+            {% if document.iiif_images %}
+                <ul class="images">
+                        {# list of tuples of (IIIF image, label, rotation) #}
+                    {% for image in document.iiif_images|slice:":3" %}
+                        {% with deg=image.2|stringformat:"i" %}
+                            {% with rotation="rotation:degrees="|add:deg %}
+                                <li class="image-{{ forloop.counter }}">
+                                    <img src="{{ image.0|iiif_image:"size:width=250"|iiif_image:rotation }}" loading="lazy" alt="{{ image.1 }}">
+                                </li>
+                            {% endwith %}
                         {% endwith %}
-                    {% endwith %}
-                {% endfor %}
-            </ul>
-        {% endif %}
+                    {% endfor %}
+                </ul>
+            {% else %}
+                {# Translators: label for when no image thumbnail is available #}
+                <span class="no-image">{% translate 'No Image' %}</span>
+            {% endif %}
+            <dl class="pgp-metadata">
+                {# Translators: Date document was first added to the PGP #}
+                <dt>{% translate "In PGP since" %}</dt>
+                {# Translators: label for unknown date for date added to PGP #}
+                {% translate "unknown" as unknown %}
+                <dd>{{ document.input_year|default:unknown }}</dd>
+                {# NOTE: Intentionally left untranslated #}
+                <dt lang="en">PGPID</dt>
+                <dd>{{ document.pgpid }}</dd>
+            </dl>
+            <dl class="additional-metadata">
+                {% with document_highlights=highlighting|dict_item:document.id %}
+                    {% if document_highlights.old_shelfmark and document_highlights.old_shelfmark.0 %}
+                        {# Translators: label for historical/old shelfmark on document fragments #}
+                        <dt>{% translate "Historical shelfmark" %}</dt>
+                        <dd>{{ document_highlights.old_shelfmark.0|striptags }}</dd>
+                    {% endif %}
+                {% endwith %}
+            </dl>
+        </div>
+
             {# view link #}
 
             {# Translators: screen-reader label for "view document details" link #}
         {% blocktranslate asvar aria_view_details with document_label=document|get_document_label %}View details for {{ document_label }}{% endblocktranslate %}
         <a class="view-link" href="{% url 'corpus:document' document.pgpid %}" data-turbo-frame="main" aria-label="{{ aria_view_details }}">
-            <span>{% translate 'View document details' %}</span>
+            <span class="sr-only">{% translate 'View document details' %}</span>
         </a>
     </li>
 {% endspaceless %}

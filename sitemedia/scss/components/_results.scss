@@ -10,14 +10,12 @@
 
 section#document-list {
     width: 100%;
-    @include container.two-column;
     display: flex;
     flex-direction: column;
-    padding: 0 spacing.$spacing-md spacing.$spacing-md;
+    padding: 0 0 spacing.$spacing-md;
 
     // count of results
     h1 {
-        @include container.two-column;
         @include typography.caption;
         text-align: center;
         margin: spacing.$spacing-sm 0;
@@ -25,10 +23,9 @@ section#document-list {
     // list of results
     ol {
         list-style: none;
-        @include container.two-column;
-        margin-top: spacing.$spacing-2xl;
+        margin-top: spacing.$spacing-md;
         @include breakpoints.for-tablet-landscape-up {
-            margin-top: spacing.$spacing-4xl;
+            margin-top: spacing.$spacing-lg;
         }
     }
     nav.pagination + ol {
@@ -41,84 +38,91 @@ section#document-list {
 
 // single result
 .search-result {
-    @include container.two-column;
+    background-color: var(--background-light);
+    padding: spacing.$spacing-md;
     display: flex;
     justify-content: center;
     flex-flow: row wrap;
     position: relative;
+    @include typography.body-sm;
 
     @include breakpoints.for-tablet-landscape-up {
         flex-flow: row wrap;
-        align-items: flex-start;
+        align-items: stretch;
         justify-content: flex-start;
+        padding: 1.5rem;
     }
 
     // spacing in between results
     & + .search-result {
         margin-top: spacing.$spacing-2xl;
-        // separator image (mobile)
-        &::before {
-            content: "";
-            display: block;
-            position: absolute; // needs to be absolute to prevent overflow
-            background-color: var(--link-primary);
-            left: 0;
-            margin-top: -#{spacing.$spacing-lg};
-            width: 300px;
-            height: 6px;
-            mask-image: url("/static/img/ui/mobile/all/separator.svg");
-            // separator image (desktop)
-            @include breakpoints.for-tablet-landscape-up {
-                margin-left: spacing.$spacing-2xl;
-                position: relative;
-                left: auto;
-                width: 100%;
-                height: 47px;
-                mask-image: url("/static/img/ui/desktop/all/separator.svg");
-            }
-        }
     }
 
     // result number in list
     .counter {
-        @include typography.headline-2;
-        text-align: left;
-        float: left;
-        flex: 0 1 auto;
+        display: none;
+        @include breakpoints.for-tablet-landscape-up {
+            display: none;
+            @include typography.headline-2;
+            text-align: right;
+            float: left;
+            position: absolute;
+            left: 0;
+            width: 2rem;
+        }
     }
 
+    // document titles
+    .title {
+        position: relative;
+        border-bottom: 1px solid var(--searchresult-separator);
+        flex: 1 0 90%;
+        padding-bottom: 0.75rem;
+        margin-bottom: 0.75rem;
+        font-size: typography.$text-size-lg;
+        line-height: calc(24 / 18);
+        @include breakpoints.for-tablet-landscape-up {
+            font-size: typography.$text-size-xl;
+            // TODO: figure out margin if counter numbers are staying
+            // margin-left: spacing.$spacing-md;
+            padding-bottom: spacing.$spacing-md;
+            margin-bottom: spacing.$spacing-md;
+            line-height: calc(24 / 20);
+        }
+
+        // document type, inside title
+        .doctype {
+            @include typography.doctype;
+        }
+        .shelfmark {
+            @include typography.shelfmark;
+        }
+    }
     // First row on mobile, left column on larger
     section:first-of-type {
-        margin-left: spacing.$spacing-md;
-        max-width: container.$measure;
+        max-width: none;
         display: flex;
         flex-flow: column;
         justify-content: flex-start;
         flex: 1 1 70%;
-        &.has-image {
-            @include breakpoints.for-tablet-landscape-up {
-                flex: 1 0 60%;
-                align-self: flex-start;
-                padding-right: spacing.$spacing-sm;
-            }
-        }
-        // document titles
-        .title {
-            position: relative;
-
-            // document type, inside title
-            .doctype {
-                @include typography.doctype;
-            }
-            .shelfmark {
-                @include typography.shelfmark;
-            }
+        @include breakpoints.for-tablet-landscape-up {
+            flex: 1 0 60%;
+            align-self: flex-start;
+            padding-right: spacing.$spacing-sm;
+            // TODO: figure out margin if counter numbers are staying
+            // margin-left: spacing.$spacing-md;
         }
 
         // other document metadata
         dl.metadata-list {
             grid-template-columns: auto 1fr;
-            column-gap: 1rem;
+            column-gap: spacing.$spacing-md;
+            dt {
+                @include typography.meta-label;
+                display: flex;
+                align-items: center;
+                justify-content: flex-start;
+            }
         }
 
         // document description, transcription, translation margins/highlighting
@@ -126,6 +130,7 @@ section#document-list {
         .transcription,
         .translation {
             margin: spacing.$spacing-md 0;
+            max-width: none;
 
             // keywords in context
             em {
@@ -141,31 +146,105 @@ section#document-list {
             }
         }
 
-        // document scholarship records
-        .scholarship {
+        .transcription {
+            @include typography.transcription-search;
+
+            // arabic script
+            &[lang="ar"],
+            &[data-lang-script="arabic"],
+            span[lang="ar"] {
+                @include typography.arabic-transcription-search;
+            }
+        }
+
+        // related documents and entities
+        dl.related {
             @include typography.meta;
+            border-top: 1px solid var(--searchresult-separator);
+            padding-top: 1.25rem;
             display: flex;
-            flex-flow: row wrap;
-            & span {
-                padding-right: spacing.$spacing-md;
-                &:last-child {
-                    padding-right: 0;
+            flex-flow: row nowrap;
+            align-items: center;
+            gap: spacing.$spacing-md;
+            dt {
+                display: flex;
+                flex-flow: row nowrap;
+                align-items: center;
+                gap: 0.5rem;
+                @include typography.caption;
+                &::before {
+                    font-style: normal;
+                    @include typography.icon-button-sm;
                 }
+                &.documents::before {
+                    content: "\edf2";
+                }
+                &.people::before {
+                    content: "\f346";
+                }
+                &.places::before {
+                    content: "\f20d";
+                }
+            }
+            dd + dt {
+                border-left: 1px solid var(--disabled-on-background-light);
+                padding-left: spacing.$spacing-md;
             }
         }
 
         // document tags
         ul.tags {
-            margin-top: spacing.$spacing-md;
+            padding-top: spacing.$spacing-md;
+            border-top: 1px solid var(--searchresult-separator);
+        }
+        dl.related ~ ul.tags {
+            border: none;
+        }
+
+        // document scholarship records
+        .scholarship {
+            @include typography.meta;
+            display: flex;
+            flex-flow: row wrap;
+            padding: 0.5rem;
+            span {
+                &:last-child {
+                    padding-right: 0;
+                }
+                padding-right: spacing.$spacing-xs;
+                @include breakpoints.for-tablet-landscape-up {
+                    padding-right: spacing.$spacing-md;
+                }
+            }
+            span + span {
+                border-left: 1px solid var(--disabled-on-background-light);
+                padding-left: spacing.$spacing-xs;
+                @include breakpoints.for-tablet-landscape-up {
+                    padding-left: spacing.$spacing-md;
+                }
+            }
+            border-top: 1px solid var(--searchresult-separator);
+            border-bottom: 1px solid var(--searchresult-separator);
+            margin-top: 1.25rem;
         }
     }
 
+    .right-column {
+        position: relative;
+        display: flex;
+        flex-flow: column;
+        @include breakpoints.for-tablet-landscape-up {
+            flex: 1 1 31%;
+        }
+        &:has(.no-image) {
+            align-items: flex-end;
+        }
+    }
     // document images
     ul.images {
         position: relative;
         display: flex;
         flex-flow: column;
-        margin-top: spacing.$spacing-lg;
         text-align: center;
         overflow-x: visible;
         overflow-y: clip;
@@ -202,8 +281,6 @@ section#document-list {
             }
         }
         @include breakpoints.for-tablet-landscape-up {
-            flex: 0 1 31%;
-            margin-top: spacing.$spacing-xl;
             img {
                 max-width: 100%;
                 max-height: 300px;
@@ -227,7 +304,18 @@ section#document-list {
             }
         }
     }
-
+    span.no-image {
+        width: 250px;
+        height: 250px;
+        background-image: url("/static/img/ui/all/all/no-image-square-lg.png");
+        background-size: 250px;
+        font-weight: 600;
+        font-size: typography.$text-size-6xl;
+        margin-top: spacing.$spacing-sm;
+        @include breakpoints.for-tablet-landscape-up {
+            margin-top: 0;
+        }
+    }
     /* use pseudo marker to get transcription line numbers from snippets */
     .transcription li,
     .translation li {
@@ -251,6 +339,13 @@ section#document-list {
             margin-right: -2rem; /* shift outside text margin */
             text-align: right;
             float: right;
+        }
+    }
+    .transcription[dir="ltr"] > p,
+    .translation[dir="ltr"] > p {
+        @include breakpoints.for-phone-only {
+            margin-left: 0;
+            padding-left: 0;
         }
     }
 
@@ -286,6 +381,33 @@ section#document-list {
         width: 100%;
         height: 100%;
     }
+    .pgp-metadata {
+        display: flex;
+        flex: 1 0 auto;
+        flex-flow: row nowrap;
+        justify-content: flex-end;
+        align-items: flex-end;
+        gap: 0.25rem;
+        dt[lang="en"]::before {
+            content: "(";
+        }
+        dt[lang="en"] + dd::after {
+            content: ")";
+        }
+    }
+    .pgp-metadata:not(:empty),
+    .pgp-metadata + .additional-metadata:not(:empty) {
+        margin-top: spacing.$spacing-md;
+    }
+    .additional-metadata {
+        text-align: right;
+        dt {
+            @include typography.meta-bold;
+            &::after {
+                content: ":";
+            }
+        }
+    }
 }
 
 // "view document details" link
@@ -293,11 +415,13 @@ a.view-link {
     display: flex;
     flex: 1 0 100%;
     width: max-content;
-    height: 1.75rem;
     margin-left: auto;
-    margin-top: spacing.$spacing-md;
     justify-content: flex-end;
     z-index: 3;
+    &:has(span:not(.sr-only)) {
+        margin-top: spacing.$spacing-md;
+        height: 1.75rem;
+    }
     & > span {
         display: flex;
         flex: 0 1 auto;
@@ -360,28 +484,41 @@ html[dir="rtl"] .search-result {
     }
     // First row on mobile, left column on larger
     section:first-of-type {
-        margin-right: spacing.$spacing-md;
+        // TODO: figure out margin if counter numbers are staying
+        // margin-right: spacing.$spacing-md;
         margin-left: 0;
-        &.has-image {
-            @include breakpoints.for-tablet-landscape-up {
-                padding-right: 0;
-                padding-left: spacing.$spacing-sm;
-            }
+        @include breakpoints.for-tablet-landscape-up {
+            padding-right: 0;
+            padding-left: spacing.$spacing-sm;
         }
         // document scholarship records
         .scholarship {
-            & span {
+            span {
                 padding-right: 0;
-                padding-left: spacing.$spacing-md;
                 &:last-child {
                     padding-left: 0;
                 }
+                padding-left: spacing.$spacing-xs;
+                @include breakpoints.for-tablet-landscape-up {
+                    padding-left: spacing.$spacing-md;
+                }
+            }
+            span + span {
+                border-left: none;
+                border-right: 1px solid var(--disabled-on-background-light);
+                padding-right: spacing.$spacing-xs;
+                @include breakpoints.for-tablet-landscape-up {
+                    padding-right: spacing.$spacing-md;
+                }
             }
         }
-        // document tags
-        ul.tags {
-            text-align: left;
-            align-self: flex-end;
+        dl.related {
+            dd + dt {
+                border-left: none;
+                padding-left: 0;
+                border-right: 1px solid var(--disabled-on-background-light);
+                padding-right: spacing.$spacing-md;
+            }
         }
     }
     // document images
@@ -437,6 +574,14 @@ html[dir="rtl"] .search-result {
     .transcription[dir="ltr"],
     .translation[dir="ltr"] {
         align-self: flex-end;
+    }
+    dt[lang="en"] {
+        line-height: calc(19.4 / 14);
+        font-size: typography.$text-size-sm;
+        @include breakpoints.for-tablet-landscape-up {
+            line-height: calc(24.3 / 18);
+            font-size: typography.$text-size-lg;
+        }
     }
 }
 

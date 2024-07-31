@@ -608,7 +608,7 @@ class PersonListView(ListView, FormMixin, SolrDateRangeMixin):
                 "page_title": self.page_title,
                 "page_description": self.page_description,
                 "page_type": "people",
-                "filters": self.applied_filter_labels,
+                "applied_filters": self.applied_filter_labels,
             }
         )
         return context_data
