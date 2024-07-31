@@ -26,10 +26,10 @@ $text-size-7xl: 2.25rem; //  = 36px
 @mixin headline-1 {
     font-family: fonts.$primary-bold;
     font-weight: bold;
-    font-size: $text-size-3xl;
+    font-size: $text-size-2xl;
     line-height: 1.5;
     @include breakpoints.for-tablet-landscape-up {
-        font-size: $text-size-4xl;
+        font-size: $text-size-3xl;
         line-height: calc(40 / 28);
     }
 }
@@ -233,6 +233,14 @@ $text-size-7xl: 2.25rem; //  = 36px
     @include meta;
     font-family: fonts.$primary-bold;
     font-weight: bold;
+}
+@mixin meta-header {
+    font-family: fonts.$primary-bold;
+    font-weight: bold;
+    font-size: $text-size-md;
+    @include breakpoints.for-tablet-landscape-up {
+        font-size: $text-size-xl;
+    }
 }
 
 // related documents and entities tables typography
