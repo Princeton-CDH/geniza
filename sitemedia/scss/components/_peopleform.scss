@@ -15,7 +15,7 @@ main.search {
     fieldset#filters {
         // only display if targeted/expanded
         display: none;
-        &:target,
+        &:target:not([aria-expanded="false"]),
         &[aria-expanded="true"] {
             // mobile view: flex column
             display: flex;
@@ -366,7 +366,7 @@ html[dir="rtl"] main.search {
         padding-right: 0;
         padding-left: 0.5rem;
     }
-    fieldset#filters:target,
+    fieldset#filters:target:not([aria-expanded="false"]),
     fieldset#filters[aria-expanded="true"] {
         right: auto;
         left: 0;

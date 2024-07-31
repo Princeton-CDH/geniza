@@ -262,7 +262,7 @@ main.people {
         }
     }
     // filter modal backdrop (mobile)
-    .modal-backdrop:has(~ fieldset#filters:target),
+    .modal-backdrop:has(~ fieldset#filters:target:not([aria-expanded="false"])),
     .modal-backdrop:has(~ fieldset#filters[aria-expanded="true"]) {
         position: fixed;
         top: 0;
