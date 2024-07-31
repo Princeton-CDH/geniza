@@ -101,9 +101,12 @@ export default class extends Controller {
             );
         }
         const OSD = this.osdTarget.querySelector(".openseadragon-container");
-        OSD.style.transition = "opacity 300ms ease, visibility 0s ease 300ms";
-        OSD.style.visibility = "hidden";
-        OSD.style.opacity = "0";
+        if (OSD) {
+            OSD.style.transition =
+                "opacity 300ms ease, visibility 0s ease 300ms";
+            OSD.style.visibility = "hidden";
+            OSD.style.opacity = "0";
+        }
     }
 
     addOpenSeaDragon(settings) {

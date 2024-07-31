@@ -2,6 +2,7 @@
 // Visual labels for concepts, themes & other document metadata.
 // -----------------------------------------------------------------------------
 
+@use "../base/breakpoints";
 @use "../base/typography";
 
 .tags {
@@ -10,17 +11,22 @@
 .tags li {
     display: inline-block;
     a {
-        @include typography.meta;
-        text-transform: lowercase;
-        display: inline-block;
-        background-color: var(--tag-bg);
-        color: var(--on-background-light-alt);
-        padding: 2px 9px 3px;
-        min-width: 39px; // 48px - 9px padding
-        &::before {
-            content: "#";
+        font-size: typography.$text-size-sm;
+        @include breakpoints.for-tablet-landscape-up {
+            font-size: typography.$text-size-md;
         }
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-transform: lowercase;
+        border-radius: 5px;
+        background-color: var(--tag-bg);
+        color: var(--on-background-light);
+        padding: 0 14px;
+        min-width: 34px; // 48px - 14px for mobile touch target
+        min-height: 28px;
         text-decoration: none;
+        line-height: 1;
     }
     // spacing between tags
     margin-right: 6px;
@@ -46,15 +52,5 @@ html[dir="rtl"] .tags li {
     }
     &:first-of-type {
         margin-right: 0;
-    }
-    a::before {
-        content: "";
-    }
-    a::after {
-        display: inline-block;
-        content: "#";
-    }
-    &.more::after {
-        content: "";
     }
 }

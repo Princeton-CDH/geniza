@@ -20,14 +20,6 @@ nav.pagination {
         margin: spacing.$spacing-xl 0;
         justify-content: center;
     }
-    // special styling for pagination at bottom of page
-    &:last-of-type {
-        margin: spacing.$spacing-2xl 0 0;
-        @include breakpoints.for-tablet-landscape-up {
-            margin: spacing.$spacing-3xl 0 spacing.$spacing-xl;
-            justify-content: center;
-        }
-    }
     // spacing and style for page links, ellipsis, and disabled
     a,
     span {

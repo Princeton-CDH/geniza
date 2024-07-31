@@ -26,10 +26,10 @@ $text-size-7xl: 2.25rem; //  = 36px
 @mixin headline-1 {
     font-family: fonts.$primary-bold;
     font-weight: bold;
-    font-size: $text-size-3xl;
+    font-size: $text-size-2xl;
     line-height: 1.5;
     @include breakpoints.for-tablet-landscape-up {
-        font-size: $text-size-4xl;
+        font-size: $text-size-3xl;
         line-height: calc(40 / 28);
     }
 }
@@ -128,9 +128,9 @@ $text-size-7xl: 2.25rem; //  = 36px
 // on generic content pages
 @mixin body {
     font-family: fonts.$primary;
-    font-size: $text-size-lg;
+    font-size: $text-size-md;
     @include breakpoints.for-tablet-landscape-up {
-        font-size: $text-size-xl;
+        font-size: $text-size-lg;
     }
     line-height: 1.5;
 }
@@ -234,6 +234,14 @@ $text-size-7xl: 2.25rem; //  = 36px
     font-family: fonts.$primary-bold;
     font-weight: bold;
 }
+@mixin meta-header {
+    font-family: fonts.$primary-bold;
+    font-weight: bold;
+    font-size: $text-size-md;
+    @include breakpoints.for-tablet-landscape-up {
+        font-size: $text-size-xl;
+    }
+}
 
 // related documents and entities tables typography
 @mixin related-table {
@@ -255,6 +263,26 @@ $text-size-7xl: 2.25rem; //  = 36px
         font-size: $text-size-lg;
     }
     line-height: 1.5;
+}
+
+// label for metadata in search results
+@mixin meta-label {
+    @include caption;
+    font-size: $text-size-sm;
+    @include breakpoints.for-tablet-landscape-up {
+        font-size: $text-size-md;
+    }
+}
+
+// small body text, e.g. for descriptions in search results
+@mixin body-sm {
+    font-family: fonts.$primary;
+    font-size: $text-size-sm;
+    line-height: 17 / 14;
+    @include breakpoints.for-tablet-landscape-up {
+        font-size: $text-size-lg;
+        line-height: 25 / 18;
+    }
 }
 
 // label for unpublished records in scholarship records view
@@ -305,6 +333,20 @@ $text-size-7xl: 2.25rem; //  = 36px
     }
 }
 @mixin arabic-transcription {
+    @include breakpoints.for-tablet-landscape-up {
+        line-height: calc(34 / 22);
+    }
+}
+@mixin transcription-search {
+    font-family: fonts.$transcription;
+    line-height: calc(22.4 / 16);
+    font-size: $text-size-md;
+    @include breakpoints.for-tablet-landscape-up {
+        font-size: $text-size-xl;
+        line-height: calc(27 / 20);
+    }
+}
+@mixin arabic-transcription-search {
     @include breakpoints.for-tablet-landscape-up {
         line-height: calc(34 / 22);
     }

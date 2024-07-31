@@ -5,7 +5,7 @@
 {% block meta_description %}{{ page_description }}{% endblock meta_description %}
 
 {% block main %}
-    <h1 class="sr-only">{{ page_title }}</h1>
+    <h1>{{ page_title }}</h1>
     <form data-controller="search" data-turbo-frame="main" data-turbo-action="advance" data-page="document">
         <fieldset id="query">
             {% render_field form.q data-search-target="query" data-action="input->search#autoUpdateSort change->search#update" %}
@@ -14,60 +14,82 @@
             {% translate 'Submit search' as search_label %}
             <button type="submit" aria-label="{{ search_label }}" />
         </fieldset>
-        <a href="#filters" role="button" id="filters-button" data-action="click->search#openFilters"{% if form.filters_active %} class="active"{% endif %}>
-            <svg><use xlink:href="{% static 'img/ui/all/all/search-filter-icon.svg' %}#filter-icon" /></svg>
-            {% translate "Filters" %}
-        </a>
-
+        <div id="filters-header">
+            <a href="#filters" role="button" id="filters-button" data-search-target="filtersButton" data-action="click->search#toggleFiltersOpen">
+                <svg><use xlink:href="{% static 'img/ui/all/all/search-filter-icon.svg' %}#filter-icon" /></svg>
+                <span>{% translate "Filters" %}</span>
+                {% if applied_filters %}
+                    <span class="filter-count">{{ applied_filters|length }}</span>
+                {% endif %}
+            </a>
+            {% if applied_filters %}
+                {# convenient unapply filter buttons; aria role set to presentation as functionality duplicated below #}
+                <div id="applied-filters" role="presentation">
+                    {% for filter in applied_filters %}
+                        <button
+                            data-field="{{ filter.field }}"
+                            value="{{ filter.value }}"
+                            data-action="click->search#unapplyFilter"
+                        >
+                            {{ filter.label }}
+                            <i class="ph-x"></i>
+                        </button>
+                    {% endfor %}
+                </div>
+                <button id="clear-filters" data-action="click->search#clearFilters">
+                    {# Translators: label for button to clear all applied filters #}
+                    {% translate "Clear all" %}
+                </button>
+            {% endif %}
+        </div>
+        <div class="modal-backdrop" aria-hidden="true" data-action="click->search#closeFilters"></div>
         <fieldset id="filters" aria-expanded="false" data-search-target="filterModal">
+            <legend>{% translate "Filters" %}</legend>
             <a href="#" role="button" id="close-filters-modal" data-action="click->search#closeFilters">
                 {# Translators: label for 'filters' close button for mobile navigation #}
                 {% translate "Close filter options" as close_button %}
                 <span class="sr-only">{{ close_button }}</span>
             </a>
-            <a href="#" role="button" id="close-filters-button" data-action="click->search#closeFilters"{% if form.filters_active %} class="active"{% endif %}>
-                <svg><use xlink:href="{% static 'img/ui/all/all/search-filter-icon.svg' %}#filter-icon" /></svg>
-                {% translate "Filters" %}
-            </a>
-            <label for="{{ form.docdate.auto_id }}" class="date-range-label">
-                <span>{{ form.docdate.label }}</span>
-                {# NOTE: stimulus action is configured via django widget attrs #}
-                {{ form.docdate }}
-            </label>
-            <label for="{{ form.has_image.auto_id }}">
-                {% render_field form.has_image data-action="search#update" %}
-                {{ form.has_image.label }}
-            </label>
-            <label for="{{ form.has_transcription.auto_id }}">
-                {% render_field form.has_transcription data-action="search#update" %}
-                {{ form.has_transcription.label }}
-            </label>
-            <label for="{{ form.has_translation.auto_id }}">
-                {% render_field form.has_translation data-action="search#update" %}
-                {{ form.has_translation.label }}
-            </label>
-            <label for="{{ form.has_discussion.auto_id }}">
-                {% render_field form.has_discussion data-action="search#update" %}
-                {{ form.has_discussion.label }}
-            </label>
-            <details class="doctype-filter" data-search-target="doctypeFilter">
-                <summary data-action="click->search#toggleDoctypeFilter">
-                    {{ form.doctype.label }}
-                </summary>
+            <div class="fieldset-left-column">
+                <label for="{{ form.docdate.auto_id }}" class="date-range-label">
+                    <span class="fieldname">{{ form.docdate.label }}</span>
+                    {# NOTE: stimulus action is configured via django widget attrs #}
+                    {{ form.docdate }}
+                </label>
+            </div>
+            <fieldset class="includes-fields">
+                <legend><span class="fieldname">{% translate "Includes" %}</span></legend>
+                <ul>
+                    <li>
+                        <label for="{{ form.has_image.auto_id }}">
+                            {% render_field form.has_image data-action="search#update" %}
+                            {{ form.has_image.label }}
+                        </label>
+                    </li>
+                    <li>
+                        <label for="{{ form.has_transcription.auto_id }}">
+                            {% render_field form.has_transcription data-action="search#update" %}
+                            {{ form.has_transcription.label }}
+                        </label>
+                    </li>
+                    <li>
+                        <label for="{{ form.has_translation.auto_id }}">
+                            {% render_field form.has_translation data-action="search#update" %}
+                            {{ form.has_translation.label }}
+                        </label>
+                    </li>
+                    <li>
+                        <label for="{{ form.has_discussion.auto_id }}">
+                            {% render_field form.has_discussion data-action="search#update" %}
+                            {{ form.has_discussion.label }}
+                        </label>
+                    </li>
+                </ul>
+            </fieldset>
+            <label for="{{ form.doctype.auto_id }}">
+                <span class="fieldname">{{ form.doctype.label }}</span>
                 {% render_field form.doctype data-action="search#update" %}
-            </details>
-            <button type="submit" class="primary" data-action="click->search#applyFilters">
-                {% translate "Apply" %}
-            </button>
-        </fieldset>
-
-        <fieldset id="sort-fieldset">
-            <label for="{{ form.sort.html_name }}">
-                {{ form.sort.label }}
             </label>
-            {% render_field form.sort id="sort" data-search-target="sort" data-action="input->search#update" %}
-            {# caret icon for <select>; since we also have the select element, role=presentation #}
-            <i class="ph-caret-down" role="presentation"></i>
         </fieldset>
 
         {% if form.errors %}
@@ -80,31 +102,35 @@
                 {% endfor %}
             </ul>
         {% endif %}
-    </form>
-    <section id="document-list">
-        <h1>
-            {% comment %}Translators: number of search results{% endcomment %}
-            {% blocktranslate with count_humanized=paginator.count|intcomma count counter=paginator.count trimmed %}
-                1 result
-            {% plural %}
-                {{ count_humanized }} total results
-            {% endblocktranslate %}
-        </h1>
-        {% if is_paginated %}
-            {% include "corpus/snippets/pagination.html" %}
-        {% endif %}
-        <ol>
-            {% for document in documents %}
-                {% include "corpus/snippets/document_result.html" %}
-            {% endfor %}
-        </ol>
-        {% if is_paginated %}
-            {# Translators: screen reader label for pagination navigation displayed after search results #}
-            {% translate "secondary pagination" as pagination_label %}
-            {# don't include footer pagination on random sort, since it's disabled #}
-            {% if form.sort.value != 'random' %}
-                {% include "corpus/snippets/pagination.html" with aria_label=pagination_label %}
+        <section id="document-list">
+            <div class="header-row">
+                <h2>
+                    {# Translators: search results section header #}
+                    {% translate "Results" %}
+                </h2>
+                <span class="result-count">
+                    {% comment %}Translators: number of search results{% endcomment %}
+                    {% blocktranslate with count_humanized=paginator.count|intcomma count counter=paginator.count trimmed %}
+                        1 result
+                    {% plural %}
+                        {{ count_humanized }} results
+                    {% endblocktranslate %}
+                </span>
+                <fieldset id="sort-field">
+                    <label for="{{ form.sort.html_name }}">{{ form.sort.label }}</label>
+                    {% render_field form.sort id="sort" data-search-target="sort" data-action="input->search#update" %}
+                    {# caret icon for <select>; since we also have the select element, role=presentation #}
+                    <i class="ph-caret-down" role="presentation"></i>
+                </fieldset>
+            </div>
+            <ol>
+                {% for document in documents %}
+                    {% include "corpus/snippets/document_result.html" %}
+                {% endfor %}
+            </ol>
+            {% if is_paginated %}
+                {% include "corpus/snippets/pagination.html" %}
             {% endif %}
-        {% endif %}
-    </section>
+        </section>
+    </form>
 {% endblock main %}

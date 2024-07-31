@@ -388,9 +388,7 @@ class TestDocumentScholarshipTemplate:
         response = client.get(
             reverse("corpus:document-scholarship", args=[document.pk])
         )
-        assertContains(
-            response, '<dt class="relation">includes edition</dt>', html=True
-        )
+        assertContains(response, "<li>Edition</li>", html=True)
 
         fn2 = Footnote.objects.create(
             content_object=document,
@@ -401,7 +399,7 @@ class TestDocumentScholarshipTemplate:
         response = client.get(
             reverse("corpus:document-scholarship", args=[document.pk])
         )
-        assertContains(response, '<dt class="relation">for edition see</dt>', html=True)
+        assertContains(response, "<li>Edition</li>", html=True)
 
         fn2.doc_relation = [Footnote.EDITION, Footnote.TRANSLATION]
         fn2.save()
@@ -410,7 +408,13 @@ class TestDocumentScholarshipTemplate:
         )
         assertContains(
             response,
-            '<dt class="relation">for edition, translation see</dt>',
+            "<li>Edition</li>",
+            html=True,
+        )
+        print(response.content)
+        assertContains(
+            response,
+            "<li>Translation</li>",
             html=True,
         )
 
@@ -425,13 +429,51 @@ class TestDocumentScholarshipTemplate:
         response = client.get(
             reverse("corpus:document-scholarship", args=[document.pk])
         )
-        assertContains(response, "p. 25")
+        assertContains(response, "<li>p. 25</li>", html=True)
         fn.location = ""
         fn.save()
         response = client.get(
             reverse("corpus:document-scholarship", args=[document.pk])
         )
         assertNotContains(response, "p. 25")  # should not show when removed
+
+    def test_whats_in_pgp(self, client, document, source, unpublished_editions):
+        """Document detail template should show what's in the PGP"""
+        # has no image, transcription or translation
+        empty_doc = Document.objects.create()
+        response = client.get(empty_doc.get_absolute_url())
+        assertNotContains(response, "What's in the PGP")
+
+        # has image but no transcription or translation
+        response = client.get(document.get_absolute_url())
+        assertContains(response, "What's in the PGP")
+        assertContains(response, '<li class="has-image">Image</li>')
+        assertNotContains(response, '<li class="transcription-count">')
+        assertNotContains(response, '<li class="translation-count">')
+
+        # add a footnote with a digital edition
+        Footnote.objects.create(
+            content_object=document,
+            source=unpublished_editions,
+            doc_relation=[Footnote.DIGITAL_EDITION],
+        )
+        response = client.get(document.get_absolute_url())
+        assertContains(response, '<li class="transcription-count">')
+        assertContains(response, "1 Transcription")
+
+        # add two footnotes with digital translation
+        Footnote.objects.create(
+            content_object=document,
+            source=source,
+            doc_relation=[Footnote.DIGITAL_TRANSLATION],
+        )
+        Footnote.objects.create(
+            content_object=document,
+            source=unpublished_editions,
+            doc_relation=[Footnote.DIGITAL_TRANSLATION],
+        )
+        response = client.get(document.get_absolute_url())
+        assertContains(response, "2 Translations")
 
 
 class TestDocumentTabsSnippet:
@@ -446,7 +488,7 @@ class TestDocumentTabsSnippet:
         # uses span, not link
         assertContains(
             response,
-            "<span disabled aria-disabled='true'>Scholarship Records (0)</span>",
+            "<span disabled aria-disabled='true'>Select Bibliography (0)</span>",
             html=True,
         )
 
@@ -460,13 +502,13 @@ class TestDocumentTabsSnippet:
             response, reverse("corpus:document-scholarship", args=[document.pk])
         )
         # count should be 1
-        assertContains(response, "Scholarship Records (1)")
+        assertContains(response, "Select Bibliography (1)")
 
         Footnote.objects.create(content_object=document, source=twoauthor_source)
         response = client.get(document.get_absolute_url())
 
         # count should be 2
-        assertContains(response, "Scholarship Records (2)")
+        assertContains(response, "Select Bibliography (2)")
 
     def test_no_related_docs(self, client, document, empty_solr):
         """document nav should render disabled related documents tab if no related documents"""

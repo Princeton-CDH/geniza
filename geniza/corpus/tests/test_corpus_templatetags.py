@@ -59,10 +59,10 @@ class TestCorpusExtrasTemplateTags:
             source=footnote.source,
             doc_relation=Footnote.DIGITAL_EDITION,
         )
-        assert (
-            corpus_extras.all_doc_relations(list(document.footnotes.all()))
-            == "Digital Edition, Edition"
-        )
+        assert corpus_extras.all_doc_relations(list(document.footnotes.all())) == [
+            "Digital Edition",
+            "Edition",
+        ]
         # should not repeat doc relations even if multiple of the same type appear
         Footnote.objects.create(
             object_id=document.pk,
@@ -71,10 +71,10 @@ class TestCorpusExtrasTemplateTags:
             doc_relation=Footnote.EDITION,
             location="other place",
         )
-        assert (
-            corpus_extras.all_doc_relations(list(document.footnotes.all()))
-            == "Digital Edition, Edition"
-        )
+        assert corpus_extras.all_doc_relations(list(document.footnotes.all())) == [
+            "Digital Edition",
+            "Edition",
+        ]
 
 
 def test_dict_item():

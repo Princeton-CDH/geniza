@@ -7,7 +7,36 @@
 @use "../base/typography";
 @use "../components/searchform";
 
+/*
+ * Mixin to add a box-shadow given a color.
+ * @param {color} $color - The color variable
+*/
+@mixin box-shadow($color) {
+    box-shadow: 0px 2px 4px $color;
+}
+
+/*
+ * Mixin for form drop shadow in three states:
+ * default, focus, active.
+ */
+@mixin form-drop-shadow($with-default: "true") {
+    transition: box-shadow 0.15s ease;
+    @include box-shadow(var(--on-background-25));
+    &:focus,
+    &:focus-within {
+        outline: none;
+        @include box-shadow(var(--secondary-80));
+    }
+    &:active {
+        @include box-shadow(var(--primary-80));
+    }
+}
+
 #itt-panel {
+    * {
+        max-width: 100vw;
+    }
+    margin-top: 5.125rem;
     max-width: 100vw;
     overflow: hidden;
     width: 100%;
@@ -92,6 +121,7 @@
                 background-color: var(--background-light);
                 cursor: default;
                 &:after,
+                &:before,
                 svg {
                     color: var(--disabled);
                 }
@@ -161,7 +191,7 @@
             z-index: 20;
             width: calc(100% - 0.667rem);
             padding: spacing.$spacing-sm 0;
-            @include searchform.form-drop-shadow;
+            @include form-drop-shadow;
             background-color: var(--background);
             // label for single transcription option
             li {
@@ -1291,14 +1321,23 @@
         }
     }
 }
-.editor-navigation {
+.editor-navigation,
+.editor-add {
     span {
         @include typography.link;
     }
     i {
         text-decoration: none;
     }
+}
+.editor-navigation {
     margin: -1rem 0 2rem;
+}
+.editor-add {
+    margin: 0 0 1rem;
+}
+.editor-add + #itt-panel {
+    margin-top: 2rem;
 }
 
 // general transcription/translation styles

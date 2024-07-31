@@ -299,6 +299,32 @@ class TestDocumentSolrQuerySet:
                 "exact match"
             )
 
+    def test_get_highlighting__old_shelfmark(self):
+        dqs = DocumentSolrQuerySet()
+        with patch("geniza.corpus.solr_queryset.super") as mock_super:
+            mock_get_highlighting = mock_super.return_value.get_highlighting
+            test_highlight = {
+                "doc.1": {
+                    # typical formatting for an old_shelfmark highlight
+                    "old_shelfmark": ["", "matched", "secondmatch"],
+                }
+            }
+            mock_get_highlighting.return_value = test_highlight
+            # should flatten list with comma separation
+            assert (
+                dqs.get_highlighting()["doc.1"]["old_shelfmark"]
+                == "matched, secondmatch"
+            )
+
+            test_highlight = {
+                "doc.1": {
+                    "old_shelfmark_t": ["", "matched"],
+                }
+            }
+            mock_get_highlighting.return_value = test_highlight
+            # should use old_shelfmark_t highlight
+            assert dqs.get_highlighting()["doc.1"]["old_shelfmark"] == "matched"
+
     def test_get_highlighting__regex(self):
         dqs = DocumentSolrQuerySet()
         dqs.raw_params = {"regex_query": "test"}

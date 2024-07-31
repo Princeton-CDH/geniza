@@ -9,11 +9,10 @@
 
 .citation {
     counter-increment: search-counter;
-    padding-bottom: spacing.$spacing-md;
     padding: 0 0 spacing.$spacing-md spacing.$spacing-xl;
     margin-left: -#{spacing.$spacing-lg};
     @include breakpoints.for-tablet-landscape-up {
-        padding-left: spacing.$spacing-xl;
+        padding-left: 1.625rem;
         margin-left: 0;
     }
     @include typography.body;
@@ -26,26 +25,30 @@
     }
     &::before {
         content: counter(search-counter);
-        margin-left: -#{spacing.$spacing-xl};
+        margin-left: -1.625rem;
         text-align: left;
         float: left;
         @include typography.body-bold;
     }
-    .relation {
-        max-width: none; // required to span the whole width
-        background-color: var(--background-light);
-        margin-left: -#{spacing.$spacing-xl};
-        padding: spacing.$spacing-4xs 0 spacing.$spacing-4xs spacing.$spacing-xl;
-        &:is(dt) {
-            margin-top: spacing.$spacing-md;
-            @include typography.caption;
-        }
-        &:is(dd) {
-            margin-bottom: spacing.$spacing-2xs;
-            @include typography.meta;
-        }
-        li.location {
+    ul.locations {
+        margin-top: 0.5rem;
+        li {
+            @include typography.body-bold;
             word-break: break-all;
+        }
+    }
+    ul.relations {
+        display: flex;
+        flex-flow: row wrap;
+        gap: 1rem;
+        margin-top: 1rem;
+        li {
+            display: flex;
+            align-items: center;
+            height: 2rem;
+            padding: 0 spacing.$spacing-md;
+            border-radius: 5px;
+            background-color: var(--background-gray);
         }
     }
     div.unpublished {
@@ -55,13 +58,35 @@
     }
 }
 
+// RTL overrides
+html[dir="rtl"] .citation {
+    padding: 0 spacing.$spacing-xl spacing.$spacing-md 0;
+    margin-right: -#{spacing.$spacing-lg};
+    margin-left: 0;
+    @include breakpoints.for-tablet-landscape-up {
+        padding-right: 1.625rem;
+        padding-left: 0;
+        margin-right: 0;
+        margin-left: 0;
+    }
+    &::before {
+        margin-left: 0;
+        margin-right: -1.625rem;
+        text-align: right;
+        float: right;
+    }
+    & + .citation {
+        padding-top: spacing.$spacing-md;
+    }
+}
+
 // Hebrew variant
 html[lang="he"] .citation {
     @include typography.body-he;
     *[lang="en"] {
         @include typography.body;
     }
-    dd.relation:not([lang="en"]) {
+    ul.relations li:not([lang="en"]) {
         @include typography.meta-he;
     }
 }
@@ -72,7 +97,7 @@ html[lang="ar"] .citation {
     *[lang="en"] {
         @include typography.body;
     }
-    dd.relation:not([lang="en"]) {
+    ul.relations li:not([lang="en"]) {
         @include typography.meta-ar;
     }
 }

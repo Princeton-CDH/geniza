@@ -78,13 +78,14 @@ class DocumentSearchView(
     context_object_name = "documents"
     template_name = "corpus/document_list.html"
     # Translators: title of document search page
-    page_title = _("Search Documents")
+    page_title = _("Documents")
     # Translators: description of document search page, for search engines
     page_description = _("Search and browse Geniza documents.")
     paginate_by = 50
     initial = {"sort": "random"}
     # NOTE: does not filter on status, since changing status could modify the page
     solr_lastmodified_filters = {"item_type_s": "document"}
+    applied_filter_labels = []
 
     # map form sort to solr sort field
     solr_sort = {
@@ -154,38 +155,85 @@ class DocumentSearchView(
 
         return kwargs
 
-    def apply_filters(self, documents, search_opts):
+    def apply_filters(self, documents, search_opts, form):
         """Helper method to apply sort and filters to a document solr queryset,
         made reusable for regex search"""
         # order by sort option
-        if search_opts["sort"]:
-            documents = documents.order_by(self.get_solr_sort(search_opts["sort"]))
+        documents = documents.order_by(self.get_solr_sort(search_opts["sort"]))
 
         # filter by type if specified
         if search_opts["doctype"]:
             typelist = literal_eval(search_opts["doctype"])
             quoted_typelist = ['"%s"' % doctype for doctype in typelist]
             documents = documents.filter(type__in=quoted_typelist, tag="type")
+            self.applied_filter_labels += self.get_applied_filter_labels(
+                form, "doctype", typelist
+            )
 
         # image filter
         if search_opts["has_image"] == True:
             documents = documents.filter(has_image=True)
+            self.applied_filter_labels.append(
+                self.get_boolfield_label(form, "has_image")
+            )
 
         # scholarship filters
         if search_opts["has_transcription"] == True:
             documents = documents.filter(has_digital_edition=True)
+            self.applied_filter_labels.append(
+                self.get_boolfield_label(form, "has_transcription")
+            )
         if search_opts["has_discussion"] == True:
             documents = documents.filter(has_discussion=True)
+            self.applied_filter_labels.append(
+                self.get_boolfield_label(form, "has_discussion")
+            )
         if search_opts["has_translation"] == True:
             documents = documents.filter(has_digital_translation=True)
+            self.applied_filter_labels.append(
+                self.get_boolfield_label(form, "has_translation")
+            )
         if search_opts["docdate"]:
             # date range filter; returns tuple of value or None for open-ended range
             start, end = search_opts["docdate"]
             documents = documents.filter(
                 document_date_dr="[%s TO %s]" % (start or "*", end or "*")
             )
+            label = "%s–%s" % (start, end)
+            if start and not end:
+                label = _("After %s") % start
+            elif end and not start:
+                label = _("Before %s") % end
+            self.applied_filter_labels += [
+                {
+                    "field": "docdate",
+                    "value": search_opts["docdate"],
+                    "label": label,
+                }
+            ]
 
         return documents
+
+    def get_applied_filter_labels(self, form, field, filters):
+        """return a list of objects with field/value pairs, and translated labels,
+        one for each applied filter"""
+        labels = []
+        for value in filters:
+            # remove escape characters
+            value = value.replace("\\", "")
+            # get translated label using form helper method
+            label = form.get_translated_label(field, value)
+            # return object with original field and value, so we can unapply programmatically
+            labels.append({"field": field, "value": value, "label": label})
+        return labels
+
+    def get_boolfield_label(self, form, fieldname):
+        """Return a label dict for a boolean field (works differently than other fields)"""
+        return {
+            "field": fieldname,
+            "value": "on",
+            "label": form.fields[fieldname].label,
+        }
 
     def get_queryset(self):
         """Perform requested search and return solr queryset"""
@@ -202,6 +250,7 @@ class DocumentSearchView(
             )
             .facet_field("type", exclude="type", sort="value")
         )
+        self.applied_filter_labels = []
 
         form = self.get_form()
         # return empty queryset if not valid
@@ -255,11 +304,12 @@ class DocumentSearchView(
                     )
                     # highlight old shelfmark so we can show match in results
                     .highlight("old_shelfmark", requireFieldMatch=True)
+                    .highlight("old_shelfmark_t", requireFieldMatch=True)
                     .also("score")
                 )  # include relevance score in results
 
             # sort and apply filters
-            documents = self.apply_filters(documents, search_opts)
+            documents = self.apply_filters(documents, search_opts, form)
 
         self.queryset = documents
 
@@ -300,6 +350,7 @@ class DocumentSearchView(
                 "page_type": "search",
                 "page_includes_transcriptions": True,  # preload transcription font
                 "highlighting": highlights,
+                "applied_filters": self.applied_filter_labels,
             }
         )
 
@@ -338,7 +389,7 @@ class DocumentRegexSearchView(PermissionRequiredMixin, DocumentSearchView):
                 documents = documents.regex_search(search_opts["q"])
 
             # sort and apply filters
-            documents = self.apply_filters(documents, search_opts)
+            documents = self.apply_filters(documents, search_opts, form)
 
         self.queryset = documents
 
@@ -433,6 +484,13 @@ class DocumentDetailView(DocumentDetailBase, DetailView):
                     for panel in ["images", "translation", "transcription"]
                     if panel not in available_panels
                 ],
+                # related entities: sorted by type for grouping, and slug for alphabetization
+                "related_people": self.object.persondocumentrelation_set.order_by(
+                    "type__name", "person__slug"
+                ),
+                "related_places": self.object.documentplacerelation_set.order_by(
+                    "type__name", "place__slug"
+                ),
             }
         )
         return context_data

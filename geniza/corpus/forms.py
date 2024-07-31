@@ -162,7 +162,7 @@ class DocumentSearchForm(RangeForm):
         widget=forms.TextInput(
             attrs={
                 # Translators: placeholder for keyword search input
-                "placeholder": _("search by keyword"),
+                "placeholder": _("Search all fields by keyword"),
                 # Translators: accessible label for keyword search input
                 "aria-label": _("Keyword or Phrase"),
                 "type": "search",
@@ -207,9 +207,9 @@ class DocumentSearchForm(RangeForm):
         required=False,
         widget=SelectWithDisabled,
     )
-    # Translators: label for filter documents by date range
     docdate = RangeField(
-        label=_("Document Dates (CE)"),
+        # Translators: label for filter documents by date range
+        label=_("Dates"),
         required=False,
         widget=YearRangeWidget(
             attrs={"size": 4, "data-action": "input->search#update"},
@@ -218,23 +218,23 @@ class DocumentSearchForm(RangeForm):
 
     doctype = FacetChoiceField(
         # Translators: label for document type search form filter
-        label=_("Document Type"),
+        label=_("Document type"),
     )
     has_image = BooleanFacetField(
         # Translators: label for "has image" search form filter
-        label=_("Has Image"),
+        label=_("Image"),
     )
     has_transcription = BooleanFacetField(
         # Translators: label for "has transcription" search form filter
-        label=_("Has Transcription"),
+        label=_("Transcription"),
     )
     has_translation = BooleanFacetField(
         # Translators: label for "has translation" search form filter
-        label=_("Has Translation"),
+        label=_("Translation"),
     )
     has_discussion = BooleanFacetField(
         # Translators: label for "has discussion" search form filter
-        label=_("Has Discussion"),
+        label=_("Discussion"),
     )
 
     # mapping of solr facet fields to form input
@@ -258,6 +258,14 @@ class DocumentSearchForm(RangeForm):
                 {"label": self.SORT_CHOICES[0][1], "disabled": True},
             )
 
+    def get_translated_label(self, field, label):
+        """Lookup translated label via db model object when applicable;
+        handle Person.gender as a special case; and otherwise just return the label"""
+        if field == "type" or field == "doctype":
+            # for doctype, label should be translated, so use doctype object
+            return DocumentType.objects_by_label.get(label, _("Unknown type"))
+        return label
+
     def filters_active(self):
         """Check if any filters are active; returns true if form fields other than sort or q are set"""
         if self.is_valid():
@@ -276,20 +284,10 @@ class DocumentSearchForm(RangeForm):
         # populate facet field choices from current facets
         for key, facet_dict in facets.items():
             # restructure dict to set values of each key to tuples of (label, count)
-            if key == "type":
-                # for doctype, label should be translated, so use doctype object
-                facet_dict = {
-                    label: (
-                        DocumentType.objects_by_label.get(label, _("Unknown type")),
-                        count,
-                    )
-                    for (label, count) in facet_dict.items()
-                }
-            else:
-                # for other formfields, label == facet name
-                facet_dict = {
-                    label: (label, count) for (label, count) in facet_dict.items()
-                }
+            facet_dict = {
+                label: (self.get_translated_label(key, label), count)
+                for (label, count) in facet_dict.items()
+            }
             # use field from facet fields map or else field name as is
             formfield = self.solr_facet_fields.get(key, key)
             # for each facet, set the corresponding choice field
