@@ -298,3 +298,70 @@ class TestDocumentSolrQuerySet:
             assert dqs.get_highlighting()["doc.1"]["transcription"][0] == clean_html(
                 "exact match"
             )
+
+    def test_get_highlighting__regex(self):
+        dqs = DocumentSolrQuerySet()
+        dqs.raw_params = {"regex_query": "test"}
+        # if regex_query in raw params, should overwrite any normal matches with regex matches
+        with patch("geniza.corpus.solr_queryset.super") as mock_super:
+            mock_get_highlighting = mock_super.return_value.get_highlighting
+            test_highlight = {"document.1": {"transcription": ["match"]}}
+            mock_get_highlighting.return_value = test_highlight
+            with patch.object(dqs, "get_results") as mock_get_results:
+                mock_get_results.return_value = [
+                    {"id": "document.1", "transcription_regex": ["a test text"]}
+                ]
+                highlighting = dqs.get_highlighting()
+                assert highlighting != test_highlight
+                assert "match" not in highlighting["document.1"]["transcription"]
+                assert len(highlighting["document.1"]["transcription"]) == 1
+                assert "<em>test</em>" in highlighting["document.1"]["transcription"][0]
+
+    def test_regex_search(self):
+        dqs = DocumentSolrQuerySet()
+        with patch.object(dqs, "search") as mocksearch:
+            query = "six apartments"
+            dqs.regex_search(query)
+            # should surround with wildcards in order to match entire field,
+            # and with slashes for Lucene regex syntax
+            mocksearch.assert_called_with(f"transcription_regex:/.*{query}.*/")
+            mocksearch.return_value.raw_query_parameters.assert_called_with(
+                regex_query=query,
+            )
+
+    def test_get_regex_highlight(self):
+        dqs = DocumentSolrQuerySet()
+        dqs.raw_params = {"regex_query": "אלאחרף אן למא"}
+        # no match -> None
+        assert dqs.get_regex_highlight("test") == None
+        # use a bit of a real example, with > 300 characters, as a test
+        text = """Recto:\n בש רח נקול נחן אלשהוד [אלוא]צעין כטוטנא תחת הדה אלאחרף אן למא אן כאן \
+יום אלסבת אלסאדס מן שהר אב יהפך לשמחה שנת אתקו לשטרות בעיר קליוב הסמוכה לעיר המלוכה הס[מו]כה \
+לפסטאט מצרים דעל נילוס נהרה מותבה רשותא דאדונינו גאונינו שר שלום הלוי הגאון ראש ישיבת גאון יעקב \
+יהי שמו לעולם אנא חצרנא פי אלמוצע אלדי יצלו פיה ענד מוסי ולד אלאהוב וכאן תם חאצר אהל קליוב שצ \
+//ביצלו// פחצר תם מן קאל להם אעלמו באן יצחק אלסקלי ביגתהד פי עודתה אליכם פאן כונתו פי נפסכם \
+מן מקאמה ענדכם דון """
+        highlight = dqs.get_regex_highlight(text)
+
+        # should highlight the matched portion
+        assert "<em>אלאחרף אן למא</em>" in highlight
+
+        # should shorten context on either side of match to <=150 characters
+        assert len(highlight) < len(text)
+        before_match = highlight.split("<em>")[0]
+        assert len(before_match) <= 150
+        after_match = highlight.split("</em>")[1]
+        assert len(after_match) <= 150
+
+        # should support all regex syntax, such as . wildcard and + 1 or more characters
+        dqs.raw_params = {"regex_query": "אלאחרף.+למא"}
+        highlight = dqs.get_regex_highlight(text)
+        assert "<em>אלאחרף אן למא</em>" in highlight
+
+        # reserved characters should require escape characters for correct results
+        dqs.raw_params = {"regex_query": "[אלוא]צעין"}
+        highlight = dqs.get_regex_highlight(text)
+        assert highlight is None
+        dqs.raw_params = {"regex_query": "\[אלוא\]צעין"}
+        highlight = dqs.get_regex_highlight(text)
+        assert "<em>[אלוא]צעין</em>" in highlight
