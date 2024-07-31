@@ -154,6 +154,39 @@ class DocumentSearchView(
 
         return kwargs
 
+    def apply_filters(self, documents, search_opts):
+        """Helper method to apply sort and filters to a document solr queryset,
+        made reusable for regex search"""
+        # order by sort option
+        if search_opts["sort"]:
+            documents = documents.order_by(self.get_solr_sort(search_opts["sort"]))
+
+        # filter by type if specified
+        if search_opts["doctype"]:
+            typelist = literal_eval(search_opts["doctype"])
+            quoted_typelist = ['"%s"' % doctype for doctype in typelist]
+            documents = documents.filter(type__in=quoted_typelist, tag="type")
+
+        # image filter
+        if search_opts["has_image"] == True:
+            documents = documents.filter(has_image=True)
+
+        # scholarship filters
+        if search_opts["has_transcription"] == True:
+            documents = documents.filter(has_digital_edition=True)
+        if search_opts["has_discussion"] == True:
+            documents = documents.filter(has_discussion=True)
+        if search_opts["has_translation"] == True:
+            documents = documents.filter(has_digital_translation=True)
+        if search_opts["docdate"]:
+            # date range filter; returns tuple of value or None for open-ended range
+            start, end = search_opts["docdate"]
+            documents = documents.filter(
+                document_date_dr="[%s TO %s]" % (start or "*", end or "*")
+            )
+
+        return documents
+
     def get_queryset(self):
         """Perform requested search and return solr queryset"""
         # limit to documents with published status (i.e., no suppressed documents);
@@ -225,32 +258,8 @@ class DocumentSearchView(
                     .also("score")
                 )  # include relevance score in results
 
-            # order by sort option
-            documents = documents.order_by(self.get_solr_sort(search_opts["sort"]))
-
-            # filter by type if specified
-            if search_opts["doctype"]:
-                typelist = literal_eval(search_opts["doctype"])
-                quoted_typelist = ['"%s"' % doctype for doctype in typelist]
-                documents = documents.filter(type__in=quoted_typelist, tag="type")
-
-            # image filter
-            if search_opts["has_image"] == True:
-                documents = documents.filter(has_image=True)
-
-            # scholarship filters
-            if search_opts["has_transcription"] == True:
-                documents = documents.filter(has_digital_edition=True)
-            if search_opts["has_discussion"] == True:
-                documents = documents.filter(has_discussion=True)
-            if search_opts["has_translation"] == True:
-                documents = documents.filter(has_digital_translation=True)
-            if search_opts["docdate"]:
-                # date range filter; returns tuple of value or None for open-ended range
-                start, end = search_opts["docdate"]
-                documents = documents.filter(
-                    document_date_dr="[%s TO %s]" % (start or "*", end or "*")
-                )
+            # sort and apply filters
+            documents = self.apply_filters(documents, search_opts)
 
         self.queryset = documents
 
@@ -328,32 +337,8 @@ class DocumentRegexSearchView(PermissionRequiredMixin, DocumentSearchView):
             if search_opts["q"]:
                 documents = documents.regex_search(search_opts["q"])
 
-            # order by sort option
-            documents = documents.order_by(self.get_solr_sort(search_opts["sort"]))
-
-            # filter by type if specified
-            if search_opts["doctype"]:
-                typelist = literal_eval(search_opts["doctype"])
-                quoted_typelist = ['"%s"' % doctype for doctype in typelist]
-                documents = documents.filter(type__in=quoted_typelist, tag="type")
-
-            # image filter
-            if search_opts["has_image"] == True:
-                documents = documents.filter(has_image=True)
-
-            # scholarship filters
-            if search_opts["has_transcription"] == True:
-                documents = documents.filter(has_digital_edition=True)
-            if search_opts["has_discussion"] == True:
-                documents = documents.filter(has_discussion=True)
-            if search_opts["has_translation"] == True:
-                documents = documents.filter(has_digital_translation=True)
-            if search_opts["docdate"]:
-                # date range filter; returns tuple of value or None for open-ended range
-                start, end = search_opts["docdate"]
-                documents = documents.filter(
-                    document_date_dr="[%s TO %s]" % (start or "*", end or "*")
-                )
+            # sort and apply filters
+            documents = self.apply_filters(documents, search_opts)
 
         self.queryset = documents
 
