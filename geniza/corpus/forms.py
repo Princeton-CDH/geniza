@@ -196,6 +196,13 @@ class DocumentSearchForm(RangeForm):
     # Translators: label for end year when filtering by date range
     _("To year")
 
+    MODE_CHOICES = [
+        # Translators: label for general search mode
+        ("general", _("General")),
+        # Translators: label for regex (regular expressions) search mode
+        ("regex", _("RegEx")),
+    ]
+
     # NOTE these are not set by default!
     error_css_class = "error"
     required_css_class = "required"
@@ -235,6 +242,14 @@ class DocumentSearchForm(RangeForm):
     has_discussion = BooleanFacetField(
         # Translators: label for "has discussion" search form filter
         label=_("Discussion"),
+    )
+
+    mode = forms.ChoiceField(
+        # Translators: label for "search mode" (general or regex)
+        label=_("Search mode"),
+        choices=MODE_CHOICES,
+        required=False,
+        widget=forms.RadioSelect,
     )
 
     # mapping of solr facet fields to form input

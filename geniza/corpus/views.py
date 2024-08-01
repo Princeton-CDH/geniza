@@ -82,7 +82,7 @@ class DocumentSearchView(
     # Translators: description of document search page, for search engines
     page_description = _("Search and browse Geniza documents.")
     paginate_by = 50
-    initial = {"sort": "random"}
+    initial = {"sort": "random", "mode": "general"}
     # NOTE: does not filter on status, since changing status could modify the page
     solr_lastmodified_filters = {"item_type_s": "document"}
     applied_filter_labels = []
@@ -261,7 +261,10 @@ class DocumentSearchView(
         else:
             search_opts = form.cleaned_data
 
-            if search_opts["q"]:
+            if search_opts["q"] and search_opts["mode"] == "regex":
+                documents = documents.regex_search(search_opts["q"])
+
+            elif search_opts["q"]:
                 # NOTE: using requireFieldMatch so that field-specific search
                 # terms will NOT be used for highlighting text matches
                 # (unless they are in the appropriate field)
@@ -340,8 +343,7 @@ class DocumentSearchView(
         highlights = paged_result.get_highlighting() if paged_result.count() else {}
         facet_dict = self.queryset.get_facets()
         # populate choices for facet filter fields on the form
-        if not isinstance(facet_dict, dict):
-            context_data["form"].set_choices_from_facets(facet_dict.facet_fields)
+        context_data["form"].set_choices_from_facets(facet_dict.facet_fields)
         context_data.update(
             {
                 "highlighting": highlights,
@@ -355,45 +357,6 @@ class DocumentSearchView(
         )
 
         return context_data
-
-
-class DocumentRegexSearchView(PermissionRequiredMixin, DocumentSearchView):
-    permission_required = ("corpus.change_document",)
-
-    def get_queryset(self):
-        """Perform requested search and return solr queryset"""
-        # limit to documents with published status (i.e., no suppressed documents);
-        # get counts of facets, excluding type filter
-        documents = (
-            DocumentSolrQuerySet()
-            .filter(status=Document.PUBLIC_LABEL)
-            .facet(
-                "has_image",
-                "has_digital_edition",
-                "has_digital_translation",
-                "has_discussion",
-            )
-            .facet_field("type", exclude="type", sort="value")
-        )
-
-        form = self.get_form()
-        # return empty queryset if not valid
-        if not form.is_valid():
-            documents = documents.none()
-
-        # when form is valid, check for search term and filter queryset
-        else:
-            search_opts = form.cleaned_data
-
-            if search_opts["q"]:
-                documents = documents.regex_search(search_opts["q"])
-
-            # sort and apply filters
-            documents = self.apply_filters(documents, search_opts, form)
-
-        self.queryset = documents
-
-        return documents
 
 
 class DocumentDetailBase(SolrLastModifiedMixin):

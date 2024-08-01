@@ -15,7 +15,54 @@ main.search form {
     // search query box and button
     fieldset#query {
         display: flex;
+        align-items: center;
         margin-bottom: 1.5rem;
+        // mode switch (hidden on mobile)
+        span.fieldname {
+            @include typography.headline-3;
+            display: none;
+            @include breakpoints.for-tablet-landscape-up {
+                display: block;
+                white-space: nowrap;
+            }
+        }
+        ul#id_mode {
+            display: none;
+            @include breakpoints.for-tablet-landscape-up {
+                display: flex;
+                flex-flow: row nowrap;
+                background-color: var(--background-light);
+                border: 1px solid var(--background-gray);
+                border-radius: 50px;
+                align-items: center;
+                margin: 0 3.25rem 0 1.5rem;
+                input {
+                    @include a11y.sr-only;
+                }
+                label {
+                    display: flex;
+                    flex-flow: row nowrap;
+                    align-items: center;
+                    padding: 0 1rem;
+                    height: 2.5rem;
+                    border-radius: 50px;
+                    cursor: pointer;
+                    border: 2px solid transparent;
+                    transition: 0.15s border-color ease-in-out;
+                    &:hover {
+                        border-color: var(--disabled);
+                    }
+                    &:has(input:checked) {
+                        @include typography.body-bold;
+                        background-color: var(--on-primary);
+                        border-color: var(--secondary);
+                        &:hover {
+                            border-color: var(--primary);
+                        }
+                    }
+                }
+            }
+        }
         // search box
         input[type="search"] {
             flex-basis: 100%;
@@ -23,6 +70,8 @@ main.search form {
             border-radius: 5px;
             border-top-right-radius: 0;
             border-bottom-right-radius: 0;
+            border: 1px solid var(--background-gray);
+            border-right: none;
             height: 3rem;
             padding: 0 1rem;
             @include typography.body;
@@ -48,7 +97,7 @@ main.search form {
             color: var(--on-secondary);
             @include breakpoints.for-tablet-landscape-up {
                 height: 2.5rem;
-                width: 2.5rem;
+                min-width: 2.5rem;
             }
             // Magnifying glass icon
             &::after {

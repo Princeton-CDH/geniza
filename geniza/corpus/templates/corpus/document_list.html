@@ -8,6 +8,8 @@
     <h1>{{ page_title }}</h1>
     <form data-controller="search" data-turbo-frame="main" data-turbo-action="advance" data-page="document">
         <fieldset id="query">
+            <span class="fieldname">{{ form.mode.label }}</span>
+            {% render_field form.mode data-action="change->search#update" %}
             {% render_field form.q data-search-target="query" data-action="input->search#autoUpdateSort change->search#update" %}
 
             {# Translators: Search submit button #}

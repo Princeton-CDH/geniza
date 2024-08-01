@@ -391,50 +391,36 @@ class TestDocumentSearchView:
         # no params
         docsearch_view.request.GET = {}
         assert docsearch_view.get_form_kwargs() == {
-            "initial": {
-                "sort": "random",
-            },
+            "initial": {"mode": "general", "sort": "random"},
             "prefix": None,
-            "data": {"sort": "random"},
+            "data": {"mode": "general", "sort": "random"},
             "range_minmax": {},
         }
 
         # keyword search param
         docsearch_view.request.GET = {"q": "contract"}
         assert docsearch_view.get_form_kwargs() == {
-            "initial": {"sort": "random"},
+            "initial": {"mode": "general", "sort": "random"},
             "prefix": None,
-            "data": {
-                "q": "contract",
-                "sort": "relevance",
-            },
+            "data": {"mode": "general", "q": "contract", "sort": "relevance"},
             "range_minmax": {},
         }
 
         # sort search param
         docsearch_view.request.GET = {"sort": "scholarship_desc"}
         assert docsearch_view.get_form_kwargs() == {
-            "initial": {
-                "sort": "random",
-            },
+            "initial": {"mode": "general", "sort": "random"},
             "prefix": None,
-            "data": {
-                "sort": "scholarship_desc",
-            },
+            "data": {"mode": "general", "sort": "scholarship_desc"},
             "range_minmax": {},
         }
 
         # keyword and sort search params
         docsearch_view.request.GET = {"q": "contract", "sort": "scholarship_desc"}
         assert docsearch_view.get_form_kwargs() == {
-            "initial": {
-                "sort": "random",
-            },
+            "initial": {"mode": "general", "sort": "random"},
             "prefix": None,
-            "data": {
-                "q": "contract",
-                "sort": "scholarship_desc",
-            },
+            "data": {"mode": "general", "q": "contract", "sort": "scholarship_desc"},
             "range_minmax": {},
         }
 
