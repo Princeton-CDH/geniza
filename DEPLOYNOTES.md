@@ -1,5 +1,10 @@
 # Deploy Notes
 
+## 4.18
+
+-   Solr configuration has changed. Ensure Solr configset has been updated
+    and then reindex all content: `python manage.py index`
+
 ## 4.17
 
 -   Solr configuration has changed. Ensure Solr configset has been updated

@@ -603,6 +603,11 @@ html[dir="rtl"] .search-result {
             font-size: typography.$text-size-lg;
         }
     }
+    // relevance score if enabled
+    .score {
+        right: auto;
+        left: 0;
+    }
 }
 
 // Hebrew variant

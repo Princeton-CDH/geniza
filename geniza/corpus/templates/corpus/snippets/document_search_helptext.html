@@ -1,0 +1,53 @@
+{% load i18n wagtailcore_tags %}
+
+{# Translators: heading for general search mode help text #}
+<h3>{% translate "General Search" %}</h3>
+<p>
+    {# Translators: general search help text #}
+    {% blocktranslate %}
+        Use keywords or phrases in any language to return matching or similar
+        results across all fields. Arabic script searches will return both
+        Arabic and Judaeo-Arabic transcription content.
+    {% endblocktranslate %}
+</p>
+{# Translators: heading for regular expressions search mode help text #}
+<h3>{% translate "Regular Expression Search" %}</h3>
+<p>
+    {% slugurl 'how-to-search' as howto_url %}
+    {# Translators: regular expressions search mode help text #}
+    {% blocktranslate %}
+        Use Hebrew or Arabic script to find precise matches in the
+        transcriptions. See
+        <a data-turbo="false" href="{{ howto_url }}">How to Search</a>
+        page for advanced use cases.
+    {% endblocktranslate %}
+</p>
+
+{# Translators: heading for regular expressions search cheat sheet #}
+<h4>{% translate "Cheat sheet:" %}</h4>
+<ul>
+    <li>
+        {# Translators: regular expression tip 1 #}
+        {% blocktranslate %}
+            If you're looking for a word with one missing letter, use a
+            period. Two missing letters, use two periods or <code>{2}</code>.
+            Increase the number in the curly brackets to increase the number of
+            characters, or insert a range with a comma in between, ex.
+            <code>{0,5}</code>.
+        {% endblocktranslate %}
+    </li>
+    <li>
+        {# Translators: regular expression tip 2 #}
+        {% blocktranslate %}
+            If you don't know how many characters are missing, use
+            <code>.*</code>.
+        {% endblocktranslate %}
+    </li>
+    <li>
+        {# Translators: regular expression tip 3 #}
+        {% blocktranslate %}
+            If you know which characters you want, use square brackets to find
+            multiple spellings, ex. <code>[יו]</code> for yud or vav.
+        {% endblocktranslate %}
+    </li>
+</ul>
