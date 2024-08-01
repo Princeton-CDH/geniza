@@ -635,13 +635,14 @@ class Footnote(TrackChangesModel):
 
     @cached_property
     def content_text_canvases(self):
-        "content as a list of strings, one per canvas"
+        "content as a list of strings, one per canvas, used for regex search index"
         content_html = self.content_html
         if content_html:
             return [
                 # convert each annotation from html to plaintext
                 "\n".join(
                     [
+                        # remove newlines so that multiline annotations can be searched
                         BeautifulSoup(a, features="lxml").get_text().replace("\n", " ")
                         for a in canvas_annos
                     ]

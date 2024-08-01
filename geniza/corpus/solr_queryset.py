@@ -327,8 +327,10 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
         if is_regex_search:
             # highlight regex results manually due to solr limitation
             highlights = {}
+            # highlighting takes place *after* solr, so use get_results()
             for doc in self.get_results():
                 highlights[doc["id"]] = {"transcription": []}
+                # this field is split by block-level annotation/group
                 for block in doc["transcription_regex"]:
                     highlight_snippet = self.get_regex_highlight(block)
                     if highlight_snippet:
