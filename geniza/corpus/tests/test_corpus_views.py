@@ -429,7 +429,8 @@ class TestDocumentSearchView:
         with patch(
             "geniza.corpus.views.DocumentSolrQuerySet",
             new=self.mock_solr_queryset(
-                DocumentSolrQuerySet, extra_methods=["admin_search", "keyword_search"]
+                DocumentSolrQuerySet,
+                extra_methods=["admin_search", "keyword_search", "regex_search"],
             ),
         ) as mock_queryset_cls:
             docsearch_view = DocumentSearchView()
@@ -520,6 +521,17 @@ class TestDocumentSearchView:
             mock_sqs.keyword_search.assert_not_called()
             args = mock_sqs.order_by.call_args[0]
             assert args[0].startswith("random_")
+
+            # regex search param
+            mock_sqs.reset_mock()
+            docsearch_view.request = Mock()
+            docsearch_view.request.GET = {"q": "six apartments", "mode": "regex"}
+            docsearch_view.get_queryset()
+            mock_sqs = mock_queryset_cls.return_value
+            mock_sqs.regex_search.assert_called_with("six apartments")
+            mock_sqs.keyword_search.assert_not_called()
+            # should not highlight with parasolr
+            mock_sqs.regex_search.return_value.highlight.assert_not_called()
 
     @pytest.mark.usefixtures("mock_solr_queryset")
     def test_get_range_stats(self, mock_solr_queryset):
