@@ -126,18 +126,11 @@ main.place table.related-documents {
             }
             // placeholder for no image: text on image
             .no-image {
-                box-sizing: border-box;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                text-align: center;
-                background-image: url("/static/img/ui/all/all/no-image-square.png");
-                font-family: fonts.$primary-bold;
-                font-weight: 700;
-                color: var(--on-background-light-alt);
                 font-size: 0.75rem;
                 padding: 0 0.5rem;
                 line-height: 0.875rem;
+                font-family: fonts.$primary-bold;
+                font-weight: 700;
             }
         }
     }
@@ -248,6 +241,16 @@ main.place section.relations {
             }
         }
     }
+}
+
+span.no-image {
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    background-image: url("/static/img/ui/all/all/no-image-square.png");
+    color: var(--on-background-light-alt);
 }
 
 // RTL overrides

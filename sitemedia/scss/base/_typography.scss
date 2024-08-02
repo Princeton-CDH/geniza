@@ -265,6 +265,15 @@ $text-size-7xl: 2.25rem; //  = 36px
     line-height: 1.5;
 }
 
+// label for metadata in search results
+@mixin meta-label {
+    @include caption;
+    font-size: $text-size-sm;
+    @include breakpoints.for-tablet-landscape-up {
+        font-size: $text-size-md;
+    }
+}
+
 // small body text, e.g. for descriptions in search results
 @mixin body-sm {
     font-family: fonts.$primary;
@@ -324,6 +333,20 @@ $text-size-7xl: 2.25rem; //  = 36px
     }
 }
 @mixin arabic-transcription {
+    @include breakpoints.for-tablet-landscape-up {
+        line-height: calc(34 / 22);
+    }
+}
+@mixin transcription-search {
+    font-family: fonts.$transcription;
+    line-height: calc(22.4 / 16);
+    font-size: $text-size-md;
+    @include breakpoints.for-tablet-landscape-up {
+        font-size: $text-size-xl;
+        line-height: calc(27 / 20);
+    }
+}
+@mixin arabic-transcription-search {
     @include breakpoints.for-tablet-landscape-up {
         line-height: calc(34 / 22);
     }
