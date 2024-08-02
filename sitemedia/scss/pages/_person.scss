@@ -5,6 +5,7 @@
 @use "../base/breakpoints";
 @use "../base/colors";
 @use "../base/container";
+@use "../base/fonts";
 @use "../base/spacing";
 @use "../base/typography";
 
@@ -95,12 +96,6 @@ main.place {
                 padding-right: 0;
                 margin: 0 0 0;
             }
-            // Lighter color metadata; secondary class on dl or dd/dt
-            .tertiary,
-            &.tertiary dd,
-            &.tertiary dt {
-                color: var(--on-background-alt);
-            }
             dd {
                 margin-left: 20px;
             }
@@ -163,70 +158,71 @@ main.place {
                 margin-right: 12px;
             }
         }
-    }
-    nav#tabs {
-        max-width: none;
-        width: 100%;
-        padding: 0 1rem 0;
-        // hide tabs on mobile
-        .tabs {
-            display: none;
-        }
-        // show <select> on mobile instead
-        .mobile-select {
-            max-width: none;
-            display: block;
-            width: 100%;
-            height: 2.5rem;
-            @include typography.meta;
-            background-color: var(--background-light);
-            color: var(--on-background);
-            border-radius: 5px;
-            border: 1px solid var(--background-gray);
-            padding: 0 1rem;
-        }
-        @include breakpoints.for-tablet-landscape-up {
-            box-sizing: content-box;
-            max-width: 896px;
-            padding: 1rem 1rem 0;
-            .tabs {
-                display: grid;
+        // bibliography
+        section.bibliography {
+            margin: 2rem 0 0;
+            padding-top: 3rem;
+            border-top: 1px solid colors.$gray;
+            ol {
+                counter-reset: item;
+                list-style-type: none;
+                padding-left: 1.25rem;
             }
-            .mobile-select {
-                display: none;
-            }
-        }
-    }
-    dl.metadata-list.tertiary {
-        margin-top: 2rem;
-        width: 100%;
-        @include breakpoints.for-tablet-landscape-up {
-            margin-top: 3rem;
-        }
-        // hanging phosphor icons before citation and permalink
-        dt#citation,
-        dt#permalink {
-            display: flex;
-            align-items: flex-start;
-            @include typography.meta-bold;
-            line-height: 1;
-            i {
+            li {
                 display: flex;
-                align-items: center;
-                justify-content: center;
-                color: var(--on-secondary);
-                background-color: var(--secondary);
-                border-radius: 50%;
-                width: 2.25rem;
-                height: 2.25rem;
-                margin-right: 0.75rem;
+                gap: 1.125rem;
+                padding-bottom: 1rem;
+                border-bottom: 1px solid colors.$gray;
             }
-            & + dd {
-                @include typography.meta;
-                margin-left: 3rem;
-                margin-top: -1rem;
-                a {
-                    text-decoration: none;
+            li:before {
+                content: counter(item) "  ";
+                counter-increment: item;
+                @include typography.body-bold;
+            }
+        }
+    }
+}
+main.person,
+main.place,
+main.document {
+    dl.metadata-list {
+        // Lighter color metadata; secondary class on dl or dd/dt
+        &.tertiary,
+        &.tertiary dd,
+        &.tertiary dt {
+            color: var(--on-background-alt);
+        }
+        &.tertiary {
+            margin-top: 2rem;
+            width: 100%;
+            @include breakpoints.for-tablet-landscape-up {
+                margin-top: 3rem;
+            }
+            // hanging phosphor icons before citation and permalink
+            dt#citation,
+            dt#permalink {
+                display: flex;
+                align-items: flex-start;
+                @include typography.meta-bold;
+                line-height: 1;
+                i {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    color: var(--on-secondary);
+                    background-color: var(--secondary);
+                    border-radius: 50%;
+                    width: 2.25rem;
+                    height: 2.25rem;
+                    margin-right: 0.75rem;
+                }
+                & + dd {
+                    @include typography.meta;
+                    margin-left: 3rem;
+                    margin-top: -1rem;
+                    a {
+                        text-decoration: none;
+                    }
                 }
             }
         }
@@ -265,21 +261,43 @@ main.person {
             }
         }
     }
+    // person related places
+    section.map {
+        width: 100%;
+        margin-top: 2rem;
+        padding: 0 1rem;
+        @include breakpoints.for-tablet-landscape-up {
+            margin-top: (2rem + spacing.$spacing-xs);
+            padding: 0;
+        }
+        #map {
+            width: 100%;
+            height: 24.125rem;
+        }
+        svg#marker {
+            color: var(--primary);
+            fill: var(--tertiary);
+            width: 33px;
+            height: 42px;
+            @include breakpoints.for-tablet-landscape-up {
+                width: 42px;
+                height: 48px;
+            }
+        }
+    }
 }
 
 // RTL overrides
 html[dir="rtl"] main.person,
-html[dir="rtl"] main.place {
-    .container dl.metadata-list dt::before {
+html[dir="rtl"] main.place,
+html[dir="rtl"] main.document {
+    .container dl.metadata-list dt::before,
+    .container section > h2::before {
         margin-right: 0;
         margin-left: 12px;
     }
-    .container .description h2::before {
-        margin-right: 0;
-        margin-left: 12px;
-    }
-    .container dl.metadata-list.tertiary dt#citation,
-    .container dl.metadata-list.tertiary dt#permalink {
+    dl.metadata-list.tertiary dt#citation,
+    dl.metadata-list.tertiary dt#permalink {
         i {
             margin-right: 0;
             margin-left: 0.75rem;

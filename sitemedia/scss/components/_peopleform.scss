@@ -4,139 +4,18 @@
 
 @use "../base/a11y";
 @use "../base/breakpoints";
+@use "../base/colors";
 @use "../base/fonts";
+@use "../base/spacing";
 @use "../base/typography";
 
-main.people {
-    // Form with filters
-    form {
-        display: flex;
-        flex-flow: column;
-        width: 100%;
-        padding: 0.25rem 0 0;
-        border-top: 1px solid var(--background-gray);
-    }
-    // buttons for opening and closing the filter modal
-    a#filters-button,
-    a#close-filters-button {
-        text-decoration: none;
-        @include typography.meta-bold;
-        display: flex;
-        align-items: center;
-        min-height: 48px;
-        padding: 0 0.5rem;
-        border-radius: 5px;
-        @include breakpoints.for-tablet-landscape-up {
-            padding: 0 2rem 0 0.5rem;
-        }
-        svg {
-            width: 20px;
-            height: 20px;
-        }
-        &:focus {
-            outline: 0.125rem solid var(--focus);
-        }
-        // text that reads "Filters"
-        span {
-            position: relative;
-            margin-left: 0.25rem;
-            display: flex;
-            align-items: center;
-            // caret to indicate opening and closing
-            &:last-of-type:after {
-                position: absolute;
-                font-family: "Phosphor";
-                font-size: typography.$text-size-md;
-                right: -1.5rem;
-                font-weight: 600;
-            }
-        }
-        // count of active filters
-        span.filter-count {
-            justify-content: center;
-            min-width: 1.25rem;
-            height: 1.25rem;
-            font-family: fonts.$primary;
-            font-weight: 400;
-            font-size: typography.$text-size-md;
-            background-color: var(--background-gray);
-            border-radius: 0.25rem;
-        }
-    }
-    a#filters-button {
-        align-self: flex-start;
-        flex: 0 1 auto;
-        margin-bottom: 0.25rem;
-        &.active svg {
-            color: var(--filter-active);
-        }
-        @include breakpoints.for-tablet-landscape-up {
-            span:last-of-type:after {
-                content: "\f0c2"; // phosphor caret-down icon
-            }
-            &:has(~ fieldset#filters:target),
-            &:has(~ fieldset#filters[aria-expanded="true"]) {
-                // prevent display and focus when expanded, maintain flow/spacing
-                visibility: hidden;
-            }
-        }
-    }
-    // close button
-    a#close-filters-button {
-        display: none;
-        @include breakpoints.for-tablet-landscape-up {
-            display: flex;
-            position: absolute;
-            margin-top: -4.81rem;
-            margin-left: -1.5rem;
-            background-color: var(--secondary);
-            color: var(--on-secondary);
-            fill: var(--on-secondary);
-            span:last-of-type:after {
-                content: "\f0c5"; // phosphor caret-up icon
-            }
-            span.filter-count {
-                background-color: var(--primary);
-            }
-        }
-    }
-    a#close-filters-modal {
-        text-decoration: none;
-        position: absolute;
-        right: 0.25rem;
-        top: 0.25rem;
-        @include typography.icon-button-md;
-        width: 3rem;
-        height: 3rem;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        &::before {
-            content: "\f36d"; // phosphor X icon
-        }
-        @include breakpoints.for-tablet-landscape-up {
-            display: none;
-        }
-    }
-    // filter modal backdrop (mobile)
-    .modal-backdrop:has(~ fieldset#filters:target),
-    .modal-backdrop:has(~ fieldset#filters[aria-expanded="true"]) {
-        position: fixed;
-        top: 0;
-        left: 0;
-        z-index: 7;
-        min-width: 100vw;
-        min-height: 100vh;
-        background-color: var(--modal-backdrop);
-        @include breakpoints.for-tablet-landscape-up {
-            display: none;
-        }
-    }
+main.people,
+main.search {
     // filters section
     fieldset#filters {
         // only display if targeted/expanded
         display: none;
-        &:target,
+        &:target:not([aria-expanded="false"]),
         &[aria-expanded="true"] {
             // mobile view: flex column
             display: flex;
@@ -160,8 +39,7 @@ main.people {
                 display: grid;
                 grid-template-columns: 1fr 1fr 1fr;
                 gap: 2rem;
-                padding: 1.5rem;
-                border-top: 1px solid var(--background-gray);
+                padding: 1.5rem 0;
                 // desktop: in flow
                 overflow-y: auto;
                 top: auto;
@@ -171,8 +49,8 @@ main.people {
                 height: auto;
             }
         }
-        legend {
-            // legend should be visible on mobile, sr-only on desktop
+        & > legend {
+            // outermost legend should be visible on mobile, sr-only on desktop
             @include breakpoints.for-tablet-landscape-up {
                 @include a11y.sr-only;
             }
@@ -183,20 +61,22 @@ main.people {
             font-size: 1.5rem;
             line-height: 1.4166;
         }
-        label {
+        label,
+        fieldset legend {
             width: 100%;
             span.fieldname {
                 display: block;
                 @include typography.form-option-sm-bold;
                 font-size: typography.$text-size-lg;
                 line-height: 1.166;
-                margin-bottom: 0.75rem;
+                margin-bottom: 0.25rem;
             }
             &:not(last-of-type) {
                 border-bottom: 1px solid var(--background-gray);
                 padding-bottom: 1rem;
                 @include breakpoints.for-tablet-landscape-up {
                     border: none;
+                    padding-bottom: 0;
                 }
             }
         }
@@ -234,13 +114,60 @@ main.people {
             padding-right: 0.5rem;
             margin-top: -1px;
         }
-        input:active + span::before,
-        input:checked + span::before {
+        input[type="checkbox"]:active + span::before,
+        input[type="checkbox"]:checked + span::before {
             content: "\f851"; // phosphor check-circle-fill icon
             color: var(--secondary);
         }
-        input:checked:active + span::before {
+        input[type="checkbox"]:checked:active + span::before {
             content: "\f0ec"; // phosphor circle icon
+        }
+        div.fieldset-left-column {
+            width: 100%;
+            gap: 1rem;
+            @include breakpoints.for-tablet-landscape-up {
+                width: auto;
+                gap: 3rem;
+            }
+            display: flex;
+            flex-flow: column;
+            div.inputs {
+                display: flex;
+                width: 100%;
+                flex-flow: row nowrap;
+                gap: 0.5rem;
+                label {
+                    // TODO: add sr-only class in HTML after doc search redesign
+                    @include a11y.sr-only;
+                }
+                input[type="number"] {
+                    flex: 1 1 auto;
+                    height: 2.25rem;
+                    padding: 0 0.5rem 0 1rem;
+                    background-color: var(--background-light);
+                    color: var(--on-background-light);
+                    border: none;
+                    @include typography.meta;
+                    &::placeholder {
+                        color: var(--date-placeholder);
+                    }
+                }
+            }
+        }
+        .includes-fields {
+            width: 100%;
+            legend {
+                border: none;
+                padding: 0;
+            }
+            ul {
+                border-bottom: 1px solid var(--background-gray);
+                padding-bottom: 1rem;
+                @include breakpoints.for-tablet-landscape-up {
+                    border: none;
+                    padding: 0;
+                }
+            }
         }
     }
     // header row (result count and sort options)
@@ -248,7 +175,18 @@ main.people {
         display: flex;
         flex-flow: row;
         justify-content: space-between;
-        fieldset#sort {
+        align-items: center;
+        gap: 0.75rem;
+        padding-top: 1.5rem;
+        @include breakpoints.for-tablet-landscape-up {
+            gap: 1rem;
+        }
+        span.result-count {
+            flex-grow: 1;
+            @include typography.meta;
+            font-weight: normal;
+        }
+        fieldset#sort-field {
             display: flex;
             align-items: center;
             flex-flow: row nowrap;
@@ -259,7 +197,7 @@ main.people {
                     content: ":";
                 }
             }
-            // sort "dropdown" (actually details/summary)
+            // people sort "dropdown" (actually details/summary)
             details {
                 position: relative;
                 summary {
@@ -351,16 +289,64 @@ main.people {
                     }
                 }
             }
+            &:has(select) {
+                gap: 0.25rem;
+            }
+            select {
+                // A reset of styles, including removing the default dropdown arrow
+                // @link https://moderncss.dev/custom-select-styles-with-pure-css/
+                -webkit-appearance: none;
+                -moz-appearance: none;
+                appearance: none;
+                border: none;
+                font-family: inherit;
+                font-size: inherit;
+                border-radius: 0;
+                // Remove dropdown arrow in IE10 & IE11
+                // @link https://www.filamentgroup.com/lab/select-css.html
+                &::-ms-expand {
+                    display: none;
+                }
+                @include typography.meta;
+                position: relative;
+                cursor: pointer;
+                padding-left: 0.25rem;
+                padding-right: 2.25rem;
+                margin-right: spacing.$spacing-3xs;
+                background: transparent;
+                color: var(--on-background);
+                max-width: 33vw;
+                text-overflow: ellipsis;
+                @include breakpoints.for-tablet-landscape-up {
+                    max-width: none;
+                }
+            }
+            i.ph-caret-down {
+                @include typography.icon-button-md;
+                margin-left: -2.25rem;
+                margin-right: -0.25rem;
+                z-index: 1;
+                pointer-events: none;
+            }
         }
     }
 }
 // RTL overrides
-html[dir="rtl"] main.people {
-    a#filters-button,
-    a#close-filters-button {
+html[dir="rtl"] main.people,
+html[dir="rtl"] main.search {
+    div#filters-header #applied-filters::before {
+        margin-left: 0;
+        border-left: none;
+        margin-right: -1.5rem;
+        border-right: 1px solid colors.$gray;
+    }
+    a#filters-button {
         padding: 0 0.5rem;
+        right: auto;
+        left: 1rem;
         @include breakpoints.for-tablet-landscape-up {
             padding: 0 0.5rem 0 2rem;
+            left: auto;
         }
         span {
             margin-left: auto;
@@ -369,12 +355,6 @@ html[dir="rtl"] main.people {
                 right: auto;
                 left: -1.5rem;
             }
-        }
-    }
-    a#close-filters-button {
-        @include breakpoints.for-tablet-landscape-up {
-            margin-left: 0;
-            margin-right: -1.5rem;
         }
     }
     a#close-filters-modal {
@@ -386,20 +366,32 @@ html[dir="rtl"] main.people {
         padding-right: 0;
         padding-left: 0.5rem;
     }
-    fieldset#filters:target,
+    fieldset#filters:target:not([aria-expanded="false"]),
     fieldset#filters[aria-expanded="true"] {
         right: auto;
         left: 0;
     }
-    div.header-row fieldset#sort details {
-        summary::after {
-            margin-right: 0.5rem;
-            margin-left: 0;
-            float: left;
+    div.header-row fieldset#sort-field {
+        details {
+            summary::after {
+                margin-right: 0.5rem;
+                margin-left: 0;
+                float: left;
+            }
+            div#sort-options {
+                right: auto;
+                left: 0;
+            }
         }
-        div#sort-options {
-            right: auto;
-            left: 0;
+        select {
+            padding-right: 0.25rem;
+            padding-left: 2.25rem;
+            margin-left: spacing.$spacing-3xs;
+            margin-right: 0;
+        }
+        i.ph-caret-down {
+            margin-right: -2.25rem;
+            margin-left: -0.25rem;
         }
     }
 }

@@ -11,32 +11,10 @@
 
 // TODO: standardize typography here once all redesigns are implemented
 
-main.people * {
-    max-width: none;
-    @include breakpoints.for-tablet-landscape-up {
-        max-width: 56rem; // = 896px
-    }
-}
 main.people {
-    padding: 0 1rem;
-    @include breakpoints.for-tablet-landscape-up {
-        padding: 0;
-    }
-    // Header
-    h1 {
-        width: 100%;
-        font-family: fonts.$primary;
-        font-size: typography.$text-size-5xl;
-        @include breakpoints.for-tablet-landscape-up {
-            font-size: typography.$text-size-7xl;
-        }
-        margin-bottom: 1rem;
-    }
     // Primary container
     section#person-list {
         width: 100%;
-        padding-top: 1.5rem;
-        border-top: 1px solid var(--background-gray);
         h2 {
             @include breakpoints.for-tablet-landscape-up {
                 font-size: typography.$text-size-2xl;
@@ -55,6 +33,7 @@ main.people {
             th {
                 text-align: left;
                 font-size: typography.$text-size-md;
+                padding: 0 spacing.$spacing-xs;
             }
             th:first-of-type {
                 padding-left: spacing.$spacing-md;
@@ -65,22 +44,35 @@ main.people {
             th.related {
                 text-align: center;
                 min-width: 2rem;
-                svg {
-                    width: 15px;
-                    height: 16px;
-                    vertical-align: middle;
+                &::before {
+                    @include typography.icon-button-sm;
+                }
+                &.documents::before {
+                    content: "\edf2";
+                }
+                &.people::before {
+                    content: "\f346";
+                }
+                &.places::before {
+                    content: "\f20d";
                 }
                 &:last-of-type {
                     min-width: 3rem;
                 }
             }
+            th.dates,
+            td.dates {
+                max-width: 10rem;
+            }
             tbody tr {
                 background-color: var(--background-light);
                 td {
-                    padding: spacing.$spacing-md 0;
+                    padding: spacing.$spacing-md spacing.$spacing-xs;
                     font-size: typography.$text-size-lg;
                     border-top: 1px solid var(--background-gray);
                     border-bottom: 1px solid var(--background-gray);
+                    vertical-align: middle;
+                    max-width: 17rem;
                 }
                 td:first-of-type {
                     padding-left: spacing.$spacing-md;
@@ -152,17 +144,27 @@ main.people {
                         align-items: center;
                         justify-content: center;
                         gap: 0.5rem;
-                        svg {
-                            width: 15px;
-                            height: 16px;
-                            vertical-align: middle;
-                        }
                         &:not(:first-of-type) {
                             border-left: 1px solid colors.$gray;
                         }
                     }
                 }
             }
+        }
+    }
+    th.related,
+    dl.relations dd {
+        &::before {
+            @include typography.icon-button-sm;
+        }
+        &.documents::before {
+            content: "\edf2";
+        }
+        &.people::before {
+            content: "\f346";
+        }
+        &.places::before {
+            content: "\f20d";
         }
     }
     .pagination-container {

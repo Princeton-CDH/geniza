@@ -88,7 +88,7 @@ main.place table.related-table {
     td {
         display: flex;
         flex-flow: column;
-        line-height: (24 / 14);
+        line-height: calc(24 / 14);
         @include breakpoints.for-tablet-landscape-up {
             padding-right: 1.5rem;
             flex-flow: row;
@@ -128,18 +128,11 @@ main.place table.related-table {
             }
             // placeholder for no image: text on image
             .no-image {
-                box-sizing: border-box;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                text-align: center;
-                background-image: url("/static/img/ui/all/all/no-image-square.png");
-                font-family: fonts.$primary-bold;
-                font-weight: 700;
-                color: var(--on-background-light-alt);
                 font-size: 0.75rem;
                 padding: 0 0.5rem;
                 line-height: 0.875rem;
+                font-family: fonts.$primary-bold;
+                font-weight: 700;
             }
         }
     }
@@ -162,6 +155,7 @@ main.place table.related-table {
         }
     }
 }
+
 main.person table.related-people {
     grid-template-columns: 55% 36% 1fr;
     @include breakpoints.for-tablet-landscape-up {
@@ -190,6 +184,107 @@ main.person table.related-people {
             display: table-cell;
         }
     }
+}
+
+main.person,
+main.place {
+    section.relations {
+        width: 100%;
+        padding: 0 1rem;
+        @include breakpoints.for-tablet-landscape-up {
+            padding: 0;
+        }
+        table.places,
+        table.people {
+            width: 100%;
+            thead tr {
+                border-bottom: 1px solid var(--related-header-underline);
+                @include typography.related-table;
+                text-align: left;
+                th {
+                    padding: 0 0 0.5rem;
+                    a {
+                        display: flex;
+                        align-items: center;
+                        gap: 0.25rem;
+                        text-decoration: none;
+                        svg {
+                            width: 16px;
+                            height: 16px;
+                            display: block;
+                            color: var(--disabled-on-background-light);
+                            fill: var(--disabled-on-background-light);
+                        }
+                        &[class*="asc"] svg {
+                            color: var(--on-background);
+                        }
+                        &[class*="desc"] svg {
+                            fill: var(--on-background);
+                        }
+                    }
+                    &.sorted {
+                        font-family: fonts.$primary-bold;
+                        font-weight: 700;
+                    }
+                }
+            }
+            tbody tr {
+                @include typography.meta;
+                border-bottom: 1px solid var(--tabs-bottom);
+                td {
+                    padding: 0.75rem 0;
+                }
+            }
+            // hide notes on mobile
+            th.notes,
+            td.notes {
+                display: none;
+                @include breakpoints.for-tablet-landscape-up {
+                    display: table-cell;
+                }
+            }
+        }
+        margin: 1.5rem 0 9rem;
+        @include breakpoints.for-tablet-landscape-up {
+            margin: 2rem 0 0;
+        }
+    }
+}
+
+main.place section.relations {
+    margin: 1.5rem 0 9rem;
+    @include breakpoints.for-tablet-landscape-up {
+        margin: (2rem + spacing.$spacing-xs) 0 0;
+    }
+    table.people {
+        @include breakpoints.for-tablet-landscape-up {
+            background-color: var(--background-light);
+            thead tr {
+                border-bottom: 1px solid var(--disabled);
+                th {
+                    padding: 1rem 0 0.5rem;
+                }
+            }
+            th:first-of-type,
+            td:first-of-type {
+                padding-left: 1rem;
+            }
+            th:last-of-type,
+            td:last-of-type {
+                padding-right: 1rem;
+            }
+        }
+    }
+}
+
+span.no-image {
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    background-image: url("/static/img/ui/all/all/no-image-square.png");
+    color: var(--on-background-light-alt);
 }
 
 // RTL overrides

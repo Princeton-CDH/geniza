@@ -46,6 +46,7 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
         "type": "type_s",
         "status": "status_s",
         "shelfmark": "shelfmark_s",  # string version for display
+        "shelfmarks": "fragment_shelfmark_ss",
         "document_date": "document_date_t",  # text version for search & display
         "original_date_t": "original_date",
         "collection": "collection_ss",
@@ -65,6 +66,7 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
         "transcription": "text_transcription",
         "language_code": "language_code_s",
         "language_script": "language_script_s",
+        "languages": "language_name_ss",
         "translation": "text_translation",
         "translation_language_code": "translation_language_code_s",
         "translation_language_direction": "translation_language_direction_s",
@@ -76,8 +78,11 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
         "has_digital_translation": "has_digital_translation_b",
         "has_discussion": "has_discussion_b",
         "old_shelfmark": "old_shelfmark_bigram",
+        "old_shelfmark_t": "old_shelfmark_t",
         "transcription_nostem": "transcription_nostem",
         "description_nostem": "description_nostem",
+        "related_people": "people_count_i",
+        "related_places": "places_count_i",
     }
 
     # regex to convert field aliases used in search to actual solr fields
@@ -253,6 +258,18 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
             _("Unknown type"),
         )
 
+        if doc.get("shelfmarks"):
+            doc["related_documents"] = (
+                DocumentSolrQuerySet()
+                .filter("NOT pgpid_i:%d" % doc["pgpid"])
+                .filter(
+                    fragment_shelfmark_ss__in=[
+                        '"%s"' % shelfmark for shelfmark in doc["shelfmarks"]
+                    ]
+                )
+                .count()
+            )
+
         return doc
 
     def get_highlighting(self):
@@ -277,4 +294,16 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
                 highlights[doc]["translation"] = [
                     clean_html(s) for s in highlights[doc]["translation"]
                 ]
+
+            # handle old shelfmark highlighting; sometimes it's on one or the other
+            # field, and sometimes one of the highlight results is empty
+            if "old_shelfmark" in highlights[doc]:
+                highlights[doc]["old_shelfmark"] = ", ".join(
+                    [h for h in highlights[doc]["old_shelfmark"] if h]
+                )
+            elif "old_shelfmark_t" in highlights[doc]:
+                highlights[doc]["old_shelfmark"] = ", ".join(
+                    [h for h in highlights[doc]["old_shelfmark_t"] if h]
+                )
+
         return highlights

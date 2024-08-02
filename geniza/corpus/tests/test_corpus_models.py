@@ -1137,7 +1137,9 @@ class TestDocument:
         index_data = document.index_data()
         assert index_data["num_editions_i"] == 2  # edition + digital edition
         assert index_data["has_digital_edition_b"] == True
-        assert index_data["num_translations_i"] == 2
+        assert (
+            index_data["num_translations_i"] == 3
+        )  # 2 translations + 1 digital translation
         assert index_data["has_digital_translation_b"] == True
         assert index_data["scholarship_count_i"] == 3  # unique sources
         assert index_data["text_transcription"] == ["transcrip[ti]on lines"]

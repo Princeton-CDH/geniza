@@ -34,11 +34,14 @@
                 <div
                     id="map"
                     data-controller="map"
-                    data-lat="{{ place.latitude }}"
-                    data-lon="{{ place.longitude }}"
                     data-maptiler-token="{{ maptiler_token }}"
                 >
-                    <svg id="marker" data-map-target="marker">
+                    <svg
+                        id="marker"
+                        data-map-target="marker"
+                        data-lat="{{ place.latitude }}"
+                        data-lon="{{ place.longitude }}"
+                    >
                         <use href="{% static 'img/ui/all/all/map-pin-fill.svg' %}#pin" />
                     </svg>
                 </div>

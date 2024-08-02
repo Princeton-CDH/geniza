@@ -661,8 +661,8 @@ class DocumentAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin)
             extra_ctx.update(
                 {
                     "images": images,
-                    # show first two panels by default
-                    "default_shown": available_panels[:2],
+                    # show all available panels by default
+                    "default_shown": available_panels,
                     # disable any unavailable panels
                     "disabled": [
                         panel

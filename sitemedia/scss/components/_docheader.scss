@@ -19,9 +19,11 @@ span#formatted-title {
         user-select: all; // allow one-click select
         @include typography.shelfmark;
     }
-    margin: spacing.$spacing-xl spacing.$spacing-md spacing.$spacing-md;
+    margin: 2rem spacing.$spacing-md spacing.$spacing-md;
+    font-size: typography.$text-size-xl;
     @include breakpoints.for-tablet-landscape-up {
-        margin: spacing.$spacing-3xl spacing.$spacing-md spacing.$spacing-2xl;
+        margin: 3.5rem spacing.$spacing-md 2rem;
+        font-size: typography.$text-size-3xl;
     }
 }
 // Hebrew variant
@@ -35,7 +37,7 @@ html[lang="ar"] span#formatted-title {
 
 // Edit link for admins
 .edit-link-container {
-    @include container.measure;
+    max-width: calc(896px + 2rem);
     top: spacing.$spacing-4xl;
     position: absolute;
     width: 100%;

@@ -22,6 +22,11 @@ urlpatterns = [
         name="person-people",
     ),
     path(
+        "people/<slug:slug>/places/",
+        entities_views.PersonPlacesView.as_view(),
+        name="person-places",
+    ),
+    path(
         "person-autocomplete/",
         entities_views.PersonAutocompleteView.as_view(),
         name="person-autocomplete",
@@ -35,6 +40,11 @@ urlpatterns = [
         "places/<slug:slug>/documents/",
         entities_views.PlaceDocumentsView.as_view(),
         name="place-documents",
+    ),
+    path(
+        "places/<slug:slug>/people/",
+        entities_views.PlacePeopleView.as_view(),
+        name="place-people",
     ),
     path(
         "place-autocomplete/",

@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+{% load i18n render_bundle_csp fullurl static %}
+
+{% block meta_title %}{{ page_title }}{% endblock meta_title %}
+{% block meta_description %}{{ page_description }}{% endblock meta_description %}
+{% block extrameta %}
+    {# use English page as canonical for search engine crawlers (no redirects) #}
+    {% language "en" %}
+        <link rel="canonical" href="{% fullurl "entities:person-places" person.slug %}" />
+    {% endlanguage %}
+    {% spaceless %}
+        {% for lang_code in PUBLIC_SITE_LANGUAGES %}
+            {% language lang_code %}
+                <link rel="alternate" hreflang="{{ lang_code }}" href="{% fullurl "entities:person-places" person.slug %}" />
+            {% endlanguage %}
+        {% endfor %}
+    {% endspaceless %}
+    {# maptiler css #}
+    <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.1.0/dist/maplibre-gl.css" />
+{% endblock extrameta %}
+
+{% block main %}
+    <!-- person details -->
+    {% include "entities/snippets/person_header.html" %}
+    {# tabs #}
+    {% include "entities/snippets/person_tabs.html" %}
+    {% if maptiler_token %}
+        <section class="map">
+            <h2 class="sr-only">
+                {# Translators: accessibility label for place map #}
+                {% translate 'Map' %}
+            </h2>
+            <div
+                id="map"
+                data-controller="map"
+                data-maptiler-token="{{ maptiler_token }}"
+            >
+                {% for relation in person.personplacerelation_set.all %}
+                    {% if relation.place.latitude and relation.place.longitude %}
+                        <svg
+                            id="marker"
+                            data-map-target="marker"
+                            data-lat="{{ relation.place.latitude }}"
+                            data-lon="{{ relation.place.longitude }}"
+                        >
+                            <use href="{% static 'img/ui/all/all/map-pin-fill.svg' %}#pin" />
+                        </svg>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </section>
+    {% endif %}
+    <section class="relations">
+        <h2 class="sr-only">
+            {# Translators: accessibility label for place list #}
+            {% translate "Related Places" %}
+        </h2>
+        <turbo-frame id="places">
+            <table class="places">
+                <thead>
+                    <tr>
+                        <th{% if "name" in sort %} class="sorted"{% endif %}>
+                            <a href="?sort=name_{% if sort == "name_asc" %}desc{% else %}asc{% endif %}"{% if "name" in sort %} class="{{ sort }}"{% endif %}>
+                                {# Translators: table header for place name #}
+                                <span>{% translate 'Name' %}</span>
+                                <svg role="presentation"><use xlink:href="{% static 'img/ui/desktop/all/caret-up-down.svg' %}#caret-up-down" /></svg>
+                            </a>
+                        </th>
+                        <th{% if "relation" in sort %} class="sorted"{% endif %}>
+                            <a href="?sort=relation_{% if sort == "relation_asc" %}desc{% else %}asc{% endif %}"{% if "relation" in sort %} class="{{ sort }}"{% endif %}>
+                                {# Translators: table header for person-place relation type #}
+                                <span>{% translate 'Relation' %}</span>
+                                <svg role="presentation"><use xlink:href="{% static 'img/ui/desktop/all/caret-up-down.svg' %}#caret-up-down" /></svg>
+                            </a>
+                        </th>
+                        <th class="notes">{% translate "Notes" %}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for relation in related_places %}
+                        <tr>
+                            <td><a data-turbo="false" href="{{ relation.place.get_absolute_url }}">{{ relation.place }}</a></td>
+                            <td>{{ relation.type }}</td>
+                            <td class="notes">{{ relation.notes }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </turbo-frame>
+    </section>
+{% endblock main %}

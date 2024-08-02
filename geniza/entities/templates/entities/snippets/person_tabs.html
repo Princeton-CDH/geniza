@@ -19,13 +19,14 @@
             {% url 'entities:person-people' slug=person.slug as relpeople_url %}
             <li>{% if n_relpeople > 0 %}<a href="{{ relpeople_url }}"{% if request.path == relpeople_url %} aria-current="page"{% endif %}>{{ relpeople_text }}</a>{% else %}<span disabled aria-disabled="true">{{ relpeople_text }}</span>{% endif %}</li>
 
+            {% url 'entities:person-places' slug=person.slug as relplace_url %}
             {# Translators: n_relplaces is number of related places #}
             {% blocktranslate asvar relplace_text %}Related Places ({{ n_relplaces }}){% endblocktranslate %}
-            {# <li>{% if n_relplaces > 0 %}<a href="{{ relplace_url }}"{% if request.path == relplace_url %} aria-current="page"{% endif %}>{{ relplace_text }}</a>{% else %}<span disabled aria-disabled="true">{{ relplace_text }}</span>{% endif %}</li> #}
-            <span disabled aria-disabled="true">{{ relplace_text }}</span>
+            <li>{% if n_relplaces > 0 %}<a href="{{ relplace_url }}"{% if request.path == relplace_url %} aria-current="page"{% endif %} data-turbo="false">{{ relplace_text }}</a>{% else %}<span disabled aria-disabled="true">{{ relplace_text }}</span>{% endif %}</li>
         </ul>
         {# select dropdown for mobile only #}
-        <select class="mobile-select" data-controller="menu" data-action="change->menu#changePage">
+        {# Translators: accessibility text label for person pages navigation on mobile devices #}
+        <select aria-label="{% translate "page select" %}" class="mobile-select" data-controller="menu" data-action="change->menu#changePage">
             <option value="{{ person_url }}"{% if request.path == person_url %} selected{% endif %}>
                 {{ details_text }}
             </option>
@@ -35,7 +36,9 @@
             <option value="{{ relpeople_url }}"{% if n_relpeople == 0 %} disabled{% elif request.path == relpeople_url %} selected{% endif %}>
                 {{ relpeople_text }}
             </option>
-            <option disabled>{{ relplace_text }}</option>
+            <option value="{{ relplace_url }}"{% if n_relplaces == 0 %} disabled{% elif request.path == relplace_url %} selected{% endif %}>
+                {{ relplace_text }}
+            </option>
         </select>
     {% endwith %}
 </nav>

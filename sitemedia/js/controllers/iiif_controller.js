@@ -1,7 +1,6 @@
 // controllers/iiif_controller.js
 import { Controller } from "@hotwired/stimulus";
 import OpenSeadragon from "openseadragon";
-import AngleInput from "angle-input";
 
 export default class extends Controller {
     static targets = [
@@ -38,12 +37,6 @@ export default class extends Controller {
 
     rotationTargetConnected() {
         // initialize angle rotation input
-        AngleInput(this.rotationTarget, {
-            max: 360, // maximum value
-            min: 0, // minimum value
-            step: 1, // [min, min+step, ..., max]
-            name: this.rotationTarget.id, // used for <input name>
-        });
         if (this.osdTarget.dataset.rotation !== "0") {
             // subtract angle from 360 as angle rotation input tracks counterclockwise
             // rotation, whereas our number tracks clockwise rotation
@@ -108,9 +101,12 @@ export default class extends Controller {
             );
         }
         const OSD = this.osdTarget.querySelector(".openseadragon-container");
-        OSD.style.transition = "opacity 300ms ease, visibility 0s ease 300ms";
-        OSD.style.visibility = "hidden";
-        OSD.style.opacity = "0";
+        if (OSD) {
+            OSD.style.transition =
+                "opacity 300ms ease, visibility 0s ease 300ms";
+            OSD.style.visibility = "hidden";
+            OSD.style.opacity = "0";
+        }
     }
 
     addOpenSeaDragon(settings) {
@@ -220,11 +216,7 @@ export default class extends Controller {
     }
     handleRotationInput(viewer) {
         return (evt) => {
-            let angle = parseInt(evt.target.querySelector("input").value);
-            // if within a tolerance of +/- 5deg from 0deg, set to 0deg
-            if (angle <= 5 || angle >= 355) {
-                angle = 0;
-            }
+            let angle = parseInt(evt.currentTarget.value);
             // set rotation to -angle for natural UX
             viewer.viewport.setRotation(-1 * angle);
             this.updateRotationUI(angle, evt);
@@ -252,6 +244,19 @@ export default class extends Controller {
             this.updateZoomUI(zoom, deactivating);
         };
     }
+    updateSlider(slider, percent, deactivating) {
+        if (deactivating) {
+            this.zoomSliderTarget.classList.remove("active-thumb");
+            this.rotationTarget.classList.remove("active-thumb");
+        } else if (!slider.classList.contains("active-thumb")) {
+            this.zoomSliderTarget.classList.add("active-thumb");
+            this.rotationTarget.classList.add("active-thumb");
+        }
+        // switch gradient direction for RTL layout
+        const dir = document.documentElement.dir == "rtl" ? "left" : "right";
+        // use gradient for two-tone slider track background
+        slider.style.background = `linear-gradient(to ${dir}, var(--link-primary) 0%, var(--link-primary) ${percent}%, var(--zoom-control-bg) ${percent}%, var(--zoom-control-bg) 100%)`;
+    }
     updateZoomUI(zoom, deactivating) {
         // update the zoom controls UI with the new value
 
@@ -261,29 +266,20 @@ export default class extends Controller {
         const percent =
             ((zoom - 1) / (this.zoomSliderTarget.getAttribute("max") - 1)) *
             100;
-        let secondColor = "var(--filter-active)";
+        this.updateSlider(this.zoomSliderTarget, percent, deactivating);
         if (deactivating) {
-            secondColor = "#9E9E9E";
-            this.zoomSliderTarget.classList.remove("active-thumb");
-        } else if (!this.zoomSliderTarget.classList.contains("active-thumb")) {
-            this.zoomSliderTarget.classList.add("active-thumb");
+            this.updateRotationUI(0, false, true);
         }
-        // switch gradient direction for RTL layout
-        const dir = document.documentElement.dir == "rtl" ? "left" : "right";
-        // use gradient for two-tone slider track background
-        this.zoomSliderTarget.style.background = `linear-gradient(to ${dir}, var(--link-primary) 0%, var(--link-primary) ${percent}%, ${secondColor} ${percent}%, ${secondColor} 100%)`;
     }
-    updateRotationUI(angle, autoUpdate) {
+    updateRotationUI(angle, autoUpdate, deactivating) {
         // update rotation label
         this.rotationLabelTarget.innerHTML = `${angle}&deg;`;
         if (!autoUpdate) {
             // update input value and pivot angle
-            this.rotationTarget.querySelector("input").value =
-                -1 * angle.toString();
-            this.rotationTarget.querySelector(
-                "span.angle-input-pivot"
-            ).style.transform = `rotate(${-1 * angle}deg)`;
+            this.rotationTarget.value = -1 * angle.toString();
         }
+        const percent = (angle / 360) * 100;
+        this.updateSlider(this.rotationTarget, percent, deactivating);
     }
     resetBounds(viewer) {
         // Reset OSD viewer to the boundaries of the image, position in top left corner
