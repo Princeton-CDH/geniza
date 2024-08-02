@@ -52,7 +52,7 @@ footer {
 
     // footer site navigation (mobile)
     nav#footer-nav {
-        margin: 25% 17.5% 0; // Use percentages to scale with background
+        margin: 26% 1rem 0; // Use percentages to scale with background
         @include breakpoints.for-tablet-landscape-up {
             margin: 0;
         }
@@ -68,20 +68,30 @@ footer {
                     @include typography.nav-bold;
                 }
             }
-            li.menu-label {
-                margin-bottom: spacing.$spacing-2xs;
-                text-transform: uppercase;
-                font-size: typography.$text-size-md;
-                font-weight: 600;
-                @include breakpoints.for-tablet-landscape-up {
-                    font-size: typography.$text-size-sm;
+            li {
+                &.menu-label {
+                    margin-bottom: spacing.$spacing-2xs;
+                    text-transform: uppercase;
+                    font-size: typography.$text-size-md;
+                    font-weight: 600;
+                    @include breakpoints.for-tablet-landscape-up {
+                        font-size: typography.$text-size-sm;
+                    }
                 }
-            }
-            li.has-submenu {
-                grid-row-end: span 20; // Hack to get tight grid
-                ul {
-                    display: flex;
-                    flex-flow: column;
+                &.menu-item {
+                    min-height: 48px;
+                    font-size: typography.$text-size-xl;
+                    @include breakpoints.for-tablet-landscape-up {
+                        font-size: typography.$text-size-md;
+                        min-height: 0;
+                    }
+                }
+                &.has-submenu {
+                    grid-row-end: span 20; // Hack to get tight grid
+                    ul {
+                        display: flex;
+                        flex-flow: column;
+                    }
                 }
             }
         }
@@ -175,8 +185,13 @@ footer {
         }
         li {
             @include icon-and-text;
-            font-size: typography.$text-size-sm;
             line-height: 1.1;
+            font-size: typography.$text-size-xl;
+            min-height: 48px;
+            @include breakpoints.for-tablet-landscape-up {
+                font-size: typography.$text-size-sm;
+                min-height: 0;
+            }
             a.twitter::before {
                 content: "\f341"; // phosphor twitter-logo icon
             }
