@@ -2,7 +2,7 @@
 <!-- person detail page navigation -->
 {# Translators: accessibility text label for person detail view tabs navigation #}
 <nav aria-label="{% translate "tabs" %}" id="tabs">
-    {% with n_reldocs=person.documents.count n_relpeople=person.to_person.count n_relplaces=person.personplacerelation_set.count %}
+    {% with n_reldocs=person.documents.count n_relpeople=person.related_people|length n_relplaces=person.personplacerelation_set.count %}
         <ul class="tabs">
             {% url 'entities:person' slug=person.slug as person_url %}
             {% translate "Person Details" as details_text %}

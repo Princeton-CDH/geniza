@@ -6,7 +6,7 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.contrib.postgres.aggregates import ArrayAgg
-from django.db.models import Count, F, Q
+from django.db.models import Count, Q
 from django.forms import ValidationError
 from django.http import Http404, HttpResponsePermanentRedirect, HttpResponseRedirect
 from django.urls import reverse
@@ -336,7 +336,7 @@ class RelatedPeopleMixin:
         context.update(
             {
                 "related_people": self.get_related(),
-                "sort": self.request.GET.get("sort", "shelfmark_asc"),
+                "sort": self.request.GET.get("sort", "name_asc"),
             }
         )
         return context
@@ -357,27 +357,33 @@ class PersonPeopleView(RelatedPeopleMixin, PersonDetailView):
 
     template_name = "entities/person_related_people.html"
     viewname = "entities:person-people"
-    relation_field = "to_person"
+    relation_field = "from_person"
 
     def get_related(self):
-        # use the shared logic from RelatedPeopleMixin
-        related_people = super().get_related()
+        """Get and process the queryset of related people"""
+        obj = self.get_object()
+        related_people = obj.related_people()
 
-        # get sort to handle additional 'documents' option for person-person relations
         sort = self.request.GET.get("sort", "name_asc")
-        sort_dir = "-" if sort.endswith("desc") else ""
+        reverse = sort.endswith("desc")
 
-        # annotate with count of documents shared between the two people
-        related_people = related_people.annotate(
-            shared_documents=Count(
-                "to_person__documents__pk",
-                filter=Q(from_person__documents__pk=F("to_person__documents__pk")),
+        if "name" in sort:
+            # sort by slug (stand-in for name, but diacritic insensitive)
+            related_people = sorted(
+                related_people, key=lambda p: p["person"].slug, reverse=reverse
             )
-        ).all()
+
+        if "relation" in sort:
+            # sort by person-entity relation type name
+            related_people = sorted(
+                related_people, key=lambda p: p["type"], reverse=reverse
+            )
 
         if "documents" in sort:
             # sort by count of shared documents
-            related_people = related_people.order_by(f"{sort_dir}shared_documents")
+            related_people = sorted(
+                related_people, key=lambda p: p["shared_documents"], reverse=reverse
+            )
 
         return related_people
 

@@ -10,7 +10,7 @@ from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelatio
 from django.contrib.contenttypes.models import ContentType
 from django.core.validators import RegexValidator
 from django.db import models
-from django.db.models import Q
+from django.db.models import Count, F, Q
 from django.db.models.query import Prefetch
 from django.forms import ValidationError
 from django.urls import reverse
@@ -473,6 +473,53 @@ class Person(ModelIndexable, SlugMixin, DocumentDatableMixin, PermalinkMixin):
             return reverse("entities:person", args=[str(self.slug)])
         else:
             return None
+
+    def related_people(self):
+        """Set of all people related to this person, with relationship type and
+        any notes on the relationship, taking into account converse relations"""
+
+        # gather all relationships with people, both entered from this person and
+        # entered from the person on the other side of the relationship; annotate
+        # with count of documents shared between the two people in each relationship
+        to_people = self.to_person.all().annotate(
+            shared_documents=Count(
+                "from_person__documents__pk",
+                filter=Q(to_person__documents__pk=F("from_person__documents__pk")),
+            )
+        )
+        from_people = self.from_person.all().annotate(
+            shared_documents=Count(
+                "to_person__documents__pk",
+                filter=Q(from_person__documents__pk=F("to_person__documents__pk")),
+            )
+        )
+
+        # standardize into objects with the same attribute names for sorting and display
+        related = [
+            {
+                "person": rel.to_person,
+                "type": rel.type.name,
+                "notes": rel.notes,
+                "shared_documents": rel.shared_documents,
+            }
+            for rel in to_people
+        ]
+        # keep track of people already entered to prevent duplicates
+        used_pks = [p["person"].pk for p in related]
+        related += [
+            {
+                "person": rel.from_person,
+                # since these are entered from other people, use converse relationship type name
+                # if one exists
+                "type": rel.type.converse_name or rel.type.name,
+                "notes": rel.notes,
+                "shared_documents": rel.shared_documents,
+            }
+            for rel in from_people
+            if rel.from_person.pk not in used_pks
+        ]
+
+        return related
 
     def merge_with(self, merge_people, user=None):
         """Merge the specified people into this one. Combines all metadata

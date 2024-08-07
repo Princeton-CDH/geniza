@@ -41,10 +41,9 @@
                         </a>
                     </th>
                     <th{% if "documents" in sort %} class="sorted"{% endif %}>
-                        <a href="?sort=documents_{% if sort == "documents_asc" %}desc{% else %}asc{% endif %}"{% if "documents" in sort %} class="{{ sort }}"{% endif %}>
+                        <a href="?sort=documents_{% if sort == "documents_asc" %}desc{% else %}asc{% endif %}" class="related documents {% if 'documents' in sort %}{{ sort }}{% endif %}">
                             {# Translators: table header for count of shared documents between people #}
                             <span class="sr-only">{% translate 'Number of related documents' %}</span>
-                            <svg aria-hidden="true"><use xlink:href="{% static 'img/ui/all/all/related-documents-icon.svg' %}#related-documents" /></svg>
                             <svg role="presentation" class="sort-icon"><use xlink:href="{% static 'img/ui/desktop/all/caret-up-down.svg' %}#caret-up-down" /></svg>
                         </a>
                     </th>
@@ -58,12 +57,12 @@
                 {% for rel in related_people %}
                     <tr>
                         <td>
-                            {% if rel.to_person.get_absolute_url %}
-                                <a href="{{ rel.to_person.permalink }}" title="{{ rel.to_person }}">
-                                    {{ rel.to_person }}
+                            {% if rel.person.get_absolute_url %}
+                                <a href="{{ rel.person.permalink }}" title="{{ rel.person }}">
+                                    {{ rel.person }}
                                 </a>
                             {% else %}
-                                {{ rel.to_person }}
+                                {{ rel.person }}
                             {% endif %}
                         </td>
                         <td>{{ rel.type }}</td>

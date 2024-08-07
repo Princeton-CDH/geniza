@@ -155,6 +155,51 @@ main.place table.related-table {
         }
     }
 }
+main.person table.related-people {
+    grid-template-columns: 55% 36% 1fr;
+    @include breakpoints.for-tablet-landscape-up {
+        background-color: var(--background-light);
+        grid-template-columns: 35% 33% 10% 1fr;
+    }
+    gap: 0;
+    thead {
+        display: contents;
+    }
+    th a.related {
+        &::before {
+            font-style: normal;
+            font-weight: normal;
+            @include typography.icon-button-sm;
+        }
+        &.documents::before {
+            content: "\edf2";
+        }
+        &.people::before {
+            content: "\f346";
+        }
+        &.places::before {
+            content: "\f20d";
+        }
+    }
+    tr {
+        display: contents;
+        background-color: transparent;
+        padding: 0;
+    }
+    td {
+        min-height: 3rem;
+        a {
+            font-family: fonts.$primary;
+            font-weight: normal;
+        }
+    }
+    .person-notes {
+        display: none;
+        @include breakpoints.for-tablet-landscape-up {
+            display: table-cell;
+        }
+    }
+}
 
 main.person table.related-people {
     grid-template-columns: 55% 36% 1fr;
