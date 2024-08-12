@@ -174,7 +174,8 @@ main.search {
 
 // shared styles between people and places
 main.people,
-main.places {
+main.places,
+main.search {
     // header row (result count and sort options)
     div.header-row {
         display: flex;
@@ -203,7 +204,7 @@ main.places {
                     content: ":";
                 }
             }
-            // people sort "dropdown" (actually details/summary)
+            // people/places sort "dropdown" (actually details/summary)
             details {
                 position: relative;
                 summary {

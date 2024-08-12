@@ -91,6 +91,12 @@ ul:target + ul#language-switcher {
 label#theme-toggle {
     position: absolute;
     cursor: pointer;
+    display: block;
+    top: spacing.$spacing-md;
+    right: 56px;
+    width: 40px;
+    height: 40px;
+    z-index: 2;
     input + span::before {
         content: "";
         background-image: url("/static/img/ui/all/all/light-dark-toggle.svg");
@@ -111,14 +117,6 @@ label#theme-toggle {
     input {
         @include a11y.sr-only;
     }
-}
-
-label#theme-toggle {
-    display: block;
-    top: spacing.$spacing-md;
-    right: 56px;
-    width: 40px;
-    height: 40px;
     @include breakpoints.for-tablet-landscape-up {
         top: 30px;
         width: 70px;

@@ -36,7 +36,7 @@ footer {
     @include breakpoints.for-tablet-landscape-up {
         position: relative;
         margin-top: spacing.$spacing-2xl;
-        padding: spacing.$spacing-3xl 4.75rem 0;
+        padding: 3.2rem 4.75rem 0;
         display: flex;
         flex-flow: column;
         div.first-row {
@@ -62,6 +62,7 @@ footer {
             grid-template-rows: repeat(3, auto);
             grid-auto-flow: column dense;
             grid-auto-columns: 1fr 1fr;
+            gap: 0 0.5rem;
             a {
                 text-decoration: none;
                 &[aria-current="page"] {
@@ -224,7 +225,6 @@ footer {
                 // Princeton logo li
                 &:last-child {
                     text-align: right;
-                    margin-right: -#{spacing.$spacing-md};
                 }
             }
         }
@@ -348,20 +348,21 @@ html[dir="rtl"] footer {
             li {
                 text-align: right;
             }
-            li.has-submenu ul li.menu-item {
-                margin-left: 0;
-                margin-right: 1rem;
-            }
-        }
-        @include breakpoints.for-tablet-landscape-up {
-            margin: 0 spacing.$spacing-3xl 0 0;
         }
     }
     // reverse icons, alignment, and margin in external links
     ul#footer-links {
         a.logo {
+            &::after {
+                margin-left: 0;
+                margin-right: 1.875rem;
+            }
             @include breakpoints.for-tablet-landscape-up {
-                justify-content: flex-end;
+                justify-content: flex-start;
+                &::after {
+                    margin-left: 0;
+                    margin-right: 2rem;
+                }
             }
         }
         ul.social {
@@ -384,7 +385,9 @@ html[dir="rtl"] footer {
         }
         @include breakpoints.for-tablet-landscape-up {
             justify-content: flex-end;
-            margin: 0 0 0 spacing.$spacing-3xl;
+            & > li {
+                margin: spacing.$spacing-md 0 0 spacing.$spacing-lg;
+            }
         }
     }
     // reverse icon, padding, margin, and alignment in legal section
@@ -397,32 +400,25 @@ html[dir="rtl"] footer {
             span::after {
                 content: "\f115"; // phosphor copyright icon
             }
-            @include breakpoints.for-tablet-landscape-up {
-                margin: 0 2rem 0 0;
-            }
-        }
-        li#sw-version {
-            @include breakpoints.for-tablet-landscape-up {
-                margin: 0 1.5rem 0 0;
-            }
         }
         @include breakpoints.for-tablet-landscape-up {
             li {
                 &:first-child {
                     text-align: right;
-                    padding-left: 0;
-                    padding-right: spacing.$spacing-3xl;
-                    margin-left: 0;
-                    margin-right: -#{spacing.$spacing-md};
                 }
                 &:last-child {
                     text-align: left;
-                    padding-right: 0;
-                    padding-left: spacing.$spacing-2xl;
-                    margin-right: 0;
-                    margin-left: -#{spacing.$spacing-md};
                 }
             }
+        }
+    }
+}
+
+html[dir="rtl"] #main:has(main.places) ~ footer {
+    @include breakpoints.for-tablet-landscape-up {
+        ul#legal a.logo::after {
+            margin-left: 0;
+            margin-right: 1.875rem;
         }
     }
 }
@@ -455,61 +451,95 @@ html[dir="rtl"] footer {
 
 // Footer backgrounds for light and dark mode, desktop
 @mixin footer-background-desktop-dark {
-    background: url("/static/img/ui/desktop/dark/ltr/footer-gradient.svg") top
-            right,
-        url("/static/img/ui/desktop/dark/ltr/footer-image.png") top right,
-        url("/static/img/ui/desktop/dark/ltr/footer-base.svg") top right;
-    background-repeat: no-repeat, no-repeat, no-repeat;
+    background: url("/static/img/ui/desktop/dark/ltr/footer-image.png") top
+        right no-repeat;
     &::before {
         @include before-footer-desktop;
-        background: url("/static/img/ui/desktop/dark/all/footer-filler.svg")
+        background: url("/static/img/ui/desktop/dark/all/footer-filler.png")
             repeat-x;
-        right: 1980px;
+        right: 1728px;
+        bottom: 0;
+    }
+}
+@mixin footer-background-desktop-sm-dark {
+    background: url("/static/img/ui/desktop/dark/ltr/footer-image-sm.png") top
+        right no-repeat;
+    &::before {
+        @include before-footer-desktop;
+        background: url("/static/img/ui/desktop/dark/all/footer-filler-sm.png")
+            repeat-x;
+        right: 1728px;
         bottom: 0;
     }
 }
 @mixin footer-background-desktop-dark-rtl {
-    background: url("/static/img/ui/desktop/dark/rtl/footer-gradient.svg") top
-            left,
-        url("/static/img/ui/desktop/dark/rtl/footer-image.png") top left,
-        url("/static/img/ui/desktop/dark/rtl/footer-base.svg") top left;
-    background-repeat: no-repeat, no-repeat, no-repeat;
+    background: url("/static/img/ui/desktop/dark/rtl/footer-image.png") top left
+        no-repeat;
     &::before {
         @include before-footer-desktop;
-        background: url("/static/img/ui/desktop/dark/all/footer-filler.svg")
+        background: url("/static/img/ui/desktop/dark/all/footer-filler.png")
             repeat-x;
         right: 0;
-        left: 1960px;
-        bottom: -6px;
+        left: 1728px;
+        bottom: 0;
+    }
+}
+@mixin footer-background-desktop-sm-dark-rtl {
+    background: url("/static/img/ui/desktop/dark/rtl/footer-image-sm.png") top
+        left no-repeat;
+    &::before {
+        @include before-footer-desktop;
+        background: url("/static/img/ui/desktop/dark/all/footer-filler-sm.png")
+            repeat-x;
+        right: 0;
+        left: 1728px;
+        bottom: 0;
     }
 }
 @mixin footer-background-desktop-light {
-    background: url("/static/img/ui/desktop/light/ltr/footer-gradient.svg") top
-            right,
-        url("/static/img/ui/desktop/light/ltr/footer-image.png") top right,
-        url("/static/img/ui/desktop/light/ltr/footer-base.svg") top right;
-    background-repeat: no-repeat, no-repeat, no-repeat;
+    background: url("/static/img/ui/desktop/light/ltr/footer-image.png") top
+        right no-repeat;
     &::before {
         @include before-footer-desktop;
-        background: url("/static/img/ui/desktop/light/all/footer-filler.svg")
+        background: url("/static/img/ui/desktop/light/all/footer-filler.png")
             repeat-x;
-        right: 1900px;
+        right: 1728px;
+        bottom: 0;
+    }
+}
+@mixin footer-background-desktop-sm-light {
+    background: url("/static/img/ui/desktop/light/ltr/footer-image-sm.png") top
+        right no-repeat;
+    &::before {
+        @include before-footer-desktop;
+        background: url("/static/img/ui/desktop/light/all/footer-filler-sm.png")
+            repeat-x;
+        right: 1728px;
         bottom: 0;
     }
 }
 @mixin footer-background-desktop-light-rtl {
-    background: url("/static/img/ui/desktop/light/rtl/footer-gradient.svg") top
-            left,
-        url("/static/img/ui/desktop/light/rtl/footer-image.png") top left,
-        url("/static/img/ui/desktop/light/rtl/footer-base.svg") top left;
-    background-repeat: no-repeat, no-repeat, no-repeat;
+    background: url("/static/img/ui/desktop/light/rtl/footer-image.png") top
+        left no-repeat;
     &::before {
         @include before-footer-desktop;
-        background: url("/static/img/ui/desktop/light/all/footer-filler.svg")
+        background: url("/static/img/ui/desktop/light/all/footer-filler.png")
             repeat-x;
         right: 0;
-        left: 1970px;
-        bottom: 1px;
+        left: 1728px;
+        bottom: 0;
+    }
+}
+@mixin footer-background-desktop-sm-light-rtl {
+    background: url("/static/img/ui/desktop/light/rtl/footer-image-sm.png") top
+        left no-repeat;
+    &::before {
+        @include before-footer-desktop;
+        background: url("/static/img/ui/desktop/light/all/footer-filler-sm.png")
+            repeat-x;
+        right: 0;
+        left: 1728px;
+        bottom: 0;
     }
 }
 // Nav theme overrides for light mode
@@ -525,6 +555,16 @@ html[dir="rtl"] footer {
         @include footer-background-desktop-light-rtl;
     }
 }
+@mixin light-footer-sm {
+    @include breakpoints.for-tablet-landscape-up {
+        @include footer-background-desktop-sm-light;
+    }
+}
+@mixin light-footer-sm-rtl {
+    @include breakpoints.for-tablet-landscape-up {
+        @include footer-background-desktop-sm-light-rtl;
+    }
+}
 // Nav theme overrides for dark mode
 @mixin dark-footer {
     @include footer-background-mobile-dark;
@@ -538,6 +578,16 @@ html[dir="rtl"] footer {
         @include footer-background-desktop-dark-rtl;
     }
 }
+@mixin dark-footer-sm {
+    @include breakpoints.for-tablet-landscape-up {
+        @include footer-background-desktop-sm-dark;
+    }
+}
+@mixin dark-footer-sm-rtl {
+    @include breakpoints.for-tablet-landscape-up {
+        @include footer-background-desktop-sm-dark-rtl;
+    }
+}
 // Applying background image and gradient per system theme
 footer {
     @include light-footer;
@@ -545,10 +595,22 @@ footer {
         @include dark-footer;
     }
 }
+#main:has(main.places) ~ footer {
+    @include light-footer-sm;
+    @media (prefers-color-scheme: dark) {
+        @include dark-footer-sm;
+    }
+}
 html[dir="rtl"] footer {
     @include light-footer-rtl;
     @media (prefers-color-scheme: dark) {
         @include dark-footer-rtl;
+    }
+}
+html[dir="rtl"] #main:has(main.places) ~ footer {
+    @include light-footer-sm-rtl;
+    @media (prefers-color-scheme: dark) {
+        @include dark-footer-sm-rtl;
     }
 }
 
@@ -559,12 +621,24 @@ html.light-mode footer {
 html.dark-mode footer {
     @include dark-footer;
 }
+html.light-mode #main:has(main.places) ~ footer {
+    @include light-footer-sm;
+}
+html.dark-mode #main:has(main.places) ~ footer {
+    @include dark-footer-sm;
+}
 
 html[dir="rtl"].light-mode footer {
     @include light-footer-rtl;
 }
 html[dir="rtl"].dark-mode footer {
     @include dark-footer-rtl;
+}
+html[dir="rtl"].light-mode #main:has(main.places) ~ footer {
+    @include light-footer-sm-rtl;
+}
+html[dir="rtl"].dark-mode #main:has(main.places) ~ footer {
+    @include dark-footer-sm-rtl;
 }
 
 // Hebrew variant

@@ -36,7 +36,7 @@
             <div class="header-row">
                 <h1>{{ page_title }}</h1>
                 <span>(<span class="mobile-only">{{ paginator.per_page }} of </span>{{ paginator.count|intcomma }})</span>
-                <fieldset id="sort">
+                <fieldset id="sort-field">
                     <label for="{{ form.sort.auto_id }}">{{ form.sort.label }}</label>
                     <details data-search-target="dropdownDetails">
                         <summary>
@@ -71,14 +71,12 @@
                         </dl>
                         {# Translators: accessible label for section showing counts of entries related to an entity #}
                         <dl class="relations" aria-label="{% translate 'Related entries' %}">
-                            <dt>
-                                <svg aria-hidden="true"><use xlink:href="{% static 'img/ui/all/all/related-documents-icon.svg' %}#related-documents" /></svg>
+                            <dt class="documents">
                                 {% translate "Related Documents" %}</dt>
                             <dd>
                                 <span>{{ place.documents }}</span>
                             </dd>
-                            <dt>
-                                <svg aria-hidden="true"><use xlink:href="{% static 'img/ui/all/all/related-people-icon.svg' %}#related-people" /></svg>
+                            <dt class="people">
                                 {% translate "Related People" %}</dt>
                             <dd>
                                 <span>{{ place.people }}</span>

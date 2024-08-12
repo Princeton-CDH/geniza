@@ -21,8 +21,8 @@ nav#site-nav {
         flex-flow: row nowrap;
         align-items: center;
         justify-content: space-between;
-        height: 12rem;
-        padding-bottom: 4rem;
+        height: 11.1875rem;
+        padding-bottom: 3.1875rem;
     }
     // Logotype, links to homepage
     a.home-link {
@@ -484,19 +484,18 @@ html[dir="rtl"] #site-nav {
     content: " ";
     height: 188px;
     display: block;
-    left: 1961px;
+    left: 1728px;
     right: 0;
-    top: -1px;
+    top: 0;
 }
 
 // Header backgrounds for light and dark mode, desktop
 @mixin header-background-desktop-dark {
-    background: url("/static/img/ui/desktop/dark/ltr/header-base.svg") top left,
-        url("/static/img/ui/desktop/dark/ltr/header-image.png") top left;
-    background-repeat: no-repeat, no-repeat;
+    background: url("/static/img/ui/desktop/dark/ltr/header-image.png") top left
+        no-repeat;
     &:after {
         @include after-header-desktop;
-        background: url("/static/img/ui/desktop/dark/all/header-filler.svg")
+        background: url("/static/img/ui/desktop/dark/all/header-filler.png")
             repeat-x;
     }
     a.home-link {
@@ -508,12 +507,11 @@ html[dir="rtl"] #site-nav {
     }
 }
 @mixin header-background-desktop-light {
-    background: url("/static/img/ui/desktop/light/ltr/header-base.svg") top left,
-        url("/static/img/ui/desktop/light/ltr/header-image.png") top left;
-    background-repeat: no-repeat, no-repeat;
+    background: url("/static/img/ui/desktop/light/ltr/header-image.png") top
+        left no-repeat;
     &:after {
         @include after-header-desktop;
-        background: url("/static/img/ui/desktop/light/all/header-filler.svg")
+        background: url("/static/img/ui/desktop/light/all/header-filler.png")
             repeat-x;
     }
     a.home-link {
@@ -609,16 +607,15 @@ html.dark-mode #site-nav {
 
 // RTL header backgrounds for light and dark mode, desktop
 @mixin header-background-desktop-dark-rtl {
-    background: url("/static/img/ui/desktop/dark/rtl/header-base.svg") top right,
-        url("/static/img/ui/desktop/dark/rtl/header-image.png") top right;
-    background-repeat: no-repeat, no-repeat;
+    background: url("/static/img/ui/desktop/dark/rtl/header-image.png") top
+        right no-repeat;
     &:after {
         @include after-header-desktop;
-        background: url("/static/img/ui/desktop/dark/all/header-filler.svg")
+        background: url("/static/img/ui/desktop/dark/all/header-filler.png")
             repeat-x;
         top: -0.5px;
         left: 0;
-        right: 1950px;
+        right: 1728px;
     }
     a.home-link {
         background: url("/static/img/logos/desktop/dark/rtl/logotype.png")
@@ -635,11 +632,11 @@ html.dark-mode #site-nav {
     background-repeat: no-repeat, no-repeat;
     &:after {
         @include after-header-desktop;
-        background: url("/static/img/ui/desktop/light/all/header-filler.svg")
+        background: url("/static/img/ui/desktop/light/all/header-filler.png")
             repeat-x;
         top: -0.5px;
         left: 0;
-        right: 1950px;
+        right: 1728px;
     }
     a.home-link {
         background: url("/static/img/logos/desktop/light/rtl/logotype.png")
