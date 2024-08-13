@@ -328,7 +328,10 @@ class RelatedPeopleMixin:
 
         obj = self.get_object()
         # if there are no related people, don't serve out this page
-        if not getattr(obj, self.relation_field).exists():
+        if (
+            hasattr(self, "relation_field")
+            and not getattr(obj, self.relation_field).exists()
+        ):
             raise Http404
 
         # otherwise, add related people queryset to context
@@ -357,7 +360,19 @@ class PersonPeopleView(RelatedPeopleMixin, PersonDetailView):
 
     template_name = "entities/person_related_people.html"
     viewname = "entities:person-people"
-    relation_field = "from_person"
+
+    def page_description(self):
+        """Description of a person related people page, with count"""
+        obj = self.get_object()
+        count = len(obj.related_people())
+        # Translators: description of related people page, for search engines
+        return ngettext(
+            "%(count)d related person",
+            "%(count)d related people",
+            count,
+        ) % {
+            "count": count,
+        }
 
     def get_related(self):
         """Get and process the queryset of related people"""
