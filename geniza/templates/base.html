@@ -95,9 +95,6 @@
         {% endif %}
         {% block body %}
             <a id="skip" class="sr-only-focusable" href="#main-content">{% translate "Skip to main content" %}</a>
-            <header>
-                {% include "snippets/theme_toggle.html" %}
-            </header>
             {% include "nav.html" %}
 
             <turbo-frame id="main" data-turbo-action="advance">

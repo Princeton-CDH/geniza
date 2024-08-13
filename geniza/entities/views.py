@@ -19,13 +19,14 @@ from django.views.generic.edit import FormMixin
 
 from geniza.corpus.dates import PartialDate
 from geniza.corpus.views import SolrDateRangeMixin
-from geniza.entities.forms import PersonListForm, PersonMergeForm
+from geniza.entities.forms import PersonListForm, PersonMergeForm, PlaceListForm
 from geniza.entities.models import (
     PastPersonSlug,
     PastPlaceSlug,
     Person,
     PersonSolrQuerySet,
     Place,
+    PlaceSolrQuerySet,
 )
 
 
@@ -609,6 +610,83 @@ class PersonListView(ListView, FormMixin, SolrDateRangeMixin):
                 "page_description": self.page_description,
                 "page_type": "people",
                 "applied_filters": self.applied_filter_labels,
+            }
+        )
+        return context_data
+
+
+class PlaceListView(ListView, FormMixin):
+    """A list view with faceted filtering and sorting using solr."""
+
+    model = Place
+    context_object_name = "places"
+    template_name = "entities/place_list.html"
+    # Translators: title of places list/browse page
+    page_title = _("Places")
+    # Translators: description of places list/browse page
+    page_description = _("Browse places present in Geniza documents.")
+    paginate_by = 50
+    form_class = PlaceListForm
+
+    # sort options mapped to solr fields
+    sort_fields = {"name": "slug_s", "documents": "documents_i", "people": "people_i"}
+    initial = {"sort": "name", "sort_dir": "asc"}
+
+    def get_queryset(self, *args, **kwargs):
+        """modify queryset to sort and filter on places in the list"""
+        places = PlaceSolrQuerySet()
+
+        form = self.get_form()
+        # bail out if form is invalid
+        if not form.is_valid():
+            return places.none()
+
+        search_opts = form.cleaned_data
+
+        # TODO: filter by location with solr
+
+        # sort with solr
+        if search_opts.get("sort"):
+            sort_field = search_opts.get("sort")
+            order_by = self.sort_fields[sort_field]
+            # default is ascending; handle descending by appending a - in order_by
+            if (
+                "sort_dir" in search_opts
+                and search_opts["sort_dir"] == "desc"
+                and "date" not in sort_field
+            ):
+                order_by = f"-{order_by}"
+            places = places.order_by(order_by)
+
+        self.queryset = places
+
+        return places
+
+    def get_form_kwargs(self):
+        """get form arguments from request and configured defaults"""
+        kwargs = super().get_form_kwargs()
+
+        # use GET instead of default POST/PUT for form data
+        form_data = self.request.GET.copy()
+
+        # set all form values to default
+        for key, val in self.initial.items():
+            form_data.setdefault(key, val)
+
+        kwargs["data"] = form_data
+
+        return kwargs
+
+    def get_context_data(self, **kwargs):
+        """extend context data to add page metadata, facets"""
+        context_data = super().get_context_data(**kwargs)
+
+        context_data.update(
+            {
+                "page_title": self.page_title,
+                "page_description": self.page_description,
+                "page_type": "places",
+                "maptiler_token": getattr(settings, "MAPTILER_API_TOKEN", ""),
             }
         )
         return context_data

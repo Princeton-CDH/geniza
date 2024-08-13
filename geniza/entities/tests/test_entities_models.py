@@ -7,6 +7,7 @@ from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.forms import ValidationError
 from django.utils import timezone
+from modeltranslation.manager import MultilingualQuerySet
 from parasolr.django.indexing import ModelIndexable
 from slugify import slugify
 from unidecode import unidecode
@@ -34,6 +35,7 @@ from geniza.entities.models import (
     PlaceEventRelation,
     PlacePlaceRelation,
     PlacePlaceRelationType,
+    PlaceSignalHandlers,
 )
 from geniza.footnotes.models import Footnote
 
@@ -687,6 +689,36 @@ class TestPlace:
         noplace = Place.objects.create()
         assert not noplace.coordinates
 
+    def test_total_to_index(self):
+        assert Place.total_to_index() == 0
+        [Place.objects.create() for _ in range(3)]
+        assert Place.total_to_index() == 3
+
+    def test_items_to_index(self):
+        place = Place.objects.create()
+        Name.objects.create(content_object=place, name="test")
+        places = Place.items_to_index()
+        assert place in places
+
+    def test_index_data(self, document, join):
+        mosul = Place.objects.create(latitude=36.34, longitude=43.13)
+        pname = Name.objects.create(content_object=mosul, name="Mosul", primary=True)
+        oname = Name.objects.create(content_object=mosul, name="الموصل", primary=False)
+        mosul.generate_slug()
+        DocumentPlaceRelation.objects.create(place=mosul, document=document)
+        DocumentPlaceRelation.objects.create(place=mosul, document=join)
+        person = Person.objects.create()
+        PersonPlaceRelation.objects.create(person=person, place=mosul)
+        index_data = mosul.index_data()
+
+        assert index_data["slug_s"] == mosul.slug
+        assert index_data["name_s"] == pname.name
+        assert index_data["other_names_s"] == oname.name
+        assert index_data["url_s"] == mosul.get_absolute_url()
+        assert index_data["location_p"] == "36.34,43.13"
+        assert index_data["documents_i"] == 2
+        assert index_data["people_i"] == 1
+
 
 @pytest.mark.django_db
 class TestPersonPlaceRelation:
@@ -810,3 +842,68 @@ class TestPlaceEventRelation:
         event = Event.objects.create(name="Founding of the Ben Ezra Synagogue")
         relation = PlaceEventRelation.objects.create(place=fustat, event=event)
         assert str(relation) == f"Place-Event relation: {fustat} and {event}"
+
+
+@pytest.mark.django_db
+class TestPlaceSignalHandlers:
+    @patch.object(ModelIndexable, "index_items")
+    def test_related_save(self, mock_indexitems, person, document):
+        place = Place.objects.create()
+
+        # unsaved name should be ignored
+        name = Name(name="test name")
+        PlaceSignalHandlers.related_save(Name, name)
+        mock_indexitems.assert_not_called()
+        # raw - ignore
+        PlaceSignalHandlers.related_save(Name, name, raw=True)
+        mock_indexitems.assert_not_called()
+        # name associated with a place
+        name.content_object = place
+        name.save()
+        PlaceSignalHandlers.related_save(Name, name)
+        assert mock_indexitems.call_count == 1
+        assert place in mock_indexitems.call_args[0][0]
+
+        # person place relation
+        ppr = PersonPlaceRelation(person=person, place=place)
+        ppr.save()
+        mock_indexitems.reset_mock()
+        PlaceSignalHandlers.related_save(PersonPlaceRelation, ppr)
+        assert mock_indexitems.call_count == 1
+        assert place in mock_indexitems.call_args[0][0]
+
+        # document place relation
+        dpr = DocumentPlaceRelation(document=document, place=place)
+        dpr.save()
+        mock_indexitems.reset_mock()
+        PlaceSignalHandlers.related_save(PersonPlaceRelation, dpr)
+        assert mock_indexitems.call_count == 1
+        assert place in mock_indexitems.call_args[0][0]
+
+        # unhandled model should be ignored, no error
+        mock_indexitems.reset_mock()
+        PlaceSignalHandlers.related_save(Place, place)
+        mock_indexitems.assert_not_called()
+
+    @pytest.mark.django_db
+    @patch.object(ModelIndexable, "index_items")
+    def test_related_delete(self, mock_indexitems, document):
+        # delegates to same method as save, just check a few cases
+
+        # Name associated with a document
+        place = Place.objects.create()
+        name = Name(name="test name", content_object=place)
+        name.save()
+        # delete
+        mock_indexitems.reset_mock()
+        PlaceSignalHandlers.related_delete(Name, name)
+        assert mock_indexitems.call_count == 1
+        assert place in mock_indexitems.call_args[0][0]
+
+        # document place relation
+        dpr = DocumentPlaceRelation(document=document, place=place)
+        dpr.save()
+        mock_indexitems.reset_mock()
+        PlaceSignalHandlers.related_delete(DocumentPlaceRelation, dpr)
+        assert mock_indexitems.call_count == 1
+        assert place in mock_indexitems.call_args[0][0]

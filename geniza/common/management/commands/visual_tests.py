@@ -33,15 +33,7 @@ class Command(BaseCommand):
 
         # turn on dark mode, save in local storage
         if dark_mode:
-            # handle separate theme toggles for mobile and desktop
-            try:
-                browser.find_element(
-                    By.CSS_SELECTOR, "#theme-toggle-desktop"
-                ).send_keys(Keys.ENTER)
-            except (ElementNotVisibleException, ElementNotInteractableException):
-                browser.find_element(By.CSS_SELECTOR, "#theme-toggle-mobile").send_keys(
-                    Keys.ENTER
-                )
+            browser.find_element(By.CSS_SELECTOR, "#theme-toggle").send_keys(Keys.ENTER)
             dark_mode_str = " (dark mode)"
 
         # homepage
