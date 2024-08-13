@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+{% load static i18n humanize widget_tweaks entities_extras %}
+
+{% block meta_title %}{{ page_title }}{% endblock meta_title %}
+{% block meta_description %}{{ page_description }}{% endblock meta_description %}
+{% block extrameta %}
+    {# maptiler css #}
+    <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.1.0/dist/maplibre-gl.css" />
+{% endblock extrameta %}
+
+{% block main %}
+    <form data-controller="search" data-turbo-frame="main" data-turbo-action="advance" data-page="person">
+        <section id="map-container">
+            <div
+                id="map"
+                data-controller="map"
+                data-maptiler-token="{{ maptiler_token }}"
+            >
+                {% for place in places %}
+                    {% if place.location %}
+                        <svg
+                            class="marker"
+                            data-map-target="marker"
+                            data-lat="{{ place.location|split:","|first }}"
+                            data-lon="{{ place.location|split:","|last }}"
+                            data-slug="{{ place.slug }}"
+                        >
+                            <use class="pin" href="{% static 'img/ui/all/all/map-pin.svg' %}#pin" />
+                            <use class="selected-pin" href="{% static 'img/ui/all/all/map-pin-fill.svg' %}#pin" />
+                        </svg>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </section>
+        <section id="place-list" data-action="click@document->search#clickCloseDropdown">
+            <div class="header-row">
+                <h1>{{ page_title }}</h1>
+                <span>(<span class="mobile-only">{{ paginator.per_page }} of </span>{{ paginator.count|intcomma }})</span>
+                <fieldset id="sort-field">
+                    <label for="{{ form.sort.auto_id }}">{{ form.sort.label }}</label>
+                    <details data-search-target="dropdownDetails">
+                        <summary>
+                            <span>{{ form.get_sort_label|default:"Name" }}</span>
+                        </summary>
+                        <div id="sort-options">
+                            {% render_field form.sort data-action="search#update" %}
+                            {% render_field form.sort_dir data-action="search#update" %}
+                        </div>
+                    </details>
+                </fieldset>
+            </div>
+            <ul>
+                {% for place in places %}
+                    <li class="place" data-slug-anchor="{{ place.slug }}">
+                        {# Translators: accessible label for section showing place metadata, names #}
+                        <dl class="metadata" aria-label="{% translate 'metadata' %}">
+                            <dt class="sr-only">{% translate "Name" %}</dt>
+                            <dd class="name">
+                                {% if place.url %}
+                                    <a href="{{ place.url }}" data-turbo="false">{{ place.name }}</a>
+                                {% else %}
+                                    <span>{{ place.name }}</span>
+                                {% endif %}
+                            </dd>
+                            {% if place.other_names %}
+                                <dt class="sr-only">{% translate "Other names" %}</dt>
+                                <dd class="other-names">
+                                    {{ place.other_names }}
+                                </dd>
+                            {% endif %}
+                        </dl>
+                        {# Translators: accessible label for section showing counts of entries related to an entity #}
+                        <dl class="relations" aria-label="{% translate 'Related entries' %}">
+                            <dt class="documents">
+                                {% translate "Related Documents" %}</dt>
+                            <dd>
+                                <span>{{ place.documents }}</span>
+                            </dd>
+                            <dt class="people">
+                                {% translate "Related People" %}</dt>
+                            <dd>
+                                <span>{{ place.people }}</span>
+                            </dd>
+                        </dl>
+                    </li>
+                {% endfor %}
+            </ul>
+            <div class="pagination-container">
+                {# Translators: range of search results on the current page, out of total #}
+                {% blocktranslate with start=page_obj.start_index end=page_obj.end_index count_humanized=paginator.count|intcomma %}
+                    <div>{{ start }} – {{ end }} of {{ count_humanized }}</div>
+                {% endblocktranslate %}
+                {% include "corpus/snippets/pagination.html" %}
+            </div>
+        </section>
+        <label id="mobile-mode-toggle" data-search-target="placesMode">
+            <input type="checkbox" data-action="search#onToggleMap" />
+            {# Translators: label for Places list mode button on mobile devices #}
+            <span id="list-mode-label">{% translate 'List' %}</span>
+            {# Translators: label for Places map mode button on mobile devices #}
+            <span id="map-mode-label">{% translate 'Map' %}</span>
+        </label>
+    </form>
+{% endblock %}

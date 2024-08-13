@@ -243,3 +243,46 @@ class EventForm(forms.ModelForm):
         help_texts = {
             "automatic_date": "Date or date range automatically generated from associated document(s)"
         }
+
+
+class PlaceListForm(forms.Form):
+    SORT_CHOICES = [
+        # Translators: label for sort by name
+        ("name", _("Name")),
+        # Translators: label for sort by number of related documents
+        ("documents", _("Related Documents")),
+        # Translators: label for sort by number of related people
+        ("people", _("Related People")),
+    ]
+
+    sort = forms.ChoiceField(
+        # Translators: label for form sort field
+        label=_("Sort by"),
+        choices=SORT_CHOICES,
+        required=False,
+        widget=forms.RadioSelect,
+    )
+
+    SORT_DIR_CHOICES = [
+        # Translators: label for ascending sort
+        ("asc", _("Ascending")),
+        # Translators: label for descending sort
+        ("desc", _("Descending")),
+    ]
+
+    sort_dir = forms.ChoiceField(
+        choices=SORT_DIR_CHOICES,
+        required=False,
+        widget=forms.RadioSelect,
+    )
+
+    def get_sort_label(self):
+        """Helper method to get the label for the current value of the sort field"""
+        if (
+            self.is_valid()
+            and "sort" in self.cleaned_data
+            and self.cleaned_data["sort"]
+        ):
+            raw_value = self.cleaned_data["sort"]
+            return dict(self.SORT_CHOICES)[raw_value]
+        return None

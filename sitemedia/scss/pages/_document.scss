@@ -237,6 +237,7 @@ main.document {
         padding: 0 1rem;
         max-width: 896px;
         @include breakpoints.for-tablet-landscape-up {
+            padding: 0;
             width: 896px;
         }
     }

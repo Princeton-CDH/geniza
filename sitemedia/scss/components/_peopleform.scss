@@ -170,9 +170,16 @@ main.search {
             }
         }
     }
+}
+
+// shared styles between people and places
+main.people,
+main.places,
+main.search {
     // header row (result count and sort options)
     div.header-row {
         display: flex;
+        align-items: baseline;
         flex-flow: row;
         justify-content: space-between;
         align-items: center;
@@ -197,7 +204,7 @@ main.search {
                     content: ":";
                 }
             }
-            // people sort "dropdown" (actually details/summary)
+            // people/places sort "dropdown" (actually details/summary)
             details {
                 position: relative;
                 summary {
@@ -331,6 +338,7 @@ main.search {
         }
     }
 }
+
 // RTL overrides
 html[dir="rtl"] main.people,
 html[dir="rtl"] main.search {

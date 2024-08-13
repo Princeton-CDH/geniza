@@ -21,13 +21,8 @@ ul#language-switcher {
         visibility: visible;
         position: relative;
         top: auto;
-        right: 72px;
+        right: 10.875rem;
         border-radius: calc(53px / 2);
-        // margin to make room for tablet theme toggle
-        margin-right: 30px;
-    }
-    @include breakpoints.for-desktop-up {
-        margin-right: auto;
     }
     li a {
         background-color: var(--background-gray);
@@ -93,10 +88,15 @@ ul:target + ul#language-switcher {
 }
 
 // light/dark mode toggle
-label#theme-toggle-desktop,
-label#theme-toggle-mobile {
+label#theme-toggle {
     position: absolute;
     cursor: pointer;
+    display: block;
+    top: spacing.$spacing-md;
+    right: 56px;
+    width: 40px;
+    height: 40px;
+    z-index: 2;
     input + span::before {
         content: "";
         background-image: url("/static/img/ui/all/all/light-dark-toggle.svg");
@@ -117,42 +117,12 @@ label#theme-toggle-mobile {
     input {
         @include a11y.sr-only;
     }
-}
-
-// desktop-only toggle
-label#theme-toggle-desktop {
-    position: fixed;
-    top: 247px;
-    right: auto;
-    left: calc(96.5vw - 70px);
-    width: 70px;
-    height: 70px;
-    z-index: 2; // Hide behind ITT viewer
-
-    // only show on desktop
-    display: none;
-    @include breakpoints.for-desktop-up {
-        display: block;
-    }
-}
-// mobile and tablet toggle
-label#theme-toggle-mobile {
-    display: block;
-    top: spacing.$spacing-md;
-    right: 56px;
-    width: 40px;
-    height: 40px;
-    // tablet-only tweaks
     @include breakpoints.for-tablet-landscape-up {
         top: 30px;
         width: 70px;
         height: 70px;
         right: auto;
         left: calc(96.5vw - 70px);
-    }
-    // hide on desktop
-    @include breakpoints.for-desktop-up {
-        display: none;
     }
 }
 
@@ -165,9 +135,6 @@ html[dir="rtl"] {
             left: 72px;
             margin-right: auto;
             margin-left: 30px;
-        }
-        @include breakpoints.for-desktop-up {
-            margin-left: auto;
         }
         li:not(:last-child) {
             margin-right: auto;
@@ -198,7 +165,7 @@ html[dir="rtl"] {
             }
         }
     }
-    label#theme-toggle-mobile {
+    label#theme-toggle {
         right: auto;
         left: 56px;
         @include breakpoints.for-tablet-landscape-up {
