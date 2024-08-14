@@ -1,14 +1,10 @@
 {% load i18n corpus_extras %}
 {% spaceless %}
     <li class="search-result">
-        {# result number #}
-        <span class="counter">
-            {% with page_obj.start_index|default:1 as start_adjust %}
-                {{ forloop.counter0|add:start_adjust }}
-            {% endwith %}
-        </span>
         {# title #}
         <h2 class="title">
+            {# result number #}
+            <span class="counter">{% with page_obj.start_index|default:1 as start_adjust %}{{ forloop.counter0|add:start_adjust }}{% endwith %}</span>
             {# type and shelfmark #}
             <span class="doctype">{{ document.type }}</span>
             <span class="shelfmark">{{ document.shelfmark|shelfmark_wrap }}</span>
@@ -23,6 +19,16 @@
                     <dd>
                         <time>
                             {{ document.document_date.0 }} {# indexed as _t which is a multival field #}
+                        </time>
+                    </dd>
+                {% elif document.document_dating %}
+                    <dt>
+                        {# Translators: label for inferred date on a document #}
+                        {% translate "Inferred date" %}
+                    </dt>
+                    <dd>
+                        <time>
+                            {{ document.document_dating.0 }} {# indexed as _t which is a multival field #}
                         </time>
                     </dd>
                 {% endif %}
@@ -176,9 +182,6 @@
                         {% endwith %}
                     {% endfor %}
                 </ul>
-            {% else %}
-                {# Translators: label for when no image thumbnail is available #}
-                <span class="no-image">{% translate 'No Image' %}</span>
             {% endif %}
             <dl class="pgp-metadata">
                 {# Translators: Date document was first added to the PGP #}

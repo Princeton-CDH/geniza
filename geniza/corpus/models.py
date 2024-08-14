@@ -1220,6 +1220,10 @@ class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin):
                 ),
                 # combined original/standard document date for display
                 "document_date_t": strip_tags(self.document_date) or None,
+                # inferred document date for display
+                "document_dating_t": standard_date_display(
+                    "/".join([d.isoformat() for d in self.dating_range() if d])
+                ),
                 # date range for filtering
                 "document_date_dr": self.solr_date_range(),
                 # date range for filtering, but including inferred datings if any exist
@@ -1231,6 +1235,17 @@ class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin):
                 ),
                 "end_date_i": (
                     self.end_date.numeric_format(mode="max") if self.end_date else None
+                ),
+                # start/end of document date or date range, including inferred datings, for sort
+                "start_dating_i": (
+                    self.dating_range()[0].numeric_format()
+                    if self.dating_range()[0]
+                    else None
+                ),
+                "end_dating_i": (
+                    self.dating_range()[1].numeric_format(mode="max")
+                    if self.dating_range()[1]
+                    else None
                 ),
                 # library/collection possibly redundant?
                 "collection_ss": [str(f.collection) for f in fragments],

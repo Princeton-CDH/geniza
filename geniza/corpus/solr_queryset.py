@@ -48,6 +48,7 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
         "shelfmark": "shelfmark_s",  # string version for display
         "shelfmarks": "fragment_shelfmark_ss",
         "document_date": "document_date_t",  # text version for search & display
+        "document_dating": "document_dating_t",  # inferred date for display
         "original_date_t": "original_date",
         "collection": "collection_ss",
         "tags": "tags_ss_lower",
