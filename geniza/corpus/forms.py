@@ -216,6 +216,13 @@ class DocumentSearchForm(RangeForm):
         ),
     )
 
+    exclude_inferred = forms.BooleanField(
+        # Translators: label for "exclude inferred dates" search form filter
+        label=_("Exclude inferred dates"),
+        required=False,
+        widget=forms.CheckboxInput,
+    )
+
     doctype = FacetChoiceField(
         # Translators: label for document type search form filter
         label=_("Document type"),

@@ -547,8 +547,8 @@ class TestDocumentSearchView:
             # mock_queryset_cls.return_value.stats.return_value.get_stats.return_value = {
             mock_queryset_cls.return_value.get_stats.return_value = {
                 "stats_fields": {
-                    "start_date_i": {"min": None},
-                    "end_date_i": {"max": None},
+                    "start_dating_i": {"min": None},
+                    "end_dating_i": {"max": None},
                 }
             }
             docsearch_view = DocumentSearchView()
@@ -560,14 +560,14 @@ class TestDocumentSearchView:
             )
             assert stats == {"docdate": (None, None)}
             mock_queryset_cls.return_value.stats.assert_called_with(
-                "start_date_i", "end_date_i"
+                "start_dating_i", "end_dating_i"
             )
 
             # convert integer date to year
             mock_queryset_cls.return_value.get_stats.return_value = {
                 "stats_fields": {
-                    "start_date_i": {"min": 10380101.0},
-                    "end_date_i": {"max": 10421231.0},
+                    "start_dating_i": {"min": 10380101.0},
+                    "end_dating_i": {"max": 10421231.0},
                 }
             }
             stats = docsearch_view.get_range_stats(
@@ -577,7 +577,7 @@ class TestDocumentSearchView:
 
             # test three-digit year
             mock_queryset_cls.return_value.get_stats.return_value["stats_fields"][
-                "start_date_i"
+                "start_dating_i"
             ]["min"] = 8430101.0
             stats = docsearch_view.get_range_stats(
                 queryset_cls=mock_queryset_cls, field_name="docdate"
@@ -978,6 +978,14 @@ class TestDocumentSearchView:
         random_sort = docsearch_view.get_solr_sort("random")
         assert random_sort.startswith("random_")
         assert int(random_sort.split("_")[1])
+
+        # doc dating without exclude_inferred: should include inferred
+        dating_sort = docsearch_view.get_solr_sort("docdate_asc")
+        assert dating_sort.startswith("start_dating_")
+
+        # with exclude_inferred: should use start_dating, which is dates without inferred
+        dating_sort = docsearch_view.get_solr_sort("docdate_asc", "true")
+        assert dating_sort.startswith("start_date_")
 
     def test_random_page_redirect(self, client):
         # any page of results other than one should redirect to the first page
