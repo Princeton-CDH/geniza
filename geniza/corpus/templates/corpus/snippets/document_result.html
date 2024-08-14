@@ -1,14 +1,10 @@
 {% load i18n corpus_extras %}
 {% spaceless %}
     <li class="search-result">
-        {# result number #}
-        <span class="counter">
-            {% with page_obj.start_index|default:1 as start_adjust %}
-                {{ forloop.counter0|add:start_adjust }}
-            {% endwith %}
-        </span>
         {# title #}
         <h2 class="title">
+            {# result number #}
+            <span class="counter">{% with page_obj.start_index|default:1 as start_adjust %}{{ forloop.counter0|add:start_adjust }}{% endwith %}</span>
             {# type and shelfmark #}
             <span class="doctype">{{ document.type }}</span>
             <span class="shelfmark">{{ document.shelfmark|shelfmark_wrap }}</span>

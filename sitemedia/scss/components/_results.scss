@@ -60,16 +60,9 @@ section#document-list {
 
     // result number in list
     .counter {
-        display: none;
-        @include breakpoints.for-tablet-landscape-up {
-            display: none;
-            @include typography.headline-2;
-            text-align: right;
-            float: left;
-            position: absolute;
-            left: 0;
-            width: 2rem;
-        }
+        margin-right: 0.75rem;
+        padding-right: 0.75rem;
+        border-right: 1px solid var(--searchresult-separator);
     }
 
     // document titles
@@ -479,8 +472,12 @@ html[dir="rtl"] .search-result {
     }
     // result number in list
     .counter {
-        text-align: right;
-        float: right;
+        margin-right: 0;
+        padding-right: 0;
+        margin-left: 0.75rem;
+        padding-left: 0.75rem;
+        border-right: none;
+        border-left: 1px solid var(--searchresult-separator);
     }
     // First row on mobile, left column on larger
     section:first-of-type {
@@ -587,9 +584,6 @@ html[dir="rtl"] .search-result {
 
 // Hebrew variant
 html[lang="he"] {
-    .search-result .counter {
-        @include typography.headline-2-he;
-    }
     .search-result section:first-of-type .scholarship,
     a.view-link > span {
         @include typography.meta-he;
@@ -598,9 +592,6 @@ html[lang="he"] {
 
 // Arabic variant
 html[lang="ar"] {
-    .search-result .counter {
-        @include typography.headline-2-ar;
-    }
     .search-result section:first-of-type .scholarship,
     a.view-link > span {
         @include typography.meta-ar;
