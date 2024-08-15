@@ -182,6 +182,9 @@
                         {% endwith %}
                     {% endfor %}
                 </ul>
+            {% else %}
+                {# Translators: label for when no image thumbnail is available #}
+                <span class="no-image">{% translate 'No Image' %}</span>
             {% endif %}
             <dl class="pgp-metadata">
                 {# Translators: Date document was first added to the PGP #}

@@ -300,6 +300,18 @@ section#document-list {
             }
         }
     }
+    span.no-image {
+        width: 250px;
+        height: 250px;
+        background-image: url("/static/img/ui/all/all/no-image-square-lg.png");
+        background-size: 250px;
+        font-weight: 600;
+        font-size: typography.$text-size-6xl;
+        margin-top: spacing.$spacing-sm;
+        @include breakpoints.for-tablet-landscape-up {
+            margin-top: 0;
+        }
+    }
     /* use pseudo marker to get transcription line numbers from snippets */
     .transcription li,
     .translation li {
