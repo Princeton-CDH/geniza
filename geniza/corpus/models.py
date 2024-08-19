@@ -1,3 +1,4 @@
+import itertools
 import logging
 import re
 from collections import defaultdict
@@ -1133,7 +1134,11 @@ class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin):
                 "textblock_set",
                 queryset=TextBlock.objects.select_related(
                     "fragment", "fragment__collection", "fragment__manifest"
-                ).prefetch_related("fragment__manifest__canvases"),
+                ).prefetch_related(
+                    "fragment__manifest__canvases",
+                    "fragment__textblock_set",
+                    "fragment__textblock_set__document",
+                ),
             ),
             Prefetch(
                 "footnotes",
@@ -1165,7 +1170,11 @@ class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin):
                 "textblock_set",
                 queryset=TextBlock.objects.select_related(
                     "fragment", "fragment__collection", "fragment__manifest"
-                ).prefetch_related("fragment__manifest__canvases"),
+                ).prefetch_related(
+                    "fragment__manifest__canvases",
+                    "fragment__textblock_set",
+                    "fragment__textblock_set__document",
+                ),
             ),
             Prefetch(
                 "footnotes",
@@ -1188,6 +1197,15 @@ class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin):
         # get fragments via textblocks for correct order
         # and to take advantage of prefetching
         fragments = [tb.fragment for tb in self.textblock_set.all()]
+
+        # get related documents: other textblocks on this document's fragments
+        other_textblocks_docs = [
+            f.textblock_set.exclude(document__pk=self.pk).values_list(
+                "document__pk", flat=True
+            )
+            for f in fragments
+        ]
+        related_document_pks = set(itertools.chain.from_iterable(other_textblocks_docs))
         # filter by side so that search results only show the relevant side image(s)
         images = self.iiif_images(filter_side=True).values()
         index_data.update(
@@ -1267,6 +1285,7 @@ class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin):
                 "has_image_b": len(images) > 0,
                 "people_count_i": self.persondocumentrelation_set.count(),
                 "places_count_i": self.documentplacerelation_set.count(),
+                "documents_count_i": len(related_document_pks),
             }
         )
 

@@ -84,6 +84,7 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
         "description_nostem": "description_nostem",
         "related_people": "people_count_i",
         "related_places": "places_count_i",
+        "related_documents": "documents_count_i",
     }
 
     # regex to convert field aliases used in search to actual solr fields
@@ -224,7 +225,7 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
         "Return documents related to the given document (i.e. shares any shelfmarks)"
 
         # NOTE: using a string query filter because parasolr queryset
-        # # currently doesn't provide any kind of not/exclude filter
+        # currently doesn't provide any kind of not/exclude filter
         return (
             self.filter(status=document.PUBLIC_LABEL)
             .filter("NOT pgpid_i:%d" % document.id)
@@ -258,18 +259,6 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
             # "Unknown type" is not an actual doctype obj, so need to gettext for translation
             _("Unknown type"),
         )
-
-        if doc.get("shelfmarks"):
-            doc["related_documents"] = (
-                DocumentSolrQuerySet()
-                .filter("NOT pgpid_i:%d" % doc["pgpid"])
-                .filter(
-                    fragment_shelfmark_ss__in=[
-                        '"%s"' % shelfmark for shelfmark in doc["shelfmarks"]
-                    ]
-                )
-                .count()
-            )
 
         return doc
 
