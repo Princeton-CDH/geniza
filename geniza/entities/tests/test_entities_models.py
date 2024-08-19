@@ -478,8 +478,8 @@ class TestPerson:
         assert index_data["document_relation_ss"] == [str(pdrtype)]
         assert index_data["date_dr"] == person.solr_date_range()
         assert index_data["date_str_s"] == person.date_str
-        assert index_data["start_date_i"] == PartialDate("1200").numeric_format()
-        assert index_data["end_date_i"] == PartialDate("1300").numeric_format(
+        assert index_data["start_dating_i"] == PartialDate("1200").numeric_format()
+        assert index_data["end_dating_i"] == PartialDate("1300").numeric_format(
             mode="max"
         )
 

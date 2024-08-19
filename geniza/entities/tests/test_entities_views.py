@@ -400,13 +400,13 @@ class TestPersonListView:
                     "sort_dir": "desc",
                 }
                 personlist_view.get_queryset()
-                mock_order_by.assert_called_with("-end_date_i")
+                mock_order_by.assert_called_with("-end_dating_i")
                 mock_get_form.return_value.cleaned_data = {
                     "sort": "date",
                     "sort_dir": "asc",
                 }
                 personlist_view.get_queryset()
-                mock_order_by.assert_called_with("start_date_i")
+                mock_order_by.assert_called_with("start_dating_i")
 
     def test_get_context_data(self, client, person):
         with patch.object(PersonListForm, "set_choices_from_facets") as mock_setchoices:

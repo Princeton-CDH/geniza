@@ -484,8 +484,8 @@ class PersonListView(ListView, FormMixin, SolrDateRangeMixin):
         "documents": "documents_i",
         "people": "people_i",
         "places": "places_i",
-        "date_asc": "start_date_i",
-        "date_desc": "-end_date_i",
+        "date_asc": "start_dating_i",
+        "date_desc": "-end_dating_i",
     }
     initial = {"sort": "name", "sort_dir": "asc"}
 
