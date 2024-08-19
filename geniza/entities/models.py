@@ -708,8 +708,8 @@ class Person(ModelIndexable, SlugMixin, DocumentDatableMixin, PermalinkMixin):
                 {
                     "date_dr": solr_date_range,
                     "date_str_s": self.date_str,
-                    "start_date_i": (dates[0].numeric_format()),
-                    "end_date_i": (
+                    "start_dating_i": (dates[0].numeric_format()),
+                    "end_dating_i": (
                         (dates[1] if len(dates) > 1 else dates[0]).numeric_format(
                             mode="max"
                         )
