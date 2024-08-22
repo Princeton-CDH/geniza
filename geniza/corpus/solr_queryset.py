@@ -124,6 +124,9 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
     # to use as highlighting query
     highlight_query = None
 
+    # if search consists only of quoted phrase scoped to shelfmark, handle separately
+    shelfmark_query = None
+
     def _search_term_cleanup(self, search_term):
         # adjust user search string before sending to solr
 
@@ -174,6 +177,12 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
             search_term = search_term.replace(
                 "%s:" % self.shelfmark_qf, self.shelfmark_qf
             )
+            # special case: just a shelfmark query, in quotes
+            quoted_shelfmark_query = re.fullmatch(
+                rf'{re.escape(self.shelfmark_qf)}".+?"', search_term
+            )
+            if quoted_shelfmark_query:
+                self.shelfmark_query = quoted_shelfmark_query.group(0)
 
         return search_term
 
@@ -201,9 +210,14 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
         # nested edismax query no longer works since solr 7.2 (see above)
         if "{!type=edismax" in keyword_query:
             query_params.update({"uf": "* _query_"})
-        search = self.search(self.keyword_search_qf).raw_query_parameters(
-            **query_params
-        )
+        # if search term consists only of a shelfmark query in quotes, only search shelfmark fields
+        if self.shelfmark_query:
+            search = self.search(self.shelfmark_query)
+        else:
+            # otherwise, search all fields as usual
+            search = self.search(self.keyword_search_qf).raw_query_parameters(
+                **query_params
+            )
         # if search term cleanup identifies any exact phrase searches,
         # pass the unmodified search to Solr as a highlighting query,
         # since otherwise the highlighted fields (description/transcription)

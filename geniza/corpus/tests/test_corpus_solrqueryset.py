@@ -202,6 +202,37 @@ class TestDocumentSolrQuerySet:
             == '(description_nostem:"מרכב אלצלטאן" OR transcription_nostem:"מרכב אלצלטאן") AND (description_nostem:"אלמרכב אלצלטאן" OR transcription_nostem:"אלמרכב אלצלטאן")'
         )
 
+    def test_search_term_cleanup__quoted_shelfmark_only(self):
+        dqs = DocumentSolrQuerySet()
+        # double quoted shelfmark-only search should populate dqs.shelfmark_query
+        dqs._search_term_cleanup('shelfmark:"T-S NS"')
+        assert "T-S NS" in dqs.shelfmark_query
+
+        # otherwise dqs.sheflmark_query should remain unset
+        dqs = DocumentSolrQuerySet()
+        assert "T-S NS" in dqs._search_term_cleanup(
+            'tag:"marriage payment" shelfmark:"T-S NS"'
+        )
+        assert not dqs.shelfmark_query
+        assert "NS" in dqs._search_term_cleanup("shelfmark:NS")
+        assert not dqs.shelfmark_query
+
+    def test_keyword_search__quoted_shelfmark(self):
+        dqs = DocumentSolrQuerySet()
+        with patch.object(dqs, "search") as mocksearch:
+            # only quoted shelfmark: should only search on shelfmark fields
+            dqs.keyword_search('shelfmark:"T-S NS"')
+            mocksearch.assert_called_with(dqs.shelfmark_query)
+            mocksearch.return_value.raw_query_parameters.assert_not_called()
+
+        dqs = DocumentSolrQuerySet()
+        with patch.object(dqs, "search") as mocksearch:
+            # otherwise should search as normal
+            dqs.keyword_search('tag:"marriage payment" shelfmark:"T-S NS"')
+            mocksearch.return_value.raw_query_parameters.assert_called()
+            dqs.keyword_search("shelfmark:NS")
+            mocksearch.return_value.raw_query_parameters.assert_called()
+
     def test_related_to(self, document, join, fragment, empty_solr):
         """should give filtered result: public documents with any shared shelfmarks"""
 
