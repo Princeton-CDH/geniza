@@ -51,7 +51,7 @@
                 </label>
                 <label for="{{ form.date_range.auto_id }}" class="date-range-label">
                     <span class="fieldname">{{ form.date_range.label }}</span>
-                    {% render_field form.date_range data-action="search#update keypress->search#handleDate" %}
+                    {% render_field form.date_range data-action="search#update keypress->search#preventEnterKeypress" %}
                 </label>
             </div>
             <label for="{{ form.social_role.auto_id }}">
