@@ -800,6 +800,9 @@
         shelfmark_t
         shelfmark_bigram
         shelfmark_textnum
+        old_shelfmark_t
+        old_shelfmark_textnum
+        old_shelfmark_bigram
       </str>
     </lst>
 

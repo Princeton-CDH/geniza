@@ -198,10 +198,10 @@
             </dl>
             <dl class="additional-metadata">
                 {% with document_highlights=highlighting|dict_item:document.id %}
-                    {% if document_highlights.old_shelfmark and document_highlights.old_shelfmark.0 %}
+                    {% if document_highlights.old_shelfmark %}
                         {# Translators: label for historical/old shelfmark on document fragments #}
                         <dt>{% translate "Historical shelfmark" %}</dt>
-                        <dd>{{ document_highlights.old_shelfmark.0|striptags }}</dd>
+                        <dd>{{ document_highlights.old_shelfmark|striptags }}</dd>
                     {% endif %}
                 {% endwith %}
             </dl>
