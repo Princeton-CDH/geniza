@@ -182,7 +182,7 @@ class TestDocumentSearchForm:
             # malformed <> queries
             ["<a>", "<a", "<", ".*<", "(?<!a)b"],
             # malformed "invalid character class" queries
-            ["\\a", "\\b", "\B", "\\r", "\\t", "\\3"],
+            ["\\a", "\\b", "\\B", "\\r", "\\t", "\\3"],
         ]
         for q in itertools.chain.from_iterable(bad_queries):
             form.cleaned_data = {"mode": "regex", "q": q}
@@ -192,28 +192,19 @@ class TestDocumentSearchForm:
         form = DocumentSearchForm()
         good_queries = [
             # good { queries
-            [".{1}", "\{", "\{.+\}"],
+            [".{1}", "\\{", "\\{.+\\}"],
             # good * queries
-            [".*", "a*", "\**", "\*."],
+            [".*", "a*", "\\**", "\\*."],
             # good + queries
-            [".+", "a+", "\++", "\+."],
+            [".+", "a+", "\\++", "\\+."],
             # good [] queries
-            ["\[.", ".\[", "[A-Z]", ".*[A-Z]"],
+            ["\\[.", ".\\[", "[A-Z]", ".*[A-Z]"],
             # good <> queries
-            ["\<a\>", "\<a", "\<", ".*\<"],
-            # fixed "invalid character class" queries and other good escape sequences
-            [
-                "\\\\a",
-                "\\\\b",
-                "\\\\B",
-                "\\\\r",
-                "\\\\t",
-                "\\\\3",
-                "\d",
-                "\D",
-                "\s",
-                "\w",
-            ],
+            ["\\<a\\>", "\\<a", "\\<", ".*\\<"],
+            # fixed "invalid character class" queries
+            ["\\\\a", "\\\\b", "\\\\B", "\\\\r", "\\\\t", "\\\\3"],
+            # other good escape sequences
+            ["\\d", "\\D", "\\s", "\\w"],
         ]
         for q in itertools.chain.from_iterable(good_queries):
             form.cleaned_data = {"mode": "regex", "q": q}
