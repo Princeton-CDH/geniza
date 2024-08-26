@@ -330,12 +330,19 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
             highlights = {}
             # highlighting takes place *after* solr, so use get_results()
             for doc in self.get_results():
-                highlights[doc["id"]] = {"transcription": []}
-                # this field is split by block-level annotation/group
-                for block in doc["transcription_regex"]:
-                    highlight_snippet = self.get_regex_highlight(block)
-                    if highlight_snippet:
-                        highlights[doc["id"]]["transcription"].append(highlight_snippet)
+                # highlight per document, keyed on id as expected in results
+                highlights[doc["id"]] = {
+                    "transcription": [
+                        highlighted_block
+                        # this field is split by block-level annotation/group
+                        for highlighted_block in (
+                            self.get_regex_highlight(block)
+                            for block in doc["transcription_regex"]
+                        )
+                        # only include a block if it actually has highlights
+                        if highlighted_block
+                    ]
+                }
 
         is_exact_search = "hl_query" in self.raw_params
         for doc in highlights.keys():
