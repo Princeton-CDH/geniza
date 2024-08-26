@@ -635,7 +635,8 @@ class Footnote(TrackChangesModel):
 
     @cached_property
     def content_text_canvases(self):
-        "content as a list of strings, one per canvas, used for regex search index"
+        """content as a list of strings, one per canvas"""
+        # used for regex search indexing
         content_html = self.content_html
         if content_html:
             return [

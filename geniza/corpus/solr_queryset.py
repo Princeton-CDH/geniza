@@ -228,13 +228,14 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
 
     def regex_search(self, search_term):
         """Build a Lucene query for searching with regex."""
-        # store original regex query
+        # store unmodified regex query for post-search highlighting by python
         original_regex = search_term
         # surround passed query with wildcards to allow non-anchored matches,
         # and slashes so that it is interpreted as regex by Lucene
         search_term = f"/.*{search_term}.*/"
         # match in the non-analyzed transcription_regex field
         search = self.search(f"transcription_regex:{search_term}").raw_query_parameters(
+            # store unmodified query in solr so it can be accessed in get_highlighting
             regex_query=original_regex
         )
         return search

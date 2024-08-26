@@ -350,7 +350,7 @@
   <copyField source="tags_ss_lower" dest="tags_t" maxChars="30000" />
   <copyField source="type_s" dest="type_t" maxChars="300" />
 
-  <!-- copy description and transcription to nostem and regex fields for exact matches -->
+  <!-- copy description and transcription to nostem fields for exact matches -->
   <copyField source="description_en_bigram" dest="description_nostem" maxChars="30000" />
   <copyField source="text_transcription" dest="transcription_nostem" maxChars="30000" />
 
