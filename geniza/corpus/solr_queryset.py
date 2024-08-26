@@ -227,7 +227,9 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
         return search
 
     def regex_search(self, search_term):
-        """Build a Lucene query for searching with regex."""
+        """Build a Lucene query for searching with regular expressions.
+        NOTE: this function may cause Lucene errors if input is not validated beforehand.
+        """
         # store unmodified regex query for post-search highlighting by python
         original_regex = search_term
         # surround passed query with wildcards to allow non-anchored matches,

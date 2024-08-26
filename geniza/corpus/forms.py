@@ -1,3 +1,5 @@
+import re
+
 from dal import autocomplete
 from django import forms
 from django.contrib.admin.widgets import RelatedFieldWidgetWrapper
@@ -327,6 +329,72 @@ class DocumentSearchForm(RangeForm):
             self.add_error(
                 "q", _("Relevance sort is not available without a keyword search term.")
             )
+        # additional validation for regex mode due to some queries that cause Lucene errors
+        mode = cleaned_data.get("mode")
+        if mode == "regex":
+            # reused text about needing an escape character
+            needs_escape = (
+                lambda char: f"If you are searching for the character {char} in a transcription, escape it with \ by writing \{char} instead."
+            )
+            # see error messages for explanations of each regex here
+            if re.search(r"((?<!\\)\{[^0-9])|(^\{)|((?<!\\)\{[^\}]*$)", q):
+                print(q)
+                self.add_error(
+                    "q",
+                    _(
+                        "Regular expression cannot contain { without a preceding character, without an integer afterwards, or without a closing }. %s"
+                        % needs_escape("{")
+                    ),
+                )
+            if re.search(r"(^\*)|((?<!\\)\*\*)", q):
+                self.add_error(
+                    "q",
+                    _(
+                        "Regular expression cannot contain * without a preceding character, or multiple times in a row. %s"
+                        % needs_escape("*")
+                    ),
+                )
+            if re.search(r"(^\+)|((?<!\\)\+\+)", q):
+                self.add_error(
+                    "q",
+                    _(
+                        "Regular expression cannot contain + without a preceding character, or multiple times in a row. %s"
+                        % needs_escape("+")
+                    ),
+                )
+            if re.search(r"(?<!\\)\[[^\]]*$", q):
+                self.add_error(
+                    "q",
+                    _(
+                        "Regular expression cannot contain an unclosed [ bracket. %s"
+                        % needs_escape("[")
+                    ),
+                )
+            if re.search(r"(?<!\\)\([^\)]*$", q):
+                self.add_error(
+                    "q",
+                    _(
+                        "Regular expression cannot contain an unclosed (. %s"
+                        % needs_escape("(")
+                    ),
+                )
+            if re.search(r"(?<!\\)\<", q):
+                self.add_error(
+                    "q",
+                    _(
+                        "Regular expression cannot contain < or use a negative lookbehind query. %s"
+                        % needs_escape("<")
+                    ),
+                )
+            if re.search(r"((?<!\\)\\[ABCE-RTUVXYZabce-rtuvxyz0-9])|((?<!\\)\\$)", q):
+                # see https://github.com/apache/lucene/issues/11678 for more information
+                self.add_error(
+                    "q",
+                    _(
+                        "Regular expression cannot contain the escape character \\ followed by an alphanumeric character other than one of DdSsWw, or at the end of a query. %s"
+                        % needs_escape("\\")
+                    ),
+                )
 
 
 class DocumentChoiceField(forms.ModelChoiceField):

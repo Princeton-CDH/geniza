@@ -1,3 +1,4 @@
+import itertools
 from unittest.mock import Mock, patch
 
 import pytest
@@ -162,6 +163,62 @@ class TestDocumentSearchForm:
         form.cleaned_data = {"q": "", "sort": "scholarship_desc"}
         form.clean()
         assert len(form.errors) == 0
+
+    def test_clean__regex(self):
+        """test special validation for malformed regex searches"""
+
+        form = DocumentSearchForm()
+        bad_queries = [
+            # malformed { queries
+            ["{", "{}", ".{", "{1}", "{.+}"],
+            # malformed * queries
+            ["**", "*", ".**", "*.", "*a"],
+            # malformed + queries
+            ["++", "+", ".++", "+.", "+a"],
+            # malformed [] queries
+            ["[", "[A-Z", ".*["],
+            # malformed () queries
+            ["(", "(a", ".*("],
+            # malformed <> queries
+            ["<a>", "<a", "<", ".*<", "(?<!a)b"],
+            # malformed "invalid character class" queries
+            ["\\a", "\\b", "\B", "\\r", "\\t", "\\3"],
+        ]
+        for q in itertools.chain.from_iterable(bad_queries):
+            form.cleaned_data = {"mode": "regex", "q": q}
+            form.clean()
+            assert len(form.errors) == 1
+
+        form = DocumentSearchForm()
+        good_queries = [
+            # good { queries
+            [".{1}", "\{", "\{.+\}"],
+            # good * queries
+            [".*", "a*", "\**", "\*."],
+            # good + queries
+            [".+", "a+", "\++", "\+."],
+            # good [] queries
+            ["\[.", ".\[", "[A-Z]", ".*[A-Z]"],
+            # good <> queries
+            ["\<a\>", "\<a", "\<", ".*\<"],
+            # fixed "invalid character class" queries and other good escape sequences
+            [
+                "\\\\a",
+                "\\\\b",
+                "\\\\B",
+                "\\\\r",
+                "\\\\t",
+                "\\\\3",
+                "\d",
+                "\D",
+                "\s",
+                "\w",
+            ],
+        ]
+        for q in itertools.chain.from_iterable(good_queries):
+            form.cleaned_data = {"mode": "regex", "q": q}
+            form.clean()
+            assert len(form.errors) == 0
 
     def test_clean_q(self):
         form = DocumentSearchForm()
