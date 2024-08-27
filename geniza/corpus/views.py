@@ -349,7 +349,22 @@ class DocumentSearchView(
         highlights = paged_result.get_highlighting() if paged_result.count() else {}
         facet_dict = self.queryset.get_facets()
         # populate choices for facet filter fields on the form
-        context_data["form"].set_choices_from_facets(facet_dict.facet_fields)
+        try:
+            context_data["form"].set_choices_from_facets(facet_dict.facet_fields)
+        except AttributeError:
+            # in the event of a solr error (which causes an AttributeError on facet_dict),
+            # reset queryset to none() so we can display facet fields
+            self.queryset = self.queryset.none()
+            facet_dict = self.queryset.get_facets()
+            context_data["form"].set_choices_from_facets(facet_dict.facet_fields)
+            if self.request.GET.get("mode") == "regex":
+                context_data["form"].add_error(
+                    "q",
+                    # Translators: General error text for regular expression errors
+                    _(
+                        "Error retrieving search results. Check regular expression for errors such as unescaped or unclosed brackets or parentheses."
+                    ),
+                )
         context_data.update(
             {
                 "highlighting": highlights,

@@ -348,6 +348,7 @@ class DocumentSearchForm(RangeForm):
                 print(q)
                 self.add_error(
                     "q",
+                    # Translators: error message for malformed curly brace in regular expression
                     _(
                         "Regular expression cannot contain { without a preceding character, without an integer afterwards, or without a closing }. %s"
                         % needs_escape("{")
@@ -356,6 +357,7 @@ class DocumentSearchForm(RangeForm):
             if re.search(r"(^\*)|((?<!\\)\*\*)", q):
                 self.add_error(
                     "q",
+                    # Translators: error message for malformed asterisk in regular expression
                     _(
                         "Regular expression cannot contain * without a preceding character, or multiple times in a row. %s"
                         % needs_escape("*")
@@ -364,30 +366,16 @@ class DocumentSearchForm(RangeForm):
             if re.search(r"(^\+)|((?<!\\)\+\+)", q):
                 self.add_error(
                     "q",
+                    # Translators: error message for malformed plus sign in regular expression
                     _(
                         "Regular expression cannot contain + without a preceding character, or multiple times in a row. %s"
                         % needs_escape("+")
                     ),
                 )
-            if re.search(r"(?<!\\)\[[^\]]*$", q):
-                self.add_error(
-                    "q",
-                    _(
-                        "Regular expression cannot contain an unclosed [ bracket. %s"
-                        % needs_escape("[")
-                    ),
-                )
-            if re.search(r"(?<!\\)\([^\)]*$", q):
-                self.add_error(
-                    "q",
-                    _(
-                        "Regular expression cannot contain an unclosed (. %s"
-                        % needs_escape("(")
-                    ),
-                )
             if re.search(r"(?<!\\)\<", q):
                 self.add_error(
                     "q",
+                    # Translators: error message for malformed less than sign in regular expression
                     _(
                         "Regular expression cannot contain < or use a negative lookbehind query. %s"
                         % needs_escape("<")
@@ -397,6 +385,7 @@ class DocumentSearchForm(RangeForm):
                 # see https://github.com/apache/lucene/issues/11678 for more information
                 self.add_error(
                     "q",
+                    # Translators: error message for malformed backslash in regular expression
                     _(
                         "Regular expression cannot contain the escape character \\ followed by an alphanumeric character other than one of DdSsWw, or at the end of a query. %s"
                         % needs_escape("\\")

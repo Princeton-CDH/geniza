@@ -175,10 +175,6 @@ class TestDocumentSearchForm:
             ["**", "*", ".**", "*.", "*a"],
             # malformed + queries
             ["++", "+", ".++", "+.", "+a"],
-            # malformed [] queries
-            ["[", "[A-Z", ".*["],
-            # malformed () queries
-            ["(", "(a", ".*("],
             # malformed <> queries
             ["<a>", "<a", "<", ".*<", "(?<!a)b"],
             # malformed "invalid character class" queries
@@ -197,8 +193,6 @@ class TestDocumentSearchForm:
             [".*", "a*", "\\**", "\\*."],
             # good + queries
             [".+", "a+", "\\++", "\\+."],
-            # good [] queries
-            ["\\[.", ".\\[", "[A-Z]", ".*[A-Z]"],
             # good <> queries
             ["\\<a\\>", "\\<a", "\\<", ".*\\<"],
             # fixed "invalid character class" queries
