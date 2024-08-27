@@ -230,16 +230,11 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
         """Build a Lucene query for searching with regular expressions.
         NOTE: this function may cause Lucene errors if input is not validated beforehand.
         """
-        # store unmodified regex query for post-search highlighting by python
-        original_regex = search_term
         # surround passed query with wildcards to allow non-anchored matches,
         # and slashes so that it is interpreted as regex by Lucene
         search_term = f"/.*{search_term}.*/"
         # match in the non-analyzed transcription_regex field
-        search = self.search(f"transcription_regex:{search_term}").raw_query_parameters(
-            # store unmodified query in solr so it can be accessed in get_highlighting
-            regex_query=original_regex
-        )
+        search = self.search(f"transcription_regex:{search_term}")
         return search
 
     def related_to(self, document):
@@ -298,7 +293,14 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
     def get_regex_highlight(self, text):
         """Helper method to manually highlight and truncate a snippet for regex matches
         (automatic highlight unavailable due to solr regex search limitations)"""
-        pattern = f"({self.raw_params['regex_query']})"
+        # remove solr field name and lucene-required "match all" logic to get original query
+        regex_query = (
+            self.search_qs[0]
+            .replace("transcription_regex:/.*", "")
+            .rsplit(".*/", maxsplit=1)[0]
+        )
+        pattern = f"({regex_query})"
+        print(pattern)
         # attempt split on first regex match
         split_text = re.split(pattern, text, maxsplit=1, flags=re.DOTALL)
         if len(split_text) > 1:
@@ -326,7 +328,7 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
         """highlight snippets within transcription/translation html may result in
         invalid tags that will render strangely; clean up the html before returning"""
         highlights = super().get_highlighting()
-        is_regex_search = "regex_query" in self.raw_params
+        is_regex_search = any("transcription_regex" in q for q in self.search_qs)
         if is_regex_search:
             # highlight regex results manually due to solr limitation
             highlights = {}

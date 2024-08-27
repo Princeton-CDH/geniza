@@ -327,7 +327,7 @@ class TestDocumentSolrQuerySet:
 
     def test_get_highlighting__regex(self):
         dqs = DocumentSolrQuerySet()
-        dqs.raw_params = {"regex_query": "test"}
+        dqs.search_qs = ["transcription_regex:/.*test.*/"]
         # if regex_query in raw params, should overwrite any normal matches with regex matches
         with patch("geniza.corpus.solr_queryset.super") as mock_super:
             mock_get_highlighting = mock_super.return_value.get_highlighting
@@ -351,13 +351,10 @@ class TestDocumentSolrQuerySet:
             # should surround with wildcards in order to match entire field,
             # and with slashes for Lucene regex syntax
             mocksearch.assert_called_with(f"transcription_regex:/.*{query}.*/")
-            mocksearch.return_value.raw_query_parameters.assert_called_with(
-                regex_query=query,
-            )
 
     def test_get_regex_highlight(self):
         dqs = DocumentSolrQuerySet()
-        dqs.raw_params = {"regex_query": "אלאחרף אן למא"}
+        dqs.search_qs = ["transcription_regex:/.*אלאחרף אן למא.*/"]
         # no match -> None
         assert dqs.get_regex_highlight("test") == None
         # use a bit of a real example, with > 300 characters, as a test
@@ -380,14 +377,14 @@ class TestDocumentSolrQuerySet:
         assert len(after_match) <= 150
 
         # should support all regex syntax, such as . wildcard and + 1 or more characters
-        dqs.raw_params = {"regex_query": "אלאחרף.+למא"}
+        dqs.search_qs = ["transcription_regex:/.*אלאחרף.+למא.*/"]
         highlight = dqs.get_regex_highlight(text)
         assert "<em>אלאחרף אן למא</em>" in highlight
 
         # reserved characters should require escape characters for correct results
-        dqs.raw_params = {"regex_query": "[אלוא]צעין"}
+        dqs.search_qs = ["transcription_regex:/.*[אלוא]צעין.*/"]
         highlight = dqs.get_regex_highlight(text)
         assert highlight is None
-        dqs.raw_params = {"regex_query": "\[אלוא\]צעין"}
+        dqs.search_qs = ["transcription_regex:/.*\[אלוא\]צעין.*/"]
         highlight = dqs.get_regex_highlight(text)
         assert "<em>[אלוא]צעין</em>" in highlight
