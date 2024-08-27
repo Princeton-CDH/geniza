@@ -369,12 +369,12 @@ class TestDocumentSolrQuerySet:
         # should highlight the matched portion
         assert "<em>אלאחרף אן למא</em>" in highlight
 
-        # should shorten context on either side of match to <=150 characters
+        # should shorten context on either side of match to <=150 characters + 2 words
         assert len(highlight) < len(text)
         before_match = highlight.split("<em>")[0]
-        assert len(before_match) <= 150
+        assert len(before_match) <= 175
         after_match = highlight.split("</em>")[1]
-        assert len(after_match) <= 150
+        assert len(after_match) <= 175
 
         # should support all regex syntax, such as . wildcard and + 1 or more characters
         dqs.search_qs = ["transcription_regex:/.*אלאחרף.+למא.*/"]
@@ -388,3 +388,8 @@ class TestDocumentSolrQuerySet:
         dqs.search_qs = ["transcription_regex:/.*\[אלוא\]צעין.*/"]
         highlight = dqs.get_regex_highlight(text)
         assert "<em>[אלוא]צעין</em>" in highlight
+
+        # multiple matches for the query should be separated by line breaks and ellipsis
+        dqs.search_qs = ["transcription_regex:/.*מן.*/"]
+        highlight = dqs.get_regex_highlight(text)
+        assert "<br />[…]<br />" in highlight

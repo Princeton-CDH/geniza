@@ -299,30 +299,18 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
             .replace("transcription_regex:/.*", "")
             .rsplit(".*/", maxsplit=1)[0]
         )
-        pattern = f"({regex_query})"
-        print(pattern)
-        # attempt split on first regex match
-        split_text = re.split(pattern, text, maxsplit=1, flags=re.DOTALL)
-        if len(split_text) > 1:
-            # found a match, truncate text down to just context around match
-            # using word boundary as start, get <=150 characters of context before match
-            before = split_text[0]
-            start_boundary_regex = re.search(r"\b(.{1,150}$)", before, flags=re.DOTALL)
-            before = start_boundary_regex.group(1) if start_boundary_regex else before
-
-            # add highlight to matching portion
-            match = re.sub(pattern, lambda m: f"<em>{m.group(1)}</em>", split_text[1])
-
-            # get <=150 characters of context after match, using word boundary as end
-            after = split_text[2]
-            end_boundary_regex = re.search(r"^(.{1,150})\b", after, flags=re.DOTALL)
-            after = end_boundary_regex.group(1) if end_boundary_regex else after
-
-            # combine truncated context with highlighted match
-            return before + match + after
-        else:
-            # no match = no highlight
-            return None
+        # get ~150 characters of context plus a word on either side of the matched portion
+        pattern = r"(\b\w+.{0,150})(%s)(.{0,150}\w+\b)" % regex_query
+        # find all matches in the snippet
+        matches = re.findall(pattern, text, flags=re.DOTALL)
+        # separate multiple matches by HTML line breaks and ellipsis
+        separator = "<br />[…]<br />"
+        # surround matched portion in <em> so it is visible in search results; join all into string
+        return (
+            separator.join([f"{m[0]}<em>{m[1]}</em>{m[2]}" for m in matches if m])
+            if matches
+            else None
+        )
 
     def get_highlighting(self):
         """highlight snippets within transcription/translation html may result in
