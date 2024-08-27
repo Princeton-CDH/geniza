@@ -400,7 +400,7 @@ main.people {
         }
     }
     // filter modal backdrop (mobile)
-    .modal-backdrop:has(~ fieldset#filters:target),
+    .modal-backdrop:has(~ fieldset#filters:target:not([aria-expanded="false"])),
     .modal-backdrop:has(~ fieldset#filters[aria-expanded="true"]) {
         position: fixed;
         top: 0;
@@ -411,6 +411,61 @@ main.people {
         background-color: var(--modal-backdrop);
         @include breakpoints.for-tablet-landscape-up {
             display: none;
+        }
+    }
+}
+
+main.search form fieldset#filters div.fieldset-left-column {
+    @include breakpoints.for-tablet-landscape-up {
+        gap: 1rem;
+    }
+    label[for="id_exclude_inferred"] {
+        position: relative;
+        cursor: pointer;
+        input[type="checkbox"] + span::before {
+            display: none;
+        }
+        input[type="checkbox"] + span {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+        }
+        input[type="checkbox"] + span::after {
+            display: block;
+            content: "";
+            border-radius: 7px;
+            width: 34px;
+            height: 14px;
+            background-color: var(--background-gray);
+            transition: background-color 0.1s ease-in-out;
+        }
+        input[type="checkbox"]:active + span::after,
+        input[type="checkbox"]:checked + span::after {
+            background-color: var(--secondary-40);
+        }
+        input[type="checkbox"]:checked:active + span::after {
+            background-color: var(--background-gray);
+        }
+        .thumb {
+            display: block;
+            width: 20px;
+            height: 20px;
+            position: absolute;
+            top: calc(50% - 10px);
+            right: 14px;
+            transition: right 0.1s ease-in-out,
+                background-color 0.1s ease-in-out;
+            border-radius: 50%;
+            background-color: var(--disabled-on-background-light);
+            box-shadow: 0px 1px 3px 0px #00000033;
+            box-shadow: 0px 2px 1px 0px #0000001f;
+            box-shadow: 0px 1px 1px 0px #00000024;
+        }
+        input[type="checkbox"]:active + span + .thumb,
+        input[type="checkbox"]:checked + span + .thumb {
+            right: 0;
+            background-color: var(--secondary);
         }
     }
 }

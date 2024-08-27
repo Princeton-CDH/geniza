@@ -1,6 +1,11 @@
 Change Log
 ==========
 
+4.17.3
+------
+
+- chore: Use self-hosted tinyMCE
+
 4.17.2
 ------
 

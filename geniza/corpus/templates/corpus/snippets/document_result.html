@@ -7,14 +7,10 @@
                 Relevance: {{ document.score|default:0 }}
             </span>
         {% endif %}
-        {# result number #}
-        <span class="counter">
-            {% with page_obj.start_index|default:1 as start_adjust %}
-                {{ forloop.counter0|add:start_adjust }}
-            {% endwith %}
-        </span>
         {# title #}
         <h2 class="title">
+            {# result number #}
+            <span class="counter">{% with page_obj.start_index|default:1 as start_adjust %}{{ forloop.counter0|add:start_adjust }}{% endwith %}</span>
             {# type and shelfmark #}
             <span class="doctype">{{ document.type }}</span>
             <span class="shelfmark">{{ document.shelfmark|shelfmark_wrap }}</span>
@@ -29,6 +25,16 @@
                     <dd>
                         <time>
                             {{ document.document_date.0 }} {# indexed as _t which is a multival field #}
+                        </time>
+                    </dd>
+                {% elif document.document_dating %}
+                    <dt>
+                        {# Translators: label for inferred date on a document #}
+                        {% translate "Inferred date" %}
+                    </dt>
+                    <dd>
+                        <time>
+                            {{ document.document_dating.0 }} {# indexed as _t which is a multival field #}
                         </time>
                     </dd>
                 {% endif %}
@@ -198,10 +204,10 @@
             </dl>
             <dl class="additional-metadata">
                 {% with document_highlights=highlighting|dict_item:document.id %}
-                    {% if document_highlights.old_shelfmark and document_highlights.old_shelfmark.0 %}
+                    {% if document_highlights.old_shelfmark %}
                         {# Translators: label for historical/old shelfmark on document fragments #}
                         <dt>{% translate "Historical shelfmark" %}</dt>
-                        <dd>{{ document_highlights.old_shelfmark.0|striptags }}</dd>
+                        <dd>{{ document_highlights.old_shelfmark|striptags }}</dd>
                     {% endif %}
                 {% endwith %}
             </dl>

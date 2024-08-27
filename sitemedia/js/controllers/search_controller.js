@@ -13,6 +13,7 @@ export default class extends Controller {
         "doctypeFilter",
         "dropdownDetails",
         "helpDialog",
+        "placesMode",
     ];
     static debounces = ["update"];
 
@@ -237,6 +238,21 @@ export default class extends Controller {
             this.helpDialogTarget.close();
         } else {
             this.helpDialogTarget.showModal();
+        }
+    }
+
+    onToggleMap(e) {
+        // for the places list page, handle toggling the map on and off on mobile
+        if (!e.currentTarget.checked) {
+            this.placesModeTargetConnected();
+        }
+    }
+
+    placesModeTargetConnected() {
+        // for the mobile places list page, scroll to the top on load if the map is visible
+        const isMobile = window.innerWidth <= 900;
+        if (isMobile) {
+            window.scrollTo({ top: 0 });
         }
     }
 }

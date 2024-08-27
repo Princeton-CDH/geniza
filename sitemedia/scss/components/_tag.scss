@@ -21,6 +21,10 @@
         text-transform: lowercase;
         border-radius: 5px;
         background-color: var(--tag-bg);
+        transition: background-color 0.15s ease-in-out;
+        &:hover {
+            background-color: var(--tag-bg-hover);
+        }
         color: var(--on-background-light);
         padding: 0 14px;
         min-width: 34px; // 48px - 14px for mobile touch target

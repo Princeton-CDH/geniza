@@ -73,6 +73,11 @@
                     {# NOTE: stimulus action is configured via django widget attrs #}
                     {{ form.docdate }}
                 </label>
+                <label for="{{ form.exclude_inferred.auto_id }}">
+                    {% render_field form.exclude_inferred data-action="search#update" %}
+                    <span>{{ form.exclude_inferred.label }}</span>
+                    <div class="thumb" aria-hidden="true"></div>
+                </label>
             </div>
             <fieldset class="includes-fields">
                 <legend><span class="fieldname">{% translate "Includes" %}</span></legend>

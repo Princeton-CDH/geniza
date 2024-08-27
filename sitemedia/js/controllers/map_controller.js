@@ -46,6 +46,7 @@ export default class extends Controller {
                     parseFloat(marker.dataset.lat),
                 ];
                 if (loc) {
+                    marker.addEventListener("click", this.onClickMarker);
                     new maplibregl.Marker({
                         anchor: "bottom",
                         element: marker,
@@ -67,5 +68,20 @@ export default class extends Controller {
                 });
             }
         }
+    }
+
+    onClickMarker(e) {
+        const selected = document.querySelectorAll(".selected-place");
+        selected.forEach((element) => {
+            element.classList.remove("selected-place");
+        });
+        e.currentTarget.classList.add("selected-place");
+        const slug = e.currentTarget.dataset.slug;
+        const element = document.querySelector(`[data-slug-anchor="${slug}"]`);
+        const isMobile = window.innerWidth <= 900;
+        if (!isMobile) {
+            element.scrollIntoView({ behavior: "smooth" });
+        }
+        element.classList.add("selected-place");
     }
 }

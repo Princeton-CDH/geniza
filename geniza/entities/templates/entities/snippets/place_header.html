@@ -1,5 +1,12 @@
 {% load i18n %}
 
+<div class="breadcrumbs-link-container">
+    <a data-turbo="false" href="{% url 'entities:place-list' %}">
+        {# Translators: Link to return to the list of places from a place page #}
+        {% translate "Back to Places" %}
+    </a>
+</div>
+
 {# title #}
 <h1>{{ place }}</h1>
 

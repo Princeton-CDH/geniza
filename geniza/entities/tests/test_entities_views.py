@@ -19,12 +19,14 @@ from geniza.entities.models import (
     PersonPlaceRelationType,
     PersonSolrQuerySet,
     Place,
+    PlaceSolrQuerySet,
 )
 from geniza.entities.views import (
     PersonAutocompleteView,
     PersonListView,
     PersonMerge,
     PlaceAutocompleteView,
+    PlaceListView,
 )
 
 
@@ -398,13 +400,13 @@ class TestPersonListView:
                     "sort_dir": "desc",
                 }
                 personlist_view.get_queryset()
-                mock_order_by.assert_called_with("-end_date_i")
+                mock_order_by.assert_called_with("-end_dating_i")
                 mock_get_form.return_value.cleaned_data = {
                     "sort": "date",
                     "sort_dir": "asc",
                 }
                 personlist_view.get_queryset()
-                mock_order_by.assert_called_with("start_date_i")
+                mock_order_by.assert_called_with("start_dating_i")
 
     def test_get_context_data(self, client, person):
         with patch.object(PersonListForm, "set_choices_from_facets") as mock_setchoices:
@@ -798,3 +800,66 @@ class TestPlacePeopleView:
         assert response.context["page_type"] == "place"
         # context should include the related person
         assert relation in response.context["related_people"]
+
+
+@pytest.mark.django_db
+class TestPlaceListView:
+    @pytest.mark.usefixtures("mock_solr_queryset")
+    def test_get_queryset(self, mock_solr_queryset):
+        with patch(
+            "geniza.entities.views.PlaceSolrQuerySet",
+            new=self.mock_solr_queryset(PlaceSolrQuerySet),
+        ) as mock_queryset_cls:
+            placelist_view = PlaceListView()
+            placelist_view.request = Mock()
+
+            # invalid form
+            placelist_view.request.GET = {"sort": "abcdefg"}
+            placelist_view.get_queryset()
+            mock_queryset_cls.assert_called_with()
+            mock_sqs = mock_queryset_cls.return_value
+            mock_sqs.none.assert_called_once()
+
+            # sort param
+            mock_sqs.reset_mock()
+            placelist_view.request.GET = {"sort": "name"}
+            placelist_view.get_queryset()
+            mock_sqs.none.assert_not_called()
+            mock_sqs.order_by.assert_called_with("slug_s")
+
+            mock_sqs.reset_mock()
+            placelist_view.request.GET = {"sort": "name", "sort_dir": "desc"}
+            placelist_view.get_queryset()
+            mock_sqs.order_by.assert_called_with("-slug_s")
+
+    def test_get_form_kwargs(self):
+        placelist_view = PlaceListView()
+        placelist_view.request = Mock()
+
+        # no params
+        placelist_view.request.GET = {}
+        kwargs = placelist_view.get_form_kwargs()
+        assert kwargs["initial"] == PlaceListView.initial
+        assert kwargs["data"] == PlaceListView.initial
+
+        # sort param
+        placelist_view.request.GET = {"sort": "documents", "sort_dir": "desc"}
+        kwargs = placelist_view.get_form_kwargs()
+        assert kwargs["initial"] == PlaceListView.initial
+        assert kwargs["data"] == {"sort": "documents", "sort_dir": "desc"}
+
+    @pytest.mark.usefixtures("mock_solr_queryset")
+    @patch("geniza.entities.views.PlaceListView.get_queryset")
+    def test_get_context_data(self, mock_get_queryset, rf, mock_solr_queryset):
+        with patch(
+            "geniza.entities.views.PlaceSolrQuerySet",
+            new=mock_solr_queryset(PlaceSolrQuerySet),
+        ) as mock_queryset_cls:
+            mock_qs = mock_queryset_cls.return_value
+            mock_get_queryset.return_value = mock_qs
+            placelist_view = PlaceListView(kwargs={})
+            placelist_view.queryset = mock_qs
+            placelist_view.object_list = mock_qs
+            placelist_view.request = rf.get("/places/")
+            context_data = placelist_view.get_context_data()
+            assert context_data["page_type"] == "places"

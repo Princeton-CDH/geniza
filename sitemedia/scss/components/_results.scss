@@ -39,6 +39,7 @@ section#document-list {
 // single result
 .search-result {
     background-color: var(--background-light);
+    transition: background-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
     padding: spacing.$spacing-md;
     display: flex;
     justify-content: center;
@@ -75,20 +76,15 @@ section#document-list {
 
     // result number in list
     .counter {
-        display: none;
-        @include breakpoints.for-tablet-landscape-up {
-            display: none;
-            @include typography.headline-2;
-            text-align: right;
-            float: left;
-            position: absolute;
-            left: 0;
-            width: 2rem;
-        }
+        margin-right: 0.75rem;
+        padding-right: 0.75rem;
+        border-right: 1px solid var(--searchresult-separator);
     }
 
     // document titles
     .title {
+        color: var(--on-background);
+        transition: color 0.15s ease-in-out;
         position: relative;
         border-bottom: 1px solid var(--searchresult-separator);
         flex: 1 0 90%;
@@ -428,6 +424,15 @@ section#document-list {
             }
         }
     }
+    &:hover {
+        background-color: var(--background-gray);
+        box-shadow: 0px 2px 6px 0px #00000040;
+    }
+    &:has(a.view-link:hover) {
+        .title {
+            color: var(--primary);
+        }
+    }
 }
 
 // "view document details" link
@@ -499,8 +504,12 @@ html[dir="rtl"] .search-result {
     }
     // result number in list
     .counter {
-        text-align: right;
-        float: right;
+        margin-right: 0;
+        padding-right: 0;
+        margin-left: 0.75rem;
+        padding-left: 0.75rem;
+        border-right: none;
+        border-left: 1px solid var(--searchresult-separator);
     }
     // First row on mobile, left column on larger
     section:first-of-type {
@@ -612,9 +621,6 @@ html[dir="rtl"] .search-result {
 
 // Hebrew variant
 html[lang="he"] {
-    .search-result .counter {
-        @include typography.headline-2-he;
-    }
     .search-result section:first-of-type .scholarship,
     a.view-link > span {
         @include typography.meta-he;
@@ -623,9 +629,6 @@ html[lang="he"] {
 
 // Arabic variant
 html[lang="ar"] {
-    .search-result .counter {
-        @include typography.headline-2-ar;
-    }
     .search-result section:first-of-type .scholarship,
     a.view-link > span {
         @include typography.meta-ar;

@@ -54,13 +54,13 @@ class SolrDateRangeMixin:
             the key is not added to a dictionary.
         :rtype: dict
         """
-        stats = queryset_cls().stats("start_date_i", "end_date_i").get_stats()
+        stats = queryset_cls().stats("start_dating_i", "end_dating_i").get_stats()
         if stats.get("stats_fields"):
             # use minimum from start date and max from end date
             # - we're storing YYYYMMDD as 8-digit number for this we only want year
             # convert to str, take first 4 digits, then convert back to int
-            min_val = stats["stats_fields"]["start_date_i"]["min"]
-            max_val = stats["stats_fields"]["end_date_i"]["max"]
+            min_val = stats["stats_fields"]["start_dating_i"]["min"]
+            max_val = stats["stats_fields"]["end_dating_i"]["max"]
 
             # trim from the end to handle 3-digit years; includes .0 at end
             min_year = int(str(min_val)[:-6]) if min_val else None
@@ -97,6 +97,8 @@ class DocumentSearchView(
         "shelfmark": "shelfmark_natsort",
         "docdate_asc": "start_date_i",
         "docdate_desc": "-end_date_i",
+        "docdating_asc": "start_dating_i",
+        "docdating_desc": "-end_dating_i",
     }
 
     def dispatch(self, request, *args, **kwargs):
@@ -117,13 +119,16 @@ class DocumentSearchView(
             return None
         return super().last_modified()
 
-    def get_solr_sort(self, sort_option):
+    def get_solr_sort(self, sort_option, exclude_inferred=False):
         """Return solr sort field for user-seleted sort option;
         generates random sort field using solr random dynamic field;
         otherwise uses solr sort field from :attr:`solr_sort`"""
         if sort_option == "random":
             # use solr's random dynamic field to sort randomly
             return "random_%s" % randint(1000, 9999)
+        elif "docdate" in sort_option and not exclude_inferred:
+            # use inferred datings if exclude_inferred is not true
+            sort_option = sort_option.replace("date", "dating")
         return self.solr_sort[sort_option]
 
     def get_form_kwargs(self):
@@ -254,7 +259,11 @@ class DocumentSearchView(
                 )  # include relevance score in results
 
             # order by sort option
-            documents = documents.order_by(self.get_solr_sort(search_opts["sort"]))
+            documents = documents.order_by(
+                self.get_solr_sort(
+                    search_opts["sort"], search_opts.get("exclude_inferred", False)
+                )
+            )
 
             # filter by type if specified
             if search_opts["doctype"]:
@@ -291,9 +300,13 @@ class DocumentSearchView(
             if search_opts["docdate"]:
                 # date range filter; returns tuple of value or None for open-ended range
                 start, end = search_opts["docdate"]
-                documents = documents.filter(
-                    document_date_dr="[%s TO %s]" % (start or "*", end or "*")
+                date_filter = "[%s TO %s]" % (start or "*", end or "*")
+                date_field = (
+                    "document_date_dr"
+                    if search_opts.get("exclude_inferred", False)
+                    else "document_dating_dr"
                 )
+                documents = documents.filter(**{date_field: date_filter})
                 label = "%s–%s" % (start, end)
                 if start and not end:
                     label = _("After %s") % start

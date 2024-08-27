@@ -33,15 +33,7 @@ class Command(BaseCommand):
 
         # turn on dark mode, save in local storage
         if dark_mode:
-            # handle separate theme toggles for mobile and desktop
-            try:
-                browser.find_element(
-                    By.CSS_SELECTOR, "#theme-toggle-desktop"
-                ).send_keys(Keys.ENTER)
-            except (ElementNotVisibleException, ElementNotInteractableException):
-                browser.find_element(By.CSS_SELECTOR, "#theme-toggle-mobile").send_keys(
-                    Keys.ENTER
-                )
+            browser.find_element(By.CSS_SELECTOR, "#theme-toggle").send_keys(Keys.ENTER)
             dark_mode_str = " (dark mode)"
 
         # homepage
@@ -79,22 +71,22 @@ class Command(BaseCommand):
         )
         percy_snapshot(browser, "Content Page%s" % dark_mode_str)
 
-        # document search with document type filter expanded
+        # document search with filters expanded
         browser.get(
-            "http://localhost:8000/en/documents/?per_page=2&sort=scholarship_desc#filters"
+            "http://localhost:8000/en/documents/?per_page=2&sort=scholarship_desc"
         )
-        # open document type filter programatically
-        doctype_filter = browser.find_element(By.CSS_SELECTOR, ".doctype-filter")
-        browser.execute_script("arguments[0].open = true", doctype_filter)
-        # click the first option
+        # expand filters
+        filter_button = browser.find_element(By.CSS_SELECTOR, "a#filters-button")
+        browser.execute_script("arguments[0].classList.add('open')", filter_button)
+        filters = browser.find_element(By.CSS_SELECTOR, "fieldset#filters")
+        browser.execute_script("arguments[0].ariaExpanded = true", filters)
+        # click the first doctype filter option
         browser.find_element(
-            By.CSS_SELECTOR, ".doctype-filter li:nth-child(1) label"
+            By.CSS_SELECTOR, "#id_doctype li:nth-child(1) label"
         ).click()
-        filter_modal_css = "fieldset#filters { display: flex !important; }"
         percy_snapshot(
             browser,
             "Document Search filter%s" % dark_mode_str,
-            percy_css=filter_modal_css,
         )
 
         # document search

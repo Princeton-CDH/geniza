@@ -1,0 +1,18 @@
+{% load i18n static %}
+
+<li>
+    {# Translators: accessibility label for Princeton Geniza Lab homepage, for footer #}
+    <a class="logo" href="https://genizalab.princeton.edu/" aria-label="{% translate 'Princeton Geniza Lab homepage' %}">
+        <svg id="pgl-logo">
+            <use href="{% static 'img/logos/all/all/pgl-logo.svg' %}#pgl-logo" />
+        </svg>
+    </a>
+</li>
+<li>
+    {# Translators: accessibility label for Princeton CDH homepage, for footer #}
+    <a class="logo" href="https://cdh.princeton.edu/" aria-label="{% translate 'Princeton Center for Digital Humanities homepage' %}">
+        <svg id="cdh-logo">
+            <use href="{% static 'img/logos/all/all/cdh-logo.svg' %}#cdh-logo" />
+        </svg>
+    </a>
+</li>
