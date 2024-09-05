@@ -3,6 +3,7 @@ import re
 
 from bs4 import BeautifulSoup
 from django.apps import apps
+from django.utils.safestring import mark_safe
 from django.utils.translation import gettext as _
 from parasolr.django import AliasedSolrQuerySet
 from piffle.image import IIIFImageClient
@@ -30,7 +31,12 @@ def clean_html(html_snippet):
         else:
             html_snippet = f"<li>{ellipsis}{html_snippet}"
 
-    return BeautifulSoup(html_snippet, "html.parser").prettify(formatter="minimal")
+    return BeautifulSoup(
+        html_snippet,
+        "html.parser",
+        # ensure li and em tags don't get extra whitespace, as this may break display
+        preserve_whitespace_tags=["li", "em"],
+    ).prettify(formatter="minimal")
 
 
 class DocumentSolrQuerySet(AliasedSolrQuerySet):
@@ -85,6 +91,7 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
         "related_people": "people_count_i",
         "related_places": "places_count_i",
         "related_documents": "documents_count_i",
+        "transcription_regex": "transcription_regex",
     }
 
     # regex to convert field aliases used in search to actual solr fields
@@ -235,6 +242,17 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
             )
         return search
 
+    def regex_search(self, search_term):
+        """Build a Lucene query for searching with regular expressions.
+        NOTE: this function may cause Lucene errors if input is not validated beforehand.
+        """
+        # surround passed query with wildcards to allow non-anchored matches,
+        # and slashes so that it is interpreted as regex by Lucene
+        search_term = f"/.*{search_term}.*/"
+        # match in the non-analyzed transcription_regex field
+        search = self.search(f"transcription_regex:{search_term}")
+        return search
+
     def related_to(self, document):
         "Return documents related to the given document (i.e. shares any shelfmarks)"
 
@@ -276,10 +294,52 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
 
         return doc
 
+    def get_regex_highlight(self, text):
+        """Helper method to manually highlight and truncate a snippet for regex matches
+        (automatic highlight unavailable due to solr regex search limitations)"""
+        # remove solr field name and lucene-required "match all" logic to get original query
+        regex_query = (
+            self.search_qs[0]
+            .replace("transcription_regex:/.*", "")
+            .rsplit(".*/", maxsplit=1)[0]
+        )
+        # get ~150 characters of context plus a word on either side of the matched portion
+        pattern = r"(\b\w+.{0,150})(%s)(.{0,150}\w+\b)" % regex_query
+        # find all matches in the snippet
+        matches = re.findall(pattern, text, flags=re.DOTALL)
+        # separate multiple matches by HTML line breaks and ellipsis
+        separator = "<br />[…]<br />"
+        # surround matched portion in <em> so it is visible in search results; join all into string
+        return (
+            separator.join([f"{m[0]}<em>{m[1]}</em>{m[2]}" for m in matches if m])
+            if matches
+            else None
+        )
+
     def get_highlighting(self):
         """highlight snippets within transcription/translation html may result in
         invalid tags that will render strangely; clean up the html before returning"""
         highlights = super().get_highlighting()
+        is_regex_search = any("transcription_regex" in q for q in self.search_qs)
+        if is_regex_search:
+            # highlight regex results manually due to solr limitation
+            highlights = {}
+            # highlighting takes place *after* solr, so use get_results()
+            for doc in self.get_results():
+                # highlight per document, keyed on id as expected in results
+                highlights[doc["id"]] = {
+                    "transcription": [
+                        highlighted_block
+                        # this field is split by block-level annotation/group
+                        for highlighted_block in (
+                            self.get_regex_highlight(block)
+                            for block in doc["transcription_regex"]
+                        )
+                        # only include a block if it actually has highlights
+                        if highlighted_block
+                    ]
+                }
+
         is_exact_search = "hl_query" in self.raw_params
         for doc in highlights.keys():
             # _nostem fields should take precedence over stemmed fields in the case of an

@@ -1,3 +1,4 @@
+import re
 from ast import literal_eval
 from copy import deepcopy
 from random import randint
@@ -81,7 +82,7 @@ class DocumentSearchView(
     # Translators: description of document search page, for search engines
     page_description = _("Search and browse Geniza documents.")
     paginate_by = 50
-    initial = {"sort": "random"}
+    initial = {"sort": "random", "mode": "general"}
     # NOTE: does not filter on status, since changing status could modify the page
     solr_lastmodified_filters = {"item_type_s": "document"}
     applied_filter_labels = []
@@ -206,7 +207,11 @@ class DocumentSearchView(
         else:
             search_opts = form.cleaned_data
 
-            if search_opts["q"]:
+            if search_opts["q"] and search_opts["mode"] == "regex":
+                # use regex search if "mode" is "regex"
+                documents = documents.regex_search(search_opts["q"])
+
+            elif search_opts["q"]:
                 # NOTE: using requireFieldMatch so that field-specific search
                 # terms will NOT be used for highlighting text matches
                 # (unless they are in the appropriate field)
@@ -344,7 +349,22 @@ class DocumentSearchView(
         highlights = paged_result.get_highlighting() if paged_result.count() else {}
         facet_dict = self.queryset.get_facets()
         # populate choices for facet filter fields on the form
-        context_data["form"].set_choices_from_facets(facet_dict.facet_fields)
+        try:
+            context_data["form"].set_choices_from_facets(facet_dict.facet_fields)
+        except AttributeError:
+            # in the event of a solr error (which causes an AttributeError on facet_dict),
+            # reset queryset to none() so we can display facet fields
+            self.queryset = self.queryset.none()
+            facet_dict = self.queryset.get_facets()
+            context_data["form"].set_choices_from_facets(facet_dict.facet_fields)
+            if self.request.GET.get("mode") == "regex":
+                context_data["form"].add_error(
+                    "q",
+                    # Translators: General error text for regular expression errors
+                    _(
+                        "Error retrieving search results. Check regular expression for errors such as unescaped or unclosed brackets or parentheses."
+                    ),
+                )
         context_data.update(
             {
                 "highlighting": highlights,

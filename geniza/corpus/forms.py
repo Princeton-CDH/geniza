@@ -1,3 +1,5 @@
+import re
+
 from dal import autocomplete
 from django import forms
 from django.contrib.admin.widgets import RelatedFieldWidgetWrapper
@@ -196,6 +198,13 @@ class DocumentSearchForm(RangeForm):
     # Translators: label for end year when filtering by date range
     _("To year")
 
+    MODE_CHOICES = [
+        # Translators: label for general search mode
+        ("general", _("General")),
+        # Translators: label for regex (regular expressions) search mode
+        ("regex", _("RegEx")),
+    ]
+
     # NOTE these are not set by default!
     error_css_class = "error"
     required_css_class = "required"
@@ -242,6 +251,14 @@ class DocumentSearchForm(RangeForm):
     has_discussion = BooleanFacetField(
         # Translators: label for "has discussion" search form filter
         label=_("Discussion"),
+    )
+
+    mode = forms.ChoiceField(
+        # Translators: label for "search mode" (general or regex)
+        label=_("Search mode"),
+        choices=MODE_CHOICES,
+        required=False,
+        widget=forms.RadioSelect,
     )
 
     # mapping of solr facet fields to form input
@@ -319,6 +336,61 @@ class DocumentSearchForm(RangeForm):
             self.add_error(
                 "q", _("Relevance sort is not available without a keyword search term.")
             )
+        # additional validation for regex mode due to some queries that cause Lucene errors
+        mode = cleaned_data.get("mode")
+        if mode == "regex":
+            # reused text about needing an escape character
+            needs_escape = (
+                lambda char: f"If you are searching for the character {char} in a transcription, escape it with \ by writing \{char} instead."
+            )
+            # see error messages for explanations of each regex here
+            if re.search(r"((?<!\\)\{[^0-9])|(^\{)|((?<!\\)\{[^\}]*$)", q):
+                print(q)
+                self.add_error(
+                    "q",
+                    # Translators: error message for malformed curly brace in regular expression
+                    _(
+                        "Regular expression cannot contain { without a preceding character, without an integer afterwards, or without a closing }. %s"
+                        % needs_escape("{")
+                    ),
+                )
+            if re.search(r"(^\*)|((?<!\\)\*\*)", q):
+                self.add_error(
+                    "q",
+                    # Translators: error message for malformed asterisk in regular expression
+                    _(
+                        "Regular expression cannot contain * without a preceding character, or multiple times in a row. %s"
+                        % needs_escape("*")
+                    ),
+                )
+            if re.search(r"(^\+)|((?<!\\)\+\+)", q):
+                self.add_error(
+                    "q",
+                    # Translators: error message for malformed plus sign in regular expression
+                    _(
+                        "Regular expression cannot contain + without a preceding character, or multiple times in a row. %s"
+                        % needs_escape("+")
+                    ),
+                )
+            if re.search(r"(?<!\\)\<", q):
+                self.add_error(
+                    "q",
+                    # Translators: error message for malformed less than sign in regular expression
+                    _(
+                        "Regular expression cannot contain < or use a negative lookbehind query. %s"
+                        % needs_escape("<")
+                    ),
+                )
+            if re.search(r"((?<!\\)\\[ABCE-RTUVXYZabce-rtuvxyz0-9])|((?<!\\)\\$)", q):
+                # see https://github.com/apache/lucene/issues/11678 for more information
+                self.add_error(
+                    "q",
+                    # Translators: error message for malformed backslash in regular expression
+                    _(
+                        "Regular expression cannot contain the escape character \\ followed by an alphanumeric character other than one of DdSsWw, or at the end of a query. %s"
+                        % needs_escape("\\")
+                    ),
+                )
 
 
 class DocumentChoiceField(forms.ModelChoiceField):

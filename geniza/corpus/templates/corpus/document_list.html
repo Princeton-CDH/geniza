@@ -8,6 +8,23 @@
     <h1>{{ page_title }}</h1>
     <form data-controller="search" data-turbo-frame="main" data-turbo-action="advance" data-page="document">
         <fieldset id="query">
+            <span class="fieldname">{{ form.mode.label }}</span>
+            <dialog data-search-target="helpDialog">
+                {# Translators: heading for search mode help text #}
+                <h2>
+                    <span>{% translate "How to Search" %}</span>
+                    <button type="button" id="close-search-help" data-action="search#toggleHelpDialog">
+                        {# Translators: accessibility label for button to close search mode help dialog #}
+                        <span class="sr-only">{% translate "Close search mode help" %}</span>
+                    </button>
+                </h2>
+                {% include "corpus/snippets/document_search_helptext.html" %}
+            </dialog>
+            <button type="button" id="search-help" data-action="search#toggleHelpDialog">
+                {# Translators: accessibility label for button to open search mode help dialog #}
+                <span class="sr-only">{% translate "Open search mode help" %}</span>
+            </button>
+            {% render_field form.mode data-action="change->search#update" %}
             {% render_field form.q data-search-target="query" data-action="input->search#autoUpdateSort change->search#update" %}
 
             {# Translators: Search submit button #}

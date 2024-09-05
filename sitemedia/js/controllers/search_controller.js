@@ -12,6 +12,7 @@ export default class extends Controller {
         "filtersButton",
         "doctypeFilter",
         "dropdownDetails",
+        "helpDialog",
         "placesMode",
     ];
     static debounces = ["update"];
@@ -228,6 +229,15 @@ export default class extends Controller {
         // if Enter is pressed while they are focused, so prevent that behavior
         if (e.key === "Enter") {
             e.preventDefault();
+        }
+    }
+
+    toggleHelpDialog() {
+        // open or close the help dialog modal
+        if (this.helpDialogTarget.open) {
+            this.helpDialogTarget.close();
+        } else {
+            this.helpDialogTarget.showModal();
         }
     }
 

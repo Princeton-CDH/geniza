@@ -391,50 +391,36 @@ class TestDocumentSearchView:
         # no params
         docsearch_view.request.GET = {}
         assert docsearch_view.get_form_kwargs() == {
-            "initial": {
-                "sort": "random",
-            },
+            "initial": {"mode": "general", "sort": "random"},
             "prefix": None,
-            "data": {"sort": "random"},
+            "data": {"mode": "general", "sort": "random"},
             "range_minmax": {},
         }
 
         # keyword search param
         docsearch_view.request.GET = {"q": "contract"}
         assert docsearch_view.get_form_kwargs() == {
-            "initial": {"sort": "random"},
+            "initial": {"mode": "general", "sort": "random"},
             "prefix": None,
-            "data": {
-                "q": "contract",
-                "sort": "relevance",
-            },
+            "data": {"mode": "general", "q": "contract", "sort": "relevance"},
             "range_minmax": {},
         }
 
         # sort search param
         docsearch_view.request.GET = {"sort": "scholarship_desc"}
         assert docsearch_view.get_form_kwargs() == {
-            "initial": {
-                "sort": "random",
-            },
+            "initial": {"mode": "general", "sort": "random"},
             "prefix": None,
-            "data": {
-                "sort": "scholarship_desc",
-            },
+            "data": {"mode": "general", "sort": "scholarship_desc"},
             "range_minmax": {},
         }
 
         # keyword and sort search params
         docsearch_view.request.GET = {"q": "contract", "sort": "scholarship_desc"}
         assert docsearch_view.get_form_kwargs() == {
-            "initial": {
-                "sort": "random",
-            },
+            "initial": {"mode": "general", "sort": "random"},
             "prefix": None,
-            "data": {
-                "q": "contract",
-                "sort": "scholarship_desc",
-            },
+            "data": {"mode": "general", "q": "contract", "sort": "scholarship_desc"},
             "range_minmax": {},
         }
 
@@ -443,7 +429,8 @@ class TestDocumentSearchView:
         with patch(
             "geniza.corpus.views.DocumentSolrQuerySet",
             new=self.mock_solr_queryset(
-                DocumentSolrQuerySet, extra_methods=["admin_search", "keyword_search"]
+                DocumentSolrQuerySet,
+                extra_methods=["admin_search", "keyword_search", "regex_search"],
             ),
         ) as mock_queryset_cls:
             docsearch_view = DocumentSearchView()
@@ -535,6 +522,17 @@ class TestDocumentSearchView:
             args = mock_sqs.order_by.call_args[0]
             assert args[0].startswith("random_")
 
+            # regex search param
+            mock_sqs.reset_mock()
+            docsearch_view.request = Mock()
+            docsearch_view.request.GET = {"q": "six apartments", "mode": "regex"}
+            docsearch_view.get_queryset()
+            mock_sqs = mock_queryset_cls.return_value
+            mock_sqs.regex_search.assert_called_with("six apartments")
+            mock_sqs.keyword_search.assert_not_called()
+            # should not highlight with parasolr
+            mock_sqs.regex_search.return_value.highlight.assert_not_called()
+
     @pytest.mark.usefixtures("mock_solr_queryset")
     def test_get_range_stats(self, mock_solr_queryset):
         with patch(
@@ -614,6 +612,19 @@ class TestDocumentSearchView:
             assert context_data["page_obj"].start_index() == 0
             # NOTE: test paginator isn't initialized properly from queryset count
             # assert context_data["paginator"].count == 22
+
+            # simulate 500 error from solr: get_facets returns {}
+            mock_queryset_cls.reset_mock()
+            mock_qs = mock_queryset_cls.return_value
+            mock_qs.get_facets = Mock(return_value={})
+            mock_qs.none = Mock()
+            # attribute error should be handled, and use queryset.none().get_facets()
+            mock_qs.none.return_value.get_facets.return_value.facet_fields = {}
+            # in regex mode, form should get an error message
+            assert not len(context_data["form"].errors)
+            docsearch_view.request = rf.get("/documents/", {"mode": "regex"})
+            context_data = docsearch_view.get_context_data()
+            assert len(context_data["form"].errors)
 
     def test_scholarship_sort(
         self,

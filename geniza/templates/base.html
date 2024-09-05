@@ -71,13 +71,14 @@
         <link rel="stylesheet" type="text/css" href="https://unpkg.com/phosphor-icons@1.3.2/src/css/phosphor.css" nonce="{{ reqest.csp_nonce }}"/>
         {% render_bundle_csp "main" "css" %}
         {% render_bundle_csp "iiif" "css" %}
-        {# Preload largest contentful paint image (mobile header and footer svgs) #}
+        {# Preload largest contentful paint image (mobile header and footer svgs, "no image" placeholder) #}
         <link rel="preload" fetchpriority="high" as="image" href="/static/img/ui/mobile/light/ltr/header-base.svg" type="image/svg+xml">
         <link rel="preload" fetchpriority="high" as="image" href="/static/img/ui/mobile/dark/ltr/header-base.svg" type="image/svg+xml">
         <link rel="preload" fetchpriority="high" as="image" href="/static/img/ui/mobile/light/rtl/header-base.svg" type="image/svg+xml">
         <link rel="preload" fetchpriority="high" as="image" href="/static/img/ui/mobile/dark/rtl/header-base.svg" type="image/svg+xml">
         <link rel="preload" fetchpriority="high" as="image" href="/static/img/ui/mobile/dark/all/footer-gradient.svg" type="image/svg+xml">
         <link rel="preload" fetchpriority="high" as="image" href="/static/img/ui/mobile/light/all/footer-gradient.svg" type="image/svg+xml">
+        <link rel="preload" fetchpriority="high" as="image" href="/static/img/ui/all/all/no-image-square-lg.png" type="image/png">
         {% block extrastyle %}{% endblock extrastyle %}
         <!-- scripts -->
         {% render_bundle_csp "main" "js" attrs='defer' %}

@@ -57,6 +57,21 @@ section#document-list {
     // spacing in between results
     & + .search-result {
         margin-top: spacing.$spacing-2xl;
+        .score {
+            top: 1.5rem;
+        }
+    }
+
+    // relevance score if enabled
+    .score {
+        @include typography.meta-bold;
+        display: block;
+        position: absolute;
+        right: 0;
+        top: 0;
+        background-color: var(--background-gray);
+        padding: 0.25rem;
+        border: 1px solid var(--on-background);
     }
 
     // result number in list
@@ -320,6 +335,11 @@ section#document-list {
             @include typography.transcription-numerals;
             content: attr(value);
             height: 100%;
+        }
+        &:empty::before,
+        &:has(p:empty)::before,
+        &:has(em:empty)::before {
+            display: none;
         }
     }
     .transcription[dir="ltr"] li::before,
@@ -591,6 +611,11 @@ html[dir="rtl"] .search-result {
             line-height: calc(24.3 / 18);
             font-size: typography.$text-size-lg;
         }
+    }
+    // relevance score if enabled
+    .score {
+        right: auto;
+        left: 0;
     }
 }
 

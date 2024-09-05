@@ -1294,6 +1294,7 @@ class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin):
         counts = defaultdict(int)
         # collect transcription and translation texts for indexing
         transcription_texts = []
+        transcription_texts_plaintext = []
         translation_texts = []
         # keep track of translation language for RTL/LTR display
         translation_langcode = ""
@@ -1308,6 +1309,9 @@ class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin):
                 content = fn.content_html_str
                 if content:
                     transcription_texts.append(Footnote.explicit_line_numbers(content))
+                    for canvas in fn.content_text_canvases:
+                        # index plaintext only, per-canvas, for regex
+                        transcription_texts_plaintext.append(canvas)
             elif Footnote.DIGITAL_TRANSLATION in fn.doc_relation:
                 content = fn.content_html_str
                 if content:
@@ -1347,6 +1351,8 @@ class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin):
                 "scholarship_t": [fn.display() for fn in footnotes],
                 # transcription content as html
                 "text_transcription": transcription_texts,
+                # transcription content as plaintext
+                "transcription_regex": transcription_texts_plaintext,
                 "translation_language_code_s": translation_langcode,
                 "translation_language_direction_s": translation_langdir,
                 # translation content as html

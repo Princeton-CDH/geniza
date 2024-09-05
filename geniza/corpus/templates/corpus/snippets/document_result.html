@@ -1,6 +1,12 @@
 {% load i18n corpus_extras %}
 {% spaceless %}
     <li class="search-result">
+        {% if "SHOW_RELEVANCE_SCORES" in FEATURE_FLAGS %}
+            {# show relevance score if enabled #}
+            <span class="score">
+                Relevance: {{ document.score|default:0 }}
+            </span>
+        {% endif %}
         {# title #}
         <h2 class="title">
             {# result number #}
@@ -69,7 +75,7 @@
                     <div class="transcription" dir="rtl" lang="{{ lang }}" {% if lang_script %}data-lang-script="{{ lang_script|lower }}"{% endif %}>
 
                         {% if document_highlights.transcription %}
-                            {% for snippet in document_highlights.transcription %}{{ snippet.strip|safe }}{% endfor %}
+                            {% for snippet in document_highlights.transcription %}{{ snippet.strip|safe }}{% if snippet.strip and not forloop.last %}...<br />{% endif %}{% endfor %}
                         {% elif document.transcription %}
                                 {# otherwise, display truncated transcription #}
                                 {# NOTE: might be nice to display N lines instead of using truncatechars #}

@@ -15,7 +15,143 @@ main.search form {
     // search query box and button
     fieldset#query {
         display: flex;
+        align-items: center;
         margin-bottom: 1.5rem;
+        // search mode switch label (hidden on mobile)
+        span.fieldname {
+            @include typography.headline-3;
+            display: none;
+            @include breakpoints.for-tablet-landscape-up {
+                display: block;
+                white-space: nowrap;
+            }
+        }
+        // search mode help (hidden on mobile)
+        button#search-help {
+            display: none;
+            @include breakpoints.for-tablet-landscape-up {
+                display: flex;
+                cursor: pointer;
+                border: none;
+                background: transparent;
+                color: var(--on-background);
+                padding: 0;
+                margin-left: 0.5rem;
+                &::before {
+                    @include typography.icon-button-md;
+                    font-size: typography.$text-size-2xl;
+                    content: "\f1e0"; // phosphor info icon
+                }
+            }
+        }
+        dialog {
+            background-color: var(--background);
+            color: var(--on-background);
+            border: none;
+            padding: 1.5rem;
+            box-shadow: 0px 4px 4px 0px #00000040;
+            h2 {
+                display: flex;
+                flex-flow: row nowrap;
+                align-items: center;
+                justify-content: space-between;
+                margin: 0;
+                span {
+                    display: flex;
+                    align-items: center;
+                    gap: 1rem;
+                }
+                span::before {
+                    @include typography.icon-button-md;
+                    font-weight: normal;
+                    font-size: typography.$text-size-4xl;
+                    content: "\f1e0"; // phosphor info icon
+                }
+                button {
+                    display: flex;
+                    cursor: pointer;
+                    border: none;
+                    background: transparent;
+                    padding: 0;
+                    &::before {
+                        @include typography.icon-button-md;
+                        font-size: typography.$text-size-4xl;
+                        content: "\f36d"; // phosphor X icon
+                    }
+                }
+            }
+            a {
+                font-weight: 600;
+            }
+            h3 {
+                font-size: typography.$text-size-lg;
+                padding-top: 1.5rem;
+                margin-top: 1.5rem;
+                margin-bottom: 0.5rem;
+                border-top: 1px solid var(--background-light);
+            }
+            p,
+            li,
+            h4 {
+                font-size: typography.$text-size-md;
+            }
+            h4 {
+                margin-top: 1.5rem;
+            }
+            ul {
+                list-style: disc;
+                li {
+                    margin-left: 1.5rem;
+                }
+            }
+            code {
+                background-color: var(--background-light);
+                border-radius: 3px;
+                font-family: courier, monospace;
+                padding: 0 3px;
+            }
+        }
+        // search mode switch buttons (hidden on mobile)
+        ul#id_mode {
+            display: none;
+            @include breakpoints.for-tablet-landscape-up {
+                display: flex;
+                flex-flow: row nowrap;
+                background-color: var(--background-light);
+                border: 1px solid var(--background-gray);
+                border-radius: 50px;
+                align-items: center;
+                margin: 0 3.25rem 0 1.5rem;
+                input {
+                    @include a11y.sr-only;
+                }
+                label {
+                    display: flex;
+                    flex-flow: row nowrap;
+                    align-items: center;
+                    padding: 0 1rem;
+                    height: 2.5rem;
+                    border-radius: 50px;
+                    cursor: pointer;
+                    border: 2px solid transparent;
+                    transition: 0.15s border-color ease-in-out;
+                    &:hover {
+                        border-color: var(--disabled);
+                    }
+                    &:has(input:checked) {
+                        @include typography.body-bold;
+                        background-color: var(--on-primary);
+                        border-color: var(--secondary);
+                        &:hover {
+                            border-color: var(--primary);
+                        }
+                    }
+                    &:has(*:focus-visible) {
+                        outline: 2px solid var(--button-focus);
+                    }
+                }
+            }
+        }
         // search box
         input[type="search"] {
             flex-basis: 100%;
@@ -23,6 +159,8 @@ main.search form {
             border-radius: 5px;
             border-top-right-radius: 0;
             border-bottom-right-radius: 0;
+            border: 1px solid var(--background-gray);
+            border-right: none;
             height: 3rem;
             padding: 0 1rem;
             @include typography.body;
@@ -48,7 +186,7 @@ main.search form {
             color: var(--on-secondary);
             @include breakpoints.for-tablet-landscape-up {
                 height: 2.5rem;
-                width: 2.5rem;
+                min-width: 2.5rem;
             }
             // Magnifying glass icon
             &::after {
@@ -341,6 +479,8 @@ html[dir="rtl"] main.search form {
             border-radius: 5px;
             border-top-left-radius: 0;
             border-bottom-left-radius: 0;
+            border-left: none;
+            border-right: 1px solid var(--background-gray);
         }
         button[type="submit"] {
             border-radius: 5px;
@@ -348,6 +488,17 @@ html[dir="rtl"] main.search form {
             border-bottom-right-radius: 0;
             margin-left: 0;
             margin-right: 0;
+        }
+        button#search-help {
+            margin-left: 0;
+            margin-right: 0.5rem;
+        }
+        dialog ul li {
+            margin-left: 0;
+            margin-right: 1.5rem;
+        }
+        ul#id_mode {
+            margin: 0 1.5rem 0 3.25rem;
         }
     }
 }
