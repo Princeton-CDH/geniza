@@ -625,7 +625,7 @@ class PlaceListView(ListView, FormMixin):
     page_title = _("Places")
     # Translators: description of places list/browse page
     page_description = _("Browse places present in Geniza documents.")
-    paginate_by = 50
+    paginate_by = 300
     form_class = PlaceListForm
 
     # sort options mapped to solr fields
