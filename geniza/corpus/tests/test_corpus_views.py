@@ -613,6 +613,19 @@ class TestDocumentSearchView:
             # NOTE: test paginator isn't initialized properly from queryset count
             # assert context_data["paginator"].count == 22
 
+            # simulate 500 error from solr: get_facets returns {}
+            mock_queryset_cls.reset_mock()
+            mock_qs = mock_queryset_cls.return_value
+            mock_qs.get_facets = Mock(return_value={})
+            mock_qs.none = Mock()
+            # attribute error should be handled, and use queryset.none().get_facets()
+            mock_qs.none.return_value.get_facets.return_value.facet_fields = {}
+            # in regex mode, form should get an error message
+            assert not len(context_data["form"].errors)
+            docsearch_view.request = rf.get("/documents/", {"mode": "regex"})
+            context_data = docsearch_view.get_context_data()
+            assert len(context_data["form"].errors)
+
     def test_scholarship_sort(
         self,
         document,
