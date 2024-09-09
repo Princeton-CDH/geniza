@@ -95,6 +95,11 @@ window.addEventListener("DOMContentLoaded", () => {
             mapContainer.style.width = "600px";
             mapContainer.style.height = "400px";
             latRow.parentNode.insertBefore(mapContainer, latRow);
+            // add the rtl text plugin to fix arabic text issues
+            maplibregl.setRTLTextPlugin(
+                "https://unpkg.com/@mapbox/mapbox-gl-rtl-text@0.2.3/mapbox-gl-rtl-text.min.js",
+                true // Lazy load the plugin
+            );
             map = new maplibregl.Map({
                 container: "map",
                 style: `https://api.maptiler.com/maps/5f93d3e5-e339-45bf-86fb-bf7f98a22936/style.json?key=${accessToken}`,
