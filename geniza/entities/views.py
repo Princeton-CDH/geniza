@@ -384,7 +384,7 @@ class PersonPeopleView(RelatedPeopleMixin, PersonDetailView):
         if "name" in sort:
             # sort by slug (stand-in for name, but diacritic insensitive)
             related_people = sorted(
-                related_people, key=lambda p: p["person"].slug, reverse=reverse
+                related_people, key=lambda p: p["slug"], reverse=reverse
             )
 
         if "relation" in sort:

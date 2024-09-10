@@ -686,31 +686,31 @@ class TestPersonPeopleView:
         response = client.get(reverse("entities:person-people", args=(person.slug,)))
         assert any(
             [
-                r["person"] == person_diacritic and r["type"] == "parent"
+                r["id"] == person_diacritic.pk and r["type"].lower() == "parent"
                 for r in response.context["related_people"]
             ]
         )
         assert any(
             [
-                r["person"] == person_multiname and r["type"] == "grandchild"
+                r["id"] == person_multiname.pk and r["type"].lower() == "grandchild"
                 for r in response.context["related_people"]
             ]
         )
         # should sort by name, asc by default
-        assert response.context["related_people"][0]["person"] == person_diacritic
+        assert response.context["related_people"][0]["id"] == person_diacritic.pk
         # can also sort by name, desc
         response = client.get(
             reverse("entities:person-people", args=(person.slug,)),
             {"sort": "name_desc"},
         )
-        assert response.context["related_people"][0]["person"] == person_multiname
+        assert response.context["related_people"][0]["id"] == person_multiname.pk
 
         # sort by relation type
         response = client.get(
             reverse("entities:person-people", args=(person.slug,)),
             {"sort": "relation_asc"},
         )
-        assert response.context["related_people"][0]["type"] == "grandchild"
+        assert response.context["related_people"][0]["type"].lower() == "grandchild"
 
         # add shared documents
         PersonDocumentRelation.objects.create(person=person, document=document)
@@ -721,7 +721,7 @@ class TestPersonPeopleView:
             reverse("entities:person-people", args=(person.slug,)),
             {"sort": "documents_desc"},
         )
-        assert response.context["related_people"][0]["person"] == person_multiname
+        assert response.context["related_people"][0]["id"] == person_multiname.pk
         assert response.context["related_people"][0]["shared_documents"] == 1
         assert response.context["related_people"][1]["shared_documents"] == 0
 

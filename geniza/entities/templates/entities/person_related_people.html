@@ -57,12 +57,13 @@
                 {% for rel in related_people %}
                     <tr>
                         <td>
-                            {% if rel.person.get_absolute_url %}
-                                <a href="{{ rel.person.permalink }}" title="{{ rel.person }}">
-                                    {{ rel.person }}
+                            {% if rel.can_link %}
+                                {% url "entities:person" rel.slug as person_url %}
+                                <a href="{{ person_url }}" title="{{ rel.name }}">
+                                    {{ rel.name }}
                                 </a>
                             {% else %}
-                                {{ rel.person }}
+                                {{ rel.name }}
                             {% endif %}
                         </td>
                         <td>{{ rel.type }}</td>
@@ -70,7 +71,7 @@
                             {{ rel.shared_documents }}
                         </td>
                         <td class="person-notes">
-                            {{ rel.notes }}
+                            {{ rel.notes|safe }}
                         </td>
                     </tr>
                 {% endfor %}
