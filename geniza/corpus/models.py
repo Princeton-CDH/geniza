@@ -5,6 +5,7 @@ from collections import defaultdict
 from copy import deepcopy
 from functools import cached_property
 from itertools import chain
+from time import sleep
 
 from django.conf import settings
 from django.contrib import admin, messages
