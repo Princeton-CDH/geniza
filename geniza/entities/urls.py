@@ -17,6 +17,11 @@ urlpatterns = [
         name="person-documents",
     ),
     path(
+        "people/<slug:slug>/people/",
+        entities_views.PersonPeopleView.as_view(),
+        name="person-people",
+    ),
+    path(
         "people/<slug:slug>/places/",
         entities_views.PersonPlacesView.as_view(),
         name="person-places",

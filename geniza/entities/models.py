@@ -2,6 +2,7 @@ import logging
 import re
 from datetime import datetime
 from math import modf
+from operator import itemgetter
 
 from django.conf import settings
 from django.contrib.admin.models import CHANGE, LogEntry
@@ -10,7 +11,7 @@ from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelatio
 from django.contrib.contenttypes.models import ContentType
 from django.core.validators import RegexValidator
 from django.db import models
-from django.db.models import Q
+from django.db.models import F, Q, Value
 from django.db.models.query import Prefetch
 from django.forms import ValidationError
 from django.urls import reverse
@@ -473,6 +474,152 @@ class Person(ModelIndexable, SlugMixin, DocumentDatableMixin, PermalinkMixin):
             return reverse("entities:person", args=[str(self.slug)])
         else:
             return None
+
+    def related_people(self):
+        """Set of all people related to this person, with relationship type and
+        any notes on the relationship, taking into account converse relations"""
+
+        # gather all relationships with people, both entered from this person and
+        # entered from the person on the other side of the relationship
+        people_relations = (
+            self.from_person.annotate(
+                # boolean to indicate if we should use converse or regular relation type name
+                use_converse_typename=Value(True),
+                has_page=F("from_person__has_page"),
+                related_slug=F("from_person__slug"),
+                related_id=F("from_person"),
+            ).union(  # union instead of joins for efficiency
+                self.to_person.annotate(
+                    use_converse_typename=Value(False),
+                    has_page=F("to_person__has_page"),
+                    related_slug=F("to_person__slug"),
+                    related_id=F("to_person"),
+                )
+            )
+            # have to use values_list (NOT values) here with one argument, otherwise strange things
+            # happen, possibly due to union(). TODO: see if this is fixed in later django versions.
+            .values_list("related_id")
+        )
+        relation_list = [
+            {
+                # this is the order of fields returned by SQL after the annotated union
+                "id": r[-1],
+                "slug": r[-2],
+                "has_page": r[-3],
+                "use_converse_typename": r[-4],
+                "notes": r[-5],
+                "type_id": r[-6],
+            }
+            for r in people_relations
+        ]
+
+        # folow GenericForeignKey to find primary name for each related person
+        person_contenttype = ContentType.objects.get_for_model(Person).pk
+        names = Name.objects.filter(
+            object_id__in=[r["id"] for r in relation_list],
+            primary=True,
+            content_type_id=person_contenttype,
+        ).values("name", "object_id")
+        # dict keyed on related person id
+        names_dict = {n["object_id"]: n["name"] for n in names}
+
+        # grab name and converse_name for each relation type since we may need either
+        # (name if the relation was entered from self, converse if entered from related person)
+        types = PersonPersonRelationType.objects.filter(
+            pk__in=[r["type_id"] for r in relation_list],
+        ).values("pk", "name", "converse_name")
+        # dict keyed on related person id
+        types_dict = {t["pk"]: t for t in types}
+
+        # store each related person's documents to see if we can display their url
+        related_person_docs = PersonDocumentRelation.objects.filter(
+            person__id__in=[r["id"] for r in relation_list]
+        ).values("document__id", "person__id")
+
+        # efficiently get shared document counts between people by filtering doc relations
+        self_docs = PersonDocumentRelation.objects.filter(
+            person__id=self.pk
+        ).values_list("document__id", flat=True)
+        shared_docs = list(
+            related_person_docs.filter(document__id__in=list(self_docs)).values(
+                "document__id", "person__id"
+            )
+        )
+        # dict keyed on related person id
+        docs_dict = {
+            r["person__id"]: {
+                # number of shared person-doc relations matching this person's id
+                "shared": len(
+                    list(
+                        filter(
+                            lambda shared: shared["person__id"] == r["person__id"],
+                            shared_docs,
+                        )
+                    )
+                ),
+                # number of total person-doc relations matching this person's id
+                "total": len(
+                    list(
+                        filter(
+                            lambda total: total["person__id"] == r["person__id"],
+                            related_person_docs,
+                        )
+                    )
+                ),
+            }
+            # only need to calculate these for people who have related documents
+            for r in related_person_docs
+        }
+
+        # update with new data & dedupe
+        prev_relation = None
+        # sort by id (dedupe by matching against previous id), then type id for type dedupe
+        for relation in sorted(relation_list, key=itemgetter("id", "type_id")):
+            relation.update(
+                {
+                    # get name from cached queryset dict
+                    "name": names_dict[relation["id"]],
+                    # use type.converse_name if this relation is reverse (and if the type has one)
+                    "type": types_dict[relation["type_id"]][
+                        "converse_name" if relation["use_converse_typename"] else "name"
+                    ]
+                    # fallback to type.name if converse_name doesn't exist
+                    or types_dict[relation["type_id"]]["name"],
+                    # get count of shared documents from cached queryset dict
+                    "shared_documents": (
+                        docs_dict[relation["id"]]["shared"]
+                        if relation["id"] in docs_dict
+                        else 0
+                    ),
+                    # determine if this person can be linked (can if has_page is true or total docs
+                    # >= Person.MIN_DOCUMENTS constant)
+                    "can_link": (
+                        True
+                        if relation["has_page"]
+                        or (
+                            docs_dict[relation["id"]]["total"]
+                            if relation["id"] in docs_dict
+                            else 0
+                        )
+                        >= Person.MIN_DOCUMENTS
+                        else False
+                    ),
+                }
+            )
+            # dedupe and combine type and notes
+            if prev_relation and prev_relation["id"] == relation["id"]:
+                # dedupe type by string matching since we can't match reverse relations by id
+                if relation["type"].lower() not in prev_relation["type"].lower():
+                    prev_relation["type"] += f", {relation['type']}".lower()
+                # simply combine notes with html line break
+                prev_relation["notes"] += (
+                    f"<br />{relation['notes']}" if relation["notes"] else ""
+                )
+                relation_list.remove(relation)
+            else:
+                prev_relation = relation
+
+        return relation_list
 
     def merge_with(self, merge_people, user=None):
         """Merge the specified people into this one. Combines all metadata

@@ -12,8 +12,8 @@ section#document-list.related-documents {
     @include container.two-column;
 }
 
-main.person table.related-documents,
-main.place table.related-documents {
+main.person table.related-table,
+main.place table.related-table {
     @include typography.related-table;
     max-width: none;
     margin-top: 1.5rem;
@@ -54,13 +54,15 @@ main.place table.related-documents {
                 width: 16px;
                 height: 16px;
                 display: block;
+            }
+            svg.sort-icon {
                 color: var(--disabled-on-background-light);
                 fill: var(--disabled-on-background-light);
             }
-            &[class*="asc"] svg {
+            &[class*="asc"] svg.sort-icon {
                 color: var(--on-background);
             }
-            &[class*="desc"] svg {
+            &[class*="desc"] svg.sort-icon {
                 fill: var(--on-background);
             }
         }
@@ -153,6 +155,82 @@ main.place table.related-documents {
         }
     }
 }
+main.person table.related-people {
+    grid-template-columns: 55% 36% 1fr;
+    @include breakpoints.for-tablet-landscape-up {
+        background-color: var(--background-light);
+        grid-template-columns: 35% 33% 10% 1fr;
+    }
+    gap: 0;
+    thead {
+        display: contents;
+    }
+    th a.related {
+        &::before {
+            font-style: normal;
+            font-weight: normal;
+            @include typography.icon-button-sm;
+        }
+        &.documents::before {
+            content: "\edf2";
+        }
+        &.people::before {
+            content: "\f346";
+        }
+        &.places::before {
+            content: "\f20d";
+        }
+    }
+    tr {
+        display: contents;
+        background-color: transparent;
+        padding: 0;
+    }
+    td {
+        min-height: 3rem;
+        a {
+            font-family: fonts.$primary;
+            font-weight: normal;
+        }
+    }
+    .person-notes {
+        display: none;
+        @include breakpoints.for-tablet-landscape-up {
+            display: table-cell;
+        }
+    }
+}
+
+main.person table.related-people {
+    grid-template-columns: 55% 36% 1fr;
+    @include breakpoints.for-tablet-landscape-up {
+        background-color: var(--background-light);
+        grid-template-columns: 35% 33% 10% 1fr;
+    }
+    gap: 0;
+    thead {
+        display: contents;
+    }
+    tr {
+        display: contents;
+        background-color: transparent;
+        padding: 0;
+    }
+    td {
+        min-height: 3rem;
+        a {
+            font-family: fonts.$primary;
+            font-weight: normal;
+        }
+    }
+    .person-notes {
+        display: none;
+        @include breakpoints.for-tablet-landscape-up {
+            display: table-cell;
+        }
+    }
+}
+
 main.person,
 main.place {
     section.relations {
@@ -217,6 +295,7 @@ main.place {
         }
     }
 }
+
 main.place section.relations {
     margin: 1.5rem 0 9rem;
     @include breakpoints.for-tablet-landscape-up {
@@ -254,8 +333,8 @@ span.no-image {
 }
 
 // RTL overrides
-html[dir="rtl"] main.person table.related-documents,
-html[dir="rtl"] main.place table.related-documents {
+html[dir="rtl"] main.person table.related-table,
+html[dir="rtl"] main.place table.related-table {
     @include breakpoints.for-tablet-landscape-up {
         td {
             padding-left: 1.5rem;

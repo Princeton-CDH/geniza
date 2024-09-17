@@ -15,6 +15,8 @@ from geniza.entities.models import (
     Person,
     PersonDocumentRelation,
     PersonDocumentRelationType,
+    PersonPersonRelation,
+    PersonPersonRelationType,
     PersonPlaceRelation,
     PersonPlaceRelationType,
     PersonSolrQuerySet,
@@ -640,6 +642,88 @@ class TestPersonDocumentsView:
         person.save()
         response = client.get(reverse("entities:person-documents", args=(person.slug,)))
         assert response.status_code == 404
+
+
+@pytest.mark.django_db
+class TestPersonPeopleView:
+    def test_page_description(self, client, person, person_diacritic, person_multiname):
+        person.has_page = True
+        person.save()
+        # add some related people
+        parent_type, _ = PersonPersonRelationType.objects.get_or_create(
+            name_en="parent", converse_name_en="child"
+        )
+        PersonPersonRelation.objects.create(
+            from_person=person, to_person=person_diacritic, type=parent_type
+        )
+        grandchild_type, _ = PersonPersonRelationType.objects.get_or_create(
+            name_en="grandchild", converse_name_en="grandparent"
+        )
+        PersonPersonRelation.objects.create(
+            from_person=person, to_person=person_multiname, type=grandchild_type
+        )
+        response = client.get(reverse("entities:person-people", args=(person.slug,)))
+        assert response.context["page_description"] == "2 related people"
+
+    def test_get_related(
+        self, client, document, person, person_diacritic, person_multiname
+    ):
+        person.has_page = True
+        person.save()
+        # add some related people
+        parent_type, _ = PersonPersonRelationType.objects.get_or_create(
+            name_en="parent", converse_name_en="child"
+        )
+        PersonPersonRelation.objects.create(
+            from_person=person, to_person=person_diacritic, type=parent_type
+        )
+        grandchild_type, _ = PersonPersonRelationType.objects.get_or_create(
+            name_en="grandchild", converse_name_en="grandparent"
+        )
+        PersonPersonRelation.objects.create(
+            from_person=person, to_person=person_multiname, type=grandchild_type
+        )
+        response = client.get(reverse("entities:person-people", args=(person.slug,)))
+        assert any(
+            [
+                r["id"] == person_diacritic.pk and r["type"].lower() == "parent"
+                for r in response.context["related_people"]
+            ]
+        )
+        assert any(
+            [
+                r["id"] == person_multiname.pk and r["type"].lower() == "grandchild"
+                for r in response.context["related_people"]
+            ]
+        )
+        # should sort by name, asc by default
+        assert response.context["related_people"][0]["id"] == person_diacritic.pk
+        # can also sort by name, desc
+        response = client.get(
+            reverse("entities:person-people", args=(person.slug,)),
+            {"sort": "name_desc"},
+        )
+        assert response.context["related_people"][0]["id"] == person_multiname.pk
+
+        # sort by relation type
+        response = client.get(
+            reverse("entities:person-people", args=(person.slug,)),
+            {"sort": "relation_asc"},
+        )
+        assert response.context["related_people"][0]["type"].lower() == "grandchild"
+
+        # add shared documents
+        PersonDocumentRelation.objects.create(person=person, document=document)
+        PersonDocumentRelation.objects.create(
+            person=person_multiname, document=document
+        )
+        response = client.get(
+            reverse("entities:person-people", args=(person.slug,)),
+            {"sort": "documents_desc"},
+        )
+        assert response.context["related_people"][0]["id"] == person_multiname.pk
+        assert response.context["related_people"][0]["shared_documents"] == 1
+        assert response.context["related_people"][1]["shared_documents"] == 0
 
 
 @pytest.mark.django_db
