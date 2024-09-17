@@ -363,7 +363,7 @@ class PersonPeopleView(RelatedPeopleMixin, PersonDetailView):
     def page_description(self):
         """Description of a person related people page, with count"""
         obj = self.get_object()
-        count = len(obj.related_people())
+        count = obj.related_people_count
         # Translators: description of related people page, for search engines
         return ngettext(
             "%(count)d related person",

@@ -3,6 +3,7 @@ import re
 from datetime import datetime
 from math import modf
 from operator import itemgetter
+from time import sleep
 
 from django.conf import settings
 from django.contrib.admin.models import CHANGE, LogEntry
@@ -475,6 +476,22 @@ class Person(ModelIndexable, SlugMixin, DocumentDatableMixin, PermalinkMixin):
         else:
             return None
 
+    @property
+    def related_people_count(self):
+        """Get a count of related people without duplicates, taking into account
+        converse relationships"""
+        # used for indexing and display
+        people_relations = (
+            self.from_person.annotate(related_id=F("from_person"))
+            .values_list("related_id", flat=True)
+            .union(
+                self.to_person.annotate(
+                    related_id=F("to_person"),
+                ).values_list("related_id", flat=True)
+            )
+        )
+        return len(set(people_relations))
+
     def related_people(self):
         """Set of all people related to this person, with relationship type and
         any notes on the relationship, taking into account converse relations"""
@@ -805,6 +822,8 @@ class Person(ModelIndexable, SlugMixin, DocumentDatableMixin, PermalinkMixin):
             "names",
             "role",
             "relationships",
+            "from_person",
+            "to_person",
             "personplacerelation_set",
             Prefetch(
                 "persondocumentrelation_set",
@@ -815,6 +834,29 @@ class Person(ModelIndexable, SlugMixin, DocumentDatableMixin, PermalinkMixin):
                 queryset=Document.objects.prefetch_related("dating_set"),
             ),
         )
+
+    @classmethod
+    def prep_index_chunk(cls, chunk):
+        """Prefetch related information when indexing in chunks
+        (modifies queryset chunk in place)"""
+        models.prefetch_related_objects(
+            chunk,
+            "names",
+            "role",
+            "relationships",
+            "from_person",
+            "to_person",
+            "personplacerelation_set",
+            Prefetch(
+                "persondocumentrelation_set",
+                queryset=PersonDocumentRelation.objects.select_related("type"),
+            ),
+            Prefetch(
+                "documents",
+                queryset=Document.objects.prefetch_related("dating_set"),
+            ),
+        )
+        return chunk
 
     def index_data(self):
         """data for indexing in Solr"""
@@ -830,7 +872,7 @@ class Person(ModelIndexable, SlugMixin, DocumentDatableMixin, PermalinkMixin):
                 "url_s": self.get_absolute_url(),
                 # related object counts
                 "documents_i": self.documents.count(),
-                "people_i": self.relationships.count(),
+                "people_i": self.related_people_count,
                 "places_i": self.personplacerelation_set.count(),
                 # kinds of relationships to documents
                 "document_relation_ss": list(
