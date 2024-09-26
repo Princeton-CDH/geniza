@@ -68,6 +68,22 @@
                 <p>{{ person.description }}</p>
             </section>
         {% endif %}
+        {% if person.events.all|length %}
+            <section class="events">
+                <h2>
+                    {# Translators: label for person's life events timeline #}
+                    {% translate 'Life events' %}
+                </h2>
+                <ol>
+                    {% for event in person.events.all %}
+                        <li>
+                            <h3>{{ event.name }} {% if event.date_str %}(<time>{{ event.date_str }}</time>){% endif %}</h3>
+                            {% if event.description %}<p>{{ event.description }}</p>{% endif %}
+                        </li>
+                    {% endfor %}
+                </ol>
+            </section>
+        {% endif %}
         {% if person.footnotes.all|length %}
             <section class="description bibliography">
                 <h2>
