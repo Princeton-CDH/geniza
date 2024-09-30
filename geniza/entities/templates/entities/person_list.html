@@ -5,9 +5,17 @@
 {% block meta_description %}{{ page_description }}{% endblock meta_description %}
 
 {% block main %}
-    <h1>{{ page_title }}</h1>
-
     <form data-controller="search" data-turbo-frame="main" data-turbo-action="advance" data-page="person">
+        <div class="topheader-row">
+            <h1>{{ page_title }}</h1>
+            <label id="people-view-switcher" for="switcher">
+                <input id="switcher" type="checkbox" data-search-target="peopleMode" data-action="click->search#togglePeopleViewMode" />
+                {# Translators: label for people browse page list view #}
+                <span class="sr-only">{% translate "Toggle list view" %}</span>
+                <i id="grid-view" class="ph-grid-four"></i>
+                <i id="list-view" class="ph-list-dashes"></i>
+            </label>
+        </div>
         <div id="filters-header">
             <a href="#filters" role="button" id="filters-button" data-search-target="filtersButton" data-action="click->search#toggleFiltersOpen">
                 <svg><use xlink:href="{% static 'img/ui/all/all/search-filter-icon.svg' %}#filter-icon" /></svg>
@@ -101,6 +109,8 @@
                     <th class="dates">{% translate "Dates" %}</th>
                     {# Translators: Person "social role" column header on the browse page #}
                     <th>{% translate "Social role" %}</th>
+                    {# Translators: Person "description / bio" column header on the browse page #}
+                    <th class="description">{% translate "Description / Bio" %}</th>
                     <th class="related documents">
                         {# Translators: Person "document count" column header on the browse page #}
                         <span class="sr-only">{% translate "Number of related documents" %}</span>
@@ -124,58 +134,26 @@
                                     <span>{{ person.name }}</span>
                                 {% endif %}
                             </td>
-                            <td>{{ person.gender }}</td>
+                            <td class="gender">{{ person.gender }}</td>
                             <td class="dates">{{ person.date_str }}</td>
-                            <td>{{ person.role }}</td>
-                            <td class="related">{{ person.documents }}</td>
-                            <td class="related">{{ person.people }}</td>
-                            <td class="related">{{ person.places }}</td>
+                            <td class="role">{{ person.role }}</td>
+                            <td class="description">{{ person.description.0|truncatewords:15 }}</td>
+                            <td class="related documents">
+                                <span class="label">{% translate "Related Documents" %}</span>
+                                <span>{{ person.documents }}</span>
+                            </td>
+                            <td class="related people">
+                                <span class="label">{% translate "Related People" %}</span>
+                                <span>{{ person.people }}</span>
+                            </td>
+                            <td class="related places">
+                                <span class="label">{% translate "Related Places" %}</span>
+                                <span>{{ person.places }}</span>
+                            </td>
                         </tr>
                     {% endfor %}
                 </tbody>
             </table>
-            {# grid / mobile view #}
-            <div class="grid">
-                {% for person in people %}
-                    <div class="person">
-                        {# Translators: accessible label for section showing metadata like name, gender, etc #}
-                        <dl aria-label="{% translate 'metadata' %}">
-                            <dt class="sr-only">{% translate "Name" %}</dt>
-                            <dd class="name">
-                                {% if person.url %}
-                                    <a href="{{ person.url }}">{{ person.name }}</a>
-                                {% else %}
-                                    <span>{{ person.name }}</span>
-                                {% endif %}
-                            </dd>
-                            <dt class="sr-only">{% translate "Gender" %}</dt>
-                            <dd>{{ person.gender }}</dd>
-                            <dt class="sr-only">{% translate 'Dates' %}</dt>
-                            <dd>{{ person.date_str }}</dd>
-                            <dt class="sr-only">{% translate "Social role" %}</dt>
-                            <dd>{{ person.role }}</dd>
-                            {# Translators: label for person description / bio #}
-                            <dt class="sr-only">{% translate "Description / Bio" %}</dt>
-                            <dd class="description">{{ person.description.0|truncatewords:15 }}</dd>
-                        </dl>
-                        {# Translators: accessible label for section showing counts of entries related to an entity #}
-                        <dl class="relations" aria-label="{% translate 'Related entries' %}">
-                            <dt class="sr-only">{% translate "Number of related people" %}</dt>
-                            <dd class="people">
-                                <span>{{ person.people }}</span>
-                            </dd>
-                            <dt class="sr-only">{% translate "Number of related places" %}</dt>
-                            <dd class="places">
-                                <span>{{ person.places }}</span>
-                            </dd>
-                            <dt class="sr-only">{% translate "Number of related documents" %}</dt>
-                            <dd class="documents">
-                                <span>{{ person.documents }}</span>
-                            </dd>
-                        </dl>
-                    </div>
-                {% endfor %}
-            </div>
         </section>
     </form>
     <div class="pagination-container">

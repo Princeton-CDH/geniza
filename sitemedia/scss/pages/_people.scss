@@ -12,6 +12,46 @@
 // TODO: standardize typography here once all redesigns are implemented
 
 main.people {
+    // header row
+    .topheader-row {
+        display: flex;
+        flex-flow: row nowrap;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+        label#people-view-switcher {
+            display: none;
+            @include breakpoints.for-tablet-landscape-up {
+                display: flex;
+            }
+            cursor: pointer;
+            flex-flow: row nowrap;
+            align-items: center;
+            background-color: var(--background-gray);
+            border-radius: calc(53px / 2);
+            input {
+                @include a11y.sr-only;
+            }
+            i::before {
+                background-color: var(--background-gray);
+                border: 3px solid var(--background-gray);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 53px;
+                height: 53px;
+                border-width: 4px;
+                border-radius: calc(53px / 2);
+                font-size: 1.5rem;
+                text-decoration: none;
+            }
+            input:not(:checked) ~ i#grid-view::before,
+            input:checked ~ i#list-view::before {
+                background-color: var(--selected-language);
+                border-color: var(--filter-active);
+            }
+        }
+    }
     // Primary container
     section#person-list {
         width: 100%;
@@ -21,15 +61,24 @@ main.people {
             }
         }
         table {
-            // display table only on desktop; will be ul on mobile
-            display: none;
+            // default view: grid
+            display: grid;
+            gap: 1rem;
+            // 1 column on mobile, 3 column on desktop
+            grid-template-columns: 1fr;
             @include breakpoints.for-tablet-landscape-up {
-                display: table;
+                grid-template-columns: repeat(3, minmax(0, 1fr));
             }
             margin-top: spacing.$spacing-sm;
             width: 100%;
-            border-collapse: separate;
-            border-spacing: 0 spacing.$spacing-xs;
+            tbody {
+                // required if we want to use display: grid in table
+                display: contents;
+            }
+            thead {
+                // hide the headers on grid
+                display: none;
+            }
             th {
                 text-align: left;
                 font-size: typography.$text-size-md;
@@ -66,6 +115,140 @@ main.people {
             }
             tbody tr {
                 background-color: var(--background-light);
+                max-width: none;
+                display: grid;
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+                grid-template-areas:
+                    "name name name"
+                    "gender gender gender"
+                    "date date date"
+                    "role role role"
+                    "desc desc desc"
+                    "reldocs relpeople relplaces";
+                @include breakpoints.for-tablet-landscape-up {
+                    display: flex;
+                    flex-flow: column;
+                    gap: 0.25rem;
+                }
+                padding: 1rem;
+                border-radius: 5px;
+                border: 1px solid var(--background-gray);
+                td.name {
+                    grid-area: name;
+                    font-family: fonts.$primary-bold;
+                    font-weight: bold;
+                    a {
+                        font-family: fonts.$primary-bold;
+                        font-weight: bold;
+                    }
+                    @include breakpoints.for-tablet-landscape-up {
+                        font-size: typography.$text-size-xl;
+                    }
+                }
+                td.gender {
+                    grid-area: gender;
+                }
+                td.dates {
+                    grid-area: date;
+                }
+                td.role {
+                    grid-area: role;
+                }
+                td.description {
+                    grid-area: desc;
+                    border-bottom: 1px solid var(--disabled);
+                    padding-bottom: 0.625rem;
+                    margin-bottom: 0.625rem;
+                    font-size: typography.$text-size-sm;
+                    @include breakpoints.for-tablet-landscape-up {
+                        flex: 1 0 auto;
+                        margin-top: 0.375rem;
+                    }
+                }
+                td.related.documents {
+                    grid-area: reldocs;
+                }
+                td.related.people {
+                    grid-area: relpeople;
+                }
+                td.related.places {
+                    grid-area: relplaces;
+                }
+                td.related {
+                    display: flex;
+                    flex-flow: row;
+                    align-items: center;
+                    justify-content: center;
+                    text-align: center;
+                    gap: 0.5rem;
+                    & + td.related {
+                        border-left: 1px solid var(--disabled);
+                    }
+                    @include breakpoints.for-tablet-landscape-up {
+                        justify-content: space-between;
+                        & + td.related {
+                            border-left: none;
+                        }
+                    }
+                }
+            }
+            th.related,
+            td.related {
+                .label {
+                    display: none;
+                }
+                &::before,
+                .label::before {
+                    @include typography.icon-button-sm;
+                }
+                &.documents::before,
+                &.documents > .label::before {
+                    content: "\edf2";
+                }
+                &.people::before,
+                &.people > .label::before {
+                    content: "\f346";
+                }
+                &.places::before,
+                &.places > .label::before {
+                    content: "\f20d";
+                }
+                @include breakpoints.for-tablet-landscape-up {
+                    &::before {
+                        display: none;
+                    }
+                    .label {
+                        display: flex;
+                        flex-flow: row nowrap;
+                        align-items: center;
+                        gap: 0.375rem;
+                        @include typography.body-italic;
+                        &::before {
+                            font-style: normal;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    @include breakpoints.for-tablet-landscape-up {
+        .topheader-row:has(input#switcher:checked) ~ section#person-list table {
+            display: table;
+            border-collapse: separate;
+            border-spacing: 0 spacing.$spacing-xs;
+            thead {
+                display: contents;
+            }
+            th.description,
+            td.description {
+                // description only on grid
+                display: none;
+            }
+            tbody tr {
+                display: table-row;
+                padding: 0;
+                border-radius: 0;
+                border: none;
                 td {
                     padding: spacing.$spacing-md spacing.$spacing-xs;
                     font-size: typography.$text-size-lg;
@@ -73,98 +256,40 @@ main.people {
                     border-bottom: 1px solid var(--background-gray);
                     vertical-align: middle;
                     max-width: 17rem;
-                }
-                td:first-of-type {
-                    padding-left: spacing.$spacing-md;
-                    border-left: 1px solid var(--background-gray);
-                    border-top-left-radius: 5px;
-                    border-bottom-left-radius: 5px;
-                }
-                td:last-of-type {
-                    padding-right: spacing.$spacing-md;
-                    min-width: 3rem;
-                    border-right: 1px solid var(--background-gray);
-                    border-top-right-radius: 5px;
-                    border-bottom-right-radius: 5px;
-                }
-                td.name,
-                td.name a {
-                    font-family: fonts.$primary-bold;
-                    font-weight: bold;
-                }
-                td.related {
-                    min-width: 2rem;
-                    text-align: center;
+                    &.name {
+                        padding-left: spacing.$spacing-md;
+                        border-left: 1px solid var(--background-gray);
+                        border-top-left-radius: 5px;
+                        border-bottom-left-radius: 5px;
+                    }
                     &:last-of-type {
+                        padding-right: spacing.$spacing-md;
                         min-width: 3rem;
+                        border-right: 1px solid var(--background-gray);
+                        border-top-right-radius: 5px;
+                        border-bottom-right-radius: 5px;
                     }
-                }
-            }
-        }
-        div.grid {
-            // TODO: implement dekstop grid view. for now, "grid" is mobile-only single column
-            @include breakpoints.for-tablet-landscape-up {
-                display: none;
-            }
-            display: flex;
-            flex-flow: column;
-            div.person {
-                display: flex;
-                flex-flow: column;
-                margin: 0.5rem 0;
-                padding: 1rem;
-                background-color: var(--background-light);
-                border: 1px solid var(--background-gray);
-                border-radius: 5px;
-                dd {
-                    font-size: typography.$text-size-md;
-                    line-height: calc(24 / 16);
-                }
-                dd.name,
-                dd.name a {
-                    @include typography.body-bold;
-                    line-height: calc(27 / 18);
-                    &:has(a) {
-                        margin-bottom: 0.5rem;
-                    }
-                }
-                dd.description {
-                    font-size: typography.$text-size-sm;
-                    line-height: calc(17 / 14);
-                    margin: 0.5rem 0;
-                }
-                dl.relations {
-                    display: flex;
-                    flex-flow: row nowrap;
-                    border-top: 1px solid colors.$gray;
-                    padding-top: 0.5rem;
-                    dd {
-                        flex: 1 0 33%;
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                        gap: 0.5rem;
-                        &:not(:first-of-type) {
-                            border-left: 1px solid colors.$gray;
+                    &.related {
+                        display: table-cell;
+                        min-width: 2rem;
+                        &:last-of-type {
+                            min-width: 3rem;
+                        }
+                        & + td.related {
+                            border-left: none;
+                        }
+                        &::before {
+                            display: none;
+                        }
+                        .label {
+                            display: none;
                         }
                     }
                 }
+                & + tr {
+                    margin-top: 0;
+                }
             }
-        }
-    }
-    th.related,
-    dl.relations dd {
-        &::before {
-            @include typography.icon-button-sm;
-        }
-        &.documents::before {
-            content: "\edf2";
-        }
-        &.people::before {
-            content: "\f346";
-        }
-        &.places::before {
-            content: "\f20d";
         }
     }
     .pagination-container {
