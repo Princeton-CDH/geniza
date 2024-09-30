@@ -22,13 +22,17 @@ main.people {
         padding: 0;
     }
     // Header
-    & > h1 {
+    & > h1,
+    .topheader-row h1 {
         width: 100%;
         font-family: fonts.$primary;
         font-size: typography.$text-size-5xl;
         @include breakpoints.for-tablet-landscape-up {
             font-size: typography.$text-size-7xl;
         }
+    }
+    & > h1,
+    .topheader-row {
         margin-bottom: 1rem;
     }
 }

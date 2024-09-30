@@ -14,6 +14,7 @@ export default class extends Controller {
         "dropdownDetails",
         "helpDialog",
         "placesMode",
+        "peopleMode",
     ];
     static debounces = ["update"];
 
@@ -253,6 +254,21 @@ export default class extends Controller {
         const isMobile = window.innerWidth <= 900;
         if (isMobile) {
             window.scrollTo({ top: 0 });
+        }
+    }
+
+    // person list view mode checkbox
+    togglePeopleViewMode(e) {
+        // save in session storage
+        window.sessionStorage.setItem("people-list-view", e.target.checked);
+    }
+
+    peopleModeTargetConnected() {
+        // Saved mode state should persist when connected
+        let isPeopleListMode =
+            window.sessionStorage.getItem("people-list-view");
+        if (isPeopleListMode === "true") {
+            this.peopleModeTarget.checked = true;
         }
     }
 }

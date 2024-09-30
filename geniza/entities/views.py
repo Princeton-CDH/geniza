@@ -525,7 +525,7 @@ class PersonListView(ListView, FormMixin, SolrDateRangeMixin):
     page_title = _("People")
     # Translators: description of people list/browse page
     page_description = _("Browse people present in Geniza documents.")
-    paginate_by = 50
+    paginate_by = 51
     form_class = PersonListForm
     applied_filter_labels = []
 
