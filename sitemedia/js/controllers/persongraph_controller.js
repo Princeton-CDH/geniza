@@ -54,8 +54,15 @@ export default class extends Controller {
                     const [persName, relType, _sharedDocs, _notes] = cols;
                     const persId = row.dataset.id;
                     const persLink = row.dataset.href || "";
-                    const relTypeName = relType.textContent.trim();
-                    const relationLevel = relationLevels[relTypeName];
+                    const relTypeNames = relType.textContent.trim().split(", ");
+                    let relationLevel = null;
+                    relTypeNames.forEach((rtn) => {
+                        let relTypeName =
+                            rtn.charAt(0).toUpperCase() + rtn.slice(1);
+                        if (Object.hasOwn(relationLevels, relTypeName)) {
+                            relationLevel = relationLevels[relTypeName];
+                        }
+                    });
                     if (relationLevel || relationLevel === 0) {
                         // keep track of index per relation level (i.e. columns per row)
                         if (Object.hasOwn(colCounts, relationLevel)) {
@@ -85,7 +92,7 @@ export default class extends Controller {
                                     "node-secondary",
                                     persName.innerHTML.trim(),
                                     row.dataset.gender,
-                                    relTypeName
+                                    relType.textContent.trim()
                                 ),
                                 href: persLink,
                             },
@@ -111,7 +118,7 @@ export default class extends Controller {
                                     "node-tertiary",
                                     persName.innerHTML.trim(),
                                     row.dataset.gender,
-                                    relTypeName
+                                    relType.textContent.trim()
                                 ),
                                 href: persLink,
                             },
