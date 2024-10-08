@@ -307,7 +307,7 @@ main.person {
         margin-top: 2rem;
         padding: 0 1rem;
         @include breakpoints.for-tablet-landscape-up {
-            margin-top: (2rem + spacing.$spacing-xs);
+            margin-top: (2.25rem + spacing.$spacing-xs);
             padding: 0;
         }
         #map {
@@ -322,6 +322,68 @@ main.person {
             @include breakpoints.for-tablet-landscape-up {
                 width: 42px;
                 height: 48px;
+            }
+        }
+    }
+    // person related people
+    .network-graph {
+        width: 100%;
+        height: 24.125rem;
+        margin-top: (2.25rem + spacing.$spacing-xs);
+        background-color: var(--network-graph-bg);
+        cursor: grab;
+        [class^="node"] {
+            box-sizing: border-box;
+            width: 11.25rem;
+            min-height: 3.375rem;
+            border-radius: 4px;
+            color: var(--on-background);
+            background-color: var(--network-secondary-node);
+            display: flex;
+            align-items: center;
+            font-size: typography.$text-size-md;
+            gap: 0.75rem;
+            padding: 0.5rem 0.75rem;
+        }
+        .gender {
+            box-sizing: content-box;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 1.5rem;
+            min-height: 1.5rem;
+            border: 1px solid var(--on-background);
+            border-radius: 0.75rem;
+        }
+        .node-primary {
+            color: var(--on-secondary);
+            background-color: var(--secondary);
+            .name {
+                font-weight: 700;
+            }
+            .gender {
+                border-color: var(--on-secondary);
+            }
+        }
+        .node-tertiary {
+            background-color: var(--network-tertiary-node);
+        }
+        .meta {
+            display: flex;
+            flex-flow: column;
+            line-height: 19.2px;
+            gap: 0.25rem;
+            .reltype {
+                font-family: fonts.$primary-italic;
+                font-style: italic;
+                font-size: typography.$text-size-sm;
+                line-height: 16.8px;
+            }
+            .name a {
+                font-weight: 700;
+                text-decoration: underline;
+                text-underline-offset: auto;
+                text-decoration-color: var(--on-background);
             }
         }
     }
