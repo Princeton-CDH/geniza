@@ -47,7 +47,7 @@ class TestFacetChoiceField:
     # test adapted from ppa-django
 
     def test_init(self):
-        fcf = FacetChoiceField()
+        fcf = FacetChoiceField(legend="Document type")
         # uses RadioSelectWithCount
         fcf.widget == CheckboxSelectWithCount
         # not required by default

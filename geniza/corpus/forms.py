@@ -88,20 +88,7 @@ class FacetFieldMixin:
     def __init__(self, *args, **kwargs):
         if "required" not in kwargs:
             kwargs["required"] = False
-
-        # get custom kwarg and remove before passing to MultipleChoiceField
-        # super method, which would cause an error
-        if hasattr(self.widget, "legend"):
-            self.widget.legend = None
-            if "legend" in kwargs:
-                self.widget.legend = kwargs["legend"]
-                del kwargs["legend"]
-
         super().__init__(*args, **kwargs)
-
-        # if no custom legend, set it from label
-        if hasattr(self.widget, "legend") and not self.widget.legend:
-            self.widget.legend = self.label
 
     def valid_value(self, value):
         return True
@@ -112,6 +99,20 @@ class FacetChoiceField(FacetFieldMixin, forms.ChoiceField):
 
     # use a custom widget so we can add facet count as a data attribute
     widget = CheckboxSelectWithCount
+
+    def __init__(self, *args, **kwargs):
+        # get custom kwarg and remove before passing to MultipleChoiceField
+        # super method, which would cause an error
+        self.widget.legend = None
+        if "legend" in kwargs:
+            self.widget.legend = kwargs["legend"]
+            del kwargs["legend"]
+
+        super().__init__(*args, **kwargs)
+
+        # if no custom legend, set it from label
+        if not self.widget.legend:
+            self.widget.legend = self.label
 
     def populate_from_facets(self, facet_dict):
         """
