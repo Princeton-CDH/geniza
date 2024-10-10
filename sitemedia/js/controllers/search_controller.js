@@ -97,10 +97,17 @@ export default class extends Controller {
             if (filterValue === "on") {
                 selector = "checked";
             }
-            const appliedFilter = this.filterModalTarget.querySelector(
+            let appliedFilter = this.filterModalTarget.querySelector(
                 `label[for*="${filterName}"] input[${selector}]`
             );
-            appliedFilter.checked = false;
+            if (appliedFilter) {
+                appliedFilter.checked = false;
+            } else {
+                appliedFilter = this.filterModalTarget.querySelector(
+                    `label[for*="${filterName}"] option[${selector}]`
+                );
+                appliedFilter.selected = false;
+            }
         } else if (
             ["date_range", "docdate"].includes(filterName) &&
             (searchParams.has("date_range_0") ||

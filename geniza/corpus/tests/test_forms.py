@@ -12,6 +12,8 @@ from geniza.corpus.forms import (
     DocumentMergeForm,
     DocumentSearchForm,
     FacetChoiceField,
+    FacetChoiceSelectField,
+    SelectWithCount,
     SelectWithDisabled,
     TagChoiceField,
     TagMergeForm,
@@ -60,6 +62,36 @@ class TestFacetChoiceField:
         assert fcf.valid_value("foo")
 
 
+class TestFacetChoiceSelectField:
+    # similar to FacetChoiceField, but slightly different formatting and using a Select widget
+
+    def test_init(self):
+        fcf = FacetChoiceSelectField()
+        assert not fcf.empty_label
+        fcf = FacetChoiceSelectField(empty_label="Select...")
+        assert fcf.empty_label == "Select..."
+        # uses SelectWithCount
+        assert fcf.widget.__class__ == SelectWithCount
+        # not required by default
+        assert not fcf.required
+        # still can override required with a kwarg
+        fcf = FacetChoiceField(required=True)
+        assert fcf.required
+
+    def test_populate_from_facets(self):
+        fcf = FacetChoiceSelectField()
+        # should format like "label (count)"
+        fcf.populate_from_facets({"example": ("label", 1)})
+        assert fcf.choices == [
+            ("example", '<span>label</span> (<span class="count">1</span>)')
+        ]
+        # should add a choice with the empty label if provided
+        fcf = FacetChoiceSelectField(empty_label="Select...")
+        fcf.populate_from_facets({"example": ("label", 1)})
+        assert len(fcf.choices) == 2
+        assert ("", "Select...") in fcf.choices
+
+
 class TestDocumentSearchForm:
     # test adapted from ppa-django
 
@@ -68,6 +100,7 @@ class TestDocumentSearchForm:
         # has query, relevance enabled
         form = DocumentSearchForm(data)
         assert form.fields["sort"].widget.choices[0] == form.SORT_CHOICES[0]
+        assert form.fields["translation_language"].disabled == True
 
         # empty query, relevance disabled
         data["q"] = ""
@@ -84,6 +117,10 @@ class TestDocumentSearchForm:
             "relevance",
             {"label": "Relevance", "disabled": True},
         )
+
+        data = {"q": "illness", "has_translation": True}
+        form = DocumentSearchForm(data)
+        assert form.fields["translation_language"].disabled == False
 
     def test_choices_from_facets(self):
         """A facet dict should produce correct choice labels"""

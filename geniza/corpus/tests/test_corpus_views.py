@@ -490,6 +490,7 @@ class TestDocumentSearchView:
                 "has_discussion": "on",
                 "has_translation": "on",
                 "has_image": "on",
+                "translation_language": "English",
             }
             qs = docsearch_view.get_queryset()
             mock_sqs = mock_queryset_cls.return_value

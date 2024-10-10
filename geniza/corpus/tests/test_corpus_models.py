@@ -1144,6 +1144,7 @@ class TestDocument:
         assert index_data["scholarship_count_i"] == 3  # unique sources
         assert index_data["text_transcription"] == ["transcrip[ti]on lines"]
         assert index_data["text_translation"] == ["translation lines"]
+        assert index_data["translation_languages_ss"] == ["English"]
         assert index_data["translation_language_code_s"] == "en"
         assert index_data["translation_language_direction_s"] == "ltr"
 
