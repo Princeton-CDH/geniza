@@ -49,8 +49,8 @@ class SelectWithDisabled(SelectDisabledMixin, forms.Select):
     """
 
 
-class CheckboxSelectWithCount(forms.CheckboxSelectMultiple):
-    # extend default CheckboxSelectMultiple to add facet counts and
+class WidgetCountMixin:
+    # extend default choice field widgets to add facet counts and
     # include per-item count as a data attribute
     facet_counts = {}
 
@@ -68,6 +68,18 @@ class CheckboxSelectWithCount(forms.CheckboxSelectMultiple):
         return context
 
 
+class CheckboxSelectWithCount(WidgetCountMixin, forms.CheckboxSelectMultiple):
+    """
+    Subclass of :class:`django.forms.CheckboxSelectMultiple` with support for facet counts.
+    """
+
+
+class SelectWithCount(WidgetCountMixin, forms.Select):
+    """
+    Subclass of :class:`django.forms.Select` with support for facet counts.
+    """
+
+
 class FacetFieldMixin:
     # Borrowed from ppa-django / mep-django
     # - turn off choice validation (shouldn't fail if facets don't get loaded)
@@ -79,15 +91,16 @@ class FacetFieldMixin:
 
         # get custom kwarg and remove before passing to MultipleChoiceField
         # super method, which would cause an error
-        self.widget.legend = None
-        if "legend" in kwargs:
-            self.widget.legend = kwargs["legend"]
-            del kwargs["legend"]
+        if hasattr(self.widget, "legend"):
+            self.widget.legend = None
+            if "legend" in kwargs:
+                self.widget.legend = kwargs["legend"]
+                del kwargs["legend"]
 
         super().__init__(*args, **kwargs)
 
         # if no custom legend, set it from label
-        if not self.widget.legend:
+        if hasattr(self.widget, "legend") and not self.widget.legend:
             self.widget.legend = self.label
 
     def valid_value(self, value):
@@ -115,6 +128,40 @@ class FacetChoiceField(FacetFieldMixin, forms.ChoiceField):
         )
         # pass the counts to the widget so it can be set as a data attribute
         self.widget.facet_counts = facet_dict
+
+
+class FacetChoiceSelectField(FacetFieldMixin, forms.ChoiceField):
+    """Choice field where choices are set based on Solr facets"""
+
+    # use a custom widget so we can add facet count as a data attribute
+    widget = SelectWithCount
+    empty_label = None
+
+    def __init__(self, empty_label=None, *args, **kwargs):
+        if empty_label:
+            self.empty_label = empty_label
+        super().__init__(*args, **kwargs)
+
+    def populate_from_facets(self, facet_dict):
+        """
+        Populate the field choices from the facets returned by solr.
+        """
+        # generate the list of choice from the facets
+        self.choices = (
+            (
+                val,
+                mark_safe(
+                    f'<span>{label}</span> (<span class="count">{count:,}</span>)'
+                ),
+            )
+            for val, (label, count) in facet_dict.items()
+        )
+        # pass the counts to the widget so it can be set as a data attribute
+        self.widget.facet_counts = facet_dict
+
+        # add empty label if present (for <select> dropdowns)
+        if self.empty_label:
+            self.choices = [("", self.empty_label)] + self.choices
 
 
 class CheckboxInputWithCount(forms.CheckboxInput):
@@ -252,6 +299,12 @@ class DocumentSearchForm(RangeForm):
         # Translators: label for "has discussion" search form filter
         label=_("Discussion"),
     )
+    translation_language = FacetChoiceSelectField(
+        # Translators: label for document translation language search form filter
+        label=_("Translation language"),
+        widget=SelectWithCount,
+        empty_label=_("All languages"),
+    )
 
     mode = forms.ChoiceField(
         # Translators: label for "search mode" (general or regex)
@@ -281,6 +334,10 @@ class DocumentSearchForm(RangeForm):
                 self.SORT_CHOICES[0][0],
                 {"label": self.SORT_CHOICES[0][1], "disabled": True},
             )
+
+        # if "has translation" is not selected, language dropdown is disabled
+        if not data or not data.get("has_translation", None):
+            self.fields["translation_language"].disabled = True
 
     def get_translated_label(self, field, label):
         """Lookup translated label via db model object when applicable;
