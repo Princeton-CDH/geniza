@@ -32,7 +32,7 @@
 {% endif %}
 {# only enable ITT panel if images/transcription/translation are present, or we are in edit mode #}
 {% if document.has_digital_content or edit_mode %}
-    <section id="itt-panel" data-controller="ittpanel{% if not edit_mode %} transcription" data-action="click@document->transcription#clickCloseDropdown{% endif %}">
+    <section id="itt-panel" data-controller="ittpanel transcription" data-action="click@document->transcription#clickCloseDropdown">
         <div id="toggles">
             {# images displayed by default; disable if no images are available #}
             {# translators: label for checkbox toggle to show the images panel for a document #}
