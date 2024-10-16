@@ -132,3 +132,19 @@ class PublicPersonExporter(Exporter):
             )
 
         return outd
+
+
+class AdminPersonExporter(PublicPersonExporter):
+    csv_fields = PublicPersonExporter.csv_fields + ["url_admin"]
+
+    def get_export_data_dict(self, person):
+        """
+        Adding certain fields to PublicPersonExporter.get_export_data_dict that are admin-only.
+        """
+
+        outd = super().get_export_data_dict(person)
+        outd[
+            "url_admin"
+        ] = f"{self.url_scheme}{self.site_domain}/admin/entities/person/{person.id}/change/"
+
+        return outd

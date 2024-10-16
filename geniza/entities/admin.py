@@ -24,6 +24,7 @@ from geniza.entities.forms import (
     PlacePersonForm,
     PlacePlaceForm,
 )
+from geniza.entities.metadata_export import AdminPersonExporter
 from geniza.entities.models import (
     DocumentPlaceRelation,
     DocumentPlaceRelationType,
@@ -347,9 +348,21 @@ class PersonAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin):
             status=303,
         )  # status code 303 means "See Other"
 
+    @admin.display(description="Export selected people to CSV")
+    def export_to_csv(self, request, queryset=None):
+        """Stream tabular data as a CSV file"""
+        queryset = queryset or self.get_queryset(request)
+        exporter = AdminPersonExporter(queryset=queryset, progress=False)
+        return exporter.http_export_data_csv()
+
     def get_urls(self):
-        """Return admin urls; adds a custom URL for merging people"""
+        """Return admin urls; adds custom URLs for exporting as CSV, merging people"""
         urls = [
+            path(
+                "csv/",
+                self.admin_site.admin_view(self.export_to_csv),
+                name="person-csv",
+            ),
             path(
                 "merge/",
                 PersonMerge.as_view(),

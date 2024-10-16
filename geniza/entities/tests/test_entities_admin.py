@@ -2,7 +2,7 @@ from unittest.mock import Mock, patch
 
 import pytest
 from django.contrib import admin
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, StreamingHttpResponse
 from django.test import RequestFactory
 from django.urls import reverse
 from pytest_django.asserts import assertContains, assertNotContains
@@ -179,6 +179,26 @@ class TestPersonAdmin:
         with patch.object(admin.ModelAdmin, "save_related"):
             PersonAdmin(Person, Mock()).save_related(Mock(), mockform, Mock(), Mock())
         assert person.slug
+
+    @pytest.mark.django_db
+    def test_export_to_csv(self, person, person_multiname):
+        # adapted from document csv export tests
+        person_multiname.description = "Test description"
+        person_multiname.save()
+        person_admin = PersonAdmin(model=Person, admin_site=admin.site)
+        response = person_admin.export_to_csv(Mock())
+        assert isinstance(response, StreamingHttpResponse)
+        # consume the binary streaming content and decode to inspect as str
+        content = b"".join([val for val in response.streaming_content]).decode()
+
+        # spot-check that we get expected data
+        # - header row
+        assert "name,name_variants," in content
+        # - some content
+        assert str(person) in content
+        assert person.description in content
+        assert str(person_multiname) in content
+        assert person_multiname.description in content
 
 
 @pytest.mark.django_db

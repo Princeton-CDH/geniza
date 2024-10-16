@@ -3,7 +3,7 @@ import csv
 import pytest
 from django.utils import timezone
 
-from geniza.entities.metadata_export import PublicPersonExporter
+from geniza.entities.metadata_export import AdminPersonExporter
 from geniza.entities.models import (
     Name,
     Person,
@@ -20,7 +20,7 @@ from geniza.entities.models import (
 @pytest.mark.django_db
 def test_person_exporter_cli(person, person_multiname):
     # get artificial dataset
-    exporter = PublicPersonExporter()
+    exporter = AdminPersonExporter()
 
     # csv filename?
     str_time_pref = timezone.now().strftime("%Y%m%dT")
@@ -89,11 +89,15 @@ def test_iter_dicts(person, person_diacritic, person_multiname, document, join):
     )
 
     pqs = Person.objects.all().order_by("slug")
-    exporter = PublicPersonExporter(queryset=pqs)
+    exporter = AdminPersonExporter(queryset=pqs)
 
     for pers, export_data in zip(pqs, exporter.iter_dicts()):
         # test some properties
         assert str(pers) == export_data.get("name")
+        assert (
+            f"https://example.com/admin/entities/person/{pers.id}/change/"
+            == export_data.get("url_admin")
+        )
         for n in pers.names.non_primary():
             assert str(n) in export_data.get("name_variants")
         if pers.get_absolute_url():
