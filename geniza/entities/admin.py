@@ -375,7 +375,7 @@ class PersonAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin):
         """Display automatically generated date/date range for an event as a formatted string"""
         return standard_date_display(obj.documents_date_range)
 
-    actions = (merge_people,)
+    actions = (export_to_csv, merge_people)
 
 
 @admin.register(PersonRole)

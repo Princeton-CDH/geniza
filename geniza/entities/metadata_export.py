@@ -8,6 +8,7 @@ from geniza.entities.models import (
     Person,
     PersonDocumentRelation,
     PersonPlaceRelation,
+    PersonPlaceRelationType,
     Place,
 )
 
@@ -31,9 +32,6 @@ class PublicPersonExporter(Exporter):
         "description",
         "related_people_count",
         "related_documents_count",
-        "traces_roots_to",
-        "home_base",
-        "occasional_trips_to",
         "url",
     ]
 
@@ -52,6 +50,14 @@ class PublicPersonExporter(Exporter):
             "Place",
         ],
     }
+
+    def __init__(self, queryset=None, progress=False):
+        """Adds fields to the CSV based on PersonPlaceRelationType names"""
+        self.csv_fields[9:9] = [
+            slugify(ppr_type.name).replace("-", "_")
+            for ppr_type in PersonPlaceRelationType.objects.order_by("name")
+        ]
+        super().__init__(queryset, progress)
 
     def get_queryset(self):
         """
