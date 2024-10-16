@@ -108,4 +108,5 @@ def test_iter_dicts(person, person_diacritic, person_multiname, document, join):
         elif str(pers) == str(person_diacritic):
             assert export_data.get("related_people_count") == 1
             assert export_data.get("related_documents_count") == 0
-            assert "Mosul, Fusṭāṭ" in export_data.get("family_traces_roots_to")
+            # should be in alphabetical order
+            assert "Fusṭāṭ, Mosul" in export_data.get("family_traces_roots_to")
