@@ -334,3 +334,26 @@ class TestPlaceAdmin:
         # queryset should include name_unaccented field without diacritics
         qs = place_admin.get_queryset(Mock())
         assert qs.filter(name_unaccented__icontains="fustat").exists()
+
+    @pytest.mark.django_db
+    def test_export_to_csv(self):
+        # adapted from document csv export tests
+        mosul = Place.objects.create(slug="mosul", notes="A city in Iraq")
+        Name.objects.create(content_object=mosul, name="Mosul", primary=True)
+        fustat = Place.objects.create(slug="fustat")
+        Name.objects.create(content_object=fustat, name="Fusṭāṭ", primary=True)
+
+        place_admin = PlaceAdmin(model=Place, admin_site=admin.site)
+        response = place_admin.export_to_csv(Mock())
+        assert isinstance(response, StreamingHttpResponse)
+        # consume the binary streaming content and decode to inspect as str
+        content = b"".join([val for val in response.streaming_content]).decode()
+
+        # spot-check that we get expected data
+        # - header row
+        assert "name,name_variants," in content
+        # - some content
+        assert str(mosul) in content
+        assert mosul.notes in content
+        assert str(fustat) in content
+        assert fustat.permalink in content

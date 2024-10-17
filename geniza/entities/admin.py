@@ -24,13 +24,12 @@ from geniza.entities.forms import (
     PlacePersonForm,
     PlacePlaceForm,
 )
-from geniza.entities.metadata_export import AdminPersonExporter
+from geniza.entities.metadata_export import AdminPersonExporter, AdminPlaceExporter
 from geniza.entities.models import (
     DocumentPlaceRelation,
     DocumentPlaceRelationType,
     Event,
     Name,
-    PastPersonSlug,
     Person,
     PersonDocumentRelation,
     PersonDocumentRelationType,
@@ -525,6 +524,26 @@ class PlaceAdmin(SortableAdminBase, admin.ModelAdmin):
                 name_unaccented=ArrayAgg("names__name__unaccent", distinct=True),
             )
         )
+
+    @admin.display(description="Export selected places to CSV")
+    def export_to_csv(self, request, queryset=None):
+        """Stream tabular data as a CSV file"""
+        queryset = queryset or self.get_queryset(request)
+        exporter = AdminPlaceExporter(queryset=queryset, progress=False)
+        return exporter.http_export_data_csv()
+
+    def get_urls(self):
+        """Return admin urls; adds custom URL for exporting as CSV"""
+        urls = [
+            path(
+                "csv/",
+                self.admin_site.admin_view(self.export_to_csv),
+                name="place-csv",
+            ),
+        ]
+        return urls + super().get_urls()
+
+    actions = (export_to_csv,)
 
 
 @admin.register(PlacePlaceRelationType)
