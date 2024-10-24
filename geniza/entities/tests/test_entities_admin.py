@@ -200,6 +200,29 @@ class TestPersonAdmin:
         assert str(person_multiname) in content
         assert person_multiname.description in content
 
+    @pytest.mark.django_db
+    def test_export_relations_to_csv(self, person, person_multiname):
+        (partner, _) = PersonPersonRelationType.objects.get_or_create(
+            name_en="Partner", category=PersonPersonRelationType.BUSINESS
+        )
+        PersonPersonRelation.objects.create(
+            from_person=person, to_person=person_multiname, type=partner
+        )
+        # adapted from document csv export tests
+        person_admin = PersonAdmin(model=Person, admin_site=admin.site)
+        response = person_admin.export_relations_to_csv(Mock(), pk=person.pk)
+        assert isinstance(response, StreamingHttpResponse)
+        # consume the binary streaming content and decode to inspect as str
+        content = b"".join([val for val in response.streaming_content]).decode()
+
+        # spot-check that we get expected data
+        # - header row
+        assert "related_object_type,related_object_id," in content
+        # - some content
+        assert str(person) not in content
+        assert str(person_multiname) in content
+        assert "Partner" in content
+
 
 @pytest.mark.django_db
 class TestNameInlineFormSet:
