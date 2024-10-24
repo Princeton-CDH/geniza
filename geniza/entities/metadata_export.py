@@ -1,3 +1,4 @@
+from itertools import groupby
 from operator import itemgetter
 from time import sleep
 
@@ -9,7 +10,7 @@ from django.utils.text import slugify
 
 from geniza.common.metadata_export import Exporter
 from geniza.corpus.dates import standard_date_display
-from geniza.corpus.models import Document, TextBlock
+from geniza.corpus.models import Document, DocumentEventRelation, TextBlock
 from geniza.entities.models import (
     DocumentPlaceRelation,
     DocumentPlaceRelationType,
@@ -183,6 +184,7 @@ class PersonRelationsExporter(Exporter):
         "related_object_id",
         "related_object_name",
         "relationship_type",
+        "shared_documents",
     ]
 
     def csv_filename(self):
@@ -254,13 +256,19 @@ class PersonRelationsExporter(Exporter):
         # of time, and access each field value from the dict by id in a loop.
 
         # use single query to get names for people and places
+        related_people = [
+            r["related_object_id"]
+            for r in relations
+            if r["related_object_type"] == "Person"
+        ]
+        related_places = [
+            r["related_object_id"]
+            for r in relations
+            if r["related_object_type"] == "Place"
+        ]
         names = list(
             Name.objects.filter(
-                object_id__in=[
-                    r["related_object_id"]
-                    for r in relations
-                    if r["related_object_type"] in ["Person", "Place"]
-                ],
+                object_id__in=[*related_people, *related_places],
                 primary=True,
             ).values("object_id", "name", "content_type")
         )
@@ -293,6 +301,48 @@ class PersonRelationsExporter(Exporter):
         ).values("id", "name")
         doc_relation_typedict = {t["id"]: t["name"] for t in doc_relation_types}
 
+        # get shared documents with People, Places, and Events
+        related_docs = [
+            r["related_object_id"]
+            for r in relations
+            if r["related_object_type"] == "Document"
+        ]
+        related_events = [
+            r["related_object_id"]
+            for r in relations
+            if r["related_object_type"] == "Event"
+        ]
+        shared_person_docs = list(
+            PersonDocumentRelation.objects.filter(
+                document__id__in=related_docs, person__id__in=related_people
+            ).values("document__id", "person__id")
+        )
+        shared_person_docs = sorted(shared_person_docs, key=itemgetter("person__id"))
+        persondocs_dict = {
+            k: [d["document__id"] for d in v]
+            for k, v in groupby(shared_person_docs, key=itemgetter("person__id"))
+        }
+        shared_place_docs = list(
+            DocumentPlaceRelation.objects.filter(
+                document__id__in=related_docs, place__id__in=related_places
+            ).values("document__id", "place__id")
+        )
+        shared_place_docs = sorted(shared_place_docs, key=itemgetter("place__id"))
+        placedocs_dict = {
+            k: [d["document__id"] for d in v]
+            for k, v in groupby(shared_place_docs, key=itemgetter("place__id"))
+        }
+        shared_event_docs = list(
+            DocumentEventRelation.objects.filter(
+                document__id__in=related_docs, event__id__in=related_events
+            ).values("document__id", "event__id")
+        )
+        shared_event_docs = sorted(shared_event_docs, key=itemgetter("event__id"))
+        eventdocs_dict = {
+            k: [d["document__id"] for d in v]
+            for k, v in groupby(shared_event_docs, key=itemgetter("event__id"))
+        }
+
         # to get Document names, need TextBlocks and Fragments
         docs = Document.objects.prefetch_related(
             Prefetch(
@@ -304,26 +354,14 @@ class PersonRelationsExporter(Exporter):
                     "fragment__textblock_set__document",
                 ),
             )
-        ).filter(
-            id__in=[
-                r["related_object_id"]
-                for r in relations
-                if r["related_object_type"] == "Document"
-            ]
-        )
+        ).filter(id__in=related_docs)
         docs_dict = {d.id: str(d) for d in docs}
 
         # get Event names
-        events = Event.objects.filter(
-            id__in=[
-                r["related_object_id"]
-                for r in relations
-                if r["related_object_type"] == "Event"
-            ]
-        ).values("id", "name")
+        events = Event.objects.filter(id__in=related_events).values("id", "name")
         events_dict = {e["id"]: e["name"] for e in events}
 
-        # update with additional data & dedupe
+        # loop through all relations, update with additional data, and dedupe
         prev_relation = None
         # use all precomputed query results to populate additional data per obj
         for rel in sorted(
@@ -335,10 +373,11 @@ class PersonRelationsExporter(Exporter):
                 "relationship_type_id",
             ),
         ):
+            obj_id = rel["related_object_id"]
             if rel["related_object_type"] == "Person":
                 # get person name, relationship type from precomputed querysets
                 filtered_names = filter(
-                    lambda n: n.get("object_id") == rel["related_object_id"]
+                    lambda n: n.get("object_id") == obj_id
                     and n.get("content_type") == pers_contenttype_id,
                     names,
                 )
@@ -354,12 +393,18 @@ class PersonRelationsExporter(Exporter):
                             # use name if should use name, or converse does not exist
                             else rel_type.get("name")
                         ),
+                        "shared_documents": ", ".join(
+                            [
+                                docs_dict.get(doc_id)
+                                for doc_id in persondocs_dict.get(obj_id, [])
+                            ]
+                        ),
                     }
                 )
             elif rel["related_object_type"] == "Place":
                 # get place name, relationship type from precomputed querysets
                 filtered_names = filter(
-                    lambda n: n.get("object_id") == rel["related_object_id"]
+                    lambda n: n.get("object_id") == obj_id
                     and n.get("content_type") == place_contenttype_id,
                     names,
                 )
@@ -369,13 +414,19 @@ class PersonRelationsExporter(Exporter):
                         "relationship_type": place_relation_typedict.get(
                             rel["relationship_type_id"]
                         ),
+                        "shared_documents": ", ".join(
+                            [
+                                docs_dict.get(doc_id)
+                                for doc_id in placedocs_dict.get(obj_id, [])
+                            ]
+                        ),
                     }
                 )
             elif rel["related_object_type"] == "Document":
                 # get doc name, doc relation type name from precomputed querysets
                 rel.update(
                     {
-                        "related_object_name": docs_dict.get(rel["related_object_id"]),
+                        "related_object_name": docs_dict.get(obj_id),
                         "relationship_type": doc_relation_typedict.get(
                             rel["relationship_type_id"]
                         ),
@@ -383,14 +434,24 @@ class PersonRelationsExporter(Exporter):
                 )
             elif rel["related_object_type"] == "Event":
                 # get event name from precomputed names queryset; relation type
-                rel["related_object_name"] = events_dict.get(rel["related_object_id"])
+                rel.update(
+                    {
+                        "related_object_name": events_dict.get(obj_id),
+                        "shared_documents": ", ".join(
+                            [
+                                docs_dict.get(doc_id)
+                                for doc_id in eventdocs_dict.get(obj_id, [])
+                            ]
+                        ),
+                    }
+                )
                 # relationship type is not used for events
 
             # dedupe items and combine relationship types
             if (
                 prev_relation
                 and prev_relation["related_object_type"] == rel["related_object_type"]
-                and prev_relation["related_object_id"] == rel["related_object_id"]
+                and prev_relation["related_object_id"] == obj_id
             ):
                 # dedupe type by string matching since we can't match reverse relations by id
                 if (

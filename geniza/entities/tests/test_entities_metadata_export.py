@@ -166,6 +166,12 @@ def test_person_relations_csv(
         document=document, person=person, type=pdrtype
     )
     PersonDocumentRelation.objects.create(document=join, person=person, type=pdrtype)
+    PersonDocumentRelation.objects.create(
+        document=document, person=person_diacritic, type=pdrtype
+    )
+    PersonDocumentRelation.objects.create(
+        document=join, person=person_diacritic, type=pdrtype
+    )
     (partner, _) = PersonPersonRelationType.objects.get_or_create(
         name_en="Partner", category=PersonPersonRelationType.BUSINESS
     )
@@ -195,6 +201,8 @@ def test_person_relations_csv(
         if objtype == "Person":
             if id == person_diacritic.id:
                 assert reltype == "Maternal cousin, partner"
+                assert str(document) in obj["shared_documents"]
+                assert ", " in obj["shared_documents"]
             elif id == person_multiname.id:
                 assert reltype == cousin.converse_name
         elif objtype == "Place":
