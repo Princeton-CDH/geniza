@@ -5,14 +5,14 @@
     "build": "webpack --mode=production",
     "serve": "python manage.py runserver --insecure",
     "percy": "percy exec -- python manage.py visual_tests",
-    "test:visual": "start-server-and-test serve http://localhost:8000/documents/ percy"
+    "test:visual": "start-server-and-test serve http://localhost:8000/en/documents/ percy"
   },
   "volta": {
     "node": "16.14.0",
     "npm": "8.19.4"
   },
   "devDependencies": {
-    "@percy/cli": "^1.0.0-beta.70",
+    "@percy/cli": "^1.30.1",
     "start-server-and-test": "^1.14.0",
     "webpack-dev-server": "^4.0.0"
   },
