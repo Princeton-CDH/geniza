@@ -5,8 +5,19 @@
 {% block meta_description %}{{ page.description }}{% endblock meta_description %}
 
 {% block main %}
-    <h1>{{ page.title }}</h1>
+    <nav class="pages-sidebar">
+        {% for sibling in page.get_siblings %}
+            <ul>
+                {% if sibling.live %}
+                    <li>
+                        <a href="{{ sibling.url }}"{% if sibling.id == page.id %} class="active"{% endif %} title="{{ sibling }}">{{ sibling }}</a>
+                    </li>
+                {% endif %}
+            </ul>
+        {% endfor %}
+    </nav>
     <div class="container">
+        <h1>{{ page.title }}</h1>
         {% include_block page.body %}
     </div>
 {% endblock main %}

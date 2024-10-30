@@ -6,6 +6,80 @@
 @use "../base/spacing";
 @use "../base/typography";
 
+main.content-page {
+    @include breakpoints.for-tablet-landscape-up {
+        display: flex;
+        flex-flow: row;
+        align-items: flex-start;
+        justify-content: center;
+        max-width: 872px;
+        margin: 1.5rem auto 0;
+        gap: 2.25rem;
+    }
+    @include breakpoints.for-xl-up {
+        max-width: 1200px;
+        gap: 4.5rem;
+    }
+    nav.pages-sidebar {
+        display: none;
+        @include breakpoints.for-tablet-landscape-up {
+            display: block;
+            a {
+                display: flex;
+                flex-flow: column;
+                width: 100%;
+                text-decoration: none;
+                padding: 0.5rem 2.5rem 0.5rem 0;
+                border-right: 4px solid var(--zoom-control-bg);
+                text-wrap: nowrap;
+                &.active {
+                    border-right-color: var(--secondary);
+                    @include typography.body-bold;
+                }
+                // hack to prevent bold text from changing width
+                // via https://stackoverflow.com/a/32570813/394067
+                &::after {
+                    display: block;
+                    content: attr(title);
+                    @include typography.body-bold;
+                    height: 1px;
+                    color: transparent;
+                    overflow: hidden;
+                    visibility: hidden;
+                }
+            }
+            a,
+            a.active,
+            a::after {
+                font-size: typography.$text-size-xl;
+            }
+        }
+        @include breakpoints.for-xl-up {
+            a,
+            a.active,
+            a::after {
+                font-size: typography.$text-size-3xl;
+            }
+        }
+    }
+    .container {
+        // Overall spacing
+        padding: spacing.$spacing-md spacing.$spacing-md;
+        @include breakpoints.for-tablet-landscape-up {
+            padding: 0;
+            margin: 0;
+            max-width: none;
+            * {
+                max-width: none;
+            }
+        }
+    }
+    @include breakpoints.for-tablet-landscape-up {
+        h1 {
+            font-size: typography.$text-size-7xl;
+        }
+    }
+}
 main.content-page,
 main.homepage {
     h1 {
@@ -15,11 +89,6 @@ main.homepage {
         }
     }
     .container {
-        // Overall spacing
-        padding: spacing.$spacing-md spacing.$spacing-md;
-        @include breakpoints.for-tablet-landscape-up {
-            padding: spacing.$spacing-lg 0;
-        }
         // List styles, nested inside container to prevent affecting nav lists
         ul,
         ol {
@@ -121,6 +190,13 @@ main.homepage {
 
 // RTL tweaks
 html[dir="rtl"] main.content-page {
+    .container {
+        ul,
+        ol {
+            margin: spacing.$spacing-md spacing.$spacing-lg spacing.$spacing-md
+                0;
+        }
+    }
     ul li {
         position: relative;
         &::before {
@@ -138,6 +214,18 @@ html[dir="rtl"] main.content-page {
             margin-left: 0;
             padding-right: spacing.$spacing-2xs;
             margin-right: -#{spacing.$spacing-lg};
+        }
+    }
+    nav.pages-sidebar {
+        @include breakpoints.for-tablet-landscape-up {
+            a {
+                padding: 0.5rem 0 0.5rem 2.5rem;
+                border-right: none;
+                border-left: 4px solid var(--zoom-control-bg);
+                &.active {
+                    border-left-color: var(--secondary);
+                }
+            }
         }
     }
 }
