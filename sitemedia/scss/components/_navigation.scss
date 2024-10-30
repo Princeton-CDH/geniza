@@ -18,16 +18,18 @@ nav#site-nav {
         z-index: 10;
     }
     @include breakpoints.for-tablet-landscape-up {
+        height: 11.1875rem;
+        padding-bottom: 3.1875rem;
+    }
+    @include breakpoints.for-desktop-up {
         flex-flow: row nowrap;
         align-items: center;
         justify-content: space-between;
-        height: 11.1875rem;
-        padding-bottom: 3.1875rem;
     }
     // Logotype, links to homepage
     a.home-link {
         position: absolute;
-        @include breakpoints.for-tablet-landscape-up {
+        @include breakpoints.for-desktop-up {
             z-index: 7;
         }
     }
@@ -68,6 +70,17 @@ nav#site-nav {
             a::before {
                 content: "\f5d6"; // Phosphor list-bold icon
             }
+            @include breakpoints.for-tablet-landscape-up {
+                right: 4.25rem;
+                top: 2.5rem;
+                a {
+                    @include typography.icon-button-lg;
+                    font-size: typography.$text-size-6xl;
+                }
+                a::before {
+                    content: "\f1fa"; // Phosphor list icon
+                }
+            }
         }
     }
     // List of links in main nav bar
@@ -84,11 +97,20 @@ nav#site-nav {
         align-items: center;
         justify-content: flex-end;
         max-width: 100%;
+        @include breakpoints.for-tablet-landscape-up {
+            max-width: 33%;
+            padding: 2rem;
+            right: 0;
+        }
         z-index: 6;
         // Direct descendent menu buttons (mobile)
         & > li.menu-button {
             display: flex;
             margin-right: spacing.$spacing-xs;
+            @include breakpoints.for-tablet-landscape-up {
+                margin-right: 0;
+                top: 3.25rem;
+            }
         }
         li.menu-button a::before {
             font-family: "Phosphor";
@@ -103,11 +125,19 @@ nav#site-nav {
             align-items: center;
             padding-top: 8px;
         }
+        // direct descendent menu label (mobile)
+        & > li.menu-label {
+            display: none;
+        }
         // First item after menu button should get extra space, and no border-top
+        & > li.menu-button + li.menu-label + li.menu-item a,
         li.menu-button + li.menu-item a {
             padding-top: spacing.$spacing-2xl;
             border-top: none;
             @include breakpoints.for-tablet-landscape-up {
+                padding-top: 1.5rem;
+            }
+            @include breakpoints.for-desktop-up {
                 padding-top: 0;
             }
         }
@@ -117,14 +147,14 @@ nav#site-nav {
             width: 100%;
             height: 100vh;
             pointer-events: all;
-            @include breakpoints.for-tablet-landscape-up {
+            @include breakpoints.for-desktop-up {
                 flex: 1 0 auto;
                 width: auto;
                 height: 100%;
             }
         }
         // Positioning for desktop
-        @include breakpoints.for-tablet-landscape-up {
+        @include breakpoints.for-desktop-up {
             visibility: visible;
             width: auto;
             height: 100%;
@@ -133,11 +163,17 @@ nav#site-nav {
             flex: 1 0 auto;
             flex-flow: row nowrap;
             justify-content: flex-end;
-            margin: 0 13.5rem 0 spacing.$spacing-xl;
+            padding: 0;
+            margin: 0 10rem 0 spacing.$spacing-xl;
             pointer-events: all;
+            box-shadow: none;
+            max-width: none;
             & > li.menu-item + li.menu-item {
                 margin-left: spacing.$spacing-sm;
             }
+        }
+        @include breakpoints.for-xl-up {
+            margin: 0 13.5rem 0 spacing.$spacing-xl;
         }
         outline-color: var(--primary);
     }
@@ -145,7 +181,7 @@ nav#site-nav {
     ul#menu li.home,
     ul#menu:target li.menu-button,
     ul#menu:target li.menu-label {
-        @include breakpoints.for-tablet-landscape-up {
+        @include breakpoints.for-desktop-up {
             display: none;
         }
     }
@@ -169,11 +205,28 @@ nav#site-nav {
                 @include typography.nav-bold;
                 @include typography.mobile-menu;
             }
+            transition: background-color 0.15s;
+            &:hover {
+                @include breakpoints.for-tablet-landscape-up {
+                    background-color: var(--background-light);
+                }
+                @include breakpoints.for-desktop-up {
+                    background-color: transparent;
+                }
+            }
+            &:active {
+                @include breakpoints.for-tablet-landscape-up {
+                    background-color: var(--background-gray);
+                }
+                @include breakpoints.for-desktop-up {
+                    background-color: transparent;
+                }
+            }
         }
         & + li.menu-item a,
         & + ul.sub-menu li.menu-item a {
             border-top: 1px solid colors.$gray;
-            @include breakpoints.for-tablet-landscape-up {
+            @include breakpoints.for-desktop-up {
                 padding-top: 0;
                 border: none;
             }
@@ -189,8 +242,13 @@ nav#site-nav {
             align-items: center;
             justify-content: space-between;
             padding-top: spacing.$spacing-sm;
-            // Desktop overrides
+            padding-bottom: spacing.$spacing-sm;
             @include breakpoints.for-tablet-landscape-up {
+                padding-top: 8.5px;
+                padding-bottom: 8.5px;
+            }
+            // Desktop overrides
+            @include breakpoints.for-desktop-up {
                 flex-flow: row wrap;
                 justify-content: flex-end;
             }
@@ -200,7 +258,7 @@ nav#site-nav {
                 content: "\f0c4"; // phosphor caret-right icon
                 @include typography.icon-button-lg;
                 // Desktop overrides
-                @include breakpoints.for-tablet-landscape-up {
+                @include breakpoints.for-desktop-up {
                     display: block;
                     content: "\00000a";
                     height: 16px;
@@ -214,7 +272,7 @@ nav#site-nav {
                 display: block;
             }
         }
-        @include breakpoints.for-tablet-landscape-up {
+        @include breakpoints.for-desktop-up {
             // desktop links (strip some mobile styles)
             height: 100%;
             flex: 0 0 auto;
@@ -275,10 +333,16 @@ nav#site-nav {
         flex: 1 0 100%;
         padding: 0;
         max-width: 100%;
+        @include breakpoints.for-tablet-landscape-up {
+            padding: 2rem;
+        }
         li.menu-button {
             display: inline-block;
             width: auto;
             padding: 0 spacing.$spacing-sm 0 spacing.$spacing-2xs;
+            @include breakpoints.for-tablet-landscape-up {
+                padding-right: 4px;
+            }
             a {
                 display: flex;
                 text-decoration: none;
@@ -287,9 +351,12 @@ nav#site-nav {
                 border: none;
                 @include typography.icon-button-lg;
             }
-            a#back-to-main-menu::before {
-                content: "\f0c3"; // phosphor caret-left icon
-                @include typography.icon-button-lg;
+            a#back-to-main-menu {
+                background-color: transparent;
+                &::before {
+                    content: "\f0c3"; // phosphor caret-left icon
+                    @include typography.icon-button-lg;
+                }
             }
         }
         li.menu-label {
@@ -303,12 +370,17 @@ nav#site-nav {
             width: 100%;
             height: 100vh;
             @include breakpoints.for-tablet-landscape-up {
+                width: 33%;
+                right: 0;
+            }
+            @include breakpoints.for-desktop-up {
                 width: auto;
+                right: auto;
                 height: auto;
             }
         }
         // Sub menu (floating) desktop view
-        @include breakpoints.for-tablet-landscape-up {
+        @include breakpoints.for-desktop-up {
             visibility: visible;
             display: none;
             transition: none;
@@ -339,7 +411,7 @@ nav#site-nav {
     li:hover ul.sub-menu,
     ul.sub-menu:hover,
     li.has-submenu.open ul.sub-menu {
-        @include breakpoints.for-tablet-landscape-up {
+        @include breakpoints.for-desktop-up {
             display: block;
         }
     }
@@ -353,13 +425,13 @@ nav#site-nav {
     ul#menu:target li.menu-label,
     ul[id$="-menu"]:target li.menu-button,
     ul[id$="-menu"]:target li.menu-label {
-        @include breakpoints.for-tablet-landscape-up {
+        @include breakpoints.for-desktop-up {
             display: none;
         }
     }
     // Don' allow clicking submenu on desktop
     ul[id$="-menu"]::before {
-        @include breakpoints.for-tablet-landscape-up {
+        @include breakpoints.for-desktop-up {
             content: "";
             display: block;
             height: 140px;
@@ -369,7 +441,7 @@ nav#site-nav {
     // Hover indicator for nav links
     ul[id$="menu"] a:not(.home-link)::after {
         display: none;
-        @include breakpoints.for-tablet-landscape-up {
+        @include breakpoints.for-desktop-up {
             content: "\00000a"; // Newline
             white-space: pre;
             order: 2;
@@ -385,13 +457,13 @@ nav#site-nav {
     a:hover::after,
     a[aria-current="page"]::after,
     li.has-submenu:hover a.open-sub-menu::after {
-        @include breakpoints.for-tablet-landscape-up {
+        @include breakpoints.for-desktop-up {
             opacity: 100% !important;
         }
     }
     // Gets cluttered in sub-menu, so only show when hovering
     ul.sub-menu {
-        @include breakpoints.for-tablet-landscape-up {
+        @include breakpoints.for-desktop-up {
             a {
                 display: flex;
                 flex-flow: column;
@@ -417,6 +489,10 @@ html[dir="rtl"] #site-nav {
     ul#corner-links li.menu-button {
         left: 0.25rem;
         right: auto;
+        @include breakpoints.for-tablet-landscape-up {
+            left: 4.25rem;
+            right: auto;
+        }
     }
     ul.sub-menu li.menu-button a#back-to-main-menu::before {
         content: "\f0c4"; // phosphor caret-right icon
@@ -425,8 +501,26 @@ html[dir="rtl"] #site-nav {
         content: "\f0c3"; // phosphor caret-left icon
     }
     @include breakpoints.for-tablet-landscape-up {
+        ul#menu,
+        ul.sub-menu:target {
+            right: auto;
+            left: 0;
+        }
+        ul.sub-menu li.menu-button {
+            padding: 0 spacing.$spacing-2xs 0 spacing.$spacing-sm;
+            @include breakpoints.for-tablet-landscape-up {
+                padding-left: 4px;
+                padding-right: 0;
+            }
+        }
+    }
+    @include breakpoints.for-desktop-up {
         ul#menu {
-            margin: 0 spacing.$spacing-xl 0 spacing.$spacing-4xl;
+            margin: 0 spacing.$spacing-xl 0 10rem;
+            left: auto;
+        }
+        ul.sub-menu:target {
+            left: auto;
         }
         li.menu-item.has-submenu a.open-sub-menu::before {
             margin-left: 0;
@@ -444,6 +538,11 @@ html[dir="rtl"] #site-nav {
         }
         ul.sub-menu li.menu-item a span {
             text-align: right;
+        }
+    }
+    @include breakpoints.for-xl-up {
+        ul#menu {
+            margin: 0 spacing.$spacing-xl 0 13.5rem;
         }
     }
 }
@@ -531,9 +630,12 @@ html[dir="rtl"] #site-nav {
     }
     ul#menu,
     ul.sub-menu {
-        @include header-background-mobile-light;
         background-color: var(--background);
-        @include breakpoints.for-tablet-landscape-up {
+        @media (max-width: 899px) {
+            @include header-background-mobile-light;
+            background-color: var(--background);
+        }
+        @include breakpoints.for-desktop-up {
             background: none;
             a::after {
                 background: url("/static/img/ui/desktop/light/all/menu-hover.svg")
@@ -544,7 +646,7 @@ html[dir="rtl"] #site-nav {
     }
     ul.sub-menu {
         background-color: var(--background);
-        @include breakpoints.for-tablet-landscape-up {
+        @include breakpoints.for-desktop-up {
             // Hack to look like submenu is layered underneath the menu
             background: url("/static/img/ui/desktop/light/all/submenu-base.svg")
                     top repeat-x,
@@ -562,9 +664,14 @@ html[dir="rtl"] #site-nav {
     }
     ul#menu,
     ul.sub-menu {
-        @include header-background-mobile-dark;
         background-color: var(--background);
-        @include breakpoints.for-tablet-landscape-up {
+        @media (max-width: 899px) {
+            @include header-background-mobile-dark;
+            background-color: var(--background);
+        }
+        box-shadow: 0px 0px 6px var(--on-background-25);
+        @include breakpoints.for-desktop-up {
+            box-shadow: none;
             background: none;
             a::after {
                 background: url("/static/img/ui/desktop/dark/all/menu-hover.svg")
@@ -575,7 +682,8 @@ html[dir="rtl"] #site-nav {
     }
     ul.sub-menu {
         background-color: var(--background);
-        @include breakpoints.for-tablet-landscape-up {
+        @include breakpoints.for-desktop-up {
+            box-shadow: 0px 2px 4px var(--secondary-80);
             // Hack to look like submenu is layered underneath the menu
             background: url("/static/img/ui/desktop/dark/all/submenu-base.svg")
                     top repeat-x,
@@ -703,12 +811,16 @@ html[dir="rtl"] #site-nav {
     @include light-nav;
     @include breakpoints.for-tablet-landscape-up {
         @include header-background-desktop-light-rtl;
+    }
+    @include breakpoints.for-desktop-up {
         @include light-hover-rtl;
     }
     @media (prefers-color-scheme: dark) {
         @include dark-nav;
         @include breakpoints.for-tablet-landscape-up {
             @include header-background-desktop-dark-rtl;
+        }
+        @include breakpoints.for-desktop-up {
             @include dark-hover-rtl;
         }
     }
@@ -719,6 +831,8 @@ html[dir="rtl"].light-mode #site-nav {
     @include light-nav;
     @include breakpoints.for-tablet-landscape-up {
         @include header-background-desktop-light-rtl;
+    }
+    @include breakpoints.for-desktop-up {
         @include light-hover-rtl;
     }
 }
@@ -726,6 +840,8 @@ html[dir="rtl"].dark-mode #site-nav {
     @include dark-nav;
     @include breakpoints.for-tablet-landscape-up {
         @include header-background-desktop-dark-rtl;
+    }
+    @include breakpoints.for-desktop-up {
         @include dark-hover-rtl;
     }
 }

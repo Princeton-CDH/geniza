@@ -18,11 +18,18 @@ ul#language-switcher {
     top: 16px;
     right: 67px;
     @include breakpoints.for-tablet-landscape-up {
+        right: calc(33% - 167px - 2rem);
+        border-radius: calc(53px / 2);
+        top: 2.5rem;
+    }
+    @include breakpoints.for-desktop-up {
         visibility: visible;
         position: relative;
         top: auto;
+        right: 8rem;
+    }
+    @include breakpoints.for-xl-up {
         right: 10.875rem;
-        border-radius: calc(53px / 2);
     }
     li a {
         background-color: var(--background-gray);
@@ -121,6 +128,10 @@ label#theme-toggle {
         top: 30px;
         width: 70px;
         height: 70px;
+        left: auto;
+        right: 9.875rem;
+    }
+    @include breakpoints.for-desktop-up {
         right: auto;
         left: calc(96.5vw - 70px);
     }
@@ -132,9 +143,16 @@ html[dir="rtl"] {
         left: 55px;
         right: auto;
         @include breakpoints.for-tablet-landscape-up {
-            left: 72px;
-            margin-right: auto;
-            margin-left: 30px;
+            right: auto;
+            left: calc(33% - 167px - 2rem);
+        }
+        @include breakpoints.for-desktop-up {
+            right: auto;
+            left: 8rem;
+        }
+        @include breakpoints.for-xl-up {
+            right: auto;
+            left: 10.875rem;
         }
         li:not(:last-child) {
             margin-right: auto;
@@ -169,8 +187,12 @@ html[dir="rtl"] {
         right: auto;
         left: 56px;
         @include breakpoints.for-tablet-landscape-up {
+            left: 9.875rem;
             right: auto;
-            left: 16px;
+        }
+        @include breakpoints.for-desktop-up {
+            right: calc(96.5vw - 70px);
+            left: auto;
         }
     }
 }
