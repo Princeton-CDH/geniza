@@ -8,5 +8,5 @@ pytest-cov
 pytest-order
 wheel
 django-dbml>=0.7.0
-percy-selenium
+percy-selenium>=2.1.1
 selenium>=4.8.0
