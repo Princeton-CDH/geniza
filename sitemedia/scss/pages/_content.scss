@@ -79,6 +79,47 @@ main.content-page {
             font-size: typography.$text-size-7xl;
         }
     }
+    details {
+        border-top: 1px solid var(--zoom-control-bg);
+        border-bottom: 1px solid var(--zoom-control-bg);
+        width: 100%;
+        max-width: 100%;
+        summary {
+            display: flex;
+            flex-flow: row nowrap;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            padding: 1rem 0;
+            width: 100%;
+            max-width: 100%;
+            font-weight: 700;
+            font-size: typography.$text-size-3xl;
+            line-height: calc(34 / 24);
+            list-style-type: none;
+            // Suppress default details marker
+            &::-webkit-details-marker {
+                display: none;
+            }
+            &::after {
+                content: "\f27f"; // phosphor plus icon
+                @include typography.icon-button-md;
+                font-weight: 400;
+                margin-left: 0.5rem;
+            }
+        }
+        &[open] summary::after {
+            content: "\f21a"; // phosphor minus icon
+        }
+    }
+    .block-collapsible_paragraph ~ *:not(.block-collapsible_paragraph) {
+        margin-top: spacing.$spacing-md;
+    }
+    .block-collapsible_paragraph + .block-collapsible_paragraph {
+        details {
+            border-top: none;
+        }
+    }
 }
 main.content-page,
 main.homepage {
