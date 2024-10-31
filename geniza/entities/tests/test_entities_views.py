@@ -725,6 +725,28 @@ class TestPersonPeopleView:
         assert response.context["related_people"][0]["shared_documents"] == 1
         assert response.context["related_people"][1]["shared_documents"] == 0
 
+    def test_get_context_data(self, client, person, person_diacritic):
+        # test relation categories context variable
+        person.has_page = True
+        person.save()
+        response = client.get(reverse("entities:person-people", args=(person.slug,)))
+        parent_type, _ = PersonPersonRelationType.objects.get_or_create(
+            name_en="Parent",
+            converse_name_en="Child",
+            category=PersonPersonRelationType.IMMEDIATE_FAMILY,
+        )
+        PersonPersonRelation.objects.create(
+            from_person=person, to_person=person_diacritic, type=parent_type
+        )
+        assert (
+            response.context["relation_categories"]["Parent"]
+            == PersonPersonRelationType.IMMEDIATE_FAMILY
+        )
+        assert (
+            response.context["relation_categories"]["Child"]
+            == PersonPersonRelationType.IMMEDIATE_FAMILY
+        )
+
 
 @pytest.mark.django_db
 class TestPersonPlacesView:
