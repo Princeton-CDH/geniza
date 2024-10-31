@@ -501,12 +501,14 @@ class Person(ModelIndexable, SlugMixin, DocumentDatableMixin, PermalinkMixin):
         people_relations = (
             self.from_person.annotate(
                 # boolean to indicate if we should use converse or regular relation type name
+                gender=F("from_person__gender"),
                 use_converse_typename=Value(True),
                 has_page=F("from_person__has_page"),
                 related_slug=F("from_person__slug"),
                 related_id=F("from_person"),
             ).union(  # union instead of joins for efficiency
                 self.to_person.annotate(
+                    gender=F("to_person__gender"),
                     use_converse_typename=Value(False),
                     has_page=F("to_person__has_page"),
                     related_slug=F("to_person__slug"),
@@ -524,8 +526,9 @@ class Person(ModelIndexable, SlugMixin, DocumentDatableMixin, PermalinkMixin):
                 "slug": r[-2],
                 "has_page": r[-3],
                 "use_converse_typename": r[-4],
-                "notes": r[-5],
-                "type_id": r[-6],
+                "gender": r[-5],
+                "notes": r[-6],
+                "type_id": r[-7],
             }
             for r in people_relations
         ]
@@ -544,7 +547,7 @@ class Person(ModelIndexable, SlugMixin, DocumentDatableMixin, PermalinkMixin):
         # (name if the relation was entered from self, converse if entered from related person)
         types = PersonPersonRelationType.objects.filter(
             pk__in=[r["type_id"] for r in relation_list],
-        ).values("pk", "name", "converse_name")
+        ).values("pk", "name", "converse_name", "category")
         # dict keyed on related person id
         types_dict = {t["pk"]: t for t in types}
 
@@ -602,6 +605,7 @@ class Person(ModelIndexable, SlugMixin, DocumentDatableMixin, PermalinkMixin):
                     ]
                     # fallback to type.name if converse_name doesn't exist
                     or types_dict[relation["type_id"]]["name"],
+                    "category": types_dict[relation["type_id"]]["category"],
                     # get count of shared documents from cached queryset dict
                     "shared_documents": (
                         docs_dict[relation["id"]]["shared"]

@@ -24,6 +24,7 @@ from geniza.entities.models import (
     PastPersonSlug,
     PastPlaceSlug,
     Person,
+    PersonPersonRelationType,
     PersonSolrQuerySet,
     Place,
     PlaceSolrQuerySet,
@@ -400,6 +401,19 @@ class PersonPeopleView(RelatedPeopleMixin, PersonDetailView):
             )
 
         return related_people
+
+    def get_context_data(self, **kwargs):
+        """Extend context data to include categories for each relationship type, in order
+        to make use of them in visualization"""
+        relation_categories = {}
+        for rel_type in PersonPersonRelationType.objects.exclude(
+            category=PersonPersonRelationType.AMBIGUITY
+        ):
+            for relname in [rel_type.name, rel_type.converse_name]:
+                relation_categories[relname] = rel_type.category
+        context = super().get_context_data(**kwargs)
+        context.update({"relation_categories": relation_categories})
+        return context
 
 
 class PersonPlacesView(PersonDetailView):

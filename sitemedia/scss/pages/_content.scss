@@ -3,6 +3,7 @@
 // -----------------------------------------------------------------------------
 
 @use "../base/breakpoints";
+@use "../base/fonts";
 @use "../base/spacing";
 @use "../base/typography";
 
@@ -93,6 +94,7 @@ main.content-page {
             padding: 1rem 0;
             width: 100%;
             max-width: 100%;
+            font-family: fonts.$primary-bold;
             font-weight: 700;
             font-size: typography.$text-size-3xl;
             line-height: calc(34 / 24);

@@ -22,7 +22,7 @@ main.place table.related-table {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 0.5rem;
     @include breakpoints.for-tablet-landscape-up {
-        margin-top: (2rem + spacing.$spacing-xs);
+        margin-top: (2.25rem + spacing.$spacing-xs);
         background-color: var(--background-light);
         grid-template-columns: 34% 25% 25% 1fr;
         gap: 0;
@@ -299,7 +299,7 @@ main.place {
 main.place section.relations {
     margin: 1.5rem 0 9rem;
     @include breakpoints.for-tablet-landscape-up {
-        margin: (2rem + spacing.$spacing-xs) 0 0;
+        margin: (2.25rem + spacing.$spacing-xs) 0 0;
     }
     table.people {
         @include breakpoints.for-tablet-landscape-up {
