@@ -23,7 +23,7 @@
     {# tabs #}
     {% include "entities/snippets/person_tabs.html" %}
     <div class="container" data-controller="persongraph" data-id="{{ person.pk }}" data-name="{{ person }}" data-gender="{{ person.gender }}">
-        {{ relation_levels|json_script:"relation-levels" }}
+        {{ relation_categories|json_script:"relation-categories" }}
         <div class="network-graph" data-persongraph-target="graphContainer"></div>
         <table class="related-table related-people">
             <thead>

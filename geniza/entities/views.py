@@ -403,42 +403,16 @@ class PersonPeopleView(RelatedPeopleMixin, PersonDetailView):
         return related_people
 
     def get_context_data(self, **kwargs):
-        # TODO: this should probably be properties on the type rather than view logic.
-        relation_levels = {}
-        for rel_type in PersonPersonRelationType.objects.all():
+        """Extend context data to include categories for each relationship type, in order
+        to make use of them in visualization"""
+        relation_categories = {}
+        for rel_type in PersonPersonRelationType.objects.exclude(
+            category=PersonPersonRelationType.AMBIGUITY
+        ):
             for relname in [rel_type.name, rel_type.converse_name]:
-                if rel_type.category not in [
-                    PersonPersonRelationType.BUSINESS,
-                    PersonPersonRelationType.AMBIGUITY,
-                ]:
-                    if relname == "Great grandparent":
-                        relation_levels[relname] = -3
-                    elif relname in ["Grandparent", "Great aunt/uncle"]:
-                        relation_levels[relname] = -2
-                    elif any([n in relname for n in ["uncle", "Parent", "Stepparent"]]):
-                        relation_levels[relname] = -1
-                    elif any(
-                        [
-                            n in relname
-                            for n in [
-                                "Sibling",
-                                "Half-sibling",
-                                "Spouse",
-                                "cousin",
-                                "Sister",
-                            ]
-                        ]
-                    ):
-                        relation_levels[relname] = 0
-                    elif any([n in relname for n in ["Child", "Nephew", "Stepchild"]]):
-                        relation_levels[relname] = 1
-                    elif any([n in relname for n in ["Great nephew", "Grandchild"]]):
-                        relation_levels[relname] = 2
-                    elif any([n in relname for n in ["Great grandchild"]]):
-                        relation_levels[relname] = 3
-
+                relation_categories[relname] = rel_type.category
         context = super().get_context_data(**kwargs)
-        context.update({"relation_levels": relation_levels})
+        context.update({"relation_categories": relation_categories})
         return context
 
 

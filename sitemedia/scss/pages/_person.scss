@@ -344,6 +344,7 @@ main.person {
             font-size: typography.$text-size-md;
             gap: 0.75rem;
             padding: 0.5rem 0.75rem;
+            border: 1px solid var(--network-border);
         }
         .gender {
             box-sizing: content-box;
