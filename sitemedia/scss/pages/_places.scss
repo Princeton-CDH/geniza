@@ -219,6 +219,9 @@ main.places {
                     padding-bottom: 0.5rem;
                     .name {
                         @include typography.body-bold;
+                        a {
+                            font-family: fonts.$primary-bold;
+                        }
                     }
                     .other-names {
                         @include typography.meta;

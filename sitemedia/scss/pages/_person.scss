@@ -360,6 +360,7 @@ main.person {
             color: var(--on-secondary);
             background-color: var(--secondary);
             .name {
+                font-family: fonts.$primary-bold;
                 font-weight: 700;
             }
             .gender {
@@ -381,6 +382,7 @@ main.person {
                 line-height: 16.8px;
             }
             .name a {
+                font-family: fonts.$primary-bold;
                 font-weight: 700;
                 text-decoration: underline;
                 text-underline-offset: auto;

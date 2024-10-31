@@ -3,6 +3,7 @@
 // -----------------------------------------------------------------------------
 
 @use "../base/breakpoints";
+@use "../base/fonts";
 @use "../base/spacing";
 @use "../base/typography";
 
@@ -66,6 +67,7 @@ footer {
             a {
                 text-decoration: none;
                 &[aria-current="page"] {
+                    font-family: fonts.$primary-bold;
                     font-weight: bold;
                 }
             }
@@ -74,6 +76,7 @@ footer {
                     margin-bottom: spacing.$spacing-2xs;
                     text-transform: uppercase;
                     font-size: typography.$text-size-md;
+                    font-family: fonts.$primary-bold;
                     font-weight: 600;
                     @include breakpoints.for-tablet-landscape-up {
                         font-size: typography.$text-size-sm;
