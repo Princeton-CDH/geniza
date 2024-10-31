@@ -75,6 +75,7 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
         "language_script": "language_script_s",
         "languages": "language_name_ss",
         "translation": "text_translation",
+        "translation_language": "translation_languages_ss",
         "translation_language_code": "translation_language_code_s",
         "translation_language_direction": "translation_language_direction_s",
         "iiif_images": "iiif_images_ss",

@@ -194,6 +194,7 @@ class DocumentSearchView(
                 "has_digital_translation",
                 "has_discussion",
             )
+            .facet_field("translation_language", sort="value")
             .facet_field("type", exclude="type", sort="value")
         )
         self.applied_filter_labels = []
@@ -272,6 +273,14 @@ class DocumentSearchView(
                 documents = documents.filter(type__in=quoted_typelist, tag="type")
                 self.applied_filter_labels += self.get_applied_filter_labels(
                     form, "doctype", typelist
+                )
+
+            # filter by translation language if specified
+            if search_opts["translation_language"]:
+                lang = search_opts["translation_language"]
+                documents = documents.filter(translation_language=lang)
+                self.applied_filter_labels += self.get_applied_filter_labels(
+                    form, "translation_language", [lang]
                 )
 
             # image filter

@@ -99,6 +99,10 @@
                             {% render_field form.has_translation data-action="search#update" %}
                             {{ form.has_translation.label }}
                         </label>
+                        <label for="{{ form.translation_language.auto_id }}">
+                            <span class="sr-only">{{ form.translation_language.label }}</span>
+                            {% render_field form.translation_language data-action="search#update" %}
+                        </label>
                     </li>
                     <li>
                         <label for="{{ form.has_discussion.auto_id }}">

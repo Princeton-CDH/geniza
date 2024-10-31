@@ -1188,7 +1188,7 @@ class PlaceSignalHandlers:
         PlaceSignalHandlers.related_change(instance, raw, "delete")
 
 
-class Place(ModelIndexable, SlugMixin):
+class Place(ModelIndexable, SlugMixin, PermalinkMixin):
     """A named geographical location, which may be associated with documents or people."""
 
     names = GenericRelation(Name, related_query_name="place")

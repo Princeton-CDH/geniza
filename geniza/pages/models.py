@@ -64,6 +64,34 @@ class SVGImageBlock(blocks.StructBlock):
         template = "pages/blocks/svg_image_block.html"
 
 
+class AccordionBlock(blocks.StructBlock):
+    """Accordion :class:`~wagtail.core.blocks.StructBlock` for collapsible
+    sections and/or FAQs"""
+
+    label = blocks.CharBlock(label="Heading label/question", required=True)
+    content = blocks.RichTextBlock(
+        label="Expanded details/answer",
+        features=[
+            "bold",
+            "italic",
+            "underline",
+            "link",
+            "ol",
+            "ul",
+            "blockquote",
+            "superscript",
+            "subscript",
+            "strikethrough",
+        ],
+        required=True,
+    )
+
+    class Meta:
+        icon = "folder-open-1"
+        template = "pages/blocks/accordion_block.html"
+        label = "Collapsible paragraph (accordion)"
+
+
 class BodyContentBlock(blocks.StreamBlock):
     """Common set of content blocks for content pages."""
 
@@ -87,6 +115,7 @@ class BodyContentBlock(blocks.StreamBlock):
         ],
         required=False,
     )
+    collapsible_paragraph = AccordionBlock()
     image = CaptionedImageBlock()
     svg_image = SVGImageBlock()
 
