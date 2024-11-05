@@ -24,7 +24,11 @@ from geniza.entities.forms import (
     PlacePersonForm,
     PlacePlaceForm,
 )
-from geniza.entities.metadata_export import AdminPersonExporter, AdminPlaceExporter
+from geniza.entities.metadata_export import (
+    AdminPersonExporter,
+    AdminPlaceExporter,
+    PersonRelationsExporter,
+)
 from geniza.entities.models import (
     DocumentPlaceRelation,
     DocumentPlaceRelationType,
@@ -354,6 +358,12 @@ class PersonAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin):
         exporter = AdminPersonExporter(queryset=queryset, progress=False)
         return exporter.http_export_data_csv()
 
+    def export_relations_to_csv(self, request, pk):
+        """Stream related objects data for a single object instance as a CSV file"""
+        queryset = Person.objects.filter(pk=pk)
+        exporter = PersonRelationsExporter(queryset=queryset, progress=False)
+        return exporter.http_export_data_csv()
+
     def get_urls(self):
         """Return admin urls; adds custom URLs for exporting as CSV, merging people"""
         urls = [
@@ -361,6 +371,11 @@ class PersonAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin):
                 "csv/",
                 self.admin_site.admin_view(self.export_to_csv),
                 name="person-csv",
+            ),
+            path(
+                "<int:pk>/relations-csv/",
+                self.admin_site.admin_view(self.export_relations_to_csv),
+                name="person-relations-csv",
             ),
             path(
                 "merge/",

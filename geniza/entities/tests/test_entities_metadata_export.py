@@ -2,14 +2,22 @@ import csv
 
 import pytest
 from django.utils import timezone
+from django.utils.text import slugify
 
-from geniza.entities.metadata_export import AdminPersonExporter, AdminPlaceExporter
+from geniza.entities.metadata_export import (
+    AdminPersonExporter,
+    AdminPlaceExporter,
+    PersonRelationsExporter,
+)
 from geniza.entities.models import (
     DocumentPlaceRelation,
     DocumentPlaceRelationType,
     Event,
     Name,
     Person,
+    PersonDocumentRelation,
+    PersonDocumentRelationType,
+    PersonEventRelation,
     PersonPersonRelation,
     PersonPersonRelationType,
     PersonPlaceRelation,
@@ -118,6 +126,96 @@ def test_person_iter_dicts(person, person_diacritic, person_multiname, document,
             assert export_data.get("related_documents_count") == 0
             # should be in alphabetical order
             assert "Fusṭāṭ, Mosul" in export_data.get("family_traces_roots_to")
+
+
+@pytest.mark.django_db
+def test_person_relations_exporter_cli(person):
+    # get artificial dataset
+    exporter = PersonRelationsExporter(queryset=Person.objects.filter(pk=person.pk))
+
+    # csv filename?
+    str_time_pref = timezone.now().strftime("%Y%m%dT")
+    csv_filename = exporter.csv_filename()
+    assert type(csv_filename) == str and csv_filename
+    assert csv_filename.startswith(
+        f"geniza-{slugify(str(person))}-person-relations-{str_time_pref}"
+    )
+    assert csv_filename.endswith(".csv")
+
+
+@pytest.mark.django_db
+def test_person_relations_csv(
+    person, person_diacritic, person_multiname, document, join
+):
+    # add additional relational data and test single person relations CSV export
+
+    # Create some relationships
+    mosul = Place.objects.create(slug="mosul")
+    Name.objects.create(content_object=mosul, name="Mosul", primary=True)
+    Name.objects.create(content_object=mosul, name="الموصل", primary=False)
+    fustat = Place.objects.create(slug="fustat")
+    Name.objects.create(content_object=fustat, name="Fusṭāṭ", primary=True)
+    (home_base, _) = PersonPlaceRelationType.objects.get_or_create(name_en="Home base")
+    (roots, _) = PersonPlaceRelationType.objects.get_or_create(
+        name_en="Family traces roots to"
+    )
+    PersonPlaceRelation.objects.create(person=person, place=mosul, type=home_base)
+    PersonPlaceRelation.objects.create(person=person, place=fustat, type=roots)
+    (pdrtype, _) = PersonDocumentRelationType.objects.get_or_create(name="test")
+    PersonDocumentRelation.objects.create(
+        document=document, person=person, type=pdrtype
+    )
+    PersonDocumentRelation.objects.create(document=join, person=person, type=pdrtype)
+    PersonDocumentRelation.objects.create(
+        document=document, person=person_diacritic, type=pdrtype
+    )
+    PersonDocumentRelation.objects.create(
+        document=join, person=person_diacritic, type=pdrtype
+    )
+    (partner, _) = PersonPersonRelationType.objects.get_or_create(
+        name_en="Partner", category=PersonPersonRelationType.BUSINESS
+    )
+    (cousin, _) = PersonPersonRelationType.objects.get_or_create(
+        name_en="Maternal cousin",
+        converse_name_en="Cousin",
+        category=PersonPersonRelationType.EXTENDED_FAMILY,
+    )
+    PersonPersonRelation.objects.create(
+        from_person=person, to_person=person_diacritic, type=partner
+    )
+    PersonPersonRelation.objects.create(
+        from_person=person, to_person=person_diacritic, type=cousin
+    )
+    PersonPersonRelation.objects.create(
+        from_person=person_multiname, to_person=person, type=cousin
+    )
+    evt = Event.objects.create(name="Test event")
+    PersonEventRelation.objects.create(person=person, event=evt)
+
+    exporter = PersonRelationsExporter(queryset=Person.objects.filter(pk=person.pk))
+
+    for obj in exporter.iter_dicts():
+        id = obj["related_object_id"]
+        objtype = obj["related_object_type"]
+        reltype = obj.get("relationship_type", "")
+        if objtype == "Person":
+            if id == person_diacritic.id:
+                assert reltype == "Maternal cousin, partner"
+                assert str(document) in obj["shared_documents"]
+                assert ", " in obj["shared_documents"]
+            elif id == person_multiname.id:
+                assert reltype == cousin.converse_name
+        elif objtype == "Place":
+            if id == mosul.id:
+                assert reltype == home_base.name
+            elif id == fustat.id:
+                assert reltype == roots.name
+        elif objtype == "Document":
+            assert reltype == pdrtype.name
+            assert obj["related_object_name"] in [str(document), str(join)]
+        elif objtype == "Event":
+            assert "relationship_type" not in obj
+            assert obj["related_object_name"] == evt.name
 
 
 @pytest.mark.django_db
