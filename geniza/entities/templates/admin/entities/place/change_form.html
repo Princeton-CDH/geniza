@@ -8,6 +8,11 @@
     <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.1.0/dist/maplibre-gl.css" />
 {% endblock %}
 
+{% block object-tools-items %}
+    <li><a href="{% url 'admin:place-relations-csv' pk=original.id %}">Download relations as CSV</a></li>
+    {{ block.super }}
+{% endblock %}
+
 {# Render mixed normal and inline fieldsets #}
 {% block field_sets %}
     {% include "admin/snippets/mixed_inlines_fieldsets.html" %}

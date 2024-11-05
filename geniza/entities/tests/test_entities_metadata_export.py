@@ -4,10 +4,13 @@ import pytest
 from django.utils import timezone
 from django.utils.text import slugify
 
+from geniza.corpus.dates import standard_date_display
+from geniza.corpus.models import Dating
 from geniza.entities.metadata_export import (
     AdminPersonExporter,
     AdminPlaceExporter,
     PersonRelationsExporter,
+    PlaceRelationsExporter,
 )
 from geniza.entities.models import (
     DocumentPlaceRelation,
@@ -24,6 +27,8 @@ from geniza.entities.models import (
     PersonPlaceRelationType,
     Place,
     PlaceEventRelation,
+    PlacePlaceRelation,
+    PlacePlaceRelationType,
 )
 
 # adapted from corpus/tests/test_metadata_export.py
@@ -279,3 +284,76 @@ def test_place_iter_dicts(person, person_multiname, document, join):
             assert "Iraq" in export_data.get("notes")
             assert str(person) in export_data.get("home_base_people")
             assert str(join) in export_data.get("possibly_mentioned_documents")
+
+
+@pytest.mark.django_db
+def test_place_relations_csv(person, document, join):
+    # add additional relational data and test single person relations CSV export
+
+    # Create some relationships
+    mosul = Place.objects.create(slug="mosul")
+    Name.objects.create(content_object=mosul, name="Mosul", primary=True)
+    Name.objects.create(content_object=mosul, name="الموصل", primary=False)
+    fustat = Place.objects.create(slug="fustat")
+    Name.objects.create(content_object=fustat, name="Fusṭāṭ", primary=True)
+    aydhab = Place.objects.create(slug="aydhab")
+    Name.objects.create(name="ʿAydhāb", content_object=aydhab, primary=True)
+    (home_base, _) = PersonPlaceRelationType.objects.get_or_create(name_en="Home base")
+    (roots, _) = PersonPlaceRelationType.objects.get_or_create(
+        name_en="Family traces roots to"
+    )
+    PersonPlaceRelation.objects.create(person=person, place=fustat, type=home_base)
+    PersonPlaceRelation.objects.create(person=person, place=fustat, type=roots)
+    (pdrtype, _) = PersonDocumentRelationType.objects.get_or_create(name="test doc-ps")
+    PersonDocumentRelation.objects.create(document=join, person=person, type=pdrtype)
+    (dprtype, _) = DocumentPlaceRelationType.objects.get_or_create(name="test doc-pl")
+    DocumentPlaceRelation.objects.create(document=document, place=fustat, type=dprtype)
+    DocumentPlaceRelation.objects.create(document=join, place=fustat, type=dprtype)
+    DocumentPlaceRelation.objects.create(document=document, place=mosul, type=dprtype)
+    DocumentPlaceRelation.objects.create(document=join, place=mosul, type=dprtype)
+    Dating.objects.create(standard_date="900/980", document=document)
+    document.doc_date_standard = "920/1010"
+    document.save()
+    join.doc_date_standard = "1000/1010"
+    join.save()
+
+    (not_same, _) = PlacePlaceRelationType.objects.get_or_create(
+        name="Not to be confused with"
+    )
+    PlacePlaceRelation.objects.create(place_a=fustat, place_b=mosul, type=not_same)
+    PlacePlaceRelation.objects.create(place_a=aydhab, place_b=fustat, type=not_same)
+    evt = Event.objects.create(name="Test event")
+    PlaceEventRelation.objects.create(place=fustat, event=evt, notes="test")
+
+    exporter = PlaceRelationsExporter(queryset=Place.objects.filter(pk=fustat.pk))
+
+    for obj in exporter.iter_dicts():
+        id = obj["related_object_id"]
+        objtype = obj["related_object_type"]
+        reltype = obj.get("relationship_type", "")
+        if objtype == "Person":
+            assert (
+                home_base.name.lower() in reltype.lower()
+                and roots.name.lower() in reltype.lower()
+            )
+            assert ", " in reltype
+            assert str(join) in obj["shared_documents"]
+        elif objtype == "Place":
+            assert reltype == not_same.name
+            if id == mosul.id:
+                assert str(document) in obj["shared_documents"]
+                assert str(join) in obj["shared_documents"]
+                assert ", " in obj["shared_documents"]
+            elif id == aydhab.id:
+                assert not obj["shared_documents"]
+        elif objtype == "Document":
+            assert reltype == dprtype.name
+            assert obj["related_object_name"] in [str(document), str(join)]
+            if id == document.id:
+                assert obj["related_object_date"] == standard_date_display("900/1010")
+            else:
+                assert obj["related_object_date"] == standard_date_display("1000/1010")
+        elif objtype == "Event":
+            assert "relationship_type" not in obj
+            assert obj["related_object_name"] == evt.name
+            assert obj["relationship_notes"] == "test"

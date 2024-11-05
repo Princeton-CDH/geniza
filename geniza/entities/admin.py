@@ -28,6 +28,7 @@ from geniza.entities.metadata_export import (
     AdminPersonExporter,
     AdminPlaceExporter,
     PersonRelationsExporter,
+    PlaceRelationsExporter,
 )
 from geniza.entities.models import (
     DocumentPlaceRelation,
@@ -547,6 +548,12 @@ class PlaceAdmin(SortableAdminBase, admin.ModelAdmin):
         exporter = AdminPlaceExporter(queryset=queryset, progress=False)
         return exporter.http_export_data_csv()
 
+    def export_relations_to_csv(self, request, pk):
+        """Stream related objects data for a single object instance as a CSV file"""
+        queryset = Place.objects.filter(pk=pk)
+        exporter = PlaceRelationsExporter(queryset=queryset, progress=False)
+        return exporter.http_export_data_csv()
+
     def get_urls(self):
         """Return admin urls; adds custom URL for exporting as CSV"""
         urls = [
@@ -554,6 +561,11 @@ class PlaceAdmin(SortableAdminBase, admin.ModelAdmin):
                 "csv/",
                 self.admin_site.admin_view(self.export_to_csv),
                 name="place-csv",
+            ),
+            path(
+                "<int:pk>/relations-csv/",
+                self.admin_site.admin_view(self.export_relations_to_csv),
+                name="place-relations-csv",
             ),
         ]
         return urls + super().get_urls()
