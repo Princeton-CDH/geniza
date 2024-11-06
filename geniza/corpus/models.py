@@ -115,6 +115,19 @@ class Collection(models.Model):
         """natural key: tuple of name and library"""
         return (self.name, self.library)
 
+    @property
+    def full_name(self):
+        """attempt to combine library and collection name into a human readable format"""
+        if self.library and self.name:
+            return f"{self.library}, {self.name}"
+        elif self.library:
+            return self.library
+        elif self.name:
+            return self.name
+        else:
+            # translators: label for a collection that has neither a name or library attached
+            return _("Unknown collection")
+
 
 class LanguageScriptManager(models.Manager):
     """Custom manager for :class:`LanguageScript` with natural key lookup"""
@@ -668,20 +681,24 @@ class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin):
         )
 
     @property
+    def collections(self):
+        """collection objects for associated fragments"""
+        # use set to ensure unique; sort for reliable output order
+        return sorted(
+            set(
+                [
+                    block.fragment.collection
+                    for block in self.textblock_set.all()
+                    if block.fragment.collection
+                ]
+            ),
+            key=lambda c: c.abbrev,
+        )
+
+    @property
     def collection(self):
         """collection (abbreviation) for associated fragments"""
-        # use set to ensure unique; sort for reliable output order
-        return ", ".join(
-            sorted(
-                set(
-                    [
-                        block.fragment.collection.abbrev
-                        for block in self.textblock_set.all()
-                        if block.fragment.collection
-                    ]
-                )
-            )
-        )
+        return ", ".join([coll.abbrev for coll in self.collections])
 
     def all_languages(self):
         """comma delimited string of all primary languages for this document"""
