@@ -122,11 +122,9 @@ class Collection(models.Model):
             return f"{self.library}, {self.name}"
         elif self.library:
             return self.library
-        elif self.name:
-            return self.name
         else:
-            # translators: label for a collection that has neither a name or library attached
-            return _("Unknown collection")
+            # one of library or name is required due to db constraint
+            return self.name
 
 
 class LanguageScriptManager(models.Manager):

@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: geniza\n"
 "Report-Msgid-Bugs-To: cdhdevteam@princeton.edu\n"
-"POT-Creation-Date: 2024-11-06 13:31-0500\n"
+"POT-Creation-Date: 2024-11-06 13:42-0500\n"
 "PO-Revision-Date: 2022-08-01 14:25\n"
 "Last-Translator: \n"
 "Language-Team: English\n"
@@ -201,28 +201,24 @@ msgid ""
 "alphanumeric character other than one of DdSsWw, or at the end of a query. %s"
 msgstr ""
 
-#: corpus/models.py:129
-msgid "Unknown collection"
-msgstr ""
-
-#: corpus/models.py:1120 templates/base.html:21
+#: corpus/models.py:1119 templates/base.html:21
 msgid "Princeton Geniza Project"
 msgstr ""
 
 #. Translators: attribution for local IIIF manifests
-#: corpus/models.py:1122
+#: corpus/models.py:1121
 #, python-format
 msgid "Compilation by %(pgp)s."
 msgstr ""
 
 #. Translators: attribution for local IIIF manifests that include transcription
-#: corpus/models.py:1125
+#: corpus/models.py:1124
 #, python-format
 msgid "Compilation and transcription by %(pgp)s."
 msgstr ""
 
 #. Translators: manifest attribution note that content from other institutions may have restrictions
-#: corpus/models.py:1127
+#: corpus/models.py:1126
 msgid "Additional restrictions may apply."
 msgstr ""
 

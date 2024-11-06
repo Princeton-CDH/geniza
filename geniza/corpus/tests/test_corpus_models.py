@@ -113,9 +113,6 @@ class TestCollection:
         # library + collection
         c = Collection.objects.create(library="Cambridge UL", name="Taylor-Schechter")
         assert c.full_name == f"{c.library}, {c.name}"
-        # neither
-        c = Collection.objects.create()
-        assert c.full_name == "Unknown collection"
 
 
 class TestLanguageScripts:

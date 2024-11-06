@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: princeton-geniza-project\n"
 "Report-Msgid-Bugs-To: cdhdevteam@princeton.edu\n"
-"POT-Creation-Date: 2024-11-06 13:31-0500\n"
+"POT-Creation-Date: 2024-11-06 13:42-0500\n"
 "PO-Revision-Date: 2024-03-15 17:13\n"
 "Last-Translator: \n"
 "Language-Team: Arabic\n"
@@ -208,30 +208,24 @@ msgid ""
 "alphanumeric character other than one of DdSsWw, or at the end of a query. %s"
 msgstr ""
 
-#: corpus/models.py:129
-#, fuzzy
-#| msgid "Unknown type"
-msgid "Unknown collection"
-msgstr "نوع غير معروف"
-
-#: corpus/models.py:1120 templates/base.html:21
+#: corpus/models.py:1119 templates/base.html:21
 msgid "Princeton Geniza Project"
 msgstr "Princeton Geniza Project"
 
 #. Translators: attribution for local IIIF manifests
-#: corpus/models.py:1122
+#: corpus/models.py:1121
 #, python-format
 msgid "Compilation by %(pgp)s."
 msgstr "تجميع بواسطة %(pgp)s."
 
 #. Translators: attribution for local IIIF manifests that include transcription
-#: corpus/models.py:1125
+#: corpus/models.py:1124
 #, python-format
 msgid "Compilation and transcription by %(pgp)s."
 msgstr "التجميع والنسخ بواسطة %(pgp)s."
 
 #. Translators: manifest attribution note that content from other institutions may have restrictions
-#: corpus/models.py:1127
+#: corpus/models.py:1126
 msgid "Additional restrictions may apply."
 msgstr "قد تطبق قيود إضافية."
 
@@ -1412,6 +1406,11 @@ msgstr "العودة إلى القائمة الرئيسية"
 #: templates/snippets/theme_toggle.html:5
 msgid "Enable dark mode"
 msgstr "تفعيل الوضع المظلم"
+
+#, fuzzy
+#~| msgid "Unknown type"
+#~ msgid "Unknown collection"
+#~ msgstr "نوع غير معروف"
 
 #~ msgid "Document Dates (CE)"
 #~ msgstr "تواريخ المستند (التقويم الميلادي)"
