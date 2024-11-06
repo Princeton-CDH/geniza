@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: princeton-geniza-project\n"
 "Report-Msgid-Bugs-To: cdhdevteam@princeton.edu\n"
-"POT-Creation-Date: 2024-11-06 12:44-0500\n"
+"POT-Creation-Date: 2024-11-06 13:42-0500\n"
 "PO-Revision-Date: 2024-03-15 17:13\n"
 "Last-Translator: \n"
 "Language-Team: Hebrew\n"
@@ -120,7 +120,7 @@ msgid "Document type"
 msgstr "סוג המסמך"
 
 #. Translators: label for "has image" search form filter
-#: corpus/forms.py:289 corpus/templates/corpus/document_detail.html:133
+#: corpus/forms.py:289 corpus/templates/corpus/document_detail.html:117
 #: corpus/templates/corpus/snippets/document_transcription.html:61
 #, fuzzy
 #| msgid "Has Image"
@@ -208,24 +208,24 @@ msgid ""
 "alphanumeric character other than one of DdSsWw, or at the end of a query. %s"
 msgstr ""
 
-#: corpus/models.py:1104 templates/base.html:21
+#: corpus/models.py:1119 templates/base.html:21
 msgid "Princeton Geniza Project"
 msgstr "Princeton Geniza Project"
 
 #. Translators: attribution for local IIIF manifests
-#: corpus/models.py:1106
+#: corpus/models.py:1121
 #, python-format
 msgid "Compilation by %(pgp)s."
 msgstr "קובץ על-ידי %(pgp)s."
 
 #. Translators: attribution for local IIIF manifests that include transcription
-#: corpus/models.py:1109
+#: corpus/models.py:1124
 #, python-format
 msgid "Compilation and transcription by %(pgp)s."
 msgstr "קובץ ותועתק על-ידי %(pgp)s."
 
 #. Translators: manifest attribution note that content from other institutions may have restrictions
-#: corpus/models.py:1111
+#: corpus/models.py:1126
 msgid "Additional restrictions may apply."
 msgstr "ייתכנו מגבלות נוספות."
 
@@ -242,9 +242,7 @@ msgstr[1] "מסמכים נוספים עם מספרי מדף אלו"
 msgstr[2] "מסמכים נוספים עם מספרי מדף אלו"
 msgstr[3] "מסמכים נוספים עם מספרי מדף אלו"
 
-#. Translators: Editor label
 #: corpus/templates/corpus/document_detail.html:20
-#: corpus/templates/corpus/document_detail.html:53
 msgid "Editor"
 msgid_plural "Editors"
 msgstr[0] "עורך"
@@ -266,12 +264,12 @@ msgid "Shelfmark"
 msgstr "מספר מדף"
 
 #. Translators: label for date of this document, if known
-#: corpus/templates/corpus/document_detail.html:72
+#: corpus/templates/corpus/document_detail.html:56
 msgid "Document Date"
 msgstr "תאריך המסמך"
 
 #. Translators: Inferred dating label
-#: corpus/templates/corpus/document_detail.html:83
+#: corpus/templates/corpus/document_detail.html:67
 msgid "Inferred Date"
 msgid_plural "Inferred Dates"
 msgstr[0] ""
@@ -280,7 +278,7 @@ msgstr[2] ""
 msgstr[3] ""
 
 #. Translators: Primary language label
-#: corpus/templates/corpus/document_detail.html:100
+#: corpus/templates/corpus/document_detail.html:84
 msgid "Primary Language"
 msgid_plural "Primary Languages"
 msgstr[0] "שפה עיקרית"
@@ -289,7 +287,7 @@ msgstr[2] "שפות עיקריות"
 msgstr[3] "שפות עיקריות"
 
 #. Translators: Secondary language label
-#: corpus/templates/corpus/document_detail.html:113
+#: corpus/templates/corpus/document_detail.html:97
 msgid "Secondary Language"
 msgid_plural "Secondary Languages"
 msgstr[0] "שפה משנית"
@@ -298,11 +296,11 @@ msgstr[2] "שפות משניות"
 msgstr[3] "שפות משניות"
 
 #. Translators: label for document content stats (number of translations, transcriptions, images)
-#: corpus/templates/corpus/document_detail.html:130
+#: corpus/templates/corpus/document_detail.html:114
 msgid "What's in the PGP"
 msgstr ""
 
-#: corpus/templates/corpus/document_detail.html:137
+#: corpus/templates/corpus/document_detail.html:121
 #, fuzzy, python-format
 #| msgid "Has Transcription"
 msgid "%(n_transcriptions)s Transcription"
@@ -312,7 +310,7 @@ msgstr[1] "קיים תיעתוק"
 msgstr[2] "קיים תיעתוק"
 msgstr[3] "קיים תיעתוק"
 
-#: corpus/templates/corpus/document_detail.html:147
+#: corpus/templates/corpus/document_detail.html:131
 #, fuzzy, python-format
 #| msgid "Has Translation"
 msgid "%(n_translations)s Translation"
@@ -323,14 +321,14 @@ msgstr[2] "קיים תרגום"
 msgstr[3] "קיים תרגום"
 
 #. Translators: label for document description
-#: corpus/templates/corpus/document_detail.html:161
+#: corpus/templates/corpus/document_detail.html:145
 msgid "Description"
 msgstr "תיאור"
 
 #. Translators: heading label for document related people
 #. Translators: label for sort by number of related people
 #. Translators: accessibility label for people list
-#: corpus/templates/corpus/document_detail.html:169
+#: corpus/templates/corpus/document_detail.html:153
 #: corpus/templates/corpus/snippets/document_result.html:108
 #: entities/forms.py:133 entities/forms.py:255
 #: entities/templates/entities/person_list.html:146
@@ -342,7 +340,7 @@ msgstr ""
 #. Translators: heading label for document related places
 #. Translators: label for sort by number of related places
 #. Translators: accessibility label for place list
-#: corpus/templates/corpus/document_detail.html:188
+#: corpus/templates/corpus/document_detail.html:172
 #: corpus/templates/corpus/snippets/document_result.html:112
 #: entities/forms.py:135 entities/templates/entities/person_list.html:150
 #: entities/templates/entities/person_related_places.html:56
@@ -350,28 +348,37 @@ msgid "Related Places"
 msgstr ""
 
 #. Translators: label for tags on a document
-#: corpus/templates/corpus/document_detail.html:206
+#: corpus/templates/corpus/document_detail.html:190
 #: corpus/templates/corpus/snippets/document_result.html:125
 msgid "Tags"
 msgstr "תגים"
 
 #. Translators: label for secondary/historiographical metadata
-#: corpus/templates/corpus/document_detail.html:221
+#: corpus/templates/corpus/document_detail.html:205
 msgid "Additional metadata"
 msgstr ""
 
+#. Translators: Document fragment collection(s) label
+#: corpus/templates/corpus/document_detail.html:210
+msgid "Collection"
+msgid_plural "Collections"
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
+msgstr[3] ""
+
 #. Translators: label for historical/old shelfmarks on document fragments
-#: corpus/templates/corpus/document_detail.html:226
+#: corpus/templates/corpus/document_detail.html:227
 msgid "Historical shelfmarks"
 msgstr ""
 
 #. Translators: Label for date document was first added to the PGP
-#: corpus/templates/corpus/document_detail.html:230
+#: corpus/templates/corpus/document_detail.html:231
 msgid "Input date"
 msgstr "תאריך קלט"
 
 #. Translators: Date document was first added to the PGP
-#: corpus/templates/corpus/document_detail.html:233
+#: corpus/templates/corpus/document_detail.html:234
 #, python-format
 msgid ""
 "\n"
@@ -380,13 +387,13 @@ msgid ""
 msgstr ""
 
 #. Translators: label for permanent link to a document
-#: corpus/templates/corpus/document_detail.html:246
+#: corpus/templates/corpus/document_detail.html:247
 msgid "Link to this document:"
 msgstr ""
 
 #. Translators: accessibility label for permanent link to a document
 #. Translators: accessibility label for permanent link to a person
-#: corpus/templates/corpus/document_detail.html:253
+#: corpus/templates/corpus/document_detail.html:254
 #: entities/templates/entities/person_detail.html:133
 msgid "Permalink"
 msgstr "קישור קבוע"
@@ -1359,6 +1366,11 @@ msgstr "חזרה לתפריט הראשי"
 #: templates/snippets/theme_toggle.html:5
 msgid "Enable dark mode"
 msgstr "הפעלת מצב כהה"
+
+#, fuzzy
+#~| msgid "Unknown type"
+#~ msgid "Unknown collection"
+#~ msgstr "סוג לא ידוע"
 
 #~ msgid "Document Dates (CE)"
 #~ msgstr "תאריכי המסמך (CE)"

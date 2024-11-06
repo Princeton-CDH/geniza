@@ -47,22 +47,6 @@
             <dl class="metadata-list primary">
                 <dt>{% translate 'Shelfmark' %}</dt>
                 <dd class="shelfmark">{{ document.shelfmark|shelfmark_wrap }}</dd>
-                {% if document.digital_editions %}
-                    <dt>
-                        {# Translators: Editor label #}
-                        {% blocktranslate count counter=document.editors.count trimmed %}
-                            Editor
-                        {% plural %}
-                            Editors
-                        {% endblocktranslate %}
-                    </dt>
-                    {% for ed in document.digital_editions %}
-                        {# ifchanged to avoid showing duplicate editions #}
-                        {% ifchanged %}
-                            <dd>{{ ed.display|safe }}</dd>
-                        {% endifchanged %}
-                    {% endfor %}
-                {% endif %}
             </dl>
             {# secondary metadata #}
             <dl class="metadata-list secondary">
@@ -221,6 +205,23 @@
             {% translate 'Additional metadata' %}
         </h2>
         <dl>
+            <dt>
+                {# Translators: Document fragment collection(s) label #}
+                {% blocktranslate count counter=document.collections|length trimmed %}
+                    Collection
+                {% plural %}
+                    Collections
+                {% endblocktranslate %}
+            </dt>
+            <dd>
+                {% for collection in document.collections %}
+                    {% if collection.url %}
+                        <a href="{{ collection.url }}">{{ collection.full_name }}</a>{% if not forloop.last %}; {% endif %}
+                    {% else %}
+                        {{ collection.full_name }}{% if not forloop.last %}; {% endif %}
+                    {% endif %}
+                {% endfor %}
+            </dd>
             {% if document.fragment_historical_shelfmarks %}
             {# Translators: label for historical/old shelfmarks on document fragments #}
                 <dt>{% translate 'Historical shelfmarks' %}</dt>
