@@ -270,20 +270,14 @@ def test_place_iter_dicts(person, person_multiname, document, join):
         )
         assert place.permalink == export_data.get("url")
         if str(place) == str(fustat):
-            # should snake-case each relation type name and append related object
-            # type (i.e. _people, _documents)
-            assert str(person) in export_data.get("family_traces_roots_to_people")
-            assert str(person_multiname) in export_data.get(
-                "family_traces_roots_to_people"
-            )
-            assert str(document) in export_data.get("destination_documents")
-            assert str(join) in export_data.get("destination_documents")
-            assert "Somebody went" in export_data.get("events")
-            assert "Somebody else went" in export_data.get("events")
+            assert export_data.get("related_people_count") == 2
+            assert export_data.get("related_documents_count") == 2
+            assert export_data.get("related_events_count") == 2
         elif str(place) == str(mosul):
             assert "Iraq" in export_data.get("notes")
-            assert str(person) in export_data.get("home_base_people")
-            assert str(join) in export_data.get("possibly_mentioned_documents")
+            assert export_data.get("related_people_count") == 1
+            assert export_data.get("related_documents_count") == 1
+            assert export_data.get("related_events_count") == 0
 
 
 @pytest.mark.django_db

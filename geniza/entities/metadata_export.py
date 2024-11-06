@@ -484,6 +484,9 @@ class PublicPlaceExporter(Exporter):
         "name_variants",
         "coordinates",
         "notes",
+        "related_documents_count",
+        "related_people_count",
+        "related_events_count",
         "url",
     ]
 
@@ -493,12 +496,12 @@ class PublicPlaceExporter(Exporter):
         "content_type__model__in": [
             "Document",
             "DocumentPlaceRelation",
-            "DocumentPlaceRelationType",
             "Name",
             "Person",
             "PersonPlaceRelation",
-            "PersonPlaceRelationType",
             "Place",
+            "PlaceEventRelation",
+            "Event",
         ],
     }
 
@@ -516,14 +519,9 @@ class PublicPlaceExporter(Exporter):
             .prefetch_related(
                 "names",
                 "events",
-                Prefetch(
-                    "personplacerelation_set",
-                    queryset=PersonPlaceRelation.objects.select_related("type"),
-                ),
-                Prefetch(
-                    "documentplacerelation_set",
-                    queryset=DocumentPlaceRelation.objects.select_related("type"),
-                ),
+                "personplacerelation_set",
+                "documentplacerelation_set",
+                "placeeventrelation_set",
             )
             .order_by("slug")
         )
@@ -539,6 +537,28 @@ class PublicPlaceExporter(Exporter):
         :return: Dictionary of data about the place
         :rtype: dict
         """
+        # get number of related documents
+        related_docs_count = (
+            DocumentPlaceRelation.objects.filter(place__id=place.id)
+            .values_list("document__id", flat=True)
+            .distinct()
+            .count()
+        )
+        # get number of related people
+        related_people_count = (
+            PersonPlaceRelation.objects.filter(place__id=place.id)
+            .values_list("person__id", flat=True)
+            .distinct()
+            .count()
+        )
+        # get number of related events
+        related_events_count = (
+            PlaceEventRelation.objects.filter(place__id=place.id)
+            .values_list("event__id", flat=True)
+            .distinct()
+            .count()
+        )
+
         outd = {
             "name": str(place),
             "name_variants": ", ".join(
@@ -546,6 +566,9 @@ class PublicPlaceExporter(Exporter):
             ),
             "coordinates": place.coordinates,
             "notes": place.notes,
+            "related_documents_count": related_docs_count,
+            "related_people_count": related_people_count,
+            "related_events_count": related_events_count,
             "url": place.permalink,
         }
 
@@ -554,81 +577,14 @@ class PublicPlaceExporter(Exporter):
 
 class AdminPlaceExporter(PublicPlaceExporter):
     csv_fields = PublicPlaceExporter.csv_fields + [
-        "events",
         "url_admin",
     ]
-
-    def __init__(self, queryset=None, progress=False):
-        """Adds fields to the export based on relation type names"""
-        rel_types = [
-            ("people", PersonPlaceRelationType.objects.order_by("name")),
-            ("documents", DocumentPlaceRelationType.objects.order_by("name")),
-        ]
-        self.csv_fields[5:5] = [
-            slugify(rel_type.name).replace("-", "_") + f"_{rel_class}"
-            for (rel_class, rts) in rel_types
-            for rel_type in rts
-        ]
-        super().__init__(queryset, progress)
 
     def get_export_data_dict(self, place):
         """
         Adding certain fields to PublicPlaceExporter.get_export_data_dict that are admin-only.
         """
         outd = super().get_export_data_dict(place)
-
-        # grop related people by relation type name
-        related_people = PersonPlaceRelation.objects.filter(place__id=place.id).values(
-            "person__id", "type__name"
-        )
-        rel_types = related_people.values_list("type__name", flat=True).distinct()
-        related_person_ids = {}
-        for type_name in rel_types:
-            related_person_ids[type_name] = (
-                related_people.filter(type__name=type_name)
-                .values_list("person__id", flat=True)
-                .distinct()
-            )
-
-        # get names of related people (grouped by type name) and set on output dict
-        for [type_name, person_ids] in related_person_ids.items():
-            tn = slugify(type_name).replace("-", "_")
-            outd[f"{tn}_people"] = ", ".join(
-                sorted(
-                    [str(person) for person in Person.objects.filter(id__in=person_ids)]
-                )
-            )
-
-        # grop related documents by relation type name
-        related_docs = DocumentPlaceRelation.objects.filter(place__id=place.id).values(
-            "document__id", "type__name"
-        )
-        rel_types = related_docs.values_list("type__name", flat=True).distinct()
-        related_doc_ids = {}
-        for type_name in rel_types:
-            related_doc_ids[type_name] = (
-                related_docs.filter(type__name=type_name)
-                .values_list("document__id", flat=True)
-                .distinct()
-            )
-
-        # get names of related documents (grouped by type name) and set on output dict
-        for [type_name, doc_ids] in related_doc_ids.items():
-            tn = slugify(type_name).replace("-", "_")
-            outd[f"{tn}_documents"] = ", ".join(
-                sorted([str(doc) for doc in Document.objects.filter(id__in=doc_ids)])
-            )
-
-        # get names of related events and set on output dict
-        related_event_ids = (
-            PlaceEventRelation.objects.filter(place__id=place.id)
-            .values_list("event__id", flat=True)
-            .distinct()
-        )
-        related_events = Event.objects.filter(id__in=related_event_ids)
-        outd["events"] = ", ".join(
-            [e.name for e in related_events.order_by("standard_date", "name")]
-        )
 
         # add admin url
         outd[
