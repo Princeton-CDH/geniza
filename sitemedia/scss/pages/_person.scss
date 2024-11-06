@@ -172,6 +172,13 @@ main.place {
                             margin-top: 0;
                             font-size: typography.$text-size-xl;
                         }
+                        &:has(+ p),
+                        & + p {
+                            margin: 0 0 0 -1.5rem;
+                        }
+                        + p:last-of-type {
+                            margin-bottom: 0.5rem;
+                        }
                     }
                 }
             }
