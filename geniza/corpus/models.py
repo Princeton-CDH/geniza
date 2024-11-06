@@ -118,13 +118,7 @@ class Collection(models.Model):
     @property
     def full_name(self):
         """attempt to combine library and collection name into a human readable format"""
-        if self.library and self.name:
-            return f"{self.library}, {self.name}"
-        elif self.library:
-            return self.library
-        else:
-            # one of library or name is required due to db constraint
-            return self.name
+        return ", ".join([n for n in [self.library, self.name] if n])
 
 
 class LanguageScriptManager(models.Manager):
