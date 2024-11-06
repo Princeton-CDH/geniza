@@ -83,6 +83,13 @@
                         <li>
                             <h3>{{ event.name }} {% if event.date_str %}(<time>{{ event.date_str }}</time>){% endif %}</h3>
                             {% if event.description %}<p>{{ event.description }}</p>{% endif %}
+                            {% if event.documents.exists %}
+                                <p>
+                                    {% for doc in event.documents.all %}
+                                        <a href="{{ doc.permalink }}">{{ doc }}</a>{% if not forloop.last %}, {% endif %}
+                                    {% endfor  %}
+                                </p>
+                            {% endif %}
                         </li>
                     {% endfor %}
                 </ol>
