@@ -23,6 +23,8 @@ from geniza.entities.models import (
     PersonDocumentRelation,
     PersonPersonRelation,
     PersonPersonRelationType,
+    PersonPlaceRelation,
+    PersonPlaceRelationType,
     Place,
 )
 
@@ -380,3 +382,23 @@ class TestPlaceAdmin:
         assert mosul.notes in content
         assert str(fustat) in content
         assert fustat.permalink in content
+
+    @pytest.mark.django_db
+    def test_export_relations_to_csv(self, person):
+        fustat = Place.objects.create(slug="fustat")
+        Name.objects.create(content_object=fustat, name="Fusṭāṭ", primary=True)
+        (home_base, _) = PersonPlaceRelationType.objects.get_or_create(name="Home base")
+        PersonPlaceRelation.objects.create(person=person, place=fustat, type=home_base)
+        # adapted from document csv export tests
+        place_admin = PlaceAdmin(model=Place, admin_site=admin.site)
+        response = place_admin.export_relations_to_csv(Mock(), pk=fustat.pk)
+        assert isinstance(response, StreamingHttpResponse)
+        # consume the binary streaming content and decode to inspect as str
+        content = b"".join([val for val in response.streaming_content]).decode()
+
+        # spot-check that we get expected data
+        # - header row
+        assert "related_object_type,related_object_id," in content
+        # - some content
+        assert str(person) in content
+        assert "Home base" in content
