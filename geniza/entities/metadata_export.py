@@ -24,6 +24,7 @@ from geniza.entities.models import (
     PersonPlaceRelationType,
     Place,
     PlaceEventRelation,
+    PlacePlaceRelationType,
 )
 
 
@@ -170,15 +171,13 @@ class AdminPersonExporter(PublicPersonExporter):
         return outd
 
 
-class PersonRelationsExporter(Exporter):
+class RelationsExporter(Exporter):
     """
-    A subclass of :class:`geniza.common.metadata_export.Exporter` that
-    exports information relating to :class:`~geniza.entities.models.Person`,
-    in particular, the related objects for a single model instance.
-    Extends :meth:`get_queryset` and :meth:`get_export_data_dict`.
+    A subclass of :class:`geniza.common.metadata_export.Exporter` to extract
+    reused logic for an export of related objects. Extends
+    :meth:`get_export_data_dict` and :meth:`csv_filename`.
     """
 
-    model = Person
     csv_fields = [
         "related_object_type",
         "related_object_id",
@@ -194,8 +193,58 @@ class PersonRelationsExporter(Exporter):
         :rtype: str
         """
         str_time = timezone.now().strftime("%Y%m%dT%H%M%S")
-        person = super().get_queryset().first()
-        return f"geniza-{slugify(str(person))}-person-relations-{str_time}.csv"
+        obj = super().get_queryset().first()
+        model_name = str(self.model.__name__).lower()
+        return f"geniza-{slugify(str(obj))}-{model_name}-relations-{str_time}.csv"
+
+    def get_export_data_dict(self, obj):
+        """
+        For efficiency, the dict is populated in :meth:`get_queryset`,
+        via :meth`populate_relation_fields`, as that method allows us to
+        retrieve values for multiple related objects of the same type in bulk.
+        """
+        return dict(obj)
+
+    def dedupe_related_objects(self, relations):
+        """Deduplicate related objects, in case of multiple relationships
+        involving the same object; combine into a single row."""
+        prev = None
+        for rel in sorted(
+            relations,
+            # sort for easy deduplication
+            key=itemgetter(
+                "related_object_type",
+                "related_object_id",
+                "relationship_type_id",
+            ),
+        ):
+            # dedupe items and combine relationship types
+            if (
+                prev
+                and prev["related_object_type"] == rel["related_object_type"]
+                and prev["related_object_id"] == rel["related_object_id"]
+            ):
+                # dedupe type by string matching since we can't match reverse relations by id
+                if (
+                    rel.get("relationship_type", "").lower()
+                    not in prev.get("relationship_type", "").lower()
+                ):
+                    prev["relationship_type"] += f", {rel['relationship_type']}".lower()
+                relations.remove(rel)
+            else:
+                prev = rel
+
+        return relations
+
+
+class PersonRelationsExporter(RelationsExporter):
+    """
+    A subclass of :class:`RelationsExporter` that exports information relating
+    to :class:`~geniza.entities.models.Person`, in particular, the related
+    objects for a single model instance. Extends :meth:`get_queryset`.
+    """
+
+    model = Person
 
     def get_queryset(self):
         """Override get_queryset to get related items for the single item"""
@@ -255,17 +304,14 @@ class PersonRelationsExporter(Exporter):
         # queryset, cast as dict (keyed on id) to compute each queryset ahead
         # of time, and access each field value from the dict by id in a loop.
 
+        # use constants for column names for code readability
+        ID = "related_object_id"
+        TYPE = "related_object_type"
+        RTID = "relationship_type_id"
+
         # use single query to get names for people and places
-        related_people = [
-            r["related_object_id"]
-            for r in relations
-            if r["related_object_type"] == "Person"
-        ]
-        related_places = [
-            r["related_object_id"]
-            for r in relations
-            if r["related_object_type"] == "Place"
-        ]
+        related_people = [r[ID] for r in relations if r[TYPE] == "Person"]
+        related_places = [r[ID] for r in relations if r[TYPE] == "Place"]
         names = list(
             Name.objects.filter(
                 object_id__in=[*related_people, *related_places],
@@ -277,41 +323,21 @@ class PersonRelationsExporter(Exporter):
 
         # for people, places, documents: use single query each to get relation type names
         person_relation_types = PersonPersonRelationType.objects.filter(
-            id__in=[
-                r["relationship_type_id"]
-                for r in relations
-                if r["related_object_type"] == "Person"
-            ]
+            id__in=[r[RTID] for r in relations if r[TYPE] == "Person"]
         ).values("id", "name", "converse_name")
         person_relation_typedict = {t["id"]: t for t in person_relation_types}
         place_relation_types = PersonPlaceRelationType.objects.filter(
-            id__in=[
-                r["relationship_type_id"]
-                for r in relations
-                if r["related_object_type"] == "Place"
-            ]
+            id__in=[r[RTID] for r in relations if r[TYPE] == "Place"]
         ).values("id", "name")
         place_relation_typedict = {t["id"]: t["name"] for t in place_relation_types}
         doc_relation_types = PersonDocumentRelationType.objects.filter(
-            id__in=[
-                r["relationship_type_id"]
-                for r in relations
-                if r["related_object_type"] == "Document"
-            ]
+            id__in=[r[RTID] for r in relations if r[TYPE] == "Document"]
         ).values("id", "name")
         doc_relation_typedict = {t["id"]: t["name"] for t in doc_relation_types}
 
         # get shared documents with People, Places, and Events
-        related_docs = [
-            r["related_object_id"]
-            for r in relations
-            if r["related_object_type"] == "Document"
-        ]
-        related_events = [
-            r["related_object_id"]
-            for r in relations
-            if r["related_object_type"] == "Event"
-        ]
+        related_docs = [r[ID] for r in relations if r[TYPE] == "Document"]
+        related_events = [r[ID] for r in relations if r[TYPE] == "Event"]
         shared_person_docs = list(
             PersonDocumentRelation.objects.filter(
                 document__id__in=related_docs, person__id__in=related_people
@@ -366,22 +392,17 @@ class PersonRelationsExporter(Exporter):
         # use all precomputed query results to populate additional data per obj
         for rel in sorted(
             relations,
-            key=itemgetter(
-                # sort for deduplication
-                "related_object_type",
-                "related_object_id",
-                "relationship_type_id",
-            ),
+            # sort for deduplication
+            key=itemgetter(TYPE, ID, RTID),
         ):
-            obj_id = rel["related_object_id"]
-            if rel["related_object_type"] == "Person":
+            if rel[TYPE] == "Person":
                 # get person name, relationship type from precomputed querysets
                 filtered_names = filter(
-                    lambda n: n.get("object_id") == obj_id
+                    lambda n: n.get("object_id") == rel[ID]
                     and n.get("content_type") == pers_contenttype_id,
                     names,
                 )
-                rel_type = person_relation_typedict.get(rel["relationship_type_id"])
+                rel_type = person_relation_typedict.get(rel[RTID])
                 rel.update(
                     {
                         "related_object_name": next(filtered_names).get("name"),
@@ -396,88 +417,58 @@ class PersonRelationsExporter(Exporter):
                         "shared_documents": ", ".join(
                             [
                                 docs_dict.get(doc_id)
-                                for doc_id in persondocs_dict.get(obj_id, [])
+                                for doc_id in persondocs_dict.get(rel[ID], [])
                             ]
                         ),
                     }
                 )
-            elif rel["related_object_type"] == "Place":
+            elif rel[TYPE] == "Place":
                 # get place name, relationship type from precomputed querysets
                 filtered_names = filter(
-                    lambda n: n.get("object_id") == obj_id
+                    lambda n: n.get("object_id") == rel[ID]
                     and n.get("content_type") == place_contenttype_id,
                     names,
                 )
                 rel.update(
                     {
                         "related_object_name": next(filtered_names).get("name"),
-                        "relationship_type": place_relation_typedict.get(
-                            rel["relationship_type_id"]
-                        ),
+                        "relationship_type": place_relation_typedict.get(rel[RTID]),
                         "shared_documents": ", ".join(
                             [
                                 docs_dict.get(doc_id)
-                                for doc_id in placedocs_dict.get(obj_id, [])
+                                for doc_id in placedocs_dict.get(rel[ID], [])
                             ]
                         ),
                     }
                 )
-            elif rel["related_object_type"] == "Document":
+            elif rel[TYPE] == "Document":
                 # get doc name, doc relation type name from precomputed querysets
                 rel.update(
                     {
-                        "related_object_name": docs_dict.get(obj_id),
-                        "relationship_type": doc_relation_typedict.get(
-                            rel["relationship_type_id"]
-                        ),
+                        "related_object_name": docs_dict.get(rel[ID]),
+                        "relationship_type": doc_relation_typedict.get(rel[RTID]),
                     }
                 )
-            elif rel["related_object_type"] == "Event":
+            elif rel[TYPE] == "Event":
                 # get event name from precomputed names queryset; relation type
                 rel.update(
                     {
-                        "related_object_name": events_dict.get(obj_id),
+                        "related_object_name": events_dict.get(rel[ID]),
                         "shared_documents": ", ".join(
                             [
                                 docs_dict.get(doc_id)
-                                for doc_id in eventdocs_dict.get(obj_id, [])
+                                for doc_id in eventdocs_dict.get(rel[ID], [])
                             ]
                         ),
                     }
                 )
                 # relationship type is not used for events
 
-            # dedupe items and combine relationship types
-            if (
-                prev_relation
-                and prev_relation["related_object_type"] == rel["related_object_type"]
-                and prev_relation["related_object_id"] == obj_id
-            ):
-                # dedupe type by string matching since we can't match reverse relations by id
-                if (
-                    rel.get("relationship_type", "").lower()
-                    not in prev_relation.get("relationship_type", "").lower()
-                ):
-                    prev_relation[
-                        "relationship_type"
-                    ] += f", {rel['relationship_type']}".lower()
-                relations.remove(rel)
-            else:
-                prev_relation = rel
-
         return sorted(
-            relations,
+            self.dedupe_related_objects(relations),
             # sort by object type, then name
-            key=lambda r: (r["related_object_type"], slugify(r["related_object_name"])),
+            key=lambda r: (r[TYPE], slugify(r["related_object_name"])),
         )
-
-    def get_export_data_dict(self, obj):
-        """
-        For efficiency, the dict is populated in :meth:`get_queryset`,
-        via :meth`populate_relation_fields`, as that method allows us to
-        retrieve values for multiple related objects of the same type in bulk.
-        """
-        return dict(obj)
 
 
 class PublicPlaceExporter(Exporter):
@@ -493,6 +484,9 @@ class PublicPlaceExporter(Exporter):
         "name_variants",
         "coordinates",
         "notes",
+        "related_documents_count",
+        "related_people_count",
+        "related_events_count",
         "url",
     ]
 
@@ -502,12 +496,12 @@ class PublicPlaceExporter(Exporter):
         "content_type__model__in": [
             "Document",
             "DocumentPlaceRelation",
-            "DocumentPlaceRelationType",
             "Name",
             "Person",
             "PersonPlaceRelation",
-            "PersonPlaceRelationType",
             "Place",
+            "PlaceEventRelation",
+            "Event",
         ],
     }
 
@@ -525,14 +519,9 @@ class PublicPlaceExporter(Exporter):
             .prefetch_related(
                 "names",
                 "events",
-                Prefetch(
-                    "personplacerelation_set",
-                    queryset=PersonPlaceRelation.objects.select_related("type"),
-                ),
-                Prefetch(
-                    "documentplacerelation_set",
-                    queryset=DocumentPlaceRelation.objects.select_related("type"),
-                ),
+                "personplacerelation_set",
+                "documentplacerelation_set",
+                "placeeventrelation_set",
             )
             .order_by("slug")
         )
@@ -548,6 +537,28 @@ class PublicPlaceExporter(Exporter):
         :return: Dictionary of data about the place
         :rtype: dict
         """
+        # get number of related documents
+        related_docs_count = (
+            DocumentPlaceRelation.objects.filter(place__id=place.id)
+            .values_list("document__id", flat=True)
+            .distinct()
+            .count()
+        )
+        # get number of related people
+        related_people_count = (
+            PersonPlaceRelation.objects.filter(place__id=place.id)
+            .values_list("person__id", flat=True)
+            .distinct()
+            .count()
+        )
+        # get number of related events
+        related_events_count = (
+            PlaceEventRelation.objects.filter(place__id=place.id)
+            .values_list("event__id", flat=True)
+            .distinct()
+            .count()
+        )
+
         outd = {
             "name": str(place),
             "name_variants": ", ".join(
@@ -555,6 +566,9 @@ class PublicPlaceExporter(Exporter):
             ),
             "coordinates": place.coordinates,
             "notes": place.notes,
+            "related_documents_count": related_docs_count,
+            "related_people_count": related_people_count,
+            "related_events_count": related_events_count,
             "url": place.permalink,
         }
 
@@ -563,22 +577,8 @@ class PublicPlaceExporter(Exporter):
 
 class AdminPlaceExporter(PublicPlaceExporter):
     csv_fields = PublicPlaceExporter.csv_fields + [
-        "events",
         "url_admin",
     ]
-
-    def __init__(self, queryset=None, progress=False):
-        """Adds fields to the export based on relation type names"""
-        rel_types = [
-            ("people", PersonPlaceRelationType.objects.order_by("name")),
-            ("documents", DocumentPlaceRelationType.objects.order_by("name")),
-        ]
-        self.csv_fields[5:5] = [
-            slugify(rel_type.name).replace("-", "_") + f"_{rel_class}"
-            for (rel_class, rts) in rel_types
-            for rel_type in rts
-        ]
-        super().__init__(queryset, progress)
 
     def get_export_data_dict(self, place):
         """
@@ -586,62 +586,256 @@ class AdminPlaceExporter(PublicPlaceExporter):
         """
         outd = super().get_export_data_dict(place)
 
-        # grop related people by relation type name
-        related_people = PersonPlaceRelation.objects.filter(place__id=place.id).values(
-            "person__id", "type__name"
-        )
-        rel_types = related_people.values_list("type__name", flat=True).distinct()
-        related_person_ids = {}
-        for type_name in rel_types:
-            related_person_ids[type_name] = (
-                related_people.filter(type__name=type_name)
-                .values_list("person__id", flat=True)
-                .distinct()
-            )
-
-        # get names of related people (grouped by type name) and set on output dict
-        for [type_name, person_ids] in related_person_ids.items():
-            tn = slugify(type_name).replace("-", "_")
-            outd[f"{tn}_people"] = ", ".join(
-                sorted(
-                    [str(person) for person in Person.objects.filter(id__in=person_ids)]
-                )
-            )
-
-        # grop related documents by relation type name
-        related_docs = DocumentPlaceRelation.objects.filter(place__id=place.id).values(
-            "document__id", "type__name"
-        )
-        rel_types = related_docs.values_list("type__name", flat=True).distinct()
-        related_doc_ids = {}
-        for type_name in rel_types:
-            related_doc_ids[type_name] = (
-                related_docs.filter(type__name=type_name)
-                .values_list("document__id", flat=True)
-                .distinct()
-            )
-
-        # get names of related documents (grouped by type name) and set on output dict
-        for [type_name, doc_ids] in related_doc_ids.items():
-            tn = slugify(type_name).replace("-", "_")
-            outd[f"{tn}_documents"] = ", ".join(
-                sorted([str(doc) for doc in Document.objects.filter(id__in=doc_ids)])
-            )
-
-        # get names of related events and set on output dict
-        related_event_ids = (
-            PlaceEventRelation.objects.filter(place__id=place.id)
-            .values_list("event__id", flat=True)
-            .distinct()
-        )
-        related_events = Event.objects.filter(id__in=related_event_ids)
-        outd["events"] = ", ".join(
-            [e.name for e in related_events.order_by("standard_date", "name")]
-        )
-
         # add admin url
         outd[
             "url_admin"
         ] = f"{self.url_scheme}{self.site_domain}/admin/entities/place/{place.id}/change/"
 
         return outd
+
+
+class PlaceRelationsExporter(RelationsExporter):
+    """
+    A subclass of :class:`RelationsExporter` that exports information relating
+    to :class:`~geniza.entities.models.Place`, in particular, the related
+    objects for a single model instance. Extends :meth:`get_queryset`.
+    """
+
+    model = Place
+    csv_fields = RelationsExporter.csv_fields + [
+        "related_object_date",  # only events and documents should get dates
+        "relationship_notes",
+    ]
+
+    def get_queryset(self):
+        """Override get_queryset to get related items for the single item"""
+        place = super().get_queryset().first()
+        # union querysets to coalesce and normalize heterogenous data types
+        relations = (
+            place.place_a.values(
+                related_object_id=F("place_a"),
+                related_object_type=Value("Place"),
+                relationship_type_id=F("type"),
+                relationship_notes=F("notes"),
+            )
+            .union(
+                place.place_b.values(
+                    related_object_id=F("place_b"),
+                    related_object_type=Value("Place"),
+                    relationship_type_id=F("type"),
+                    relationship_notes=F("notes"),
+                )
+            )
+            .union(
+                place.personplacerelation_set.values(
+                    related_object_id=F("person"),
+                    related_object_type=Value("Person"),
+                    relationship_type_id=F("type"),
+                    relationship_notes=F("notes"),
+                )
+            )
+            .union(
+                place.documentplacerelation_set.values(
+                    related_object_id=F("document"),
+                    related_object_type=Value("Document"),
+                    relationship_type_id=F("type"),
+                    relationship_notes=F("notes"),
+                )
+            )
+            .union(
+                place.placeeventrelation_set.values(
+                    related_object_id=F("event"),
+                    related_object_type=Value("Event"),
+                    # use -1 as this must be int, but there is no relationship
+                    # type for event relations
+                    relationship_type_id=Value(-1),
+                    relationship_notes=F("notes"),
+                )
+            )
+        )
+        # populate additional data
+        return self.populate_relation_fields(list(relations))
+
+    def populate_relation_fields(self, relations):
+        """Helper method called by :meth:`get_queryset` that prefetches
+        various fields on related objects, efficiently retrieving their
+        data for export in bulk"""
+
+        # the general rule here is: fetch all the related data with a values()
+        # queryset, cast as dict (keyed on id) to compute each queryset ahead
+        # of time, and access each field value from the dict by id in a loop.
+
+        # use constants for column names for code readability
+        ID = "related_object_id"
+        TYPE = "related_object_type"
+        RTID = "relationship_type_id"
+
+        # use single query to get names for people and places
+        related_people = [r[ID] for r in relations if r[TYPE] == "Person"]
+        related_places = [r[ID] for r in relations if r[TYPE] == "Place"]
+        names = list(
+            Name.objects.filter(
+                object_id__in=[*related_people, *related_places],
+                primary=True,
+            ).values("object_id", "name", "content_type")
+        )
+        pers_contenttype_id = ContentType.objects.get_for_model(Person).pk
+        place_contenttype_id = ContentType.objects.get_for_model(Place).pk
+
+        # for people, places, documents: use single query each to get relation type names
+        person_relation_types = PersonPlaceRelationType.objects.filter(
+            id__in=[r[RTID] for r in relations if r[TYPE] == "Person"]
+        ).values("id", "name")
+        person_relation_typedict = {t["id"]: t for t in person_relation_types}
+        place_relation_types = PlacePlaceRelationType.objects.filter(
+            id__in=[r[RTID] for r in relations if r[TYPE] == "Place"]
+        ).values("id", "name")
+        place_relation_typedict = {t["id"]: t["name"] for t in place_relation_types}
+        doc_relation_types = DocumentPlaceRelationType.objects.filter(
+            id__in=[r[RTID] for r in relations if r[TYPE] == "Document"]
+        ).values("id", "name")
+        doc_relation_typedict = {t["id"]: t["name"] for t in doc_relation_types}
+
+        # get shared documents with People, Places, and Events
+        related_docs = [r[ID] for r in relations if r[TYPE] == "Document"]
+        related_events = [r[ID] for r in relations if r[TYPE] == "Event"]
+        shared_person_docs = list(
+            PersonDocumentRelation.objects.filter(
+                document__id__in=related_docs, person__id__in=related_people
+            ).values("document__id", "person__id")
+        )
+        shared_person_docs = sorted(shared_person_docs, key=itemgetter("person__id"))
+        persondocs_dict = {
+            k: [d["document__id"] for d in v]
+            for k, v in groupby(shared_person_docs, key=itemgetter("person__id"))
+        }
+        shared_place_docs = list(
+            DocumentPlaceRelation.objects.filter(
+                document__id__in=related_docs, place__id__in=related_places
+            ).values("document__id", "place__id")
+        )
+        shared_place_docs = sorted(shared_place_docs, key=itemgetter("place__id"))
+        placedocs_dict = {
+            k: [d["document__id"] for d in v]
+            for k, v in groupby(shared_place_docs, key=itemgetter("place__id"))
+        }
+        shared_event_docs = list(
+            DocumentEventRelation.objects.filter(
+                document__id__in=related_docs, event__id__in=related_events
+            ).values("document__id", "event__id")
+        )
+        shared_event_docs = sorted(shared_event_docs, key=itemgetter("event__id"))
+        eventdocs_dict = {
+            k: [d["document__id"] for d in v]
+            for k, v in groupby(shared_event_docs, key=itemgetter("event__id"))
+        }
+
+        # to get Document names, need TextBlocks and Fragments.
+        # to get Document dates, need Datings.
+        docs = Document.objects.prefetch_related(
+            "dating_set",
+            Prefetch(
+                "textblock_set",
+                queryset=TextBlock.objects.select_related(
+                    "fragment",
+                ).prefetch_related(
+                    "fragment__textblock_set",
+                    "fragment__textblock_set__document",
+                ),
+            ),
+        ).filter(id__in=related_docs)
+
+        # use standard date display for full possible document date range
+        docs_dict = {
+            d.id: {
+                "name": str(d),
+                "date": standard_date_display(
+                    "/".join([dr.isoformat() for dr in d.dating_range() if dr])
+                ),
+            }
+            for d in docs
+        }
+
+        # get Event names
+        events = Event.objects.filter(id__in=related_events)
+        events_dict = {
+            e.id: {
+                "name": e.name,
+                "date": standard_date_display(e.documents_date_range),
+            }
+            for e in events
+        }
+
+        # loop through all relations, update with additional data, and dedupe
+        # use all precomputed query results to populate additional data per obj
+        for rel in relations:
+            if rel[TYPE] == "Person":
+                # get person name, relationship type from precomputed querysets
+                filtered_names = filter(
+                    lambda n: n.get("object_id") == rel[ID]
+                    and n.get("content_type") == pers_contenttype_id,
+                    names,
+                )
+                rel_type = person_relation_typedict.get(rel[RTID])
+                rel.update(
+                    {
+                        "related_object_name": next(filtered_names).get("name"),
+                        "relationship_type": rel_type.get("name"),
+                        "shared_documents": ", ".join(
+                            [
+                                docs_dict.get(doc_id, {}).get("name")
+                                for doc_id in persondocs_dict.get(rel[ID], [])
+                            ]
+                        ),
+                    }
+                )
+            elif rel[TYPE] == "Place":
+                # get place name, relationship type from precomputed querysets
+                filtered_names = filter(
+                    lambda n: n.get("object_id") == rel[ID]
+                    and n.get("content_type") == place_contenttype_id,
+                    names,
+                )
+                rel.update(
+                    {
+                        "related_object_name": next(filtered_names).get("name"),
+                        "relationship_type": place_relation_typedict.get(rel[RTID]),
+                        "shared_documents": ", ".join(
+                            [
+                                docs_dict.get(doc_id, {}).get("name")
+                                for doc_id in placedocs_dict.get(rel[ID], [])
+                            ]
+                        ),
+                    }
+                )
+            elif rel[TYPE] == "Document":
+                # get doc name, doc relation type, date from precomputed querysets
+                doc = docs_dict.get(rel[ID], {})
+                rel.update(
+                    {
+                        "related_object_name": doc.get("name"),
+                        "relationship_type": doc_relation_typedict.get(rel[RTID]),
+                        "related_object_date": doc.get("date"),
+                    }
+                )
+            elif rel[TYPE] == "Event":
+                # get event name, date from precomputed queryset
+                evt = events_dict.get(rel[ID], {})
+                rel.update(
+                    {
+                        "related_object_name": evt.get("name"),
+                        "related_object_date": evt.get("date"),
+                        "shared_documents": ", ".join(
+                            [
+                                docs_dict.get(doc_id, {}).get("name")
+                                for doc_id in eventdocs_dict.get(rel[ID], {})
+                            ]
+                        ),
+                    }
+                )
+
+        return sorted(
+            self.dedupe_related_objects(relations),
+            # sort by object type, then name
+            key=lambda r: (r["related_object_type"], slugify(r["related_object_name"])),
+        )
