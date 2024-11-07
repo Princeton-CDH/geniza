@@ -77,6 +77,9 @@ class Collection(models.Model):
     location = models.CharField(
         max_length=255, help_text="Current location of the collection", blank=True
     )
+    url = models.URLField(
+        "URL", blank=True, help_text="Link to this collection on the web"
+    )
 
     objects = CollectionManager()
 
