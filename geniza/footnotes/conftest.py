@@ -76,6 +76,18 @@ def unpublished_editions(db):
 
 
 @pytest.fixture
+def index_cards(db):
+    # fixture for unpublished index cards
+    unpub = SourceType.objects.get(type="Unpublished")
+    source = Source.objects.create(
+        source_type=unpub, title_en="index cards", volume="CUL"
+    )
+    author = Creator.objects.create(last_name_en="Goitein", first_name_en="S. D.")
+    Authorship.objects.create(creator=author, source=source)
+    return source
+
+
+@pytest.fixture
 def book_section(db):
     # fixture to create and return a book section source
     section_type = SourceType.objects.get(type="Book Section")

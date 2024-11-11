@@ -2,7 +2,9 @@ from unittest.mock import MagicMock, Mock
 
 import pytest
 from django.http.request import HttpRequest, QueryDict
+from django.urls import reverse
 from piffle.iiif import IIIFImageClient
+from pytest_django.asserts import assertContains
 
 from geniza.common.utils import absolutize_url
 from geniza.corpus.templatetags import admin_extras, corpus_extras
@@ -75,6 +77,52 @@ class TestCorpusExtrasTemplateTags:
             "Digital Edition",
             "Edition",
         ]
+
+    def test_handle_index_cards(self, document, footnote, index_cards, client):
+        # no index card numbers
+        fn = Footnote.objects.create(
+            object_id=document.pk,
+            content_type=footnote.content_type,
+            source=index_cards,
+            doc_relation=Footnote.DISCUSSION,
+        )
+        response = client.get(
+            reverse("corpus:document-scholarship", args=[document.pk])
+        )
+        assertContains(response, "cards (1950–85). Princeton Geniza Lab")
+
+        # one card with numbers
+        fn.location = "Card #1234"
+        fn.save()
+        response = client.get(
+            reverse("corpus:document-scholarship", args=[document.pk])
+        )
+        assertContains(response, "cards (1950–85), #1234. Princeton Geniza Lab")
+
+        # multiple cards
+        Footnote.objects.create(
+            object_id=document.pk,
+            content_type=footnote.content_type,
+            source=index_cards,
+            doc_relation=Footnote.DISCUSSION,
+            location="card #5678",
+        )
+        response = client.get(
+            reverse("corpus:document-scholarship", args=[document.pk])
+        )
+        assertContains(
+            response, "cards (1950–85), #1234 and #5678. Princeton Geniza Lab"
+        )
+
+        # card with link
+        fn.url = "https://fake.goitein.card/"
+        fn.save()
+        response = client.get(
+            reverse("corpus:document-scholarship", args=[document.pk])
+        )
+        assertContains(
+            response, '<a href="https://fake.goitein.card/">#1234</a>', html=True
+        )
 
 
 def test_dict_item():

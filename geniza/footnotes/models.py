@@ -205,7 +205,7 @@ class Source(models.Model):
             )
         return ""
 
-    def formatted_display(self, extra_fields=True):
+    def formatted_display(self, extra_fields=True, format_index_cards=False):
         """Format source for display; used on document scholarship page.
         To omit publisher, place_published, and page_range fields,
         specify `extra_fields=False`."""
@@ -248,6 +248,12 @@ class Source(models.Model):
             # if this is a machine learning model, format appropriately
             elif "model" in self.source_type.type:
                 work_title = "Machine-generated transcription (%s)" % self.title
+            elif (
+                format_index_cards
+                and "Goitein" in author
+                and "index card" in self.title.lower()
+            ):
+                work_title = "unpublished index cards (1950–85)"
             # otherwise, just leave unformatted
             else:
                 work_title = self.title + ltr_mark

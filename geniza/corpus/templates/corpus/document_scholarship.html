@@ -21,9 +21,13 @@
                                 {% translate 'Bibliographic citation' %}
                             </dt>
                             <dd>
-                                {{ source.grouper.formatted_display|safe }}
+                                {% if source|is_index_cards %}
+                                    {{ source|handle_index_cards }}
+                                {% else %}
+                                    {{ source.grouper.formatted_display|safe }}
+                                {% endif %}
                             </dd>
-                            {% if source.list|has_location_or_url %}
+                            {% if not source|is_index_cards and source.list|has_location_or_url %}
                                 {# Translators: accessibility label for the specific location of a citation in a source record #}
                                 <dt class="sr-only">{% translate "Location in source" %}</dt>
                                 <dd>
