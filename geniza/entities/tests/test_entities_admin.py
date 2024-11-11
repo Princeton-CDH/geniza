@@ -221,7 +221,7 @@ class TestPersonAdmin:
         # - header row
         assert "related_object_type,related_object_id," in content
         # - some content
-        assert str(person) not in content
+        assert str(person) in content
         assert str(person_multiname) in content
         assert "Partner" in content
 
