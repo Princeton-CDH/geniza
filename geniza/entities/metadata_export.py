@@ -203,7 +203,10 @@ class RelationsExporter(Exporter):
         via :meth`populate_relation_fields`, as that method allows us to
         retrieve values for multiple related objects of the same type in bulk.
         """
-        return dict(obj)
+        data_dict = dict(obj)
+        model_name = str(self.model.__name__).lower()
+        data_dict[f"source_{model_name}"] = str(super().get_queryset().first())
+        return data_dict
 
     def dedupe_related_objects(self, relations):
         """Deduplicate related objects, in case of multiple relationships
@@ -245,6 +248,7 @@ class PersonRelationsExporter(RelationsExporter):
     """
 
     model = Person
+    csv_fields = ["source_person"] + RelationsExporter.csv_fields
 
     def get_queryset(self):
         """Override get_queryset to get related items for the single item"""
@@ -388,7 +392,6 @@ class PersonRelationsExporter(RelationsExporter):
         events_dict = {e["id"]: e["name"] for e in events}
 
         # loop through all relations, update with additional data, and dedupe
-        prev_relation = None
         # use all precomputed query results to populate additional data per obj
         for rel in sorted(
             relations,
@@ -602,10 +605,14 @@ class PlaceRelationsExporter(RelationsExporter):
     """
 
     model = Place
-    csv_fields = RelationsExporter.csv_fields + [
-        "related_object_date",  # only events and documents should get dates
-        "relationship_notes",
-    ]
+    csv_fields = (
+        ["source_place"]
+        + RelationsExporter.csv_fields
+        + [
+            "related_object_date",  # only events and documents should get dates
+            "relationship_notes",
+        ]
+    )
 
     def get_queryset(self):
         """Override get_queryset to get related items for the single item"""

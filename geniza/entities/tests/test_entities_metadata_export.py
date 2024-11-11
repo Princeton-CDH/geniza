@@ -203,6 +203,7 @@ def test_person_relations_csv(
         id = obj["related_object_id"]
         objtype = obj["related_object_type"]
         reltype = obj.get("relationship_type", "")
+        assert obj["source_person"] == str(person)
         if objtype == "Person":
             if id == person_diacritic.id:
                 assert reltype == "Maternal cousin, partner"
@@ -325,6 +326,7 @@ def test_place_relations_csv(person, document, join):
         id = obj["related_object_id"]
         objtype = obj["related_object_type"]
         reltype = obj.get("relationship_type", "")
+        assert obj["source_place"] == str(fustat)
         if objtype == "Person":
             assert (
                 home_base.name.lower() in reltype.lower()
