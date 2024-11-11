@@ -2,6 +2,7 @@ import json
 import re
 
 from django import template
+from django.template.defaultfilters import pluralize
 from django.urls import reverse
 from django.urls import translate_url as django_translate_url
 from django.utils.safestring import mark_safe
@@ -188,3 +189,43 @@ def all_doc_relations(footnotes):
     for fn in footnotes:
         relations.update(set([n.strip() for n in str(fn.doc_relation).split(",")]))
     return sorted(relations)
+
+
+@register.filter
+def is_index_cards(source):
+    """For scholarship records list: indicate whether or not a source record
+    relates to Goitein index cards."""
+    return "unpublished index cards" in source.grouper.formatted_display(
+        format_index_cards=True
+    )
+
+
+@register.filter
+def handle_index_cards(source):
+    """For scholarship records list: handle Goitein index cards by including
+    URLs and index card numbers when available, and by adding the attribution
+    to the PGL."""
+    citation = source.grouper.formatted_display(format_index_cards=True)
+    all_cards = []
+    # add card numbers
+    for fn in source.list:
+        # remove "Card" or "card" from the location field first, we just want #NNN
+        loc = re.sub("[Cc]ard ", "", fn.location)
+        card_str = ""
+        # add URL if present
+        if loc and fn.url:
+            card_str = f'<a href="{fn.url}">{loc}</a>'
+        elif loc:
+            card_str = str(loc)
+        if card_str:
+            all_cards.append(card_str)
+    if all_cards:
+        # if card #s are present, include them as a list in the citation
+        joined = " and ".join(
+            [", ".join(all_cards[:-1]), all_cards[-1]]
+            if len(all_cards) > 2
+            else all_cards
+        )
+        citation = citation[0:-1] + f", {joined}."
+    # add PGL attribution
+    return mark_safe(citation + " Princeton Geniza Lab, Princeton University.")

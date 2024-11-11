@@ -222,6 +222,9 @@ class TestSource:
             == "Machine-generated transcription (%s)." % source.title_en
         )
 
+    def test_formatted_indexcard(self, index_cards):
+        assert "unpublished index cards (1950–85)" in index_cards.formatted_display()
+
     def test_get_volume_from_shelfmark(self):
         assert Source.get_volume_from_shelfmark("T-S 3564.5J") == "T-S 35"
         assert Source.get_volume_from_shelfmark("Bodl. 3563") == "Bodl."
