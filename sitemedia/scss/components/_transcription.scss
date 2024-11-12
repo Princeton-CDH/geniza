@@ -2,168 +2,149 @@
 @use "../base/a11y";
 @use "../base/breakpoints";
 @use "../base/colors";
+@use "../base/fonts";
 @use "../base/spacing";
 @use "../base/typography";
 @use "../components/searchform";
 
-$toggle-default-width: 87px; /* only applies on tablet up */
-$toggle-default-neg: -82px; /* only applies on tablet up */
+/*
+ * Mixin to add a box-shadow given a color.
+ * @param {color} $color - The color variable
+*/
+@mixin box-shadow($color) {
+    box-shadow: 0px 2px 4px $color;
+}
+
+/*
+ * Mixin for form drop shadow in three states:
+ * default, focus, active.
+ */
+@mixin form-drop-shadow($with-default: "true") {
+    transition: box-shadow 0.15s ease;
+    @include box-shadow(var(--on-background-25));
+    &:focus,
+    &:focus-within {
+        outline: none;
+        @include box-shadow(var(--secondary-80));
+    }
+    &:active {
+        @include box-shadow(var(--primary-80));
+    }
+}
 
 #itt-panel {
-    z-index: 6;
-    max-width: none;
+    * {
+        max-width: 100vw;
+    }
+    margin-top: 5.125rem;
+    max-width: 100vw;
+    overflow: hidden;
     width: 100%;
     display: flex;
     flex-flow: row wrap;
-    background-color: var(--background);
+    background-color: transparent;
 
-    // toggle switches for panels
-    input[type="checkbox"].toggle {
-        // disable browser checkbox UI
-        @include a11y.sr-only;
-
-        // style labels instead
-        & + label {
-            background-color: var(--background-light);
-            display: inline-flex;
-            align-items: center;
-            justify-content: space-between;
-            margin: 0;
-            height: 40px;
-            width: 100px;
-            max-width: 100px;
-            @include breakpoints.for-tablet-landscape-up {
-                flex: 1 0 $toggle-default-width;
-                justify-content: center;
-                height: 95px;
-                width: $toggle-default-width;
-                max-width: $toggle-default-width;
-                transition: all 300ms ease;
-                cursor: pointer;
-            }
-
-            // svg toggle icons
-            svg {
-                fill: var(--toggle-background);
-                color: var(--toggle);
-                width: 65px;
-                height: 65px;
-                transform: scale(calc(40 / 65));
-                outline: 1.5px solid black;
-                outline-offset: -1px;
-                transition: transform 200ms ease;
-                will-change: transform;
-            }
-
-            // left and right margins on first and last toggles
-            &:first-of-type {
-                margin-left: auto;
-                margin-right: 9px;
-                @include breakpoints.for-tablet-landscape-up {
-                    margin-right: 4px;
-                }
-            }
-            &:last-of-type {
-                margin-right: auto;
-                margin-left: 9px;
-                @include breakpoints.for-tablet-landscape-up {
-                    margin-left: 4px;
-                }
-            }
-        }
-
-        // checkmark icons (mobile only)
-        & + label:after {
-            content: "\f0e8"; // phosphor check-circle icon
-            margin-right: 11px;
-        }
-        &:checked + label:after {
-            content: "\f851"; // phosphor check-circle-fill icon
-        }
-        & + label:after,
-        &:checked + label:after {
-            display: block;
-            color: var(--secondary);
-            float: right;
-            @include typography.icon-button-md;
-            // disable on desktop
-            @include breakpoints.for-tablet-landscape-up {
-                display: none;
-            }
-        }
-
-        // expand when checked (desktop only)
+    #toggles {
+        // toggle switches for panels
+        display: flex;
+        flex-flow: row nowrap;
+        justify-content: center;
+        gap: 1rem;
+        width: 100%;
+        align-items: center;
+        margin-bottom: 2rem;
         @include breakpoints.for-tablet-landscape-up {
-            &:checked + label {
-                max-width: 100vw;
-                flex: 1 0 auto;
-                &[for="transcription-on"],
-                &[for="translation-on"] {
-                    // transcription is 50% minus the 87px for the translation toggle minus ~2xgutter
-                    flex: 1 0 calc(50vw - 87px - 18px);
-
-                    /* adjust for admin site */
-                    .model-document.change-form & {
-                        flex: 1 0 calc(49% - 87px - 18px);
-                    }
-                }
-                // images panel toggle is half width minus ~gutter
-                &[for="images-on"] {
-                    flex: 1 0 calc(50vw - 9px);
-                    .model-document.change-form & {
-                        flex: 1 0 calc(50% - 9px);
-                    }
-                }
-                // expand icon size
-                svg {
-                    transform: scale(1);
-                }
-            }
+            margin-bottom: 4rem;
         }
 
-        // disabled toggle colors
-        &:disabled + label {
-            cursor: default;
-            &:after {
-                color: var(--disabled);
-            }
-            svg {
-                color: var(--disabled);
-                fill: var(--disabled-toggle-background);
-                outline-color: var(--disabled);
-            }
-        }
+        input[type="checkbox"].toggle {
+            // disable browser checkbox UI
+            @include a11y.sr-only;
 
-        // special case for images panel toggle (non-svg icon)
-        &#images-on {
+            // style labels instead
             & + label {
-                background-image: url("/static/img/ui/mobile/all/image-toggle.png");
-                background-position: 11px center;
-                background-repeat: no-repeat;
-                background-size: 40px 40px;
+                background-color: var(--background-gray);
+                color: var(--on-background);
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                gap: 0.5rem;
+                margin: 0;
+                height: 80px;
+                width: 80px;
+                border-radius: 5px;
                 @include breakpoints.for-tablet-landscape-up {
-                    background-position: center;
-                    background-image: url("/static/img/ui/desktop/all/image-toggle.png");
-                }
-                // checkbox icon on mobile needs extra margin to make up for svg icon width
-                &:after {
-                    margin-left: 66px;
-                    margin-right: 0;
+                    transition: background-color 300ms ease, color 300ms ease;
+                    cursor: pointer;
+                    &:active {
+                        background-color: var(--disabled);
+                    }
                 }
             }
-            &:checked + label {
-                @include breakpoints.for-tablet-landscape-up {
-                    background-image: url("/static/img/ui/desktop/all/image-toggle-selected.png");
-                    background-size: 65px 65px;
+
+            @include breakpoints.for-tablet-landscape-up {
+                &:checked + label {
+                    background-color: var(--secondary);
+                    color: var(--on-secondary);
+                    &:active {
+                        background-color: var(--filter-active);
+                    }
+                }
+                &:focus-visible + label {
+                    border: 2px solid var(--button-focus);
+                }
+                &:checked:focus-visible + label {
+                    border: 2px solid var(--button-focus);
                 }
             }
+
+            // checkmark icons (mobile only)
+            & + label:after {
+                content: "\f0e8"; // phosphor check-circle icon
+            }
+            &:checked + label:after {
+                content: "\f851"; // phosphor check-circle-fill icon
+            }
+            & + label:after,
+            &:checked + label:after {
+                display: block;
+                color: var(--secondary);
+                @include typography.icon-button-md;
+                // disable on desktop
+                @include breakpoints.for-tablet-landscape-up {
+                    display: none;
+                }
+            }
+
+            // disabled toggle colors
             &:disabled + label {
-                background-image: url("/static/img/ui/mobile/all/image-toggle-disabled.png");
-                @include breakpoints.for-tablet-landscape-up {
-                    background-image: url("/static/img/ui/desktop/all/image-toggle-disabled.png");
+                background-color: var(--background-light);
+                cursor: default;
+                &:after,
+                &:before,
+                svg {
+                    color: var(--disabled);
                 }
             }
         }
+    }
+
+    // toggle icons
+    input#transcription-on + label svg,
+    div.transcription-header svg {
+        width: 15px;
+        height: 20px;
+    }
+    input#translation-on + label svg,
+    div.translation-header svg {
+        width: 12px;
+        height: 16px;
+    }
+    input#images-on + label:before,
+    div.img-header span:before {
+        @include typography.icon-button-md;
+        content: "\f1dd"; // phosphor ph-image icon
+        font-weight: normal;
     }
 
     // multiple transcription pseudo-select element
@@ -185,29 +166,32 @@ $toggle-default-neg: -82px; /* only applies on tablet up */
                 cursor: pointer;
                 width: 1%;
                 box-sizing: border-box;
-                background-color: var(--background);
                 color: var(--on-background);
                 flex: 1 0 auto;
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
-                padding: spacing.$spacing-2xs 0.7rem;
-                @include typography.body-bold;
-                @include searchform.form-drop-shadow;
+                @include typography.meta-bold;
                 &::after {
                     content: "\f0c2"; // phosphor caret-down icon
                     @include typography.icon-button-md;
                     float: right;
+                    margin-right: 1rem;
+                    @include breakpoints.for-tablet-landscape-up {
+                        margin-right: 0;
+                    }
                 }
             }
         }
         // List of transcription options
         ul {
             position: absolute;
+            top: 3.5rem;
+            left: 0.333rem;
             z-index: 20;
             width: calc(100% - 0.667rem);
             padding: spacing.$spacing-sm 0;
-            @include searchform.form-drop-shadow;
+            @include form-drop-shadow;
             background-color: var(--background);
             // label for single transcription option
             li {
@@ -264,9 +248,6 @@ $toggle-default-neg: -82px; /* only applies on tablet up */
             * {
                 cursor: default;
             }
-            summary span:active {
-                @include searchform.box-shadow(var(--on-background-25));
-            }
             summary span::after,
             ul {
                 display: none;
@@ -281,53 +262,142 @@ $toggle-default-neg: -82px; /* only applies on tablet up */
             summary {
                 min-height: 2.5rem;
                 span {
-                    margin-right: spacing.$spacing-sm;
-                    text-align: center;
-                    padding: spacing.$spacing-2xs 0.7rem spacing.$spacing-2xs
-                        24px;
-                    display: inline;
+                    padding: 20px;
+                    display: flex;
                 }
             }
         }
     }
 
+    #header-row {
+        z-index: 6;
+        display: none;
+        width: 100%;
+        gap: 0.5rem;
+        div {
+            height: 60px;
+            background-color: var(--secondary);
+            color: var(--on-secondary);
+            span {
+                display: flex;
+                align-items: center;
+                justify-content: flex-start;
+                height: 30px;
+                line-height: 1;
+                margin: 0;
+                @include typography.body-bold;
+            }
+        }
+        div,
+        div.img-header span {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            flex: 1 0 auto;
+        }
+        div {
+            display: none;
+        }
+    }
+
+    @include breakpoints.for-tablet-landscape-up {
+        #toggles:has(*:checked) ~ #header-row {
+            display: grid;
+        }
+
+        #toggles:has(#images-on:checked) ~ #header-row div.img-header,
+        #toggles:has(#transcription-on:checked)
+            ~ #header-row
+            div.transcription-header,
+        #toggles:has(#translation-on:checked)
+            ~ #header-row
+            div.translation-header {
+            display: flex;
+        }
+    }
+
+    #toggles:has(#images-on:checked) ~ #header-row,
+    #toggles:has(#images-on:checked) ~ .panel-container,
+    #toggles:has(#transcription-on:checked) ~ #header-row,
+    #toggles:has(#transcription-on:checked) ~ .panel-container,
+    #toggles:has(#translation-on:checked) ~ #header-row,
+    #toggles:has(#translation-on:checked) ~ .panel-container {
+        /* one enabled: always 1 column */
+        grid-template-columns: 100%;
+    }
+    #toggles:has(#images-on:checked ~ #transcription-on:checked) ~ #header-row,
+    #toggles:has(#images-on:checked ~ #transcription-on:checked)
+        ~ .panel-container,
+    #toggles:has(#images-on:checked ~ #translation-on:checked) ~ #header-row,
+    #toggles:has(#images-on:checked ~ #translation-on:checked)
+        ~ .panel-container,
+    #toggles:has(#transcription-on:checked ~ #translation-on:checked)
+        ~ #header-row,
+    #toggles:has(#transcription-on:checked ~ #translation-on:checked)
+        ~ .panel-container {
+        /* for mobile, set to full-width; content will stack in order */
+        grid-template-columns: 100%;
+        @include breakpoints.for-tablet-landscape-up {
+            /* desktop: two column layout */
+            grid-template-columns: 50% 50%;
+        }
+    }
+    #toggles:has(#images-on:checked
+            ~ #transcription-on:checked
+            ~ #translation-on:checked)
+        ~ #header-row,
+    #toggles:has(#images-on:checked
+            ~ #transcription-on:checked
+            ~ #translation-on:checked)
+        ~ .panel-container {
+        /* for mobile, set to full-width; content will stack in order */
+        grid-template-columns: 100%;
+        @include breakpoints.for-tablet-landscape-up {
+            /* desktop: three column layout */
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+    }
+
     .panel-container {
-        background-color: var(--background-light);
         display: grid;
-        margin-top: 8px;
+        z-index: 6;
+        gap: 0 0.5rem;
         width: 100%;
         /* when no content panels are selected, don't show anything  */
         height: 0;
         overflow: hidden;
-
-        // default column layout is two columns at a time
-        grid-template-columns: 1fr 1fr 0px;
 
         /* hide panel containers by default */
         & > div {
             height: 0; /* ensure not visible when not selected */
             overflow: hidden;
             max-width: 100%;
+            background-color: var(--background-light);
         }
         /* hide enlarge button on mobile */
         button.enlarge-button {
             display: none;
         }
         @include breakpoints.for-tablet-landscape-up {
-            padding: 0 $toggle-default-width 0;
+            padding: 0;
+            display: grid;
         }
     }
 
     /* if any of the inputs are checked, panel container will be expanded */
-    *:checked ~ .panel-container {
+    #toggles:has(*:checked) ~ .panel-container {
         height: auto;
     }
 
     /* images only */
-    #images-on:checked ~ .panel-container {
+    #toggles:has(#images-on:checked) ~ .panel-container {
         /* image column full width; transcription, translation columns collapsed */
-        grid-template-columns: 100% 0px 0px;
         padding-bottom: 30px;
+
+        & > div:first-of-type {
+            height: 100%;
+        }
 
         // image panel spacing
         div.img {
@@ -335,11 +405,18 @@ $toggle-default-neg: -82px; /* only applies on tablet up */
             /* enlarge button and enlarge functionality */
             @include breakpoints.for-tablet-landscape-up {
                 transition: max-width 0.3s ease-in-out;
+                & > div {
+                    max-width: 640px;
+                    margin: 0 auto;
+                    transition: max-width 0.3s ease-in-out;
+                }
                 img {
                     transition: width 0.3s ease-in-out;
                 }
                 &.enlarged {
-                    max-width: 100%;
+                    & > div {
+                        max-width: 100%;
+                    }
                     img {
                         width: 100%;
                     }
@@ -353,12 +430,13 @@ $toggle-default-neg: -82px; /* only applies on tablet up */
                     border: none;
                     background: transparent;
                     padding: 0;
-                    margin: 0;
+                    margin: 0 0 1.2rem;
                     z-index: 2;
                     &::after {
                         color: var(--on-background);
                         content: "\f118";
-                        @include typography.icon-button-lg;
+                        margin-left: 1rem;
+                        @include typography.icon-button-md;
                     }
                     &:active::after {
                         color: var(--primary);
@@ -373,7 +451,7 @@ $toggle-default-neg: -82px; /* only applies on tablet up */
         // Attribution and license text
         details.permissions {
             display: block;
-            margin: 30px auto 0;
+            margin: 0;
             &[open] summary {
                 justify-content: center;
             }
@@ -385,112 +463,90 @@ $toggle-default-neg: -82px; /* only applies on tablet up */
         }
     }
 
-    #transcription-on:checked ~ .panel-container {
-        /* image column collapsed; transcription column full width */
-        grid-template-columns: 0px 100% 0px;
-
-        // transcription panel spacing
-        div.transcription-panel {
-            width: 100%;
-            max-width: 604px;
-            margin: auto;
-
-            /* adjust label padding for transcription only view */
-            &.label-row {
-                padding-left: 0;
-                width: 100%;
-                max-width: none;
-                overflow: visible;
-            }
-        }
-    }
-
-    /* image column collapsed; translation column full width */
-    #translation-on:checked ~ .panel-container {
-        grid-template-columns: 0px 0px 100%;
-
-        // transcription panel spacing
-        div.translation-panel {
-            width: 100%;
-            max-width: 604px;
-            margin: auto;
-
-            /* adjust label padding for transcription only view */
-            &.label-row {
-                padding-left: 0;
-                width: 100%;
-                max-width: none;
-                overflow: visible;
-                @include breakpoints.for-tablet-landscape-up {
-                    margin-left: $toggle-default-width;
-                    padding-left: 6px;
-                }
-            }
-        }
-    }
-
     /* common styles between the above two */
-    #translation-on:checked ~ .panel-container,
-    #transcription-on:checked ~ .panel-container {
+    #toggles:has(#translation-on:checked) ~ .panel-container,
+    #toggles:has(#transcription-on:checked) ~ .panel-container {
         padding-bottom: 30px;
         // Attribution and license text
         details.permissions {
             display: none;
         }
+        background-color: var(--background-light);
+        // transcription panel spacing
+        div.transcription-panel,
+        div.translation-panel {
+            width: 100%;
+            max-width: 640px;
+            margin: auto;
+            &.label-row {
+                padding-left: 0;
+                width: 100%;
+                max-width: 640px;
+                overflow: visible;
+            }
+        }
+    }
+
+    #toggles:not(:has(#images-on:checked)) ~ .panel-container .img,
+    #toggles:not(:has(#images-on:checked))
+        ~ .panel-container
+        > div:first-of-type,
+    #toggles:not(:has(#transcription-on:checked))
+        ~ .panel-container
+        .transcription-panel,
+    #toggles:not(:has(#translation-on:checked))
+        ~ .panel-container
+        .translation-panel {
+        display: none;
     }
 
     /* both image & transcription checked */
-    #images-on:checked ~ #transcription-on:checked ~ .panel-container {
-        /* for mobile, set to full-width; content will stack in order */
-        grid-template-columns: 100%;
+    #toggles:has(#images-on:checked ~ #transcription-on:checked)
+        ~ .panel-container {
         justify-items: stretch;
         @include breakpoints.for-tablet-landscape-up {
-            grid-template-columns: 50% 50% 0px;
+            div.translation-panel > div,
+            div.transcription-panel > div,
+            div.translation-panel > span,
+            div.transcription-panel > span {
+                max-width: none;
+                margin: 0;
+            }
         }
 
         // transcription panel spacing
         div.transcription-panel {
             width: 100%;
             max-width: none;
-            @include breakpoints.for-tablet-landscape-up {
-                padding-left: 5%;
-
-                &.label-row {
-                    padding-left: 6px; /* adjust padding to match toggle */
-                }
-            }
         }
     }
 
     /* both image & translation checked */
-    #images-on:checked ~ #translation-on:checked ~ .panel-container {
-        /* for mobile, set to full-width; content will stack in order */
-        grid-template-columns: 100%;
+    #toggles:has(#images-on:checked ~ #translation-on:checked)
+        ~ .panel-container {
         justify-items: stretch;
         @include breakpoints.for-tablet-landscape-up {
-            grid-template-columns: 50% 0px 50%;
+            div.translation-panel > div,
+            div.transcription-panel > div,
+            div.translation-panel > span,
+            div.transcription-panel > span {
+                max-width: none;
+                margin: 0;
+            }
         }
 
         // translation panel spacing
         div.translation-panel {
             width: 100%;
             max-width: none;
-            @include breakpoints.for-tablet-landscape-up {
-                padding-left: calc(87px + 6px);
-
-                &.label-row {
-                    padding-left: 6px; /* adjust padding to match toggle */
-                }
-                &:not(.label-row) {
-                    margin-right: $toggle-default-width;
-                }
-            }
         }
     }
 
     /* common styles between the above two */
-    #images-on:checked ~ #transcription-on:checked ~ .panel-container,
-    #images-on:checked ~ #translation-on:checked ~ .panel-container {
+    #toggles:has(#images-on:checked ~ #transcription-on:checked)
+        ~ .panel-container,
+    #toggles:has(#images-on:checked ~ #translation-on:checked)
+        ~ .panel-container {
         // image panel spacing
         div.img {
             margin: 0 auto;
@@ -503,7 +559,7 @@ $toggle-default-neg: -82px; /* only applies on tablet up */
                 justify-content: center;
             }
             @include breakpoints.for-tablet-landscape-up {
-                margin: 30px 0 0;
+                margin: 0;
                 &[open] summary {
                     justify-content: flex-start;
                 }
@@ -513,18 +569,30 @@ $toggle-default-neg: -82px; /* only applies on tablet up */
         button.enlarge-button {
             display: none;
         }
+        @include breakpoints.for-tablet-landscape-up {
+            background-color: transparent;
+            & > div.transcription-panel,
+            & > div.translation-panel {
+                max-width: none;
+            }
+        }
     }
 
     /* both transcription & translation checked */
-    #transcription-on:checked ~ #translation-on:checked ~ .panel-container {
+    #toggles:has(#transcription-on:checked ~ #translation-on:checked)
+        ~ .panel-container {
         /* for mobile, set to full-width; content will stack in order */
-        grid-template-columns: 100%;
         justify-items: stretch;
         @include breakpoints.for-tablet-landscape-up {
-            grid-template-columns: 0px 1fr 1fr;
-            padding-right: 0;
             div.translation-panel.label-row {
                 margin: auto;
+            }
+            div.translation-panel > div,
+            div.transcription-panel > div,
+            div.translation-panel > span,
+            div.transcription-panel > span {
+                max-width: none;
+                margin: 0;
             }
             // adjust line heights to align transcription with translation when both visible
             // give li a standard line height (using largest among transcription/translation styles)
@@ -561,26 +629,122 @@ $toggle-default-neg: -82px; /* only applies on tablet up */
                 min-height: calc(6 * 34 / 22 * 1.375rem);
                 max-height: calc(6 * 34 / 22 * 1.375rem);
             }
-            h2 + span.current-transcription,
-            h2 + span.current-translation {
+            span.current-transcription,
+            span.current-translation {
                 // citation, height of two lines (line height = 1.5, font size = 1.125rem)
                 min-height: calc(2 * 1.5 * 1.125rem);
+            }
+            background-color: transparent;
+            & > div.transcription-panel,
+            & > div.translation-panel {
+                max-width: none;
+            }
+        }
+    }
+
+    /* all three image, transcription & translation checked */
+    #toggles:has(#images-on:checked
+            ~ #transcription-on:checked
+            ~ #translation-on:checked)
+        ~ .panel-container {
+        @include breakpoints.for-tablet-landscape-up {
+            padding: 0;
+            gap: 0 0.5rem;
+            div.img .img-header {
+                gap: 0 0.5rem;
+                width: 100%;
+                h2 {
+                    flex: 1 1 auto;
+                }
+                input[name="zoom-slider-toggle"] + label,
+                input[name="rotation-slider-toggle"] + label {
+                    cursor: pointer;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    min-width: 42px;
+                    max-width: 42px;
+                    height: 32px;
+                    border-radius: 5px;
+                    margin-bottom: 1.2rem;
+                    color: var(--on-background);
+                    background-color: var(--background-gray);
+                    font-size: typography.$text-size-xl;
+                }
+                input[name="zoom-slider-toggle"]:checked + label,
+                input[name="rotation-slider-toggle"]:checked + label {
+                    color: var(--on-secondary);
+                    background-color: var(--secondary);
+                }
+                .zoom-control,
+                .rotation-control {
+                    display: none;
+                }
+                input[name="zoom-slider-toggle"]:checked
+                    ~ div.img-controls
+                    .zoom-control {
+                    display: flex;
+                }
+                input[name="rotation-slider-toggle"]:checked
+                    ~ div.img-controls
+                    .rotation-control {
+                    display: flex;
+                }
+                input[name="zoom-slider-toggle"]:not(:checked)
+                    ~ input[name="rotation-slider-toggle"]:not(:checked)
+                    ~ div.img-controls {
+                    display: none;
+                }
+                .edit-mode-controls {
+                    margin-bottom: 1.2rem;
+                    justify-content: flex-start;
+                }
+            }
+        }
+        @include breakpoints.for-desktop-up {
+            div.img .img-header {
+                h2 {
+                    padding-bottom: 0.5rem;
+                }
+                input[name="zoom-slider-toggle"] + label,
+                input[name="rotation-slider-toggle"] + label {
+                    display: none;
+                }
+                input[name="zoom-slider-toggle"]:not(:checked)
+                    ~ input[name="rotation-slider-toggle"]:not(:checked)
+                    ~ div.img-controls {
+                    display: flex;
+                }
+                .zoom-control {
+                    display: flex;
+                }
+                .rotation-control {
+                    display: flex;
+                }
+                .edit-mode-controls {
+                    margin-bottom: 0;
+                    justify-content: flex-end;
+                }
             }
         }
     }
 
     /* content panels should have normal height when enabled */
-    #images-on:checked ~ .panel-container .img,
-    #transcription-on:checked ~ .panel-container .transcription-panel,
-    #translation-on:checked ~ .panel-container .translation-panel {
+    #toggles:has(#images-on:checked) ~ .panel-container .img,
+    #toggles:has(#transcription-on:checked)
+        ~ .panel-container
+        .transcription-panel,
+    #toggles:has(#translation-on:checked)
+        ~ .panel-container
+        .translation-panel {
         height: 100%;
     }
 
     /* image panel styles */
     .panel-container div.img {
         text-align: left;
-        padding: 30px 0 0;
         width: 100%;
+        overflow: visible;
         * {
             max-width: none;
         }
@@ -600,55 +764,110 @@ $toggle-default-neg: -82px; /* only applies on tablet up */
             }
         }
         @include breakpoints.for-tablet-landscape-up {
-            max-width: 640px;
-            padding: 14px 0 0;
+            max-width: none;
+            padding: 0 20px;
         }
         .img-header {
             display: flex;
-            flex-flow: row wrap;
+            flex-flow: row nowrap;
             align-items: center;
             margin-bottom: 8px;
             @include breakpoints.for-tablet-landscape-up {
-                flex-flow: row;
-                margin-bottom: 12px;
+                flex-flow: row wrap;
+                margin-bottom: 0;
                 justify-content: space-between;
             }
             h2 {
-                @include typography.body-bold;
+                @include typography.meta-bold;
                 text-align: left;
                 margin: 8px;
                 display: inline-block;
-                flex: 1 0 100%;
+                flex: 1 1 auto;
                 @include breakpoints.for-tablet-landscape-up {
-                    margin: 12px 0;
-                    flex: 0 1 auto;
+                    flex: 1 0 calc(100% - 7.25rem - 0.5rem);
+                    display: flex;
+                    align-items: center;
+                    padding: 0.8rem 0;
+                    margin: 0;
+                }
+                @media (min-width: 1360px) {
+                    flex: 1 0 100%;
                 }
             }
             // collect image controls in a div
             div.img-controls {
                 display: flex;
+                max-width: 100%;
                 flex-flow: row;
                 align-items: center;
                 justify-content: flex-end;
-                flex: 1 0 auto;
+                flex: 1 1 auto;
+                gap: 1rem;
+            }
+            input[name="zoom-slider-toggle"],
+            input[name="zoom-slider-toggle"] + label,
+            input[name="rotation-slider-toggle"],
+            input[name="rotation-slider-toggle"] + label {
+                display: none;
+                & + label {
+                    display: none;
+                }
+            }
+            // editor controls
+            .edit-mode-controls {
+                display: none;
                 @include breakpoints.for-tablet-landscape-up {
-                    flex: 0 1 auto;
+                    display: flex;
+                }
+                flex-flow: row nowrap;
+                justify-content: flex-end;
+                flex: 1 1 7.25rem;
+                @media (min-width: 1360px) {
+                    margin-bottom: 1.2rem;
+                    justify-content: flex-start;
                 }
             }
             // zoom control (desktop)
-            input[type="range"][id^="zoom-slider"] {
+            .zoom-control,
+            .rotation-control {
+                flex: 1 1 auto;
+                width: calc(50% - 1rem);
+                display: none;
+                @include breakpoints.for-tablet-landscape-up {
+                    display: flex;
+                }
+                gap: 0.25rem;
+                flex-flow: row nowrap;
+                align-items: center;
+                background-color: var(--background-gray);
+                padding: 0 0.875rem;
+                height: 2rem;
+                border-radius: 5px;
+                margin-bottom: 1.2rem;
+                &::before {
+                    font-family: "Phosphor" !important;
+                    font-size: 1.25rem;
+                    margin-right: 0.5rem;
+                }
+            }
+            .zoom-control::before {
+                content: "\f20a"; // phosphor magnifying glass icon
+            }
+            .rotation-control::before {
+                content: "\f045"; // phosphor arrows clockwise icon
+            }
+            input[type="range"] {
                 display: none;
                 @include breakpoints.for-tablet-landscape-up {
                     display: block;
                 }
+                flex: 1 1 auto;
                 -webkit-appearance: none;
                 appearance: none;
-                background: colors.$gray;
+                background: var(--zoom-control-bg);
                 height: 4px;
                 border-radius: 4px;
                 cursor: pointer;
-                width: 180px;
-                flex: 0 1 175px;
 
                 // range slider control circle/"thumb"
                 // sadly, these are still vendor-prefixed and can't be combined to reduce redunancy :(
@@ -658,17 +877,16 @@ $toggle-default-neg: -82px; /* only applies on tablet up */
                     background-color: var(--filter-active);
                     transition: background-color 300ms ease;
                     border-radius: 20px;
-                    height: 40px;
-                    width: 40px;
-                    border: 4px solid var(--on-background-light-alt);
+                    height: 12px;
+                    width: 12px;
                 }
                 &::-moz-range-thumb {
                     background-color: var(--filter-active);
                     transition: background-color 300ms ease;
                     border-radius: 20px;
-                    height: 32px;
-                    width: 32px;
-                    border: 4px solid var(--on-background-light-alt);
+                    height: 12px;
+                    width: 12px;
+                    border: none;
                 }
                 &.active-thumb {
                     &::-webkit-slider-thumb {
@@ -679,13 +897,19 @@ $toggle-default-neg: -82px; /* only applies on tablet up */
                     }
                 }
             }
-            label[for^="zoom-slider"] {
-                min-width: 60px;
-                max-width: 60px;
+            .zoom-control input[type="range"] {
+                max-width: calc(100% - 1rem - 60px);
             }
-            label[for^="rotation"] {
+            .rotation-control input[type="range"] {
+                max-width: calc(100% - 1rem - 50px);
+            }
+            label[for^="zoom-slider"] {
                 min-width: 40px;
                 max-width: 40px;
+            }
+            label[for^="rotation"] {
+                min-width: 30px;
+                max-width: 30px;
             }
             label[for^="zoom-slider"],
             label[for^="rotation"] {
@@ -694,50 +918,13 @@ $toggle-default-neg: -82px; /* only applies on tablet up */
                     display: block;
                 }
                 text-align: right;
-                flex: 0 1 60px;
+                flex: 0 1 40px;
                 color: var(--on-background);
-                @include typography.body-bold;
-            }
-            // desktop rotation controls
-            div.rotation {
-                display: none;
-                @include breakpoints.for-tablet-landscape-up {
-                    display: block;
-                }
-                margin: 0 0 0 spacing.$spacing-md;
-                position: relative;
-                border-radius: 50%;
-                height: 40px;
-                width: 40px;
-                min-width: 40px;
-                background-color: var(--background-gray);
-                border: 4px solid var(--on-background-light-alt);
-                cursor: pointer;
-                span.angle-input-pivot {
-                    position: absolute;
-                    left: 0;
-                    right: 0;
-                    top: 50%;
-                    margin-top: -1px;
-                    height: 2px;
-                    &::before {
-                        content: "";
-                        position: absolute;
-                        right: 0;
-                        top: 50%;
-                        margin-top: -8px;
-                        background-color: var(--filter-active);
-                        width: 16px;
-                        height: 16px;
-                        border-radius: 50%;
-                    }
-                }
-                &.active span.angle-input-pivot::before {
-                    background-color: var(--link-primary);
-                }
+                font-family: fonts.$primary;
+                font-size: typography.$text-size-sm;
             }
             label[for^="rotation"] {
-                flex: 0 1 45px;
+                flex: 0 1 30px;
             }
             // zoom control (mobile)
             input[type="checkbox"][id^="zoom-toggle"] {
@@ -876,7 +1063,7 @@ $toggle-default-neg: -82px; /* only applies on tablet up */
                 @include typography.body;
                 // span inside span = related document title
                 & > span {
-                    @include typography.body-bold;
+                    @include typography.meta-bold;
                     color: var(--link-primary);
                     border-bottom: none;
                     /* space between text and document label */
@@ -918,6 +1105,19 @@ $toggle-default-neg: -82px; /* only applies on tablet up */
             }
         }
     }
+    #toggles:has(#transcription-on:checked)
+        ~ .panel-container
+        div.img
+        .deep-zoom-container
+        img,
+    #toggles:has(#translation-on:checked)
+        ~ .panel-container
+        div.img
+        .deep-zoom-container
+        img {
+        width: 100%;
+        transition: none;
+    }
     // transcription/translation panel styles
     .panel-container div.transcription-panel,
     .panel-container div.translation-panel {
@@ -926,27 +1126,22 @@ $toggle-default-neg: -82px; /* only applies on tablet up */
             max-width: none;
         }
         padding: 20px 10px 0;
-        // label / switcher
-        &.label-row {
-            padding-right: 0;
-            padding-top: 0;
-            @include breakpoints.for-tablet-landscape-up {
-                padding-top: 0.1px; /* show panel background slightly as a top border */
-            }
-        }
         // "Transcription"/"Translation" header
         & > h2 {
             margin: 30px 0 12px;
         }
         // edition indicator/switcher
         &.label-row {
+            padding-right: 0;
+            padding-top: 0;
             margin-top: 1px; /* show a line between space and dropdown */
             max-width: none;
-            @include breakpoints.for-tablet-landscape-up {
-                padding-left: 6px; /* adjust padding to match toggle */
-            }
-            & span {
+            span {
                 width: 100%;
+                margin: 0.5rem;
+                @include breakpoints.for-tablet-landscape-up {
+                    margin: 0;
+                }
             }
         }
 
@@ -965,8 +1160,8 @@ $toggle-default-neg: -82px; /* only applies on tablet up */
         }
 
         // citation
-        h2 + span.current-transcription,
-        h2 + span.current-translation {
+        span.current-transcription,
+        span.current-translation {
             display: block;
             @include typography.meta;
             color: var(--extra-metadata-text);
@@ -976,19 +1171,14 @@ $toggle-default-neg: -82px; /* only applies on tablet up */
         }
 
         @include breakpoints.for-tablet-landscape-up {
-            h2 + span.current-transcription.multiple,
-            h2 + span.current-translation.multiple {
+            span.current-transcription.multiple,
+            span.current-translation.multiple {
                 min-height: calc(1.125rem * 1.5 * 2);
             }
         }
 
         @include breakpoints.for-tablet-landscape-up {
-            padding: 0 0 0;
-            // "Transcription"/"Translation" header
-            & > h2 {
-                @include typography.body-bold;
-                margin: 27px 0 0;
-            }
+            padding: 0 20px;
             // Label headers within transcription/translation
             h3 {
                 margin-top: 12px;
@@ -999,7 +1189,13 @@ $toggle-default-neg: -82px; /* only applies on tablet up */
 
     // Attribution and license text
     details.permissions {
-        margin: 30px 10px 0;
+        max-width: none;
+        * {
+            max-width: none;
+        }
+        margin: 0;
+        background-color: var(--background-light);
+        padding: 20px;
         align-self: flex-start;
         flex: 1 0 100%;
         text-align: left;
@@ -1105,8 +1301,6 @@ $toggle-default-neg: -82px; /* only applies on tablet up */
         }
         // spacing tweaks for desktop
         @include breakpoints.for-tablet-landscape-up {
-            width: 640px;
-            max-width: 640px;
             summary {
                 justify-content: flex-start;
             }
@@ -1120,17 +1314,30 @@ $toggle-default-neg: -82px; /* only applies on tablet up */
                     width: 90px;
                 }
             }
+            & + div,
+            & + div + div {
+                height: 100%;
+            }
         }
     }
 }
-.editor-navigation {
+.editor-navigation,
+.editor-add {
     span {
         @include typography.link;
     }
     i {
         text-decoration: none;
     }
+}
+.editor-navigation {
     margin: -1rem 0 2rem;
+}
+.editor-add {
+    margin: 0 0 1rem;
+}
+.editor-add + #itt-panel {
+    margin-top: 2rem;
 }
 
 // general transcription/translation styles
@@ -1326,9 +1533,6 @@ html[dir="rtl"] #itt-panel {
         label {
             text-align: left;
         }
-        div.rotation {
-            margin: 0 1rem 0 0;
-        }
         input[type="checkbox"][id^="zoom-toggle"] + label[for^="zoom-toggle"] {
             padding-right: 0;
             padding-left: 8px;
@@ -1336,22 +1540,6 @@ html[dir="rtl"] #itt-panel {
                 margin-right: 8px;
                 margin-left: 0;
             }
-        }
-    }
-    #images-on:checked
-        ~ #translation-on:checked
-        ~ .panel-container
-        div.translation-panel.label-row,
-    #transcription-on:checked
-        ~ #translation-on:checked
-        ~ .panel-container
-        div.transcription-panel.label-row,
-    #transcription-on:checked
-        ~ #translation-on:checked
-        ~ .panel-container
-        div.translation-panel.label-row {
-        @include breakpoints.for-tablet-landscape-up {
-            margin-left: $toggle-default-neg;
         }
     }
 }

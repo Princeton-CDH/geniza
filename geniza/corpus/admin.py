@@ -1,4 +1,5 @@
 from adminsortable2.admin import SortableAdminBase, SortableInlineAdminMixin
+from dal import autocomplete
 from django import forms
 from django.contrib import admin, messages
 from django.contrib.admin.models import LogEntry
@@ -19,7 +20,11 @@ from modeltranslation.admin import TabbedTranslationAdmin
 from geniza.annotations.models import Annotation
 from geniza.common.admin import custom_empty_field_list_filter
 from geniza.corpus.dates import DocumentDateMixin, standard_date_display
-from geniza.corpus.forms import DocumentPersonForm, DocumentPlaceForm
+from geniza.corpus.forms import (
+    DocumentEventWidgetWrapper,
+    DocumentPersonForm,
+    DocumentPlaceForm,
+)
 from geniza.corpus.metadata_export import AdminDocumentExporter, AdminFragmentExporter
 from geniza.corpus.models import (
     Collection,
@@ -391,6 +396,21 @@ class DocumentEventInline(admin.TabularInline):
         TextField: {"widget": Textarea(attrs={"rows": "4"})},
     }
 
+    def get_formset(self, request, obj=None, **kwargs):
+        """Override the Event related field widget, so that the new Event form can be saved
+        without attaching a document in the popup."""
+        formset = super().get_formset(request, obj, **kwargs)
+        event_field = formset.form.base_fields["event"]
+        # these args/kwargs are usually populated automatically by django's related model field
+        # processing, but since we are overriding the wrapper we have to manually populate them
+        event_field.widget = DocumentEventWidgetWrapper(
+            autocomplete.ModelSelect2(),
+            rel=DocumentEventRelation._meta.get_field("event").remote_field,
+            admin_site=admin.site,
+        )
+        event_field.widget.can_change_related = True
+        return formset
+
 
 @admin.register(Document)
 class DocumentAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin):
@@ -641,8 +661,8 @@ class DocumentAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin)
             extra_ctx.update(
                 {
                     "images": images,
-                    # show first two panels by default
-                    "default_shown": available_panels[:2],
+                    # show all available panels by default
+                    "default_shown": available_panels,
                     # disable any unavailable panels
                     "disabled": [
                         panel

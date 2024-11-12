@@ -1,22 +1,20 @@
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
 import pytest
 from django.contrib import admin
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, StreamingHttpResponse
 from django.test import RequestFactory
 from django.urls import reverse
 from pytest_django.asserts import assertContains, assertNotContains
 
-from geniza.corpus.models import Document, LanguageScript
+from geniza.corpus.models import Dating, Document, LanguageScript
 from geniza.entities.admin import (
-    EventDocumentInline,
     NameInlineFormSet,
     PersonAdmin,
     PersonDocumentInline,
     PersonPersonInline,
     PersonPersonRelationTypeChoiceField,
     PersonPersonReverseInline,
-    PersonPlaceInline,
     PlaceAdmin,
 )
 from geniza.entities.models import (
@@ -26,6 +24,7 @@ from geniza.entities.models import (
     PersonPersonRelation,
     PersonPersonRelationType,
     PersonPlaceRelation,
+    PersonPlaceRelationType,
     Place,
 )
 
@@ -40,6 +39,16 @@ class TestPersonDocumentInline:
         inline = PersonDocumentInline(goitein, admin_site=admin.site)
 
         assert test_description == inline.document_description(relation)
+
+    def test_dating_range(self):
+        goitein = Person.objects.create()
+        doc = Document.objects.create()
+        relation = PersonDocumentRelation.objects.create(person=goitein, document=doc)
+        inline = PersonDocumentInline(goitein, admin_site=admin.site)
+        assert inline.dating_range(relation) == "-"
+
+        Dating.objects.create(standard_date="1000/1010", document=doc)
+        assert inline.dating_range(relation) == "1000 – 1010 CE"
 
 
 @pytest.mark.django_db
@@ -160,6 +169,62 @@ class TestPersonAdmin:
         assert resp.status_code == 302
         assert resp["location"] == reverse("admin:entities_person_changelist")
 
+    def test_save_related(self):
+        # if a person does not have a slug, the form should generate one after related_save
+        # (i.e. the Name association has been saved)
+        person = Person.objects.create()
+        Name.objects.create(name="Goitein", content_object=person)
+        assert not person.slug
+        # mock all arguments to admin method; form.instance should be our person
+        mockform = Mock()
+        mockform.instance = person
+        with patch.object(admin.ModelAdmin, "save_related"):
+            PersonAdmin(Person, Mock()).save_related(Mock(), mockform, Mock(), Mock())
+        assert person.slug
+
+    @pytest.mark.django_db
+    def test_export_to_csv(self, person, person_multiname):
+        # adapted from document csv export tests
+        person_multiname.description = "Test description"
+        person_multiname.save()
+        person_admin = PersonAdmin(model=Person, admin_site=admin.site)
+        response = person_admin.export_to_csv(Mock())
+        assert isinstance(response, StreamingHttpResponse)
+        # consume the binary streaming content and decode to inspect as str
+        content = b"".join([val for val in response.streaming_content]).decode()
+
+        # spot-check that we get expected data
+        # - header row
+        assert "name,name_variants," in content
+        # - some content
+        assert str(person) in content
+        assert person.description in content
+        assert str(person_multiname) in content
+        assert person_multiname.description in content
+
+    @pytest.mark.django_db
+    def test_export_relations_to_csv(self, person, person_multiname):
+        (partner, _) = PersonPersonRelationType.objects.get_or_create(
+            name_en="Partner", category=PersonPersonRelationType.BUSINESS
+        )
+        PersonPersonRelation.objects.create(
+            from_person=person, to_person=person_multiname, type=partner
+        )
+        # adapted from document csv export tests
+        person_admin = PersonAdmin(model=Person, admin_site=admin.site)
+        response = person_admin.export_relations_to_csv(Mock(), pk=person.pk)
+        assert isinstance(response, StreamingHttpResponse)
+        # consume the binary streaming content and decode to inspect as str
+        content = b"".join([val for val in response.streaming_content]).decode()
+
+        # spot-check that we get expected data
+        # - header row
+        assert "related_object_type,related_object_id," in content
+        # - some content
+        assert str(person) in content
+        assert str(person_multiname) in content
+        assert "Partner" in content
+
 
 @pytest.mark.django_db
 class TestNameInlineFormSet:
@@ -257,16 +322,6 @@ class TestPersonPersonRelationTypeChoiceIterator:
         assert (type_a.pk, type_a.name) not in choices[extended_family]
 
 
-class TestPersonEventInline:
-    def test_get_formset(self, admin_client):
-        # there should be no link to a popup to add an event from the Person admin
-        url = reverse("admin:entities_person_add")
-        response = admin_client.get(url)
-        content = str(response.content)
-        # NOTE: confirmed the following assertion fails when get_formset not overridden
-        assert "Add another event" not in content
-
-
 class TestPlaceEventInline:
     def test_get_formset(self, admin_client):
         # there should be no link to a popup to add an event from the Person admin
@@ -287,7 +342,7 @@ class TestEventDocumentInline:
         # however, when accessed via popup from the Document admin, this requirement
         # should be removed
         response = admin_client.get(
-            reverse("admin:entities_event_add"), {"_popup": "1"}
+            reverse("admin:entities_event_add"), {"from_document": "true"}
         )
         content = str(response.content)
         assert 'name="documenteventrelation_set-MIN_NUM_FORMS" value="0"' in content
@@ -304,3 +359,46 @@ class TestPlaceAdmin:
         # queryset should include name_unaccented field without diacritics
         qs = place_admin.get_queryset(Mock())
         assert qs.filter(name_unaccented__icontains="fustat").exists()
+
+    @pytest.mark.django_db
+    def test_export_to_csv(self):
+        # adapted from document csv export tests
+        mosul = Place.objects.create(slug="mosul", notes="A city in Iraq")
+        Name.objects.create(content_object=mosul, name="Mosul", primary=True)
+        fustat = Place.objects.create(slug="fustat")
+        Name.objects.create(content_object=fustat, name="Fusṭāṭ", primary=True)
+
+        place_admin = PlaceAdmin(model=Place, admin_site=admin.site)
+        response = place_admin.export_to_csv(Mock())
+        assert isinstance(response, StreamingHttpResponse)
+        # consume the binary streaming content and decode to inspect as str
+        content = b"".join([val for val in response.streaming_content]).decode()
+
+        # spot-check that we get expected data
+        # - header row
+        assert "name,name_variants," in content
+        # - some content
+        assert str(mosul) in content
+        assert mosul.notes in content
+        assert str(fustat) in content
+        assert fustat.permalink in content
+
+    @pytest.mark.django_db
+    def test_export_relations_to_csv(self, person):
+        fustat = Place.objects.create(slug="fustat")
+        Name.objects.create(content_object=fustat, name="Fusṭāṭ", primary=True)
+        (home_base, _) = PersonPlaceRelationType.objects.get_or_create(name="Home base")
+        PersonPlaceRelation.objects.create(person=person, place=fustat, type=home_base)
+        # adapted from document csv export tests
+        place_admin = PlaceAdmin(model=Place, admin_site=admin.site)
+        response = place_admin.export_relations_to_csv(Mock(), pk=fustat.pk)
+        assert isinstance(response, StreamingHttpResponse)
+        # consume the binary streaming content and decode to inspect as str
+        content = b"".join([val for val in response.streaming_content]).decode()
+
+        # spot-check that we get expected data
+        # - header row
+        assert "related_object_type,related_object_id," in content
+        # - some content
+        assert str(person) in content
+        assert "Home base" in content

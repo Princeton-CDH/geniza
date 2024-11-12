@@ -1,0 +1,441 @@
+// -----------------------------------------------------------------------------
+// Person detail page.
+// -----------------------------------------------------------------------------
+
+@use "../base/breakpoints";
+@use "../base/colors";
+@use "../base/container";
+@use "../base/fonts";
+@use "../base/spacing";
+@use "../base/typography";
+
+// TODO: standardize typography here once all redesigns are implemented
+
+main.person * {
+    max-width: none;
+    @include breakpoints.for-tablet-landscape-up {
+        max-width: 56rem; // = 896px
+    }
+}
+
+main.person,
+main.place {
+    // Header
+    h1 {
+        width: 100%;
+        z-index: 2;
+        font-size: typography.$text-size-3xl;
+        margin: spacing.$spacing-lg 0 spacing.$spacing-md;
+        padding-left: spacing.$spacing-md;
+        @include breakpoints.for-tablet-landscape-up {
+            width: auto;
+            margin: spacing.$spacing-lg spacing.$spacing-md spacing.$spacing-lg;
+            font-size: typography.$text-size-3xl;
+            padding: 0;
+        }
+    }
+    // back to browse link
+    div.breadcrumbs-link-container {
+        width: 100%;
+        z-index: 2;
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+        font-size: typography.$text-size-lg;
+        a {
+            margin-left: spacing.$spacing-md;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+            color: var(--link-primary);
+            &::before {
+                font-family: "Phosphor" !important;
+                content: "\f03b"; // phosphor arrow-left icon
+                font-size: typography.$text-size-2xl;
+            }
+            &:hover {
+                color: var(--link-secondary);
+            }
+        }
+    }
+    // Primary container
+    .container {
+        max-width: 100vw;
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+        padding: 0 spacing.$spacing-md spacing.$spacing-md;
+        margin-bottom: spacing.$spacing-md;
+        @include breakpoints.for-tablet-landscape-up {
+            max-width: 56rem;
+            box-sizing: content-box;
+            margin-bottom: 0;
+        }
+        section.metadata {
+            max-width: 100%;
+            display: flex;
+            flex-direction: column;
+            @include breakpoints.for-tablet-landscape-up {
+                margin-top: spacing.$spacing-xl;
+                flex-direction: row;
+                justify-content: flex-start;
+            }
+        }
+        // Person metadata
+        dl.metadata-list {
+            max-width: 100%;
+            display: flex;
+            flex-direction: column;
+            margin: spacing.$spacing-lg 0 0;
+            font-size: typography.$text-size-md;
+            @include breakpoints.for-tablet-landscape-up {
+                margin: spacing.$spacing-2xl spacing.$spacing-md 0;
+                font-size: typography.$text-size-xl;
+                flex: 1 1 50%;
+                padding-right: 0;
+                margin: 0 0 0;
+            }
+            dd {
+                margin-left: 20px;
+            }
+            dd + dt {
+                margin-top: spacing.$spacing-md;
+                @include breakpoints.for-tablet-landscape-up {
+                    margin-top: spacing.$spacing-lg;
+                }
+            }
+            dd + dd {
+                margin-top: spacing.$spacing-xs;
+            }
+        }
+        dl.metadata-list.primary + dl.metadata-list.secondary {
+            margin-top: 0;
+            @include breakpoints.for-tablet-landscape-up {
+                margin-left: 1rem;
+            }
+            :first-child {
+                margin-top: spacing.$spacing-md;
+                @include breakpoints.for-tablet-landscape-up {
+                    margin-top: 0px;
+                }
+            }
+        }
+        // "Description" header and content
+        section.description,
+        section.notes {
+            max-width: 100%;
+            margin: spacing.$spacing-md 0 spacing.$spacing-md;
+            font-size: typography.$text-size-md;
+            @include breakpoints.for-tablet-landscape-up {
+                margin-top: spacing.$spacing-lg;
+                font-size: typography.$text-size-xl;
+            }
+            p {
+                max-width: 100%;
+                white-space: pre-line;
+                padding-left: 20px;
+            }
+        }
+
+        section.events {
+            border-top: 1px solid var(--disabled);
+            padding-top: 2rem;
+            margin-top: spacing.$spacing-md;
+            @include breakpoints.for-tablet-landscape-up {
+                padding-top: 3rem;
+                margin-top: spacing.$spacing-lg;
+            }
+            ol {
+                margin-top: 0.75rem;
+                li {
+                    position: relative;
+                    list-style-type: none;
+                    margin-left: 2.875rem;
+                    h3 {
+                        @include typography.headline-error;
+                        &::before {
+                            content: "\2022";
+                            color: var(--secondary);
+                            font-size: 1.85rem;
+                            position: absolute;
+                            left: -28px;
+                            top: -8px;
+                        }
+                    }
+                    p {
+                        min-height: 1.25rem;
+                        padding: 0 0 0 1.5rem;
+                        margin: 0.5rem 0 0.5rem -1.5rem;
+                        border-left: 2px solid var(--tertiary);
+                        @include breakpoints.for-tablet-landscape-up {
+                            margin-top: 0;
+                            font-size: typography.$text-size-xl;
+                        }
+                        &:has(+ p),
+                        & + p {
+                            margin: 0 0 0 -1.5rem;
+                        }
+                        + p:last-of-type {
+                            margin-bottom: 0.5rem;
+                        }
+                    }
+                }
+            }
+        }
+
+        section.metadata dt,
+        section.description h2,
+        section.events h2,
+        section.notes h2 {
+            margin-bottom: spacing.$spacing-xs;
+            @include typography.meta-bold;
+            font-size: typography.$text-size-lg;
+            @include breakpoints.for-tablet-landscape-up {
+                font-size: typography.$text-size-xl;
+            }
+            display: flex;
+            align-items: center;
+            &::before {
+                content: " ";
+                display: inline-block;
+                width: 8px;
+                height: 18px;
+                background-color: var(--secondary);
+                margin-right: 12px;
+            }
+        }
+        // bibliography
+        section.bibliography {
+            margin: 2rem 0 0;
+            padding-top: 3rem;
+            border-top: 1px solid colors.$gray;
+            ol {
+                counter-reset: item;
+                list-style-type: none;
+                padding-left: 1.25rem;
+            }
+            li {
+                display: flex;
+                gap: 1.125rem;
+                padding-bottom: 1rem;
+                border-bottom: 1px solid colors.$gray;
+            }
+            li:before {
+                content: counter(item) "  ";
+                counter-increment: item;
+                @include typography.body-bold;
+            }
+        }
+    }
+}
+main.person,
+main.place,
+main.document {
+    dl.metadata-list {
+        // Lighter color metadata; secondary class on dl or dd/dt
+        &.tertiary,
+        &.tertiary dd,
+        &.tertiary dt {
+            color: var(--on-background-alt);
+        }
+        &.tertiary {
+            margin-top: 2rem;
+            width: 100%;
+            @include breakpoints.for-tablet-landscape-up {
+                margin-top: 3rem;
+            }
+            // hanging phosphor icons before citation and permalink
+            dt#citation,
+            dt#permalink {
+                display: flex;
+                align-items: flex-start;
+                @include typography.meta-bold;
+                line-height: 1;
+                i {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    color: var(--on-secondary);
+                    background-color: var(--secondary);
+                    border-radius: 50%;
+                    width: 2.25rem;
+                    height: 2.25rem;
+                    margin-right: 0.75rem;
+                }
+                & + dd {
+                    @include typography.meta;
+                    margin-left: 3rem;
+                    margin-top: -1rem;
+                    a {
+                        text-decoration: none;
+                    }
+                }
+            }
+        }
+    }
+}
+main.person {
+    // person tabs styling: 4 tabs!
+    .tabs {
+        @include breakpoints.for-tablet-landscape-up {
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+            a,
+            span {
+                padding-left: spacing.$spacing-2xl;
+                padding-right: spacing.$spacing-2xl;
+            }
+            a[aria-current="page"] {
+                padding-left: spacing.$spacing-3xl;
+                padding-right: spacing.$spacing-3xl;
+            }
+            // special styling for tabs to match typography designs
+            li:first-child a:not([aria-current="page"]) {
+                padding-left: 4rem;
+                padding-right: 4rem;
+            }
+            li:nth-child(2) a,
+            span:nth-child(2) {
+                padding-left: 3rem;
+                padding-right: 3rem;
+            }
+            li:nth-child(3) a,
+            span:nth-child(3),
+            li:nth-child(4) a,
+            span:nth-child(4) {
+                padding-left: 4rem;
+                padding-right: 4rem;
+            }
+        }
+    }
+    // person related places
+    section.map {
+        width: 100%;
+        margin-top: 2rem;
+        padding: 0 1rem;
+        @include breakpoints.for-tablet-landscape-up {
+            margin-top: (2.25rem + spacing.$spacing-xs);
+            padding: 0;
+        }
+        #map {
+            width: 100%;
+            height: 24.125rem;
+        }
+        svg#marker {
+            color: var(--primary);
+            fill: var(--tertiary);
+            width: 33px;
+            height: 42px;
+            @include breakpoints.for-tablet-landscape-up {
+                width: 42px;
+                height: 48px;
+            }
+        }
+    }
+    // person related people
+    .network-graph {
+        width: 100%;
+        height: 24.125rem;
+        margin-top: (2.25rem + spacing.$spacing-xs);
+        background-color: var(--network-graph-bg);
+        cursor: grab;
+        [class^="node"] {
+            box-sizing: border-box;
+            width: 11.25rem;
+            min-height: 3.375rem;
+            border-radius: 4px;
+            color: var(--on-background);
+            background-color: var(--network-secondary-node);
+            display: flex;
+            align-items: center;
+            font-size: typography.$text-size-md;
+            gap: 0.75rem;
+            padding: 0.5rem 0.75rem;
+            border: 1px solid var(--network-border);
+        }
+        .gender {
+            box-sizing: content-box;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 1.5rem;
+            min-height: 1.5rem;
+            border: 1px solid var(--on-background);
+            border-radius: 0.75rem;
+        }
+        .node-primary {
+            color: var(--on-secondary);
+            background-color: var(--secondary);
+            .name {
+                font-family: fonts.$primary-bold;
+                font-weight: 700;
+            }
+            .gender {
+                border-color: var(--on-secondary);
+            }
+        }
+        .node-tertiary {
+            background-color: var(--network-tertiary-node);
+        }
+        .meta {
+            display: flex;
+            flex-flow: column;
+            line-height: 19.2px;
+            gap: 0.25rem;
+            .reltype {
+                font-family: fonts.$primary-italic;
+                font-style: italic;
+                font-size: typography.$text-size-sm;
+                line-height: 16.8px;
+            }
+            .name a {
+                font-family: fonts.$primary-bold;
+                font-weight: 700;
+                text-decoration: underline;
+                text-underline-offset: auto;
+                text-decoration-color: var(--on-background);
+            }
+        }
+    }
+}
+
+// RTL overrides
+html[dir="rtl"] main.person,
+html[dir="rtl"] main.place,
+html[dir="rtl"] main.document {
+    .container dl.metadata-list dt::before,
+    .container section > h2::before {
+        margin-right: 0;
+        margin-left: 12px;
+    }
+    dl.metadata-list.tertiary dt#citation,
+    dl.metadata-list.tertiary dt#permalink {
+        i {
+            margin-right: 0;
+            margin-left: 0.75rem;
+        }
+        & + dd {
+            margin-left: 0;
+            margin-right: 3rem;
+        }
+    }
+
+    section.events ol li {
+        margin-left: 0;
+        margin-right: 2.875rem;
+        h3::before {
+            left: auto;
+            right: -28px;
+        }
+        p {
+            padding: 0 1.5rem 0 0;
+            margin: 0.5rem -1.5rem 0.5rem 0;
+            border-left: none;
+            border-right: 2px solid var(--tertiary);
+            &:has(+ p),
+            & + p {
+                margin: 0 -1.5rem 0 0;
+            }
+        }
+    }
+}

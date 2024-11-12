@@ -1,6 +1,53 @@
 Change Log
 ==========
 
+4.18
+----
+
+- public site
+    - As a public site user, I want a page to view details about an individual person, so that I can learn more about their life and presence in documents.
+    - As a public site user, I want to be able to filter people in the browse page by gender, social role, and relation to documents, so that I can narrow down my browse results.
+    - As a public site user, I want a page to view details about an individual place, so that I can learn more about it and its presence in geniza documents.
+    - As a public site user, I want a way to browse all the people in the database, so that I can find a specific person I am looking for, or get an overview of all people.
+    - As a public user, I want to see a properly-formatted citation at the bottom of each individual person page, so that I can be sure I am citing my sources (and the PGP) correctly.
+    - As a public site user, I want to be able to sort people in the browse page by date, name, and other criteria so that I can quickly find the most relevant result.
+    - As a public site user, I want a tab where I can list and sort documents related to a person or place, so I can see where they actually appear in the PGP.
+    - As a public site user, I want the image/transcription/translation viewer on the document detail page to use buttons instead of headers to open and close sections, so that it is less confusing how to interact with them.
+    - As a public site user, I want the image/transcription/translation viewer on the document detail page to have a 3-up display, and default to this display when possible, so that I can see image, transcription, AND translation together.
+    - As a public site user, I want to be able to sort and filter people in the browse page by dates active in geniza documents, so that I can narrow down my browse results.
+    - As a public site user, I want a tab where I can list and sort places related to a person, so I can understand their geographical movement throughout the PGP.
+    - As a public site user, I want a tab where I can list and sort people related to a place, so I can understand geographical groupings of people in the PGP.
+    - As a public site user, I want to be able to see a bibliography of formatted citations for a person, so I can find out where the information came from and learn more about them offsite.
+    - As a public site user, I want lists of related people and places, by category of relation, with links, on the document detail page, so that I can get an overview of all relations.
+    - As a public site user, I want the document detail page to match the designs of the Person and Place detail pages, so I am not confused by the inconsistency.
+    - As a public site user, I want to see a section on the document detail page telling me "what's in the PGP", so that at a glance I can tell whether there is a transcription or translation without scrolling down.
+    - As a public site user, I want the documents search page to match the designs of the People and Places browse pages, so that I am not confused by inconsistency.
+    - As a public site user, I want to be able to filter/sort documents by inferred dates, so that I can locate documents by those dates in addition to explicit ones.
+    - As a public site user, I want to see the translation/transcription editor on the "select bibliography" tab of the doc detail page so that I can clearly see which scholarship records have been digitized on PGP.
+    - As a public site user, I want a way to browse all the places in the database, so that I can find a specific place I am looking for, or get an overview of all places.
+    - As a public site user, I want applied filters to appear above the browse results at all time, without having the filters menu open, so that I can quickly tell which filters are applied and remove them one by one.
+    - As a front end user, I want old shelfmarks to show up in search results and on the individual document pages (alongside the new shelfmark names) 
+    - As a public site user, I want a grid view for the people browse page, so that I can visualize the information differently.
+    - As a public site user, I want content pages to match the style of the rest of the website, so that I am not confused by the inconsistency.
+    - As a public site user, I want to see a list of events related to a person, so I can get an overview of events in their life.
+    - As a public site user, I want to be able to filter on language of translation, so that I can find all translations in my preferred language.
+    - As a public site user, I want a tab where I can list and sort other people related to a person, so I can understand their interpersonal relationships throughout the PGP.
+    - As a public site user, I want a search that strictly matches character sequences in transcriptions, and allows the use of regular expressions, so that I can get results like PGPv3 and make more flexible searches.
+    - As a public user, I want to see which PGPIDs are tied to events on people's events timelines so that I can see the origin of the information.
+    - As a public user, I want a fragment's collection name and holding institution name written out on the doc detail page (with links to the holding instiution library) so that it's clear to me what all the shelfmark abbreviations stand for and where to look for this information.
+    - As a public site user, I want an interactive network graph of related people, so that I can visually comprehend a person's interpersonal relationships.
+    - bugfix: Description snippets in search results appear inaccurately continuous when joined
+    - bugfix: Downloading csv of all Documents causes out of memory error, empty file
+
+- admin
+    - As a content admin, I want a separate date range field for each person page that autopopulates from the related documents linked with said person so that I can see date ranges at a glance and the field is always updated.
+    - As a content admin, I want manual override for the auto-populated date range for each person page so that I can update the date range to more accurately reflect our state of knowledge outside the document dates.
+    - As a content admin, I want an event model that can be linked to multiple people, places, and documents, so that I can recreate a person's timeline and link related data in new ways.
+    - As a content admin, I want to see document dates and inferred dates displayed for people pages in admin so that I can see at a glance a person's active dates and where that information comes from.
+    - As a content admin, I want a person with 10+ associated documents to automatically generate a front-end People Page, so that content editors do not have to manually make significant people pages live.
+    - As a content editor, I want to downloand csvs of people and places so that I can filter them offline/mass upload them into other databases.
+    - bugfix: When actively editing a translation, you cannot choose between transcription options to display (if there is more than one transcription)
+
 4.17.3
 ------
 

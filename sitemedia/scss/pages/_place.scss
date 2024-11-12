@@ -1,0 +1,79 @@
+@use "../base/breakpoints";
+@use "../base/spacing";
+
+main.place {
+    * {
+        max-width: none;
+        @include breakpoints.for-tablet-landscape-up {
+            max-width: 896px;
+        }
+    }
+    // place tabs styling: 3 tabs!
+    nav#tabs {
+        @include breakpoints.for-tablet-landscape-up {
+            min-width: 896px;
+        }
+    }
+    .tabs {
+        @include breakpoints.for-tablet-landscape-up {
+            grid-template-columns: 1fr 1fr 1fr;
+            a,
+            span {
+                padding-left: 6.5rem;
+                padding-right: 6.5rem;
+            }
+            // special styling for tabs to match typography designs
+            li:nth-child(2) a,
+            li:nth-child(2) span {
+                padding-left: 5.333rem;
+                padding-right: 5.333rem;
+            }
+        }
+    }
+    // interactive map
+    .map {
+        margin-top: 1rem;
+        @include breakpoints.for-tablet-landscape-up {
+            margin-top: 2rem;
+        }
+        #map {
+            width: 100%;
+            height: 300px;
+        }
+        a {
+            text-underline-offset: auto;
+            text-decoration-thickness: 1px;
+        }
+        svg#marker {
+            color: var(--primary);
+            fill: var(--tertiary);
+            width: 33px;
+            height: 42px;
+            @include breakpoints.for-tablet-landscape-up {
+                width: 42px;
+                height: 48px;
+            }
+        }
+    }
+}
+
+html.dark-mode main.place .map svg#marker {
+    fill: var(--primary);
+    color: var(--tertiary);
+}
+
+html[dir="rtl"] main.place section.relations table.people {
+    th {
+        text-align: right;
+    }
+    th:first-of-type,
+    td:first-of-type {
+        padding-left: 0;
+        padding-right: 1rem;
+    }
+    th:last-of-type,
+    td:last-of-type {
+        padding-right: 0;
+        padding-left: 1rem;
+    }
+}

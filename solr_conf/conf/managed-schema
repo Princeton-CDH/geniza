@@ -314,6 +314,14 @@
       </analyzer>
     </fieldType>
 
+    <!-- un-analyzed field for regex searches. TextField required due to KeywordField size limitations -->
+    <fieldType name="text_regex" class="solr.TextField">
+      <analyzer>
+        <tokenizer class="solr.KeywordTokenizerFactory"/>
+        <filter class="solr.LowerCaseFilterFactory" />
+      </analyzer>
+    </fieldType>
+
   <fieldType name="tfloat" class="solr.TrieFloatField" positionIncrementGap="0" docValues="true" precisionStep="8"/>
   <fieldType name="tfloats" class="solr.TrieFloatField" positionIncrementGap="0" docValues="true" multiValued="true" precisionStep="8"/>
   <fieldType name="tint" class="solr.TrieIntField" positionIncrementGap="0" docValues="true" precisionStep="8"/>
@@ -402,5 +410,6 @@
   <dynamicField name="*_p" type="location" indexed="true" stored="true"/>
   <dynamicField name="*_natsort" type="natural_sort" indexed="true" stored="true" sortMissingLast="true"/>
   <dynamicField name="*_nostem" type="text_nostem" indexed="true" stored="true" multiValued="true"/>
+  <dynamicField name="*_regex" type="text_regex" indexed="true" stored="true" multiValued="true"/>
 
 </schema>

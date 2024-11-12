@@ -1,3 +1,4 @@
+import itertools
 from unittest.mock import Mock, patch
 
 import pytest
@@ -11,6 +12,8 @@ from geniza.corpus.forms import (
     DocumentMergeForm,
     DocumentSearchForm,
     FacetChoiceField,
+    FacetChoiceSelectField,
+    SelectWithCount,
     SelectWithDisabled,
     TagChoiceField,
     TagMergeForm,
@@ -59,6 +62,36 @@ class TestFacetChoiceField:
         assert fcf.valid_value("foo")
 
 
+class TestFacetChoiceSelectField:
+    # similar to FacetChoiceField, but slightly different formatting and using a Select widget
+
+    def test_init(self):
+        fcf = FacetChoiceSelectField()
+        assert not fcf.empty_label
+        fcf = FacetChoiceSelectField(empty_label="Select...")
+        assert fcf.empty_label == "Select..."
+        # uses SelectWithCount
+        assert fcf.widget.__class__ == SelectWithCount
+        # not required by default
+        assert not fcf.required
+        # still can override required with a kwarg
+        fcf = FacetChoiceField(required=True)
+        assert fcf.required
+
+    def test_populate_from_facets(self):
+        fcf = FacetChoiceSelectField()
+        # should format like "label (count)"
+        fcf.populate_from_facets({"example": ("label", 1)})
+        assert fcf.choices == [
+            ("example", '<span>label</span> (<span class="count">1</span>)')
+        ]
+        # should add a choice with the empty label if provided
+        fcf = FacetChoiceSelectField(empty_label="Select...")
+        fcf.populate_from_facets({"example": ("label", 1)})
+        assert len(fcf.choices) == 2
+        assert ("", "Select...") in fcf.choices
+
+
 class TestDocumentSearchForm:
     # test adapted from ppa-django
 
@@ -67,6 +100,7 @@ class TestDocumentSearchForm:
         # has query, relevance enabled
         form = DocumentSearchForm(data)
         assert form.fields["sort"].widget.choices[0] == form.SORT_CHOICES[0]
+        assert form.fields["translation_language"].disabled == True
 
         # empty query, relevance disabled
         data["q"] = ""
@@ -83,6 +117,10 @@ class TestDocumentSearchForm:
             "relevance",
             {"label": "Relevance", "disabled": True},
         )
+
+        data = {"q": "illness", "has_translation": True}
+        form = DocumentSearchForm(data)
+        assert form.fields["translation_language"].disabled == False
 
     def test_choices_from_facets(self):
         """A facet dict should produce correct choice labels"""
@@ -162,6 +200,47 @@ class TestDocumentSearchForm:
         form.cleaned_data = {"q": "", "sort": "scholarship_desc"}
         form.clean()
         assert len(form.errors) == 0
+
+    def test_clean__regex(self):
+        """test special validation for malformed regex searches"""
+
+        form = DocumentSearchForm()
+        bad_queries = [
+            # malformed { queries
+            ["{", "{}", ".{", "{1}", "{.+}"],
+            # malformed * queries
+            ["**", "*", ".**", "*.", "*a"],
+            # malformed + queries
+            ["++", "+", ".++", "+.", "+a"],
+            # malformed <> queries
+            ["<a>", "<a", "<", ".*<", "(?<!a)b"],
+            # malformed "invalid character class" queries
+            ["\\a", "\\b", "\\B", "\\r", "\\t", "\\3"],
+        ]
+        for q in itertools.chain.from_iterable(bad_queries):
+            form.cleaned_data = {"mode": "regex", "q": q}
+            form.clean()
+            assert len(form.errors) == 1
+
+        form = DocumentSearchForm()
+        good_queries = [
+            # good { queries
+            [".{1}", "\\{", "\\{.+\\}"],
+            # good * queries
+            [".*", "a*", "\\**", "\\*."],
+            # good + queries
+            [".+", "a+", "\\++", "\\+."],
+            # good <> queries
+            ["\\<a\\>", "\\<a", "\\<", ".*\\<"],
+            # fixed "invalid character class" queries
+            ["\\\\a", "\\\\b", "\\\\B", "\\\\r", "\\\\t", "\\\\3"],
+            # other good escape sequences
+            ["\\d", "\\D", "\\s", "\\w"],
+        ]
+        for q in itertools.chain.from_iterable(good_queries):
+            form.cleaned_data = {"mode": "regex", "q": q}
+            form.clean()
+            assert len(form.errors) == 0
 
     def test_clean_q(self):
         form = DocumentSearchForm()

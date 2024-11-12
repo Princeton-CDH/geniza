@@ -1,0 +1,166 @@
+{% extends 'base.html' %}
+{% load static i18n humanize widget_tweaks %}
+
+{% block meta_title %}{{ page_title }}{% endblock meta_title %}
+{% block meta_description %}{{ page_description }}{% endblock meta_description %}
+
+{% block main %}
+    <form data-controller="search" data-turbo-frame="main" data-turbo-action="advance" data-page="person">
+        <div class="topheader-row">
+            <h1>{{ page_title }}</h1>
+            <label id="people-view-switcher" for="switcher">
+                <input id="switcher" type="checkbox" data-search-target="peopleMode" data-action="click->search#togglePeopleViewMode" />
+                {# Translators: label for people browse page list view #}
+                <span class="sr-only">{% translate "Toggle list view" %}</span>
+                <i id="grid-view" class="ph-grid-four"></i>
+                <i id="list-view" class="ph-list-dashes"></i>
+            </label>
+        </div>
+        <div id="filters-header">
+            <a href="#filters" role="button" id="filters-button" data-search-target="filtersButton" data-action="click->search#toggleFiltersOpen">
+                <svg><use xlink:href="{% static 'img/ui/all/all/search-filter-icon.svg' %}#filter-icon" /></svg>
+                <span>{% translate "Filters" %}</span>
+                {% if applied_filters %}
+                    <span class="filter-count">{{ applied_filters|length }}</span>
+                {% endif %}
+            </a>
+            {% if applied_filters %}
+                {# convenient unapply filter buttons; aria role set to presentation as functionality duplicated below #}
+                <div id="applied-filters" role="presentation">
+                    {% for filter in applied_filters %}
+                        <button
+                            data-field="{{ filter.field }}"
+                            value="{{ filter.value }}"
+                            data-action="click->search#unapplyFilter"
+                        >
+                            {{ filter.label }}
+                            <i class="ph-x"></i>
+                        </button>
+                    {% endfor %}
+                </div>
+                <button id="clear-filters" data-action="click->search#clearFilters">
+                    {# Translators: label for button to clear all applied filters #}
+                    {% translate "Clear all" %}
+                </button>
+            {% endif %}
+        </div>
+        <div class="modal-backdrop" aria-hidden="true" data-action="click->search#closeFilters"></div>
+        <fieldset id="filters" aria-expanded="false" data-search-target="filterModal">
+            <legend>{% translate "Filters" %}</legend>
+            <a href="#" role="button" id="close-filters-modal" data-action="click->search#closeFilters">
+                {# Translators: label for 'filters' close button for mobile navigation #}
+                {% translate "Close filter options" as close_button %}
+                <span class="sr-only">{{ close_button }}</span>
+            </a>
+            <div class="fieldset-left-column">
+                <label for="{{ form.gender.auto_id }}">
+                    <span class="fieldname">{{ form.gender.label }}</span>
+                    {% render_field form.gender data-action="search#update" %}
+                </label>
+                <label for="{{ form.date_range.auto_id }}" class="date-range-label">
+                    <span class="fieldname">{{ form.date_range.label }}</span>
+                    {% render_field form.date_range data-action="search#update keypress->search#preventEnterKeypress" %}
+                </label>
+            </div>
+            <label for="{{ form.social_role.auto_id }}">
+                <span class="fieldname">{{ form.social_role.label }}</span>
+                {% render_field form.social_role data-action="search#update" %}
+            </label>
+            <label for="{{ form.document_relation.auto_id }}">
+                <span class="fieldname">{{ form.document_relation.label }}</span>
+                {% render_field form.document_relation data-action="search#update" %}
+            </label>
+        </fieldset>
+        <section id="person-list" data-action="click@document->search#clickCloseDropdown">
+            <div class="header-row">
+                <h2>
+                    {# Translators: search results section header #}
+                    {% translate "Results" %}
+                </h2>
+                <span class="result-count">
+                    {# Translators: number of results #}
+                    {% blocktranslate with count_humanized=paginator.count|intcomma count counter=paginator.count trimmed %}
+                        1 result
+                    {% plural %}
+                        {{ count_humanized }} results
+                    {% endblocktranslate %}
+                </span>
+                <fieldset id="sort-field">
+                    <label for="{{ form.sort.auto_id }}">{{ form.sort.label }}</label>
+                    <details data-search-target="dropdownDetails">
+                        <summary>
+                            {{ form.get_sort_label|default:"Name" }}
+                        </summary>
+                        <div id="sort-options">
+                            {% render_field form.sort data-action="search#update" %}
+                            {% render_field form.sort_dir data-action="search#update" %}
+                        </div>
+                    </details>
+                </fieldset>
+            </div>
+            {# list view table #}
+            <table>
+                <thead>
+                    {# Translators: Person "name" column header on the browse page #}
+                    <th>{% translate "Name" %}</th>
+                    {# Translators: Person "gender" column header on the browse page #}
+                    <th>{% translate "Gender" %}</th>
+                    {# Translators: Person "dates of activity" column header on the browse page #}
+                    <th class="dates">{% translate "Dates" %}</th>
+                    {# Translators: Person "social role" column header on the browse page #}
+                    <th>{% translate "Social role" %}</th>
+                    {# Translators: Person "description / bio" column header on the browse page #}
+                    <th class="description">{% translate "Description / Bio" %}</th>
+                    <th class="related documents">
+                        {# Translators: Person "document count" column header on the browse page #}
+                        <span class="sr-only">{% translate "Number of related documents" %}</span>
+                    </th>
+                    <th class="related people">
+                        {# Translators: Person "related people count" column header on the browse page #}
+                        <span class="sr-only">{% translate "Number of related people" %}</span>
+                    </th>
+                    <th class="related places">
+                        {# Translators: Person "related place count" column header on the browse page #}
+                        <span class="sr-only">{% translate "Number of related places" %}</span>
+                    </th>
+                </thead>
+                <tbody>
+                    {% for person in people %}
+                        <tr>
+                            <td class="name">
+                                {% if person.url %}
+                                    <a href="{{ person.url }}">{{ person.name }}</a>
+                                {% else %}
+                                    <span>{{ person.name }}</span>
+                                {% endif %}
+                            </td>
+                            <td class="gender">{{ person.gender }}</td>
+                            <td class="dates">{{ person.date_str }}</td>
+                            <td class="role">{{ person.role }}</td>
+                            <td class="description">{{ person.description.0|truncatewords:15 }}</td>
+                            <td class="related documents">
+                                <span class="label">{% translate "Related Documents" %}</span>
+                                <span>{{ person.documents }}</span>
+                            </td>
+                            <td class="related people">
+                                <span class="label">{% translate "Related People" %}</span>
+                                <span>{{ person.people }}</span>
+                            </td>
+                            <td class="related places">
+                                <span class="label">{% translate "Related Places" %}</span>
+                                <span>{{ person.places }}</span>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </section>
+    </form>
+    <div class="pagination-container">
+        {# Translators: range of search results on the current page, out of total #}
+        {% blocktranslate with start=page_obj.start_index end=page_obj.end_index count_humanized=paginator.count|intcomma %}
+            <div>{{ start }} – {{ end }} of {{ count_humanized }}</div>
+        {% endblocktranslate %}
+        {% include "corpus/snippets/pagination.html" %}
+    </div>
+{% endblock %}

@@ -24,6 +24,7 @@ $off-white: #f7f7f7;
     --primary-80: rgba(67, 96, 67, 0.8);
     --secondary: #567856;
     --secondary-80: rgba(86, 120, 86, 0.8);
+    --secondary-40: rgba(86, 120, 86, 0.4);
     --tertiary: #7bac7b;
     --link-primary: #567856;
     --link-secondary: #436043;
@@ -34,6 +35,7 @@ $off-white: #f7f7f7;
     --background: #ffffff;
     --background-light: #f7f7f7;
     --background-gray: #ebebeb;
+    --modal-backdrop: #16161680;
     // text on background
     --on-background: #161616;
     --on-background-alt: #3d3d3d;
@@ -46,6 +48,7 @@ $off-white: #f7f7f7;
     --focus: #567856;
     // disabled links
     --disabled: #9e9e9e;
+    --disabled-on-background-light: #9e9e9e;
     // tab navigation colors
     --tabs-bottom: #ebebeb;
     --tabs-bottom-hover: #3d3d3d;
@@ -76,13 +79,31 @@ $off-white: #f7f7f7;
     // JTS logo in image permissions
     --jts-logo: #231f20;
     // tag background color
-    --tag-bg: #e5eee5;
+    --tag-bg: rgba(86, 120, 86, 0.5);
+    --tag-bg-hover: rgba(86, 120, 86, 0.7);
     // selected language background color
     --selected-language: #f7f7f7;
     // alert message border/text/background colors
     --alert-success: #7bac7b;
     --alert-error: #ce2029;
     --alert-error-text: #f7f7f7;
+    // table header bottom border
+    --related-header-underline: #161616;
+    // filter chips
+    --filter-chip-bg-hover: #e0e0e0;
+    --filter-chip-bg-active: #bdbdbd;
+    // zoom control
+    --zoom-control-bg: #d9d9d9;
+    // map pin
+    --map-pin-disabled: #9e9e9e;
+    --map-pin-disabled-outline: #595959;
+    // separators in search results
+    --searchresult-separator: #9e9e9e66;
+    // people network graph background color
+    --network-graph-bg: #f7f7f7;
+    --network-secondary-node: #b8c6b8;
+    --network-tertiary-node: #e2e8e2;
+    --network-border: rgba(22, 22, 22, 0.2);
 }
 
 // Dark mode theme colors
@@ -92,6 +113,7 @@ $off-white: #f7f7f7;
     --primary-80: rgba(183, 102, 128, 0.8);
     --secondary: #b76680;
     --secondary-80: rgba(195, 127, 151, 0.8);
+    --secondary-40: rgba(195, 127, 151, 0.4);
     --tertiary: #b05070;
     --link-primary: #c37f97;
     --link-secondary: #b76680;
@@ -102,6 +124,7 @@ $off-white: #f7f7f7;
     --background: #161616;
     --background-light: #222222;
     --background-gray: #3d3d3d;
+    --modal-backdrop: #ffffff80;
     // text on background
     --on-background: #f7f7f7;
     --on-background-alt: #9e9e9e;
@@ -114,6 +137,7 @@ $off-white: #f7f7f7;
     --focus: #146feb;
     // disabled links
     --disabled: #3d3d3d;
+    --disabled-on-background-light: #595959;
     // tab navigation colors
     --tabs-bottom: #3d3d3d;
     --tabs-bottom-hover: #ebebeb;
@@ -136,7 +160,7 @@ $off-white: #f7f7f7;
     --permalink-icon: #3d3d3d;
     --permalink-icon-bg: #f7f7f7;
     // placeholder text for date input
-    --date-placeholder: #ebebeb;
+    --date-placeholder: #9e9e9e;
     // toggle icons for ITT panel
     --toggle: #161616;
     --toggle-background: #f7f7f7;
@@ -144,13 +168,31 @@ $off-white: #f7f7f7;
     // JTS logo in image permissions
     --jts-logo: #f7f7f7;
     // tag background color
-    --tag-bg: rgba(195, 127, 151, 0.2);
+    --tag-bg: rgba(86, 120, 86, 0.5);
+    --tag-bg-hover: rgba(86, 120, 86, 0.7);
     // selected language background color
     --selected-language: #161616;
     // alert message border/text/background colors
     --alert-success: #436043;
     --alert-error: #ce2029;
     --alert-error-text: #f7f7f7;
+    // related entities table bottom borders
+    --related-header-underline: #595959;
+    // filter chips
+    --filter-chip-bg-hover: #424242;
+    --filter-chip-bg-active: #616161;
+    // zoom control
+    --zoom-control-bg: #d9d9d9;
+    // map pin
+    --map-pin-disabled: #9e9e9e;
+    --map-pin-disabled-outline: #595959;
+    // separators in search results
+    --searchresult-separator: #59595966;
+    // people network graph
+    --network-graph-bg: #3d3d3d;
+    --network-secondary-node: #6a3043;
+    --network-tertiary-node: #595959;
+    --network-border: rgba(22, 22, 22, 0.2);
 }
 
 html {

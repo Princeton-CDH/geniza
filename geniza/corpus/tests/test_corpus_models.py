@@ -102,6 +102,18 @@ class TestCollection:
         with pytest.raises(IntegrityError):
             Collection.objects.create(lib_abbrev="BL")
 
+    @pytest.mark.django_db
+    def test_full_name(self):
+        # library only
+        c = Collection.objects.create(library="British Library")
+        assert c.full_name == c.library
+        # collection only
+        c = Collection.objects.create(name="Chapira")
+        assert c.full_name == c.name
+        # library + collection
+        c = Collection.objects.create(library="Cambridge UL", name="Taylor-Schechter")
+        assert c.full_name == f"{c.library}, {c.name}"
+
 
 class TestLanguageScripts:
     def test_str(self):
@@ -846,6 +858,26 @@ class TestDocument:
             assert images["canvas1"]["rotation"] == 90
             assert images["canvas2"]["rotation"] == 180
 
+    def test_list_thumbnail(self):
+        # Create a document and fragment and a TextBlock to associate them
+        doc = Document.objects.create()
+        frag = Fragment.objects.create(shelfmark="T-S 8J22.21")
+        TextBlock.objects.create(document=doc, fragment=frag, selected_images=[0])
+        img1 = IIIFImage()
+        img2 = IIIFImage()
+        # Mock Fragment.iiif_images() to return those two images and two fake labels
+        with patch.object(
+            Fragment,
+            "iiif_images",
+            return_value=([img1, img2], ["1r", "1v"], ["canvas1", "canvas2"]),
+        ):
+            thumb = doc.list_thumbnail()
+            # should get a thumbnail for the first image at 60x60
+            assert 'height="60"' in thumb
+            # should only produce img tags for the first of the two images
+            assert 'data-canvas="canvas1"' in thumb
+            assert 'data-canvas="canvas2"' not in thumb
+
     def test_admin_thumbnails(self):
         # Create a document and fragment and a TextBlock to associate them
         doc = Document.objects.create()
@@ -1117,11 +1149,14 @@ class TestDocument:
         index_data = document.index_data()
         assert index_data["num_editions_i"] == 2  # edition + digital edition
         assert index_data["has_digital_edition_b"] == True
-        assert index_data["num_translations_i"] == 2
+        assert (
+            index_data["num_translations_i"] == 3
+        )  # 2 translations + 1 digital translation
         assert index_data["has_digital_translation_b"] == True
         assert index_data["scholarship_count_i"] == 3  # unique sources
         assert index_data["text_transcription"] == ["transcrip[ti]on lines"]
         assert index_data["text_translation"] == ["translation lines"]
+        assert index_data["translation_languages_ss"] == ["English"]
         assert index_data["translation_language_code_s"] == "en"
         assert index_data["translation_language_direction_s"] == "ltr"
 

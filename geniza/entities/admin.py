@@ -24,6 +24,12 @@ from geniza.entities.forms import (
     PlacePersonForm,
     PlacePlaceForm,
 )
+from geniza.entities.metadata_export import (
+    AdminPersonExporter,
+    AdminPlaceExporter,
+    PersonRelationsExporter,
+    PlaceRelationsExporter,
+)
 from geniza.entities.models import (
     DocumentPlaceRelation,
     DocumentPlaceRelationType,
@@ -120,11 +126,12 @@ class DocumentInline(admin.TabularInline):
     autocomplete_fields = ("document", "type")
     fields = (
         "document",
+        "dating_range",
         "document_description",
         "type",
         "notes",
     )
-    readonly_fields = ("document_description",)
+    readonly_fields = ("document_description", "dating_range")
     formfield_overrides = {
         TextField: {"widget": Textarea(attrs={"rows": 4})},
     }
@@ -132,6 +139,12 @@ class DocumentInline(admin.TabularInline):
 
     def document_description(self, obj):
         return obj.document.description
+
+    def dating_range(self, obj):
+        """Show the range of dates associated with the document (inferred and document)
+        on the admin inline to show the sources of automatic dating"""
+        dating_range = [d.isoformat() for d in obj.document.dating_range() if d]
+        return standard_date_display("/".join(dating_range)) or "-"
 
 
 class PersonDocumentInline(DocumentInline):
@@ -238,21 +251,22 @@ class PersonEventInline(admin.TabularInline):
         TextField: {"widget": Textarea(attrs={"rows": "4"})},
     }
 
-    def get_formset(self, request, obj=None, **kwargs):
-        """Disable the 'add' link for an Event from a Person. Must be added from
-        a document or created manually with a document attached in the admin."""
-        formset = super().get_formset(request, obj, **kwargs)
-        service = formset.form.base_fields["event"]
-        service.widget.can_add_related = False
-        return formset
-
 
 @admin.register(Person)
 class PersonAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin):
     """Admin for Person entities in the PGP"""
 
     search_fields = ("name_unaccented", "names__name")
-    fields = ("gender", "role", "has_page", "description")
+    fields = (
+        "slug",
+        "gender",
+        "role",
+        "has_page",
+        "date",
+        "automatic_date",
+        "description",
+    )
+    readonly_fields = ("automatic_date",)
     inlines = (
         NameInline,
         FootnoteInline,
@@ -273,6 +287,17 @@ class PersonAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin):
         "i",  # PersonEventInline
     )
     own_pk = None
+
+    def save_related(self, request, form, formsets, change):
+        """Override save to ensure slug is generated if empty. Adapted from mep-django"""
+        super().save_related(request, form, formsets, change)
+
+        # this must be done after related objects are saved, because generate_slug
+        # requires related Name records
+        person = form.instance
+        if not person.slug:
+            person.generate_slug()
+            person.save()
 
     def get_form(self, request, obj=None, **kwargs):
         """For Person-Person autocomplete on the PersonAdmin form, keep track of own pk"""
@@ -327,9 +352,32 @@ class PersonAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin):
             status=303,
         )  # status code 303 means "See Other"
 
+    @admin.display(description="Export selected people to CSV")
+    def export_to_csv(self, request, queryset=None):
+        """Stream tabular data as a CSV file"""
+        queryset = queryset or self.get_queryset(request)
+        exporter = AdminPersonExporter(queryset=queryset, progress=False)
+        return exporter.http_export_data_csv()
+
+    def export_relations_to_csv(self, request, pk):
+        """Stream related objects data for a single object instance as a CSV file"""
+        queryset = Person.objects.filter(pk=pk)
+        exporter = PersonRelationsExporter(queryset=queryset, progress=False)
+        return exporter.http_export_data_csv()
+
     def get_urls(self):
-        """Return admin urls; adds a custom URL for merging people"""
+        """Return admin urls; adds custom URLs for exporting as CSV, merging people"""
         urls = [
+            path(
+                "csv/",
+                self.admin_site.admin_view(self.export_to_csv),
+                name="person-csv",
+            ),
+            path(
+                "<int:pk>/relations-csv/",
+                self.admin_site.admin_view(self.export_relations_to_csv),
+                name="person-relations-csv",
+            ),
             path(
                 "merge/",
                 PersonMerge.as_view(),
@@ -338,9 +386,11 @@ class PersonAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin):
         ]
         return urls + super().get_urls()
 
-    # -------------------------------------------------------------------------
+    def automatic_date(self, obj):
+        """Display automatically generated date/date range for an event as a formatted string"""
+        return standard_date_display(obj.documents_date_range)
 
-    actions = (merge_people,)
+    actions = (export_to_csv, merge_people)
 
 
 @admin.register(PersonRole)
@@ -491,6 +541,37 @@ class PlaceAdmin(SortableAdminBase, admin.ModelAdmin):
             )
         )
 
+    @admin.display(description="Export selected places to CSV")
+    def export_to_csv(self, request, queryset=None):
+        """Stream tabular data as a CSV file"""
+        queryset = queryset or self.get_queryset(request)
+        exporter = AdminPlaceExporter(queryset=queryset, progress=False)
+        return exporter.http_export_data_csv()
+
+    def export_relations_to_csv(self, request, pk):
+        """Stream related objects data for a single object instance as a CSV file"""
+        queryset = Place.objects.filter(pk=pk)
+        exporter = PlaceRelationsExporter(queryset=queryset, progress=False)
+        return exporter.http_export_data_csv()
+
+    def get_urls(self):
+        """Return admin urls; adds custom URL for exporting as CSV"""
+        urls = [
+            path(
+                "csv/",
+                self.admin_site.admin_view(self.export_to_csv),
+                name="place-csv",
+            ),
+            path(
+                "<int:pk>/relations-csv/",
+                self.admin_site.admin_view(self.export_relations_to_csv),
+                name="place-relations-csv",
+            ),
+        ]
+        return urls + super().get_urls()
+
+    actions = (export_to_csv,)
+
 
 @admin.register(PlacePlaceRelationType)
 class PlacePlaceRelationTypeAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
@@ -517,7 +598,10 @@ class EventDocumentInline(DocumentInline):
         """On new Event creation, set min_num of Document relationships conditionally based on
         whether it is being created from a popup in the admin edit page for a Document, or
         created from the Event admin"""
-        if "_popup" in request.GET and request.GET["_popup"] == "1" and obj is None:
+        from_document = (
+            "from_document" in request.GET and request.GET["from_document"] == "true"
+        )
+        if from_document and obj is None:
             # For admin convenience: If a new Event is being created (via popup) in the Document
             # admin, min number of associated documents should be 0; otherwise admins would have
             # to create the relationship manually from within the popup even though it is about
@@ -526,7 +610,8 @@ class EventDocumentInline(DocumentInline):
             # or the relationship is removed before saving, an orphan Event could be created.
             return 0
         else:
-            # If accessed via Event section of admin, requires minimum 1 related Document.
+            # If accessed via Event section of admin, or a popup from other related objects like
+            # Person, requires minimum 1 related Document.
             return 1
 
 
@@ -552,13 +637,7 @@ class EventPlaceInline(PlaceInline):
 class EventAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin):
     """Admin for Event entities in the PGP"""
 
-    fields = (
-        "name",
-        "description",
-        "standard_date",
-        "display_date",
-        "automatic_date",
-    )
+    fields = ("name", "description", "standard_date", "display_date", "automatic_date")
     readonly_fields = ("automatic_date",)
     search_fields = ("name",)
     ordering = ("name",)

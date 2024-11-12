@@ -1,54 +1,40 @@
 {% load i18n static wagtailcore_tags %}
 
-{# Translators: accessibility text label for footer site navigation #}
-{% translate "footer navigation" as footer_nav_label %}
-<nav id="footer-nav">
-    <ul role="menu">
-        <li class="menu-item" role="none">
-            {% if not skip_nav %}
-                {% pageurl site.root_page.localized as root_url %}
-            {% endif %}
-            {# Translators: label for 'home' link in footer navigation #}
-            <a href="{{ root_url|default:"/" }}" role="menuitem"{% if not skip_nav and request.path == root_url %} aria-current="page"{% endif %}>{% translate "Home" %}</a>
-        </li>
-        {% include "snippets/menu.html" %}
-    </ul>
-</nav>
+{% if not page_type or page_type != "places" %}
+    <div class="first-row">
+        {# Translators: accessibility text label for footer site navigation #}
+        {% translate "footer navigation" as footer_nav_label %}
+        <nav id="footer-nav">
+            <ul role="menu">
+                {% include "snippets/menu.html" %}
+            </ul>
+        </nav>
 
-<ul id="footer-links">
-    <li>
-        {# Translators: accessibility label for Princeton Geniza Lab homepage, for footer #}
-        <a class="logo" href="https://genizalab.princeton.edu/" aria-label="{% translate 'Princeton Geniza Lab homepage' %}">
-            <svg id="pgl-logo">
-                <use href="{% static 'img/logos/all/all/pgl-logo.svg' %}#pgl-logo" />
-            </svg>
-        </a>
-        <ul class="social">
-            <li>
-                {% blocktranslate asvar follow_genizalab_twitter with username="GenizaLab" %}Follow {{ username }} on Twitter.{% endblocktranslate %}
-                <a class="twitter" href="https://twitter.com/GenizaLab" aria-label="{{ follow_genizalab_twitter }}">GenizaLab</a>
-            </li>
+        <ul id="footer-links">
+            {% include "snippets/footer_links.html" %}
         </ul>
-    </li>
-    <li>
-        {# Translators: accessibility label for Princeton CDH homepage, for footer #}
-        <a class="logo" href="https://cdh.princeton.edu/" aria-label="{% translate 'Princeton Center for Digital Humanities homepage' %}">
-            <svg id="cdh-logo">
-                <use href="{% static 'img/logos/all/all/cdh-logo.svg' %}#cdh-logo" />
-            </svg>
-        </a>
-        <ul class="social">
-            <li>
-                {% blocktranslate asvar follow_cdh_twitter with username="PrincetonDH" %}Follow {{ username }} on Twitter.{% endblocktranslate %}
-                <a class="twitter" href="https://twitter.com/PrincetonDH" aria-label="{{ follow_cdh_twitter }}">PrincetonDH</a>
-            </li>
-            <li>
-                {% blocktranslate asvar follow_cdh_insta with username="princetoncdh" %}Follow {{ username }} on Instagram.{% endblocktranslate %}
-                <a class="instagram" href="https://www.instagram.com/princetoncdh/" aria-label="{{ follow_cdh_insta }}">princetoncdh</a>
-            </li>
-        </ul>
-    </li>
-</ul>
+
+        <section class="social">
+            {# Translators: list heading for social media links #}
+            <h2>{% translate "Follow" %}</h2>
+            <ul>
+                <li>
+                    {% blocktranslate asvar follow_genizalab_twitter with username="GenizaLab" %}Follow {{ username }} on Twitter.{% endblocktranslate %}
+                    <a class="twitter" href="https://twitter.com/GenizaLab" aria-label="{{ follow_genizalab_twitter }}">GenizaLab</a>
+                </li>
+                <li>
+                    {% blocktranslate asvar follow_cdh_twitter with username="PrincetonDH" %}Follow {{ username }} on Twitter.{% endblocktranslate %}
+                    <a class="twitter" href="https://twitter.com/PrincetonDH" aria-label="{{ follow_cdh_twitter }}">PrincetonDH</a>
+                </li>
+                <li>
+                    {% blocktranslate asvar follow_cdh_insta with username="princetoncdh" %}Follow {{ username }} on Instagram.{% endblocktranslate %}
+                    <a class="instagram" href="https://www.instagram.com/princetoncdh/" aria-label="{{ follow_cdh_insta }}">princetoncdh</a>
+                </li>
+            </ul>
+        </section>
+    </div>
+{% endif %}
+
 <ul id="legal">
     <li>
         <a href="https://accessibility.princeton.edu/help" id="accessibility">
@@ -78,10 +64,13 @@
             v. {{ SW_VERSION }}
         </a>
     </li>
+    {% if page_type == "places" %}
+        {% include "snippets/footer_links.html" %}
+    {% endif %}
     <li>
         {# Translators: official name of Princeton University, for footer #}
-        <a href="https://princeton.edu/" aria-label="{% translate 'Princeton University homepage' %}">
-            <svg id="princeton-logo">
+        <a id="princeton-logo" href="https://princeton.edu/" aria-label="{% translate 'Princeton University homepage' %}">
+            <svg>
                 <use href="{% static 'img/logos/all/all/princeton-logo.svg' %}#princeton-logo" />
             </svg>
         </a>

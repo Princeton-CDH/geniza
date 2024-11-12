@@ -13,6 +13,7 @@ from geniza.common.utils import Timer, Timerable
 from geniza.corpus.annotation_export import generate_coauthor_commit
 from geniza.corpus.management.lastrun_command import LastRunCommand
 from geniza.corpus.metadata_export import PublicDocumentExporter, PublicFragmentExporter
+from geniza.entities.metadata_export import PublicPersonExporter, PublicPlaceExporter
 from geniza.footnotes.metadata_export import (
     PublicFootnoteExporter,
     PublicSourceExporter,
@@ -37,6 +38,8 @@ class MetadataExportRepo(Timerable):
         "fragments": PublicFragmentExporter,
         "sources": PublicSourceExporter,
         "footnotes": PublicFootnoteExporter,
+        "people": PublicPersonExporter,
+        "places": PublicPlaceExporter,
     }
 
     def __init__(
@@ -106,12 +109,22 @@ class MetadataExportRepo(Timerable):
         return self.get_path_csv("fragments")
 
     @cached_property
+    def path_people_csv(self):
+        return self.get_path_csv("people")
+
+    @cached_property
+    def path_places_csv(self):
+        return self.get_path_csv("places")
+
+    @cached_property
     def paths(self):
         return [
             self.path_documents_csv,
             self.path_footnotes_csv,
             self.path_sources_csv,
             self.path_fragments_csv,
+            self.path_people_csv,
+            self.path_places_csv,
         ]
 
     ############################################
@@ -232,7 +245,6 @@ class MetadataExportRepo(Timerable):
 
 
 class Command(LastRunCommand, Timerable):
-
     # id for this script in the last run file info
     script_id = "metadata-export"
 

@@ -1,4 +1,9 @@
+import logging
 import re
+from datetime import datetime
+from math import modf
+from operator import itemgetter
+from time import sleep
 
 from django.conf import settings
 from django.contrib.admin.models import CHANGE, LogEntry
@@ -7,14 +12,36 @@ from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelatio
 from django.contrib.contenttypes.models import ContentType
 from django.core.validators import RegexValidator
 from django.db import models
+from django.db.models import F, Q, Value
+from django.db.models.query import Prefetch
 from django.forms import ValidationError
+from django.urls import reverse
 from django.utils.translation import gettext as _
 from gfklookupwidget.fields import GfkLookupField
+from parasolr.django import AliasedSolrQuerySet
+from parasolr.django.indexing import ModelIndexable
+from slugify import slugify
+from unidecode import unidecode
 
-from geniza.common.models import cached_class_property
+from geniza.common.models import TrackChangesModel, cached_class_property
 from geniza.corpus.dates import DocumentDateMixin, PartialDate, standard_date_display
-from geniza.corpus.models import DisplayLabelMixin, Document, LanguageScript
+from geniza.corpus.models import (
+    DisplayLabelMixin,
+    Document,
+    LanguageScript,
+    PermalinkMixin,
+)
 from geniza.footnotes.models import Footnote
+
+logger = logging.getLogger(__name__)
+
+
+class NameQuerySet(models.QuerySet):
+    """Custom queryset for names for filter utility functions"""
+
+    def non_primary(self):
+        """Filter this queryset to only non-primary names"""
+        return self.filter(primary=False)
 
 
 class Name(models.Model):
@@ -46,6 +73,9 @@ class Name(models.Model):
     object_id = GfkLookupField("content_type")
     content_object = GenericForeignKey()
 
+    # use custom manager & queryset
+    objects = NameQuerySet.as_manager()
+
     # transliteration style
     PGP = "P"
     CAMBRIDGE = "C"
@@ -70,7 +100,35 @@ class Name(models.Model):
         super().save(*args, **kwargs)
 
 
-class Event(models.Model):
+class DocumentDatableMixin:
+    """Mixin for entities that have associated documents, and thus can be automatically
+    roughly dated by the dates on those documents."""
+
+    @property
+    def documents_date_range(self):
+        """Standardized range of dates across associated documents"""
+        full_range = [None, None]
+        for doc in self.documents.all():
+            # get each doc's full range, including inferred and on-document
+            doc_range = doc.dating_range()
+            # if doc has a range, and the range is not [None, None], compare
+            # it against the current min and max
+            if doc_range and doc_range[0]:
+                start = doc_range[0]
+                end = doc_range[1] if len(doc_range) > 1 else start
+                # update full range with comparison results
+                full_range = PartialDate.get_date_range(
+                    old_range=full_range, new_range=[start, end]
+                )
+
+        # prune Nones and use isoformat for standardized representation
+        full_range = [d.isoformat() for d in full_range if d]
+        if len(full_range) == 2 and full_range[0] == full_range[1]:
+            full_range.pop(1)
+        return "/".join(full_range)
+
+
+class Event(DocumentDatableMixin, models.Model):
     """A historical event involving one or more documents, and optionally additional entities."""
 
     name = models.CharField(
@@ -115,29 +173,6 @@ class Event(models.Model):
             or standard_date_display(self.documents_date_range)
         )
 
-    @property
-    def documents_date_range(self):
-        """Standardized range of dates across associated documents"""
-        full_range = [None, None]
-        for doc in self.documents.all():
-            # get each doc's full range, including inferred and on-document
-            doc_range = doc.dating_range()
-            # if doc has a range, and the range is not [None, None], compare
-            # it against the current min and max
-            if doc_range and doc_range[0]:
-                start = doc_range[0]
-                end = doc_range[1] if len(doc_range) > 1 else start
-                # update full range with comparison results
-                full_range = PartialDate.get_date_range(
-                    old_range=full_range, new_range=[start, end]
-                )
-
-        # prune Nones and use isoformat for standardized representation
-        full_range = [d.isoformat() for d in full_range if d]
-        if len(full_range) == 2 and full_range[0] == full_range[1]:
-            full_range.pop(1)
-        return "/".join(full_range)
-
 
 class PersonRoleManager(models.Manager):
     """Custom manager for :class:`PersonRole` with natural key lookup"""
@@ -162,12 +197,122 @@ class PersonRole(DisplayLabelMixin, models.Model):
     def objects_by_label(cls):
         return super().objects_by_label()
 
+    def __str__(self):
+        return self.display_label or self.name
+
     class Meta:
         verbose_name = "Person social role"
         verbose_name_plural = "Person social roles"
 
 
-class Person(models.Model):
+class SlugMixin(TrackChangesModel):
+    slug = models.SlugField(
+        max_length=255,
+        unique=True,
+        blank=True,
+        null=True,
+        help_text="Short, durable, unique identifier for use in URLs. "
+        + "Save and continue editing to have a new slug autogenerated. "
+        + "Editing will change the public, citable URL for this entity.",
+    )
+    # NOTE: null=true required to avoid validation error
+    # when submitting admin edit form with no slug
+
+    def generate_slug(self):
+        """Generate a slug for this entity based on primary name and ensure it is unique.
+        Adapted from mep-django."""
+        self.slug = slugify(unidecode(str(self)))
+        dupe_slugs = (
+            self.__class__.objects.filter(slug__startswith=self.slug)
+            .exclude(pk=self.pk)
+            .order_by("slug")
+            .values_list("slug", flat=True)
+        )
+        if dupe_slugs.count() and self.slug in dupe_slugs:
+            # if not unique, add a number
+            prefix = "%s-" % self.slug
+            # get all the endings attached to this slug (i.e. unclear-##)
+            suffixes = [
+                slug[len(prefix) :] for slug in dupe_slugs if slug.startswith(prefix)
+            ]
+            # get the largest numeric suffix
+            values = [int(num) for num in suffixes if num.isnumeric()]
+            slug_count = max(values) if values else 1
+            # use the next number for the current slug
+            self.slug = "%s-%s" % (self.slug, slug_count + 1)
+
+    class Meta:
+        abstract = True
+
+
+class PersonSignalHandlers:
+    """Signal handlers for indexing :class:`Person` records when
+    related records are saved or deleted."""
+
+    # lookup from model verbose name to attribute on person
+    # for use in queryset filter
+    model_filter = {
+        "name": "names",
+        "Person social role": "role",
+        "document": "documents",  # documents in case dates change
+        "person person relation": ["to_person", "from_person"],
+        "person place relation": "personplacerelation",
+        "person document relation": "persondocumentrelation",
+        "Person-Document relationship": "persondocumentrelation__type",  # relation type
+    }
+
+    @staticmethod
+    def related_change(instance, raw, mode):
+        """reindex all associated people when related data is changed"""
+        # common logic for save and delete
+        # raw = saved as presented; don't query the database
+        if raw or not instance.pk:
+            return
+        # get related lookup for person filter
+        model_name = instance._meta.verbose_name
+        person_attr = PersonSignalHandlers.model_filter.get(model_name)
+        # if handler fired on an model we don't care about, warn and exit
+        if not person_attr:
+            logger.warning(
+                "Indexing triggered on %s but no person attribute is configured"
+                % model_name
+            )
+            return
+
+        # handle cases where there is more than one matching attr; for now this is only
+        # for person-person (self-referential), but maybe could be used for other things
+        if isinstance(person_attr, list):
+            person_filter = Q()
+            for attr in person_attr:
+                condition = {"%s__pk" % attr: instance.pk}
+                person_filter |= Q(**condition)
+            people = Person.items_to_index().filter(person_filter)
+        else:
+            person_filter = {"%s__pk" % person_attr: instance.pk}
+            people = Person.items_to_index().filter(**person_filter)
+        if people.exists():
+            logger.debug(
+                "%s %s, reindexing %d related person(s)",
+                model_name,
+                mode,
+                people.count(),
+            )
+            ModelIndexable.index_items(people)
+
+    @staticmethod
+    def related_save(sender, instance=None, raw=False, **_kwargs):
+        """reindex associated people when a related object is saved"""
+        # delegate to common method
+        PersonSignalHandlers.related_change(instance, raw, "save")
+
+    @staticmethod
+    def related_delete(sender, instance=None, raw=False, **_kwargs):
+        """reindex associated people when a related object is deleted"""
+        # delegate to common method
+        PersonSignalHandlers.related_change(instance, raw, "delete")
+
+
+class Person(ModelIndexable, SlugMixin, DocumentDatableMixin, PermalinkMixin):
     """A person entity that appears within the PGP corpus."""
 
     names = GenericRelation(Name, related_query_name="person")
@@ -225,8 +370,30 @@ class Person(models.Model):
     )
     gender = models.CharField(max_length=1, choices=GENDER_CHOICES)
 
+    date = models.CharField(
+        "CE date range override",
+        help_text="Manual override for automatically generated date range of this person's activity. "
+        + DocumentDateMixin.standard_date_helptext,
+        blank=True,  # use automatic date range from associated documents if this is blank
+        null=True,
+        max_length=255,
+        validators=[RegexValidator(DocumentDateMixin.re_date_format)],
+    )
+
+    # minimum documents to show a page if has_page is False
+    MIN_DOCUMENTS = 10
+
     class Meta:
         verbose_name_plural = "People"
+
+    def save(self, *args, **kwargs):
+        # if slug has changed, save the old one as a past slug
+        # (skip if record is not yet saved)
+        if self.pk and self.has_changed("slug") and self.initial_value("slug"):
+            PastPersonSlug.objects.get_or_create(
+                slug=self.initial_value("slug"), person=self
+            )
+        super().save(*args, **kwargs)
 
     def __str__(self):
         """
@@ -239,6 +406,241 @@ class Person(models.Model):
             return str(self.names.filter(primary=True).first())
         except Name.DoesNotExist:
             return str(self.names.first() or super().__str__())
+
+    @property
+    def date_str(self):
+        """Return a formatted string for the person's date range, for use in public site.
+        CE date override takes highest precedence, then fallback to computed date range from
+        associated documents if override is unset.
+        """
+        return (
+            standard_date_display(self.date)
+            or standard_date_display(self.documents_date_range)
+            or ""
+        )
+
+    def solr_date_range(self):
+        """Return the person's date range as a Solr date range."""
+        if self.date:
+            solr_dating_range = self.date.split("/")
+        else:
+            solr_dating_range = self.documents_date_range.split("/")
+        if solr_dating_range:
+            # if a single date instead of a range, just return that date
+            if (
+                len(solr_dating_range) == 1
+                or solr_dating_range[0] == solr_dating_range[1]
+            ):
+                return solr_dating_range[0]
+            # if there's more than one date, return as a range
+            return "[%s TO %s]" % tuple(solr_dating_range)
+
+    @property
+    def content_authors(self):
+        """Generate a formatted string of comma-separated names of content editors/admins who
+        worked on this Person's entity data, for use in a citation"""
+        # get all users from log entries, order by last name
+        user_pks = self.log_entries.values_list("user", flat=True)
+        users = User.objects.filter(pk__in=user_pks).order_by("last_name")
+        # join first and last names for each user
+        get_full_name = lambda user: " ".join(
+            [n for n in [user.first_name, user.last_name] if n]
+        ).strip()
+        full_name_list = [get_full_name(user) or user.username for user in users]
+        if len(full_name_list) > 1:
+            # join last two names with "and"
+            and_str = ", and " if len(full_name_list) > 2 else " and "
+            and_names = and_str.join(
+                reversed([full_name_list.pop(), full_name_list.pop()])
+            )
+            # join remaining names with comma
+            return ", ".join([*full_name_list, and_names])
+        elif full_name_list:
+            # if only one author, just return their name
+            return full_name_list[0]
+        else:
+            return None
+
+    @property
+    def formatted_citation(self):
+        """a formatted citation for display at the bottom of Person Detail pages"""
+        authors = f"{self.content_authors}, " if self.content_authors else ""
+        available_at = "available online through the Princeton Geniza Project at"
+        today = datetime.today().strftime("%B %-d, %Y")
+        return f'{authors}"{str(self)}," {available_at} {self.permalink}, accessed {today}.'
+
+    def get_absolute_url(self):
+        """url for this person"""
+        if self.documents.count() >= self.MIN_DOCUMENTS or self.has_page == True:
+            return reverse("entities:person", args=[str(self.slug)])
+        else:
+            return None
+
+    @property
+    def related_people_count(self):
+        """Get a count of related people without duplicates, taking into account
+        converse relationships"""
+        # used for indexing and display
+        people_relations = (
+            self.from_person.annotate(related_id=F("from_person"))
+            .values_list("related_id", flat=True)
+            .union(
+                self.to_person.annotate(
+                    related_id=F("to_person"),
+                ).values_list("related_id", flat=True)
+            )
+        )
+        return len(set(people_relations))
+
+    def related_people(self):
+        """Set of all people related to this person, with relationship type and
+        any notes on the relationship, taking into account converse relations"""
+
+        # gather all relationships with people, both entered from this person and
+        # entered from the person on the other side of the relationship
+        people_relations = (
+            self.from_person.annotate(
+                # boolean to indicate if we should use converse or regular relation type name
+                gender=F("from_person__gender"),
+                use_converse_typename=Value(True),
+                has_page=F("from_person__has_page"),
+                related_slug=F("from_person__slug"),
+                related_id=F("from_person"),
+            ).union(  # union instead of joins for efficiency
+                self.to_person.annotate(
+                    gender=F("to_person__gender"),
+                    use_converse_typename=Value(False),
+                    has_page=F("to_person__has_page"),
+                    related_slug=F("to_person__slug"),
+                    related_id=F("to_person"),
+                )
+            )
+            # have to use values_list (NOT values) here with one argument, otherwise strange things
+            # happen, possibly due to union(). TODO: see if this is fixed in later django versions.
+            .values_list("related_id")
+        )
+        relation_list = [
+            {
+                # this is the order of fields returned by SQL after the annotated union
+                "id": r[-1],
+                "slug": r[-2],
+                "has_page": r[-3],
+                "use_converse_typename": r[-4],
+                "gender": r[-5],
+                "notes": r[-6],
+                "type_id": r[-7],
+            }
+            for r in people_relations
+        ]
+
+        # folow GenericForeignKey to find primary name for each related person
+        person_contenttype = ContentType.objects.get_for_model(Person).pk
+        names = Name.objects.filter(
+            object_id__in=[r["id"] for r in relation_list],
+            primary=True,
+            content_type_id=person_contenttype,
+        ).values("name", "object_id")
+        # dict keyed on related person id
+        names_dict = {n["object_id"]: n["name"] for n in names}
+
+        # grab name and converse_name for each relation type since we may need either
+        # (name if the relation was entered from self, converse if entered from related person)
+        types = PersonPersonRelationType.objects.filter(
+            pk__in=[r["type_id"] for r in relation_list],
+        ).values("pk", "name", "converse_name", "category")
+        # dict keyed on related person id
+        types_dict = {t["pk"]: t for t in types}
+
+        # store each related person's documents to see if we can display their url
+        related_person_docs = PersonDocumentRelation.objects.filter(
+            person__id__in=[r["id"] for r in relation_list]
+        ).values("document__id", "person__id")
+
+        # efficiently get shared document counts between people by filtering doc relations
+        self_docs = PersonDocumentRelation.objects.filter(
+            person__id=self.pk
+        ).values_list("document__id", flat=True)
+        shared_docs = list(
+            related_person_docs.filter(document__id__in=list(self_docs)).values(
+                "document__id", "person__id"
+            )
+        )
+        # dict keyed on related person id
+        docs_dict = {
+            r["person__id"]: {
+                # number of shared person-doc relations matching this person's id
+                "shared": len(
+                    list(
+                        filter(
+                            lambda shared: shared["person__id"] == r["person__id"],
+                            shared_docs,
+                        )
+                    )
+                ),
+                # number of total person-doc relations matching this person's id
+                "total": len(
+                    list(
+                        filter(
+                            lambda total: total["person__id"] == r["person__id"],
+                            related_person_docs,
+                        )
+                    )
+                ),
+            }
+            # only need to calculate these for people who have related documents
+            for r in related_person_docs
+        }
+
+        # update with new data & dedupe
+        prev_relation = None
+        # sort by id (dedupe by matching against previous id), then type id for type dedupe
+        for relation in sorted(relation_list, key=itemgetter("id", "type_id")):
+            relation.update(
+                {
+                    # get name from cached queryset dict
+                    "name": names_dict[relation["id"]],
+                    # use type.converse_name if this relation is reverse (and if the type has one)
+                    "type": types_dict[relation["type_id"]][
+                        "converse_name" if relation["use_converse_typename"] else "name"
+                    ]
+                    # fallback to type.name if converse_name doesn't exist
+                    or types_dict[relation["type_id"]]["name"],
+                    "category": types_dict[relation["type_id"]]["category"],
+                    # get count of shared documents from cached queryset dict
+                    "shared_documents": (
+                        docs_dict[relation["id"]]["shared"]
+                        if relation["id"] in docs_dict
+                        else 0
+                    ),
+                    # determine if this person can be linked (can if has_page is true or total docs
+                    # >= Person.MIN_DOCUMENTS constant)
+                    "can_link": (
+                        True
+                        if relation["has_page"]
+                        or (
+                            docs_dict[relation["id"]]["total"]
+                            if relation["id"] in docs_dict
+                            else 0
+                        )
+                        >= Person.MIN_DOCUMENTS
+                        else False
+                    ),
+                }
+            )
+            # dedupe and combine type and notes
+            if prev_relation and prev_relation["id"] == relation["id"]:
+                # dedupe type by string matching since we can't match reverse relations by id
+                if relation["type"].lower() not in prev_relation["type"].lower():
+                    prev_relation["type"] += f", {relation['type']}".lower()
+                # simply combine notes with html line break
+                prev_relation["notes"] += (
+                    f"<br />{relation['notes']}" if relation["notes"] else ""
+                )
+                relation_list.remove(relation)
+            else:
+                prev_relation = relation
+
+        return relation_list
 
     def merge_with(self, merge_people, user=None):
         """Merge the specified people into this one. Combines all metadata
@@ -410,6 +812,169 @@ class Person(models.Model):
             log_entry.content_type_id = ContentType.objects.get_for_model(Person)
             log_entry.save()
 
+    @classmethod
+    def total_to_index(cls):
+        """static method to efficiently count the number of documents to index in Solr"""
+        # quick count for parasolr indexing (don't do prefetching just to get the total!)
+        return cls.objects.count()
+
+    @classmethod
+    def items_to_index(cls):
+        """Custom logic for finding items to be indexed when indexing in
+        bulk."""
+        return Person.objects.prefetch_related(
+            "names",
+            "role",
+            "relationships",
+            "from_person",
+            "to_person",
+            "personplacerelation_set",
+            Prefetch(
+                "persondocumentrelation_set",
+                queryset=PersonDocumentRelation.objects.select_related("type"),
+            ),
+            Prefetch(
+                "documents",
+                queryset=Document.objects.prefetch_related("dating_set"),
+            ),
+        )
+
+    @classmethod
+    def prep_index_chunk(cls, chunk):
+        """Prefetch related information when indexing in chunks
+        (modifies queryset chunk in place)"""
+        models.prefetch_related_objects(
+            chunk,
+            "names",
+            "role",
+            "relationships",
+            "from_person",
+            "to_person",
+            "personplacerelation_set",
+            Prefetch(
+                "persondocumentrelation_set",
+                queryset=PersonDocumentRelation.objects.select_related("type"),
+            ),
+            Prefetch(
+                "documents",
+                queryset=Document.objects.prefetch_related("dating_set"),
+            ),
+        )
+        return chunk
+
+    def index_data(self):
+        """data for indexing in Solr"""
+        index_data = super().index_data()
+        index_data.update(
+            {
+                # basic metadata
+                "slug_s": self.slug,
+                "name_s": str(self),
+                "description_txt": self.description_en,
+                "gender_s": self.get_gender_display(),
+                "role_s": self.role.name_en if self.role else None,
+                "url_s": self.get_absolute_url(),
+                # related object counts
+                "documents_i": self.documents.count(),
+                "people_i": self.related_people_count,
+                "places_i": self.personplacerelation_set.count(),
+                # kinds of relationships to documents
+                "document_relation_ss": list(
+                    self.persondocumentrelation_set.values_list(
+                        "type__name_en", flat=True
+                    ).distinct()
+                ),
+            }
+        )
+        solr_date_range = self.solr_date_range()
+        if solr_date_range:
+            # date range, either from associated documents or manual override
+            dates = [
+                PartialDate(date)
+                for date in (
+                    self.date.split("/")
+                    if self.date
+                    else self.documents_date_range.split("/")
+                )
+            ]
+            index_data.update(
+                {
+                    "date_dr": solr_date_range,
+                    "date_str_s": self.date_str,
+                    "start_dating_i": (dates[0].numeric_format()),
+                    "end_dating_i": (
+                        (dates[1] if len(dates) > 1 else dates[0]).numeric_format(
+                            mode="max"
+                        )
+                    ),
+                }
+            )
+        return index_data
+
+    # signal handlers to update the index based on changes to other models
+    index_depends_on = {
+        "names": {
+            "post_save": PersonSignalHandlers.related_save,
+            "pre_delete": PersonSignalHandlers.related_delete,
+        },
+        "role": {
+            "post_save": PersonSignalHandlers.related_save,
+            "pre_delete": PersonSignalHandlers.related_delete,
+        },
+        "relationships": {
+            "post_save": PersonSignalHandlers.related_save,
+            "pre_delete": PersonSignalHandlers.related_delete,
+        },
+        "documents": {
+            "post_save": PersonSignalHandlers.related_save,
+            "pre_delete": PersonSignalHandlers.related_delete,
+        },
+        "personplacerelation_set": {
+            "post_save": PersonSignalHandlers.related_save,
+            "pre_delete": PersonSignalHandlers.related_delete,
+        },
+        "persondocumentrelation_set": {
+            "post_save": PersonSignalHandlers.related_save,
+            "pre_delete": PersonSignalHandlers.related_delete,
+        },
+    }
+
+
+class PersonSolrQuerySet(AliasedSolrQuerySet):
+    """':class:`~parasolr.django.AliasedSolrQuerySet` for
+    :class:`~geniza.corpus.models.Person`"""
+
+    #: always filter to person records
+    filter_qs = ["item_type_s:person"]
+
+    #: map readable field names to actual solr fields
+    field_aliases = {
+        "slug": "slug_s",
+        "name": "name_s",
+        "description": "description_txt",
+        "gender": "gender_s",
+        "role": "role_s",
+        "url": "url_s",
+        "documents": "documents_i",
+        "people": "people_i",
+        "places": "places_i",
+        "document_relations": "document_relation_ss",
+        "date_str": "date_str_s",
+    }
+
+
+class PastPersonSlug(models.Model):
+    """A slug that was previously associated with a :class:`Person`;
+    preserved so that former slugs will resolve to the correct person.
+    Adapted from mep-django."""
+
+    #: person record this slug belonged to
+    person = models.ForeignKey(
+        Person, related_name="past_slugs", on_delete=models.CASCADE
+    )
+    #: slug
+    slug = models.SlugField(max_length=255, unique=True)
+
 
 class PersonDocumentRelationTypeManager(models.Manager):
     """Custom manager for :class:`PersonDocumentRelationType` with natural key lookup"""
@@ -431,6 +996,14 @@ class PersonDocumentRelationType(models.Model):
 
     def __str__(self):
         return self.name
+
+    @cached_class_property
+    def objects_by_label(cls):
+        return {
+            # lookup on name_en since solr should always index in English
+            obj.name_en: obj
+            for obj in cls.objects.all()
+        }
 
 
 class PersonDocumentRelation(models.Model):
@@ -561,7 +1134,61 @@ class PersonEventRelation(models.Model):
         return f"Person-Event relation: {self.person} and {self.event}"
 
 
-class Place(models.Model):
+class PlaceSignalHandlers:
+    """Signal handlers for indexing :class:`Place` records when
+    related records are saved or deleted."""
+
+    # lookup from model verbose name to attribute on place
+    # for use in queryset filter
+    model_filter = {
+        "name": "names",
+        "person place relation": "personplacerelation",
+        "document place relation": "documentplacerelation",
+    }
+
+    @staticmethod
+    def related_change(instance, raw, mode):
+        """reindex all associated people when related data is changed"""
+        # common logic for save and delete
+        # raw = saved as presented; don't query the database
+        if raw or not instance.pk:
+            return
+        # get related lookup for place filter
+        model_name = instance._meta.verbose_name
+        place_attr = PlaceSignalHandlers.model_filter.get(model_name)
+        # if handler fired on an model we don't care about, warn and exit
+        if not place_attr:
+            logger.warning(
+                "Indexing triggered on %s but no place attribute is configured"
+                % model_name
+            )
+            return
+
+        place_filter = {"%s__pk" % place_attr: instance.pk}
+        places = Place.items_to_index().filter(**place_filter)
+        if places.exists():
+            logger.debug(
+                "%s %s, reindexing %d related place(s)",
+                model_name,
+                mode,
+                places.count(),
+            )
+            ModelIndexable.index_items(places)
+
+    @staticmethod
+    def related_save(sender, instance=None, raw=False, **_kwargs):
+        """reindex associated places when a related object is saved"""
+        # delegate to common method
+        PlaceSignalHandlers.related_change(instance, raw, "save")
+
+    @staticmethod
+    def related_delete(sender, instance=None, raw=False, **_kwargs):
+        """reindex associated places when a related object is deleted"""
+        # delegate to common method
+        PlaceSignalHandlers.related_change(instance, raw, "delete")
+
+
+class Place(ModelIndexable, SlugMixin, PermalinkMixin):
     """A named geographical location, which may be associated with documents or people."""
 
     names = GenericRelation(Name, related_query_name="place")
@@ -604,6 +1231,128 @@ class Place(models.Model):
             return str(self.names.filter(primary=True).first())
         except Name.DoesNotExist:
             return str(self.names.first() or super().__str__())
+
+    def save(self, *args, **kwargs):
+        # if slug has changed, save the old one as a past slug
+        # (skip if record is not yet saved)
+        if self.pk and self.has_changed("slug") and self.initial_value("slug"):
+            PastPlaceSlug.objects.get_or_create(
+                slug=self.initial_value("slug"), place=self
+            )
+        super().save(*args, **kwargs)
+
+    def get_absolute_url(self):
+        """url for this place"""
+        return reverse("entities:place", args=[self.slug])
+
+    @staticmethod
+    def deg_to_dms(deg, type="lat"):
+        """Decimal degrees to DMS (degrees, minutes, seconds) for string display.
+        Adapted from https://stackoverflow.com/a/52371976/394067"""
+        decimals, number = modf(deg)
+        d = int(number)
+        m = int(decimals * 60)
+        s = int((float(deg) - d - m / 60) * 3600.00)
+        compass = {"lat": ("N", "S"), "lon": ("E", "W")}
+        compass_str = compass[type][0 if d >= 0 else 1]
+        return "{}° {}′ {}″ {}".format(abs(d), abs(m), abs(s), compass_str)
+
+    @property
+    def coordinates(self):
+        """String formatted latitude and longitude coordinates"""
+        latlon = []
+        if self.latitude:
+            latlon.append(self.deg_to_dms(self.latitude))
+        if self.longitude:
+            latlon.append(self.deg_to_dms(self.longitude, "lon"))
+        return ", ".join(latlon)
+
+    @classmethod
+    def total_to_index(cls):
+        """static method to efficiently count the number of people to index in Solr"""
+        # quick count for parasolr indexing (don't do prefetching just to get the total!)
+        return cls.objects.count()
+
+    @classmethod
+    def items_to_index(cls):
+        """Custom logic for finding items to be indexed when indexing in
+        bulk."""
+        return Place.objects.prefetch_related(
+            "names", "documentplacerelation_set", "personplacerelation_set"
+        )
+
+    def index_data(self):
+        """data for indexing in Solr"""
+        index_data = super().index_data()
+        index_data.update(
+            {
+                # basic metadata
+                "slug_s": self.slug,
+                "name_s": str(self),
+                "other_names_s": ", ".join(
+                    sorted([n.name for n in self.names.non_primary()])
+                ),
+                "url_s": self.get_absolute_url(),
+                # LatLonPointSpatialField takes lat,lon string
+                "location_p": (
+                    f"{self.latitude},{self.longitude}"
+                    if self.latitude and self.longitude
+                    else None
+                ),
+                # related object counts
+                "documents_i": self.documentplacerelation_set.count(),
+                "people_i": self.personplacerelation_set.count(),
+            }
+        )
+        return index_data
+
+    # signal handlers to update the index based on changes to other models
+    index_depends_on = {
+        "names": {
+            "post_save": PlaceSignalHandlers.related_save,
+            "pre_delete": PlaceSignalHandlers.related_delete,
+        },
+        "documentplacerelation_set": {
+            "post_save": PlaceSignalHandlers.related_save,
+            "pre_delete": PlaceSignalHandlers.related_delete,
+        },
+        "personplacerelation_set": {
+            "post_save": PlaceSignalHandlers.related_save,
+            "pre_delete": PlaceSignalHandlers.related_delete,
+        },
+    }
+
+
+class PlaceSolrQuerySet(AliasedSolrQuerySet):
+    """':class:`~parasolr.django.AliasedSolrQuerySet` for
+    :class:`~geniza.corpus.models.Place`"""
+
+    #: always filter to place records
+    filter_qs = ["item_type_s:place"]
+
+    #: map readable field names to actual solr fields
+    field_aliases = {
+        "slug": "slug_s",
+        "name": "name_s",
+        "other_names": "other_names_s",
+        "url": "url_s",
+        "documents": "documents_i",
+        "people": "people_i",
+        "location": "location_p",
+    }
+
+
+class PastPlaceSlug(models.Model):
+    """A slug that was previously associated with a :class:`Place`;
+    preserved so that former slugs will resolve to the correct place.
+    Adapted from mep-django."""
+
+    #: place record this slug belonged to
+    place = models.ForeignKey(
+        Place, related_name="past_slugs", on_delete=models.CASCADE
+    )
+    #: slug
+    slug = models.SlugField(max_length=255, unique=True)
 
 
 class PersonPlaceRelationTypeManager(models.Manager):

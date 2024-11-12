@@ -3,7 +3,7 @@ import pytest
 from geniza.common.tests import TestMigrations
 
 
-@pytest.mark.last
+@pytest.mark.order("last")
 class MergeIndiaBookSources(TestMigrations):
     app = "footnotes"
     migrate_from = "0011_split_goitein_typedtexts"
@@ -36,7 +36,7 @@ class MergeIndiaBookSources(TestMigrations):
         assert Footnote.objects.count() == 2
 
 
-@pytest.mark.last
+@pytest.mark.order("last")
 class AlterSourceEdition(TestMigrations):
     app = "footnotes"
     migrate_from = "0013_add_fields_to_source"
@@ -69,7 +69,7 @@ class AlterSourceEdition(TestMigrations):
         assert not self.src3.edition
 
 
-@pytest.mark.last
+@pytest.mark.order("last")
 class AlterSourceEditionReverse(TestMigrations):
     app = "footnotes"
     migrate_from = "0014_alter_source_edition"
@@ -96,7 +96,7 @@ class AlterSourceEditionReverse(TestMigrations):
         assert self.src2.edition == "2"
 
 
-@pytest.mark.last
+@pytest.mark.order("last")
 class TestFootnoteLocationPpMigration(TestMigrations):
     app = "footnotes"
     migrate_from = "0014_alter_source_edition"
@@ -151,7 +151,7 @@ class TestFootnoteLocationPpMigration(TestMigrations):
             assert Footnote.objects.filter(location=page_loc).exists()
 
 
-@pytest.mark.last
+@pytest.mark.order("last")
 class TestRenameTypedTextsMigration(TestMigrations):
     app = "footnotes"
     migrate_from = "0015_add_footnote_location_pp"
@@ -196,7 +196,7 @@ class TestRenameTypedTextsMigration(TestMigrations):
         )
 
 
-@pytest.mark.last
+@pytest.mark.order("last")
 @pytest.mark.django_db
 class TestDigitalFootnoteLocation(TestMigrations):
     app = "footnotes"

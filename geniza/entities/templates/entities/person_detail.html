@@ -1,0 +1,139 @@
+{% extends 'base.html' %}
+{% load static i18n render_bundle_csp fullurl %}
+
+{% block meta_title %}{{ page_title }}{% endblock meta_title %}
+{% block meta_description %}{{ page_description }}{% endblock meta_description %}
+{% block extrameta %}
+    {# use English page as canonical for search engine crawlers (no redirects) #}
+    {% language "en" %}
+        <link rel="canonical" href="{% fullurl "entities:person" person.slug %}" />
+    {% endlanguage %}
+    {% spaceless %}
+        {% for lang_code in PUBLIC_SITE_LANGUAGES %}
+            {% language lang_code %}
+                <link rel="alternate" hreflang="{{ lang_code }}" href="{% fullurl "entities:person" person.slug %}" />
+            {% endlanguage %}
+        {% endfor %}
+    {% endspaceless %}
+{% endblock extrameta %}
+
+{% block main %}
+    <!-- person details -->
+    {% include "entities/snippets/person_header.html" %}
+    {# tabs #}
+    {% include "entities/snippets/person_tabs.html" %}
+    <div class="container">
+        <section class="metadata">
+            <h2 class="sr-only">
+                {# Translators: label for person metadata section #}
+                {% translate 'Metadata' %}
+            </h2>
+            {# metadata #}
+            <dl class="metadata-list primary">
+                {# Translators: label for a person's gender #}
+                <dt>{% translate 'Gender' %}</dt>
+                <dd>{{ person.get_gender_display }}</dd>
+                {% if person.date_str %}
+                    {# Translators: label for a person's active dates in the PGP #}
+                    <dt>{% translate 'Active dates' %}</dt>
+                    <dd>{{ person.date_str }}</dd>
+                {% endif %}
+                {% if person.role %}
+                    <dt>
+                        {# Translators: Label for a person's social role #}
+                        {% translate 'Social role' %}
+                    </dt>
+                    <dd>{{ person.role }}</dd>
+                {% endif %}
+            </dl>
+            {# secondary metadata #}
+            <dl class="metadata-list secondary">
+                {% if person.names.non_primary.exists %}
+                    <dt>
+                        {# Translators: label for alternative names for a person #}
+                        {% blocktranslate count counter=person.names.non_primary.count trimmed %}
+                            Other name
+                        {% plural %}
+                            Other names
+                        {% endblocktranslate %}
+                    </dt>
+                    {% for name in person.names.non_primary %}
+                        <dd>{{ name }}</dd>
+                    {% endfor %}
+                {% endif %}
+            </dl>
+        </section>
+        {% if person.description %}
+            <section class="description">
+                <h2>
+                    {# Translators: label for person description / bio #}
+                    {% translate 'Description / Bio' %}
+                </h2>
+                <p>{{ person.description }}</p>
+            </section>
+        {% endif %}
+        {% if person.events.all|length %}
+            <section class="events">
+                <h2>
+                    {# Translators: label for person's life events timeline #}
+                    {% translate 'Life events' %}
+                </h2>
+                <ol>
+                    {% for event in person.events.all %}
+                        <li>
+                            <h3>{{ event.name }} {% if event.date_str %}(<time>{{ event.date_str }}</time>){% endif %}</h3>
+                            {% if event.description %}<p>{{ event.description }}</p>{% endif %}
+                            {% if event.documents.exists %}
+                                <p>
+                                    {% for doc in event.documents.all %}
+                                        <a href="{{ doc.permalink }}">{{ doc }}</a>{% if not forloop.last %}, {% endif %}
+                                    {% endfor  %}
+                                </p>
+                            {% endif %}
+                        </li>
+                    {% endfor %}
+                </ol>
+            </section>
+        {% endif %}
+        {% if person.footnotes.all|length %}
+            <section class="description bibliography">
+                <h2>
+                    {# Translators: label for person bibliography #}
+                    {% translate 'Select bibliography' %}
+                </h2>
+                <ol>
+                    {% for footnote in person.footnotes.all %}
+                        <li>
+                            <span>{{ footnote.source.formatted_display|safe }}</span>
+                        </li>
+                    {% endfor %}
+                </ol>
+            </section>
+        {% endif %}
+        {# tertiary metadata #}
+        <dl class="metadata-list tertiary">
+            <dt id="citation" aria-hidden="true"> {# aria hidden because redundant for screen readers #}
+                <i class="ph-quotes-fill"></i>
+                {# Translators: label for a citation for a person page #}
+                {% translate 'How to cite this record:' %}
+            </dt>
+            <dd>
+                {# Translators: accessibility label for a citation for a person #}
+                <span aria-label="{% translate 'Citation' %}">
+                    {{ person.formatted_citation }}
+                </span>
+            </dd>
+            <dt id="permalink" aria-hidden="true"> {# aria hidden because redundant for screen readers #}
+                <i class="ph-link"></i>
+                {# Translators: label for permanent link to a person #}
+                {% translate 'Link to this person:' %}
+            </dt>
+            <dd>
+                {# Translators: accessibility label for permanent link to a person #}
+                <a href="{{ person.permalink }}" rel="bookmark" aria-label="{% translate 'Permalink' %}">
+                    {{ person.permalink }}
+                </a>
+            </dd>
+        </dl>
+    </div>
+{% endblock main %}

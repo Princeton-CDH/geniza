@@ -5,4 +5,5 @@
 # now this does what we want, although it pollutes the namespace somewhat
 from geniza.annotations.conftest import *
 from geniza.corpus.tests.conftest import *
+from geniza.entities.conftest import *
 from geniza.footnotes.conftest import *

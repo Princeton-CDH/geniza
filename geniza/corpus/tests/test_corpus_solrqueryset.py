@@ -202,6 +202,37 @@ class TestDocumentSolrQuerySet:
             == '(description_nostem:"מרכב אלצלטאן" OR transcription_nostem:"מרכב אלצלטאן") AND (description_nostem:"אלמרכב אלצלטאן" OR transcription_nostem:"אלמרכב אלצלטאן")'
         )
 
+    def test_search_term_cleanup__quoted_shelfmark_only(self):
+        dqs = DocumentSolrQuerySet()
+        # double quoted shelfmark-only search should populate dqs.shelfmark_query
+        dqs._search_term_cleanup('shelfmark:"T-S NS"')
+        assert "T-S NS" in dqs.shelfmark_query
+
+        # otherwise dqs.sheflmark_query should remain unset
+        dqs = DocumentSolrQuerySet()
+        assert "T-S NS" in dqs._search_term_cleanup(
+            'tag:"marriage payment" shelfmark:"T-S NS"'
+        )
+        assert not dqs.shelfmark_query
+        assert "NS" in dqs._search_term_cleanup("shelfmark:NS")
+        assert not dqs.shelfmark_query
+
+    def test_keyword_search__quoted_shelfmark(self):
+        dqs = DocumentSolrQuerySet()
+        with patch.object(dqs, "search") as mocksearch:
+            # only quoted shelfmark: should only search on shelfmark fields
+            dqs.keyword_search('shelfmark:"T-S NS"')
+            mocksearch.assert_called_with(dqs.shelfmark_query)
+            mocksearch.return_value.raw_query_parameters.assert_not_called()
+
+        dqs = DocumentSolrQuerySet()
+        with patch.object(dqs, "search") as mocksearch:
+            # otherwise should search as normal
+            dqs.keyword_search('tag:"marriage payment" shelfmark:"T-S NS"')
+            mocksearch.return_value.raw_query_parameters.assert_called()
+            dqs.keyword_search("shelfmark:NS")
+            mocksearch.return_value.raw_query_parameters.assert_called()
+
     def test_related_to(self, document, join, fragment, empty_solr):
         """should give filtered result: public documents with any shared shelfmarks"""
 
@@ -227,19 +258,20 @@ class TestDocumentSolrQuerySet:
         assert related_docs.filter(pgpid=join.id).count() == 1
 
     def test_clean_html(self):
-        # minimal prettifier; introduces whitespace changes
-        assert clean_html("<li>foo").replace("\n", "") == "<li> foo</li>"
-        # should open unopened </li> tag
-        assert clean_html("foo</li>").replace("\n", "") == "<li> ...foo</li>"
+        # whitespace should be unmodified within <li> tags; minimal prettifier in others
+        assert clean_html("<li>foo</li><p>bar</p>") == "<li>foo</li>\n<p>\n bar\n</p>"
+        # should open and close partial </li> tags
+        assert clean_html("<li>foo") == "<li>foo</li>"
+        assert clean_html("foo</li>") == "<li>...foo</li>"
         # should insert (value - 1) of first numbered <li>
         assert (
             clean_html('foo</li>\n<li value="3">bar</li>').replace("\n", "")
-            == '<li value="2"> ...foo</li><li value="3"> bar</li>'
+            == '<li value="2">...foo</li><li value="3">bar</li>'
         )
         # should work with paragraphs (and not insert ellipsis before paragraph)
         assert (
             clean_html('<p>foo</p>\n</li>\n<li value="3">bar</li>').replace("\n", "")
-            == '<li value="2"> <p>  foo </p></li><li value="3"> bar</li>'
+            == '<li value="2"><p>foo</p></li><li value="3">bar</li>'
         )
 
     def test_get_highlighting(self):
@@ -297,3 +329,98 @@ class TestDocumentSolrQuerySet:
             assert dqs.get_highlighting()["doc.1"]["transcription"][0] == clean_html(
                 "exact match"
             )
+
+    def test_get_highlighting__old_shelfmark(self):
+        dqs = DocumentSolrQuerySet()
+        with patch("geniza.corpus.solr_queryset.super") as mock_super:
+            mock_get_highlighting = mock_super.return_value.get_highlighting
+            test_highlight = {
+                "doc.1": {
+                    # typical formatting for an old_shelfmark highlight
+                    "old_shelfmark": ["", "matched", "secondmatch"],
+                }
+            }
+            mock_get_highlighting.return_value = test_highlight
+            # should flatten list with comma separation
+            assert (
+                dqs.get_highlighting()["doc.1"]["old_shelfmark"]
+                == "matched, secondmatch"
+            )
+
+            test_highlight = {
+                "doc.1": {
+                    "old_shelfmark_t": ["", "matched"],
+                }
+            }
+            mock_get_highlighting.return_value = test_highlight
+            # should use old_shelfmark_t highlight
+            assert dqs.get_highlighting()["doc.1"]["old_shelfmark"] == "matched"
+
+    def test_get_highlighting__regex(self):
+        dqs = DocumentSolrQuerySet()
+        dqs.search_qs = ["transcription_regex:/.*test.*/"]
+        # if regex_query in raw params, should overwrite any normal matches with regex matches
+        with patch("geniza.corpus.solr_queryset.super") as mock_super:
+            mock_get_highlighting = mock_super.return_value.get_highlighting
+            test_highlight = {"document.1": {"transcription": ["match"]}}
+            mock_get_highlighting.return_value = test_highlight
+            with patch.object(dqs, "get_results") as mock_get_results:
+                mock_get_results.return_value = [
+                    {"id": "document.1", "transcription_regex": ["a test text"]}
+                ]
+                highlighting = dqs.get_highlighting()
+                assert highlighting != test_highlight
+                assert "match" not in highlighting["document.1"]["transcription"]
+                assert len(highlighting["document.1"]["transcription"]) == 1
+                assert "<em>test</em>" in highlighting["document.1"]["transcription"][0]
+
+    def test_regex_search(self):
+        dqs = DocumentSolrQuerySet()
+        with patch.object(dqs, "search") as mocksearch:
+            query = "six apartments"
+            dqs.regex_search(query)
+            # should surround with wildcards in order to match entire field,
+            # and with slashes for Lucene regex syntax
+            mocksearch.assert_called_with(f"transcription_regex:/.*{query}.*/")
+
+    def test_get_regex_highlight(self):
+        dqs = DocumentSolrQuerySet()
+        dqs.search_qs = ["transcription_regex:/.*אלאחרף אן למא.*/"]
+        # no match -> None
+        assert dqs.get_regex_highlight("test") == None
+        # use a bit of a real example, with > 300 characters, as a test
+        text = """Recto:\n בש רח נקול נחן אלשהוד [אלוא]צעין כטוטנא תחת הדה אלאחרף אן למא אן כאן \
+יום אלסבת אלסאדס מן שהר אב יהפך לשמחה שנת אתקו לשטרות בעיר קליוב הסמוכה לעיר המלוכה הס[מו]כה \
+לפסטאט מצרים דעל נילוס נהרה מותבה רשותא דאדונינו גאונינו שר שלום הלוי הגאון ראש ישיבת גאון יעקב \
+יהי שמו לעולם אנא חצרנא פי אלמוצע אלדי יצלו פיה ענד מוסי ולד אלאהוב וכאן תם חאצר אהל קליוב שצ \
+//ביצלו// פחצר תם מן קאל להם אעלמו באן יצחק אלסקלי ביגתהד פי עודתה אליכם פאן כונתו פי נפסכם \
+מן מקאמה ענדכם דון """
+        highlight = dqs.get_regex_highlight(text)
+
+        # should highlight the matched portion
+        assert "<em>אלאחרף אן למא</em>" in highlight
+
+        # should shorten context on either side of match to <=150 characters + 2 words
+        assert len(highlight) < len(text)
+        before_match = highlight.split("<em>")[0]
+        assert len(before_match) <= 175
+        after_match = highlight.split("</em>")[1]
+        assert len(after_match) <= 175
+
+        # should support all regex syntax, such as . wildcard and + 1 or more characters
+        dqs.search_qs = ["transcription_regex:/.*אלאחרף.+למא.*/"]
+        highlight = dqs.get_regex_highlight(text)
+        assert "<em>אלאחרף אן למא</em>" in highlight
+
+        # reserved characters should require escape characters for correct results
+        dqs.search_qs = ["transcription_regex:/.*[אלוא]צעין.*/"]
+        highlight = dqs.get_regex_highlight(text)
+        assert highlight is None
+        dqs.search_qs = ["transcription_regex:/.*\[אלוא\]צעין.*/"]
+        highlight = dqs.get_regex_highlight(text)
+        assert "<em>[אלוא]צעין</em>" in highlight
+
+        # multiple matches for the query should be separated by line breaks and ellipsis
+        dqs.search_qs = ["transcription_regex:/.*מן.*/"]
+        highlight = dqs.get_regex_highlight(text)
+        assert "<br />[…]<br />" in highlight

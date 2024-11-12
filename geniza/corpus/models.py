@@ -1,9 +1,11 @@
+import itertools
 import logging
 import re
 from collections import defaultdict
 from copy import deepcopy
 from functools import cached_property
 from itertools import chain
+from time import sleep
 
 from django.conf import settings
 from django.contrib import admin, messages
@@ -75,6 +77,9 @@ class Collection(models.Model):
     location = models.CharField(
         max_length=255, help_text="Current location of the collection", blank=True
     )
+    url = models.URLField(
+        "URL", blank=True, help_text="Link to this collection on the web"
+    )
 
     objects = CollectionManager()
 
@@ -112,6 +117,11 @@ class Collection(models.Model):
     def natural_key(self):
         """natural key: tuple of name and library"""
         return (self.name, self.library)
+
+    @property
+    def full_name(self):
+        """attempt to combine library and collection name into a human readable format"""
+        return ", ".join([n for n in [self.library, self.name] if n])
 
 
 class LanguageScriptManager(models.Manager):
@@ -273,11 +283,12 @@ class Fragment(TrackChangesModel):
             " ".join(
                 # include label as title for now; include canvas as data attribute for reordering
                 # on Document
-                '<div class="admin-thumbnail%s" %s><img src="%s" loading="lazy" height="200" title="%s" /></div>'
+                '<div class="admin-thumbnail%s" %s><img src="%s" loading="lazy" height="%d" title="%s" /></div>'
                 % (
                     " selected" if i in selected else "",
                     f'data-canvas="{list(canvases)[i]}"' if canvases else "",
                     img,
+                    img.size.options["height"] if hasattr(img, "size") else 200,
                     labels[i],
                 )
                 for i, img in enumerate(images)
@@ -497,7 +508,20 @@ class DocumentQuerySet(MultilingualQuerySet):
         return self.get(models.Q(id=pgpid) | models.Q(old_pgpids__contains=[pgpid]))
 
 
-class Document(ModelIndexable, DocumentDateMixin):
+class PermalinkMixin:
+    """Mixin to generate a permalink for Django model objects by removing language code
+    from the object's absolute URL."""
+
+    @property
+    def permalink(self):
+        # generate permalink without language url so that all versions have
+        # the same link and users will be directed to their preferred language
+        # - get current active language, or default language if not active
+        lang = get_language() or settings.LANGUAGE_CODE
+        return absolutize_url(self.get_absolute_url().replace(f"/{lang}/", "/"))
+
+
+class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin):
     """A unified document such as a letter or legal document that
     appears on one or more fragments."""
 
@@ -652,20 +676,24 @@ class Document(ModelIndexable, DocumentDateMixin):
         )
 
     @property
+    def collections(self):
+        """collection objects for associated fragments"""
+        # use set to ensure unique; sort for reliable output order
+        return sorted(
+            set(
+                [
+                    block.fragment.collection
+                    for block in self.textblock_set.all()
+                    if block.fragment.collection
+                ]
+            ),
+            key=lambda c: c.abbrev,
+        )
+
+    @property
     def collection(self):
         """collection (abbreviation) for associated fragments"""
-        # use set to ensure unique; sort for reliable output order
-        return ", ".join(
-            sorted(
-                set(
-                    [
-                        block.fragment.collection.abbrev
-                        for block in self.textblock_set.all()
-                        if block.fragment.collection
-                    ]
-                )
-            )
-        )
+        return ", ".join([coll.abbrev for coll in self.collections])
 
     def all_languages(self):
         """comma delimited string of all primary languages for this document"""
@@ -720,14 +748,6 @@ class Document(ModelIndexable, DocumentDateMixin):
     def get_absolute_url(self):
         """url for this document"""
         return reverse("corpus:document", args=[str(self.id)])
-
-    @property
-    def permalink(self):
-        # generate permalink without language url so that all versions
-        # have the same link and users will be directed preferred language
-        # - get current active language, or default langue if not active
-        lang = get_language() or settings.LANGUAGE_CODE
-        return absolutize_url(self.get_absolute_url().replace(f"/{lang}/", "/"))
 
     def iiif_urls(self):
         """List of IIIF urls for images of the Document's Fragments."""
@@ -833,6 +853,23 @@ class Document(ModelIndexable, DocumentDateMixin):
             iiif_images  # add any remaining images after ordered ones
         )
         return ordered_images
+
+    def list_thumbnail(self):
+        """generate html for thumbnail of first image, for display in related documents lists"""
+        iiif_images = self.iiif_images()
+        if not iiif_images:
+            return ""
+        img = list(iiif_images.values())[0]
+        return Fragment.admin_thumbnails(
+            images=[
+                img["image"]
+                .size(height=60, width=60)
+                .rotation(degrees=img["rotation"])
+                .region(square=True)
+            ],
+            labels=[img["label"]],
+            canvases=iiif_images.keys(),
+        )
 
     def admin_thumbnails(self):
         """generate html for thumbnails of all iiif images, for image reordering UI in admin"""
@@ -1110,7 +1147,11 @@ class Document(ModelIndexable, DocumentDateMixin):
                 "textblock_set",
                 queryset=TextBlock.objects.select_related(
                     "fragment", "fragment__collection", "fragment__manifest"
-                ).prefetch_related("fragment__manifest__canvases"),
+                ).prefetch_related(
+                    "fragment__manifest__canvases",
+                    "fragment__textblock_set",
+                    "fragment__textblock_set__document",
+                ),
             ),
             Prefetch(
                 "footnotes",
@@ -1136,11 +1177,17 @@ class Document(ModelIndexable, DocumentDateMixin):
             "languages",
             "log_entries",
             "dating_set",
+            "persondocumentrelation_set",
+            "documentplacerelation_set",
             Prefetch(
                 "textblock_set",
                 queryset=TextBlock.objects.select_related(
                     "fragment", "fragment__collection", "fragment__manifest"
-                ).prefetch_related("fragment__manifest__canvases"),
+                ).prefetch_related(
+                    "fragment__manifest__canvases",
+                    "fragment__textblock_set",
+                    "fragment__textblock_set__document",
+                ),
             ),
             Prefetch(
                 "footnotes",
@@ -1163,6 +1210,15 @@ class Document(ModelIndexable, DocumentDateMixin):
         # get fragments via textblocks for correct order
         # and to take advantage of prefetching
         fragments = [tb.fragment for tb in self.textblock_set.all()]
+
+        # get related documents: other textblocks on this document's fragments
+        other_textblocks_docs = [
+            f.textblock_set.exclude(document__pk=self.pk).values_list(
+                "document__pk", flat=True
+            )
+            for f in fragments
+        ]
+        related_document_pks = set(itertools.chain.from_iterable(other_textblocks_docs))
         # filter by side so that search results only show the relevant side image(s)
         images = self.iiif_images(filter_side=True).values()
         index_data.update(
@@ -1195,6 +1251,10 @@ class Document(ModelIndexable, DocumentDateMixin):
                 ),
                 # combined original/standard document date for display
                 "document_date_t": strip_tags(self.document_date) or None,
+                # inferred document date for display
+                "document_dating_t": standard_date_display(
+                    "/".join([d.isoformat() for d in self.dating_range() if d])
+                ),
                 # date range for filtering
                 "document_date_dr": self.solr_date_range(),
                 # date range for filtering, but including inferred datings if any exist
@@ -1207,6 +1267,17 @@ class Document(ModelIndexable, DocumentDateMixin):
                 "end_date_i": (
                     self.end_date.numeric_format(mode="max") if self.end_date else None
                 ),
+                # start/end of document date or date range, including inferred datings, for sort
+                "start_dating_i": (
+                    self.dating_range()[0].numeric_format()
+                    if self.dating_range()[0]
+                    else None
+                ),
+                "end_dating_i": (
+                    self.dating_range()[1].numeric_format(mode="max")
+                    if self.dating_range()[1]
+                    else None
+                ),
                 # library/collection possibly redundant?
                 "collection_ss": [str(f.collection) for f in fragments],
                 "tags_ss_lower": [t.name for t in self.tags.all()],
@@ -1214,6 +1285,7 @@ class Document(ModelIndexable, DocumentDateMixin):
                 "old_pgpids_is": self.old_pgpids,
                 "language_code_s": self.primary_lang_code,
                 "language_script_s": self.primary_script,
+                "language_name_ss": [str(l) for l in self.languages.all()],
                 # use image info link without trailing info.json to easily convert back to iiif image client
                 # NOTE: if/when piffle supports initializing from full image uris, we could simplify this
                 # code to index the full image url, with rotation overrides applied
@@ -1224,6 +1296,9 @@ class Document(ModelIndexable, DocumentDateMixin):
                 "iiif_labels_ss": [img["label"] for img in images],
                 "iiif_rotations_is": [img["rotation"] for img in images],
                 "has_image_b": len(images) > 0,
+                "people_count_i": self.persondocumentrelation_set.count(),
+                "places_count_i": self.documentplacerelation_set.count(),
+                "documents_count_i": len(related_document_pks),
             }
         )
 
@@ -1232,10 +1307,13 @@ class Document(ModelIndexable, DocumentDateMixin):
         counts = defaultdict(int)
         # collect transcription and translation texts for indexing
         transcription_texts = []
+        transcription_texts_plaintext = []
         translation_texts = []
         # keep track of translation language for RTL/LTR display
         translation_langcode = ""
         translation_langdir = "ltr"
+        # keep track of translation language names for faceted filtering
+        translation_languages = []
 
         # dict of sets of relations; keys are each source attached to any footnote on this document
         source_relations = defaultdict(set)
@@ -1246,6 +1324,9 @@ class Document(ModelIndexable, DocumentDateMixin):
                 content = fn.content_html_str
                 if content:
                     transcription_texts.append(Footnote.explicit_line_numbers(content))
+                    for canvas in fn.content_text_canvases:
+                        # index plaintext only, per-canvas, for regex
+                        transcription_texts_plaintext.append(canvas)
             elif Footnote.DIGITAL_TRANSLATION in fn.doc_relation:
                 content = fn.content_html_str
                 if content:
@@ -1255,16 +1336,23 @@ class Document(ModelIndexable, DocumentDateMixin):
                         lang = fn.source.languages.first()
                         translation_langcode = lang.code
                         translation_langdir = lang.direction
+                        translation_languages = [
+                            l.name
+                            for l in fn.source.languages.all()
+                            if "Unspecified" not in l.name
+                        ]
             # add any doc relations to this footnote's source's set in source_relations
             source_relations[fn.source] = source_relations[fn.source].union(
                 fn.doc_relation
             )
 
-        # make sure digital editions are also counted as editions,
-        # whether or not there is a separate edition footnote
+        # make sure digital editions/translations are also counted,
+        # whether or not there is a separate edition/translation footnote
         for source, doc_relations in source_relations.items():
             if Footnote.DIGITAL_EDITION in doc_relations:
                 source_relations[source].add(Footnote.EDITION)
+            if Footnote.DIGITAL_TRANSLATION in doc_relations:
+                source_relations[source].add(Footnote.TRANSLATION)
 
         # flatten sets of relations by source into a list of relations
         for relation in list(chain(*source_relations.values())):
@@ -1283,6 +1371,9 @@ class Document(ModelIndexable, DocumentDateMixin):
                 "scholarship_t": [fn.display() for fn in footnotes],
                 # transcription content as html
                 "text_transcription": transcription_texts,
+                # transcription content as plaintext
+                "transcription_regex": transcription_texts_plaintext,
+                "translation_languages_ss": translation_languages,
                 "translation_language_code_s": translation_langcode,
                 "translation_language_direction_s": translation_langdir,
                 # translation content as html

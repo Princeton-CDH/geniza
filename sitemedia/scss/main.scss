@@ -16,12 +16,17 @@
 @use "components/footer";
 @use "components/nowrap";
 @use "components/transcription";
+@use "components/peopleform";
 
 // Page-specific styles
 @use "pages/content";
 @use "pages/document";
 @use "pages/error";
 @use "pages/home";
+@use "pages/people";
+@use "pages/person";
+@use "pages/place";
+@use "pages/places";
 @use "pages/related";
 @use "pages/scholarship";
 @use "pages/search";

@@ -7,7 +7,7 @@ from geniza.corpus.models import Document
 from geniza.footnotes.models import Footnote, Source, SourceType
 
 
-@pytest.mark.second_to_last
+@pytest.mark.order("second_to_last")
 @pytest.mark.django_db
 class TestAssociateRelatedFootnotes(TestMigrations):
     app = "annotations"
@@ -86,7 +86,7 @@ class TestAssociateRelatedFootnotes(TestMigrations):
         ).exists()
 
 
-@pytest.mark.second_to_last
+@pytest.mark.order("second_to_last")
 @pytest.mark.django_db
 class TestAnnotationCleanupNbsp(TestMigrations):
     app = "annotations"

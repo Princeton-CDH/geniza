@@ -1,0 +1,60 @@
+{% load static i18n %}
+
+<div class="container">
+    <table class="related-table related-documents">
+        <thead>
+            <tr>
+                <th{% if "shelfmark" in sort %} class="sorted"{% endif %}>
+                    <a href="?sort=shelfmark_{% if sort == "shelfmark_asc" %}desc{% else %}asc{% endif %}"{% if "shelfmark" in sort %} class="{{ sort }}"{% endif %}>
+                        {# Translators: table header for document name (shelfmark) #}
+                        <span>{% translate 'Document' %}</span>
+                        <svg role="presentation" class="sort-icon"><use xlink:href="{% static 'img/ui/desktop/all/caret-up-down.svg' %}#caret-up-down" /></svg>
+                    </a>
+                </th>
+                <th{% if "doctype" in sort %} class="sorted"{% endif %}>
+                    <a href="?sort=doctype_{% if sort == "doctype_asc" %}desc{% else %}asc{% endif %}"{% if "doctype" in sort %} class="{{ sort }}"{% endif %}>
+                        {# Translators: table header for document type #}
+                        <span>{% translate 'Type' %}</span>
+                        <svg role="presentation" class="sort-icon"><use xlink:href="{% static 'img/ui/desktop/all/caret-up-down.svg' %}#caret-up-down" /></svg>
+                    </a>
+                </th>
+                <th{% if "relation" in sort %} class="sorted"{% endif %}>
+                    <a href="?sort=relation_{% if sort == "relation_asc" %}desc{% else %}asc{% endif %}"{% if "relation" in sort %} class="{{ sort }}"{% endif %}>
+                        {# Translators: table header for document relation (with a person or place) #}
+                        <span>{% translate 'Relation' %}</span>
+                        <svg role="presentation" class="sort-icon"><use xlink:href="{% static 'img/ui/desktop/all/caret-up-down.svg' %}#caret-up-down" /></svg>
+                    </a>
+                </th>
+                <th{% if "date" in sort %} class="sorted"{% endif %}>
+                    <a href="?sort=date_{% if sort == "date_asc" %}desc{% else %}asc{% endif %}"{% if "date" in sort %} class="{{ sort }}"{% endif %}>
+                        {# Translators: table header for document date #}
+                        <span>{% translate 'Date' %}</span>
+                        <svg role="presentation" class="sort-icon"><use xlink:href="{% static 'img/ui/desktop/all/caret-up-down.svg' %}#caret-up-down" /></svg>
+                    </a>
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for rel in relations %}
+                <tr>
+                    <td class="document-title">
+                        {% if rel.document.list_thumbnail %}
+                            {{ rel.document.list_thumbnail }}
+                        {% else %}
+                            {# Translators: label for when no image thumbnail is available #}
+                            <span class="no-image">{% translate 'No Image' %}</span>
+                        {% endif %}
+                        <a href="{{ rel.document.permalink }}" title="{{ rel.document.shelfmark_display }}">
+                            {{ rel.document.shelfmark_display }}
+                        </a>
+                    </td>
+                    <td>{{ rel.document.doctype }}</td>
+                    <td>{{ rel.type }}</td>
+                    <td class="document-date">
+                        {{ rel.document.dating_set.first.display_date|default:rel.document.document_date }}
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>

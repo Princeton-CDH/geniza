@@ -1,12 +1,17 @@
 from dal import autocomplete
 from django import forms
 from django.template.loader import get_template
+from django.utils.translation import gettext_lazy as _
 
+from geniza.common.fields import RangeField, RangeForm
+from geniza.corpus.forms import FacetChoiceField, YearRangeWidget
 from geniza.entities.models import (
     Person,
+    PersonDocumentRelationType,
     PersonEventRelation,
     PersonPersonRelation,
     PersonPlaceRelation,
+    PersonRole,
     PlaceEventRelation,
     PlacePlaceRelation,
 )
@@ -108,6 +113,111 @@ class PlacePlaceForm(forms.ModelForm):
         }
 
 
+class PersonListForm(RangeForm):
+    gender = FacetChoiceField(label=_("Gender"))
+    social_role = FacetChoiceField(label=_("Social role"))
+    document_relation = FacetChoiceField(label=_("Relation to documents"))
+    # translators: label for person activity dates field
+    date_range = RangeField(label=_("Dates"), required=False, widget=YearRangeWidget())
+
+    SORT_CHOICES = [
+        # Translators: label for sort by name
+        ("name", _("Name")),
+        # Translators: label for sort by person activity dates
+        ("date", _("Date")),
+        # Translators: label for sort by social role
+        ("role", _("Social Role")),
+        # Translators: label for sort by number of related documents
+        ("documents", _("Related Documents")),
+        # Translators: label for sort by number of related people
+        ("people", _("Related People")),
+        # Translators: label for sort by number of related places
+        ("places", _("Related Places")),
+    ]
+
+    sort = forms.ChoiceField(
+        # Translators: label for form sort field
+        label=_("Sort by"),
+        choices=SORT_CHOICES,
+        required=False,
+        widget=forms.RadioSelect,
+    )
+
+    SORT_DIR_CHOICES = [
+        # Translators: label for ascending sort
+        ("asc", _("Ascending")),
+        # Translators: label for descending sort
+        ("desc", _("Descending")),
+    ]
+
+    sort_dir = forms.ChoiceField(
+        choices=SORT_DIR_CHOICES,
+        required=False,
+        widget=forms.RadioSelect,
+    )
+
+    # mapping of solr facet fields to form input
+    solr_facet_fields = {
+        "gender": "gender",
+        "role": "social_role",
+        "document_relations": "document_relation",
+    }
+    # mapping of solr facet fields to db models in order to retrieve objects by label
+    solr_db_models = {
+        "role": PersonRole,
+        "document_relations": PersonDocumentRelationType,
+    }
+
+    def get_translated_label(self, field, label):
+        """Lookup translated label via db model object when applicable;
+        handle Person.gender as a special case; and otherwise just return the label"""
+        db_model = self.solr_db_models.get(field, None)
+        if db_model:
+            # use objects_by_label to find original object and use translation
+            return getattr(db_model, "objects_by_label").get(label, label)
+        elif field == "gender":
+            # gender is a ChoiceField with translated labels, keyed on first letter (M,F,U)
+            gender_key = label[0]
+            return dict(Person.GENDER_CHOICES)[gender_key]
+        else:
+            # not gender, can't find db field; just return label as-is
+            return label
+
+    def set_choices_from_facets(self, facets):
+        """Set choices on field from a dictionary of facets"""
+        # borrowed from ppa-django;
+        # populate facet field choices from current facets
+        for key, facet_dict in facets.items():
+            # restructure dict to set values of each key to tuples of (label, count)
+            # labels should be translated, so use original object
+            facet_dict = {
+                label: (self.get_translated_label(key, label), count)
+                for (label, count) in sorted(facet_dict.items())
+            }
+            # use field from facet fields map or else field name as is
+            formfield = self.solr_facet_fields.get(key, key)
+            # for each facet, set the corresponding choice field
+            if formfield in self.fields:
+                self.fields[formfield].populate_from_facets(facet_dict)
+
+    def get_sort_label(self):
+        """Helper method to get the label for the current value of the sort field"""
+        if (
+            self.is_valid()
+            and "sort" in self.cleaned_data
+            and self.cleaned_data["sort"]
+        ):
+            raw_value = self.cleaned_data["sort"]
+            return dict(self.SORT_CHOICES)[raw_value]
+        return None
+
+    def filters_active(self):
+        """Check if any filters are active; returns true if form fields are set"""
+        if self.is_valid():
+            return bool({k: v for k, v in self.cleaned_data.items() if bool(v)})
+        return False
+
+
 class EventPersonForm(forms.ModelForm):
     class Meta:
         model = PersonEventRelation
@@ -133,3 +243,46 @@ class EventForm(forms.ModelForm):
         help_texts = {
             "automatic_date": "Date or date range automatically generated from associated document(s)"
         }
+
+
+class PlaceListForm(forms.Form):
+    SORT_CHOICES = [
+        # Translators: label for sort by name
+        ("name", _("Name")),
+        # Translators: label for sort by number of related documents
+        ("documents", _("Related Documents")),
+        # Translators: label for sort by number of related people
+        ("people", _("Related People")),
+    ]
+
+    sort = forms.ChoiceField(
+        # Translators: label for form sort field
+        label=_("Sort by"),
+        choices=SORT_CHOICES,
+        required=False,
+        widget=forms.RadioSelect,
+    )
+
+    SORT_DIR_CHOICES = [
+        # Translators: label for ascending sort
+        ("asc", _("Ascending")),
+        # Translators: label for descending sort
+        ("desc", _("Descending")),
+    ]
+
+    sort_dir = forms.ChoiceField(
+        choices=SORT_DIR_CHOICES,
+        required=False,
+        widget=forms.RadioSelect,
+    )
+
+    def get_sort_label(self):
+        """Helper method to get the label for the current value of the sort field"""
+        if (
+            self.is_valid()
+            and "sort" in self.cleaned_data
+            and self.cleaned_data["sort"]
+        ):
+            raw_value = self.cleaned_data["sort"]
+            return dict(self.SORT_CHOICES)[raw_value]
+        return None

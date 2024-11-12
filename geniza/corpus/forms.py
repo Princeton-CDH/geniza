@@ -1,5 +1,8 @@
+import re
+
 from dal import autocomplete
 from django import forms
+from django.contrib.admin.widgets import RelatedFieldWidgetWrapper
 from django.db.models import Count
 from django.template.loader import get_template
 from django.utils.safestring import mark_safe
@@ -46,8 +49,8 @@ class SelectWithDisabled(SelectDisabledMixin, forms.Select):
     """
 
 
-class CheckboxSelectWithCount(forms.CheckboxSelectMultiple):
-    # extend default CheckboxSelectMultiple to add facet counts and
+class WidgetCountMixin:
+    # extend default choice field widgets to add facet counts and
     # include per-item count as a data attribute
     facet_counts = {}
 
@@ -65,6 +68,18 @@ class CheckboxSelectWithCount(forms.CheckboxSelectMultiple):
         return context
 
 
+class CheckboxSelectWithCount(WidgetCountMixin, forms.CheckboxSelectMultiple):
+    """
+    Subclass of :class:`django.forms.CheckboxSelectMultiple` with support for facet counts.
+    """
+
+
+class SelectWithCount(WidgetCountMixin, forms.Select):
+    """
+    Subclass of :class:`django.forms.Select` with support for facet counts.
+    """
+
+
 class FacetFieldMixin:
     # Borrowed from ppa-django / mep-django
     # - turn off choice validation (shouldn't fail if facets don't get loaded)
@@ -73,7 +88,19 @@ class FacetFieldMixin:
     def __init__(self, *args, **kwargs):
         if "required" not in kwargs:
             kwargs["required"] = False
+        super().__init__(*args, **kwargs)
 
+    def valid_value(self, value):
+        return True
+
+
+class FacetChoiceField(FacetFieldMixin, forms.ChoiceField):
+    """Choice field where choices are set based on Solr facets"""
+
+    # use a custom widget so we can add facet count as a data attribute
+    widget = CheckboxSelectWithCount
+
+    def __init__(self, *args, **kwargs):
         # get custom kwarg and remove before passing to MultipleChoiceField
         # super method, which would cause an error
         self.widget.legend = None
@@ -86,16 +113,6 @@ class FacetFieldMixin:
         # if no custom legend, set it from label
         if not self.widget.legend:
             self.widget.legend = self.label
-
-    def valid_value(self, value):
-        return True
-
-
-class FacetChoiceField(FacetFieldMixin, forms.ChoiceField):
-    """Choice field where choices are set based on Solr facets"""
-
-    # use a custom widget so we can add facet count as a data attribute
-    widget = CheckboxSelectWithCount
 
     def populate_from_facets(self, facet_dict):
         """
@@ -112,6 +129,40 @@ class FacetChoiceField(FacetFieldMixin, forms.ChoiceField):
         )
         # pass the counts to the widget so it can be set as a data attribute
         self.widget.facet_counts = facet_dict
+
+
+class FacetChoiceSelectField(FacetFieldMixin, forms.ChoiceField):
+    """Choice field where choices are set based on Solr facets"""
+
+    # use a custom widget so we can add facet count as a data attribute
+    widget = SelectWithCount
+    empty_label = None
+
+    def __init__(self, empty_label=None, *args, **kwargs):
+        if empty_label:
+            self.empty_label = empty_label
+        super().__init__(*args, **kwargs)
+
+    def populate_from_facets(self, facet_dict):
+        """
+        Populate the field choices from the facets returned by solr.
+        """
+        # generate the list of choice from the facets
+        self.choices = (
+            (
+                val,
+                mark_safe(
+                    f'<span>{label}</span> (<span class="count">{count:,}</span>)'
+                ),
+            )
+            for val, (label, count) in facet_dict.items()
+        )
+        # pass the counts to the widget so it can be set as a data attribute
+        self.widget.facet_counts = facet_dict
+
+        # add empty label if present (for <select> dropdowns)
+        if self.empty_label:
+            self.choices = [("", self.empty_label)] + self.choices
 
 
 class CheckboxInputWithCount(forms.CheckboxInput):
@@ -161,7 +212,7 @@ class DocumentSearchForm(RangeForm):
         widget=forms.TextInput(
             attrs={
                 # Translators: placeholder for keyword search input
-                "placeholder": _("search by keyword"),
+                "placeholder": _("Search all fields by keyword"),
                 # Translators: accessible label for keyword search input
                 "aria-label": _("Keyword or Phrase"),
                 "type": "search",
@@ -195,6 +246,13 @@ class DocumentSearchForm(RangeForm):
     # Translators: label for end year when filtering by date range
     _("To year")
 
+    MODE_CHOICES = [
+        # Translators: label for general search mode
+        ("general", _("General")),
+        # Translators: label for regex (regular expressions) search mode
+        ("regex", _("RegEx")),
+    ]
+
     # NOTE these are not set by default!
     error_css_class = "error"
     required_css_class = "required"
@@ -206,34 +264,55 @@ class DocumentSearchForm(RangeForm):
         required=False,
         widget=SelectWithDisabled,
     )
-    # Translators: label for filter documents by date range
     docdate = RangeField(
-        label=_("Document Dates (CE)"),
+        # Translators: label for filter documents by date range
+        label=_("Dates"),
         required=False,
         widget=YearRangeWidget(
             attrs={"size": 4, "data-action": "input->search#update"},
         ),
     )
 
+    exclude_inferred = forms.BooleanField(
+        # Translators: label for "exclude inferred dates" search form filter
+        label=_("Exclude inferred dates"),
+        required=False,
+        widget=forms.CheckboxInput,
+    )
+
     doctype = FacetChoiceField(
         # Translators: label for document type search form filter
-        label=_("Document Type"),
+        label=_("Document type"),
     )
     has_image = BooleanFacetField(
         # Translators: label for "has image" search form filter
-        label=_("Has Image"),
+        label=_("Image"),
     )
     has_transcription = BooleanFacetField(
         # Translators: label for "has transcription" search form filter
-        label=_("Has Transcription"),
+        label=_("Transcription"),
     )
     has_translation = BooleanFacetField(
         # Translators: label for "has translation" search form filter
-        label=_("Has Translation"),
+        label=_("Translation"),
     )
     has_discussion = BooleanFacetField(
         # Translators: label for "has discussion" search form filter
-        label=_("Has Discussion"),
+        label=_("Discussion"),
+    )
+    translation_language = FacetChoiceSelectField(
+        # Translators: label for document translation language search form filter
+        label=_("Translation language"),
+        widget=SelectWithCount,
+        empty_label=_("All languages"),
+    )
+
+    mode = forms.ChoiceField(
+        # Translators: label for "search mode" (general or regex)
+        label=_("Search mode"),
+        choices=MODE_CHOICES,
+        required=False,
+        widget=forms.RadioSelect,
     )
 
     # mapping of solr facet fields to form input
@@ -257,6 +336,18 @@ class DocumentSearchForm(RangeForm):
                 {"label": self.SORT_CHOICES[0][1], "disabled": True},
             )
 
+        # if "has translation" is not selected, language dropdown is disabled
+        if not data or not data.get("has_translation", None):
+            self.fields["translation_language"].disabled = True
+
+    def get_translated_label(self, field, label):
+        """Lookup translated label via db model object when applicable;
+        handle Person.gender as a special case; and otherwise just return the label"""
+        if field == "type" or field == "doctype":
+            # for doctype, label should be translated, so use doctype object
+            return DocumentType.objects_by_label.get(label, _("Unknown type"))
+        return label
+
     def filters_active(self):
         """Check if any filters are active; returns true if form fields other than sort or q are set"""
         if self.is_valid():
@@ -275,20 +366,10 @@ class DocumentSearchForm(RangeForm):
         # populate facet field choices from current facets
         for key, facet_dict in facets.items():
             # restructure dict to set values of each key to tuples of (label, count)
-            if key == "type":
-                # for doctype, label should be translated, so use doctype object
-                facet_dict = {
-                    label: (
-                        DocumentType.objects_by_label.get(label, _("Unknown type")),
-                        count,
-                    )
-                    for (label, count) in facet_dict.items()
-                }
-            else:
-                # for other formfields, label == facet name
-                facet_dict = {
-                    label: (label, count) for (label, count) in facet_dict.items()
-                }
+            facet_dict = {
+                label: (self.get_translated_label(key, label), count)
+                for (label, count) in facet_dict.items()
+            }
             # use field from facet fields map or else field name as is
             formfield = self.solr_facet_fields.get(key, key)
             # for each facet, set the corresponding choice field
@@ -313,6 +394,61 @@ class DocumentSearchForm(RangeForm):
             self.add_error(
                 "q", _("Relevance sort is not available without a keyword search term.")
             )
+        # additional validation for regex mode due to some queries that cause Lucene errors
+        mode = cleaned_data.get("mode")
+        if mode == "regex":
+            # reused text about needing an escape character
+            needs_escape = (
+                lambda char: f"If you are searching for the character {char} in a transcription, escape it with \ by writing \{char} instead."
+            )
+            # see error messages for explanations of each regex here
+            if re.search(r"((?<!\\)\{[^0-9])|(^\{)|((?<!\\)\{[^\}]*$)", q):
+                print(q)
+                self.add_error(
+                    "q",
+                    # Translators: error message for malformed curly brace in regular expression
+                    _(
+                        "Regular expression cannot contain { without a preceding character, without an integer afterwards, or without a closing }. %s"
+                        % needs_escape("{")
+                    ),
+                )
+            if re.search(r"(^\*)|((?<!\\)\*\*)", q):
+                self.add_error(
+                    "q",
+                    # Translators: error message for malformed asterisk in regular expression
+                    _(
+                        "Regular expression cannot contain * without a preceding character, or multiple times in a row. %s"
+                        % needs_escape("*")
+                    ),
+                )
+            if re.search(r"(^\+)|((?<!\\)\+\+)", q):
+                self.add_error(
+                    "q",
+                    # Translators: error message for malformed plus sign in regular expression
+                    _(
+                        "Regular expression cannot contain + without a preceding character, or multiple times in a row. %s"
+                        % needs_escape("+")
+                    ),
+                )
+            if re.search(r"(?<!\\)\<", q):
+                self.add_error(
+                    "q",
+                    # Translators: error message for malformed less than sign in regular expression
+                    _(
+                        "Regular expression cannot contain < or use a negative lookbehind query. %s"
+                        % needs_escape("<")
+                    ),
+                )
+            if re.search(r"((?<!\\)\\[ABCE-RTUVXYZabce-rtuvxyz0-9])|((?<!\\)\\$)", q):
+                # see https://github.com/apache/lucene/issues/11678 for more information
+                self.add_error(
+                    "q",
+                    # Translators: error message for malformed backslash in regular expression
+                    _(
+                        "Regular expression cannot contain the escape character \\ followed by an alphanumeric character other than one of DdSsWw, or at the end of a query. %s"
+                        % needs_escape("\\")
+                    ),
+                )
 
 
 class DocumentChoiceField(forms.ModelChoiceField):
@@ -444,3 +580,15 @@ class DocumentPlaceForm(forms.ModelForm):
             "place": autocomplete.ModelSelect2(url="entities:place-autocomplete"),
             "type": autocomplete.ModelSelect2(),
         }
+
+
+class DocumentEventWidgetWrapper(RelatedFieldWidgetWrapper):
+    """Override of RelatedFieldWidgetWrapper to insert custom url params into
+    'add new object' link"""
+
+    def get_context(self, name, value, attrs):
+        """Override get_context to insert an additional URL param, from_document,
+        in order to change min_num dynamically"""
+        context = super().get_context(name, value, attrs)
+        context["url_params"] += "&from_document=true"
+        return context

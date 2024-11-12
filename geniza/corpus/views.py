@@ -1,3 +1,4 @@
+import re
 from ast import literal_eval
 from copy import deepcopy
 from random import randint
@@ -40,19 +41,51 @@ from geniza.footnotes.forms import SourceChoiceForm
 from geniza.footnotes.models import Footnote, Source
 
 
-class DocumentSearchView(ListView, FormMixin, SolrLastModifiedMixin):
+class SolrDateRangeMixin:
+    """Mixin for solr-based views with start and end date fields to get
+    the full range of dates across the solr queryset."""
+
+    # NOTE: should cache this, shouldn't really change that frequently
+    def get_range_stats(self, queryset_cls, field_name):
+        """Return the min and max for range fields based on Solr stats.
+
+        :returns: Dictionary keyed on form field name with a tuple of
+            (min, max) as integers. If stats are not returned from the field,
+            the key is not added to a dictionary.
+        :rtype: dict
+        """
+        stats = queryset_cls().stats("start_dating_i", "end_dating_i").get_stats()
+        if stats.get("stats_fields"):
+            # use minimum from start date and max from end date
+            # - we're storing YYYYMMDD as 8-digit number for this we only want year
+            # convert to str, take first 4 digits, then convert back to int
+            min_val = stats["stats_fields"]["start_dating_i"]["min"]
+            max_val = stats["stats_fields"]["end_dating_i"]["max"]
+
+            # trim from the end to handle 3-digit years; includes .0 at end
+            min_year = int(str(min_val)[:-6]) if min_val else None
+            max_year = int(str(max_val)[:-6]) if max_val else None
+            return {field_name: (min_year, max_year)}
+
+        return {}
+
+
+class DocumentSearchView(
+    ListView, FormMixin, SolrLastModifiedMixin, SolrDateRangeMixin
+):
     model = Document
     form_class = DocumentSearchForm
     context_object_name = "documents"
     template_name = "corpus/document_list.html"
     # Translators: title of document search page
-    page_title = _("Search Documents")
+    page_title = _("Documents")
     # Translators: description of document search page, for search engines
     page_description = _("Search and browse Geniza documents.")
     paginate_by = 50
-    initial = {"sort": "random"}
+    initial = {"sort": "random", "mode": "general"}
     # NOTE: does not filter on status, since changing status could modify the page
     solr_lastmodified_filters = {"item_type_s": "document"}
+    applied_filter_labels = []
 
     # map form sort to solr sort field
     solr_sort = {
@@ -64,6 +97,8 @@ class DocumentSearchView(ListView, FormMixin, SolrLastModifiedMixin):
         "shelfmark": "shelfmark_natsort",
         "docdate_asc": "start_date_i",
         "docdate_desc": "-end_date_i",
+        "docdating_asc": "start_dating_i",
+        "docdating_desc": "-end_dating_i",
     }
 
     def dispatch(self, request, *args, **kwargs):
@@ -84,38 +119,17 @@ class DocumentSearchView(ListView, FormMixin, SolrLastModifiedMixin):
             return None
         return super().last_modified()
 
-    def get_solr_sort(self, sort_option):
+    def get_solr_sort(self, sort_option, exclude_inferred=False):
         """Return solr sort field for user-seleted sort option;
         generates random sort field using solr random dynamic field;
         otherwise uses solr sort field from :attr:`solr_sort`"""
         if sort_option == "random":
             # use solr's random dynamic field to sort randomly
             return "random_%s" % randint(1000, 9999)
+        elif "docdate" in sort_option and not exclude_inferred:
+            # use inferred datings if exclude_inferred is not true
+            sort_option = sort_option.replace("date", "dating")
         return self.solr_sort[sort_option]
-
-    # NOTE: should cache this, shouldn't really change that frequently
-    def get_range_stats(self):
-        """Return the min and max for range fields based on Solr stats.
-
-        :returns: Dictionary keyed on form field name with a tuple of
-            (min, max) as integers. If stats are not returned from the field,
-            the key is not added to a dictionary.
-        :rtype: dict
-        """
-        stats = DocumentSolrQuerySet().stats("start_date_i", "end_date_i").get_stats()
-        if stats.get("stats_fields"):
-            # use minimum from start date and max from end date
-            # - we're storing YYYYMMDD as 8-digit number for this we only want year
-            # convert to str, take first 4 digits, then convert back to int
-            min_val = stats["stats_fields"]["start_date_i"]["min"]
-            max_val = stats["stats_fields"]["end_date_i"]["max"]
-
-            # trim from the end to handle 3-digit years; includes .0 at end
-            min_year = int(str(min_val)[:-6]) if min_val else None
-            max_year = int(str(max_val)[:-6]) if max_val else None
-            return {"docdate": (min_year, max_year)}
-
-        return {}
 
     def get_form_kwargs(self):
         """get form arguments from request and configured defaults"""
@@ -140,9 +154,32 @@ class DocumentSearchView(ListView, FormMixin, SolrLastModifiedMixin):
 
         kwargs["data"] = form_data
         # get min/max configuration for document date range field
-        kwargs["range_minmax"] = self.get_range_stats()
+        kwargs["range_minmax"] = self.get_range_stats(
+            queryset_cls=DocumentSolrQuerySet, field_name="docdate"
+        )
 
         return kwargs
+
+    def get_applied_filter_labels(self, form, field, filters):
+        """return a list of objects with field/value pairs, and translated labels,
+        one for each applied filter"""
+        labels = []
+        for value in filters:
+            # remove escape characters
+            value = value.replace("\\", "")
+            # get translated label using form helper method
+            label = form.get_translated_label(field, value)
+            # return object with original field and value, so we can unapply programmatically
+            labels.append({"field": field, "value": value, "label": label})
+        return labels
+
+    def get_boolfield_label(self, form, fieldname):
+        """Return a label dict for a boolean field (works differently than other fields)"""
+        return {
+            "field": fieldname,
+            "value": "on",
+            "label": form.fields[fieldname].label,
+        }
 
     def get_queryset(self):
         """Perform requested search and return solr queryset"""
@@ -157,8 +194,12 @@ class DocumentSearchView(ListView, FormMixin, SolrLastModifiedMixin):
                 "has_digital_translation",
                 "has_discussion",
             )
+            .facet_field(
+                "translation_language", exclude="translation_language", sort="value"
+            )
             .facet_field("type", exclude="type", sort="value")
         )
+        self.applied_filter_labels = []
 
         form = self.get_form()
         # return empty queryset if not valid
@@ -169,7 +210,11 @@ class DocumentSearchView(ListView, FormMixin, SolrLastModifiedMixin):
         else:
             search_opts = form.cleaned_data
 
-            if search_opts["q"]:
+            if search_opts["q"] and search_opts["mode"] == "regex":
+                # use regex search if "mode" is "regex"
+                documents = documents.regex_search(search_opts["q"])
+
+            elif search_opts["q"]:
                 # NOTE: using requireFieldMatch so that field-specific search
                 # terms will NOT be used for highlighting text matches
                 # (unless they are in the appropriate field)
@@ -212,35 +257,81 @@ class DocumentSearchView(ListView, FormMixin, SolrLastModifiedMixin):
                     )
                     # highlight old shelfmark so we can show match in results
                     .highlight("old_shelfmark", requireFieldMatch=True)
+                    .highlight("old_shelfmark_t", requireFieldMatch=True)
                     .also("score")
                 )  # include relevance score in results
 
             # order by sort option
-            documents = documents.order_by(self.get_solr_sort(search_opts["sort"]))
+            documents = documents.order_by(
+                self.get_solr_sort(
+                    search_opts["sort"], search_opts.get("exclude_inferred", False)
+                )
+            )
 
             # filter by type if specified
             if search_opts["doctype"]:
                 typelist = literal_eval(search_opts["doctype"])
                 quoted_typelist = ['"%s"' % doctype for doctype in typelist]
                 documents = documents.filter(type__in=quoted_typelist, tag="type")
+                self.applied_filter_labels += self.get_applied_filter_labels(
+                    form, "doctype", typelist
+                )
+
+            # filter by translation language if specified
+            if search_opts["translation_language"]:
+                lang = search_opts["translation_language"]
+                documents = documents.filter(
+                    translation_language=lang, tag="translation_language"
+                )
+                self.applied_filter_labels += self.get_applied_filter_labels(
+                    form, "translation_language", [lang]
+                )
 
             # image filter
             if search_opts["has_image"] == True:
                 documents = documents.filter(has_image=True)
+                self.applied_filter_labels.append(
+                    self.get_boolfield_label(form, "has_image")
+                )
 
             # scholarship filters
             if search_opts["has_transcription"] == True:
                 documents = documents.filter(has_digital_edition=True)
+                self.applied_filter_labels.append(
+                    self.get_boolfield_label(form, "has_transcription")
+                )
             if search_opts["has_discussion"] == True:
                 documents = documents.filter(has_discussion=True)
+                self.applied_filter_labels.append(
+                    self.get_boolfield_label(form, "has_discussion")
+                )
             if search_opts["has_translation"] == True:
                 documents = documents.filter(has_digital_translation=True)
+                self.applied_filter_labels.append(
+                    self.get_boolfield_label(form, "has_translation")
+                )
             if search_opts["docdate"]:
                 # date range filter; returns tuple of value or None for open-ended range
                 start, end = search_opts["docdate"]
-                documents = documents.filter(
-                    document_date_dr="[%s TO %s]" % (start or "*", end or "*")
+                date_filter = "[%s TO %s]" % (start or "*", end or "*")
+                date_field = (
+                    "document_date_dr"
+                    if search_opts.get("exclude_inferred", False)
+                    else "document_dating_dr"
                 )
+                documents = documents.filter(**{date_field: date_filter})
+                label = "%s–%s" % (start, end)
+                if start and not end:
+                    label = _("After %s") % start
+                elif end and not start:
+                    label = _("Before %s") % end
+                self.applied_filter_labels += [
+                    {
+                        "field": "docdate",
+                        "value": search_opts["docdate"],
+                        "label": label,
+                    }
+                ]
 
         self.queryset = documents
 
@@ -271,7 +362,22 @@ class DocumentSearchView(ListView, FormMixin, SolrLastModifiedMixin):
         highlights = paged_result.get_highlighting() if paged_result.count() else {}
         facet_dict = self.queryset.get_facets()
         # populate choices for facet filter fields on the form
-        context_data["form"].set_choices_from_facets(facet_dict.facet_fields)
+        try:
+            context_data["form"].set_choices_from_facets(facet_dict.facet_fields)
+        except AttributeError:
+            # in the event of a solr error (which causes an AttributeError on facet_dict),
+            # reset queryset to none() so we can display facet fields
+            self.queryset = self.queryset.none()
+            facet_dict = self.queryset.get_facets()
+            context_data["form"].set_choices_from_facets(facet_dict.facet_fields)
+            if self.request.GET.get("mode") == "regex":
+                context_data["form"].add_error(
+                    "q",
+                    # Translators: General error text for regular expression errors
+                    _(
+                        "Error retrieving search results. Check regular expression for errors such as unescaped or unclosed brackets or parentheses."
+                    ),
+                )
         context_data.update(
             {
                 "highlighting": highlights,
@@ -280,6 +386,7 @@ class DocumentSearchView(ListView, FormMixin, SolrLastModifiedMixin):
                 "page_type": "search",
                 "page_includes_transcriptions": True,  # preload transcription font
                 "highlighting": highlights,
+                "applied_filters": self.applied_filter_labels,
             }
         )
 
@@ -366,14 +473,21 @@ class DocumentDetailView(DocumentDetailBase, DetailView):
                 "images": images,
                 # first image for twitter/opengraph meta tags
                 "meta_image": list(images.values())[0]["image"] if images else None,
-                # show the first two available panels by default (in order of priority)
-                "default_shown": available_panels[:2],
+                # show all available panels by default
+                "default_shown": available_panels,
                 # disable any fully unavailable panels
                 "disabled": [
                     panel
                     for panel in ["images", "translation", "transcription"]
                     if panel not in available_panels
                 ],
+                # related entities: sorted by type for grouping, and slug for alphabetization
+                "related_people": self.object.persondocumentrelation_set.order_by(
+                    "type__name", "person__slug"
+                ),
+                "related_places": self.object.documentplacerelation_set.order_by(
+                    "type__name", "place__slug"
+                ),
             }
         )
         return context_data
@@ -897,6 +1011,7 @@ class DocumentTranscribeView(PermissionRequiredMixin, DocumentDetailView):
                 if source
                 else "",
                 "source_label": source_label if source_label else "",
+                "authors_count": source.authors.count() if source else 0,
                 "page_type": "document annotating",
                 "disabled": disabled,
                 "default_shown": default_shown,

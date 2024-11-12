@@ -1,0 +1,405 @@
+// -----------------------------------------------------------------------------
+// Form for filtering the person list/browse page.
+// -----------------------------------------------------------------------------
+
+@use "../base/a11y";
+@use "../base/breakpoints";
+@use "../base/colors";
+@use "../base/fonts";
+@use "../base/spacing";
+@use "../base/typography";
+
+main.people,
+main.search {
+    // filters section
+    fieldset#filters {
+        // only display if targeted/expanded
+        display: none;
+        &:target:not([aria-expanded="false"]),
+        &[aria-expanded="true"] {
+            // mobile view: flex column
+            display: flex;
+            flex-flow: column;
+            gap: 1.5rem;
+            background-color: var(--background);
+            // mobile: fixed above all other content
+            z-index: 8;
+            position: fixed;
+            max-width: none;
+            width: min(20rem, 100vw);
+            height: 100vh;
+            top: 0;
+            right: 0;
+            overflow-y: scroll;
+            padding: 1rem;
+            pointer-events: all;
+            align-items: flex-start;
+            @include breakpoints.for-tablet-landscape-up {
+                // desktop view: grid
+                display: grid;
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+                gap: 2rem;
+                padding: 1.5rem 0;
+                // desktop: in flow
+                overflow-y: auto;
+                top: auto;
+                right: auto;
+                position: static;
+                width: auto;
+                height: auto;
+            }
+        }
+        & > legend {
+            // outermost legend should be visible on mobile, sr-only on desktop
+            @include breakpoints.for-tablet-landscape-up {
+                @include a11y.sr-only;
+            }
+            // on mobile, should look like header
+            float: left;
+            width: 100%;
+            font-family: fonts.$primary-bold;
+            font-size: 1.5rem;
+            line-height: 1.4166;
+        }
+        label,
+        fieldset legend {
+            width: 100%;
+            span.fieldname {
+                display: block;
+                @include typography.form-option-sm-bold;
+                font-size: typography.$text-size-lg;
+                line-height: 1.166;
+                margin-bottom: 0.25rem;
+            }
+            &:not(last-of-type) {
+                border-bottom: 1px solid var(--background-gray);
+                padding-bottom: 1rem;
+                @include breakpoints.for-tablet-landscape-up {
+                    border: none;
+                    padding-bottom: 0;
+                }
+            }
+        }
+        li label {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            // focus indicator for accessibility (will not appear on click)
+            &:has(input[type="checkbox"]:focus-visible) {
+                outline: 1px solid var(--secondary);
+            }
+            border: none;
+            padding: 0;
+        }
+        input[type="checkbox"] {
+            @include a11y.sr-only;
+        }
+        input[type="checkbox"] + span {
+            display: flex;
+            align-items: center;
+        }
+        input[type="checkbox"] + span,
+        input[type="checkbox"] + span + span {
+            @include typography.form-option-xs;
+        }
+        input[type="checkbox"] + span::before {
+            display: block;
+            content: "\f0ec"; // phosphor circle icon
+            @include typography.icon-button;
+            font-size: typography.$text-size-xl;
+            transition: transform 0.75s ease;
+            float: left;
+            color: var(--disabled);
+            padding-right: 0.5rem;
+            margin-top: -1px;
+        }
+        input[type="checkbox"]:active + span::before,
+        input[type="checkbox"]:checked + span::before {
+            content: "\f851"; // phosphor check-circle-fill icon
+            color: var(--secondary);
+        }
+        input[type="checkbox"]:checked:active + span::before {
+            content: "\f0ec"; // phosphor circle icon
+        }
+        div.fieldset-left-column {
+            width: 100%;
+            gap: 1rem;
+            @include breakpoints.for-tablet-landscape-up {
+                width: auto;
+                gap: 3rem;
+            }
+            display: flex;
+            flex-flow: column;
+            div.inputs {
+                display: flex;
+                width: 100%;
+                flex-flow: row nowrap;
+                gap: 0.5rem;
+                label {
+                    // TODO: add sr-only class in HTML after doc search redesign
+                    @include a11y.sr-only;
+                }
+                input[type="number"] {
+                    flex: 1 1 auto;
+                    height: 2.25rem;
+                    padding: 0 0.5rem 0 1rem;
+                    background-color: var(--background-light);
+                    color: var(--on-background-light);
+                    border: none;
+                    @include typography.meta;
+                    &::placeholder {
+                        color: var(--date-placeholder);
+                    }
+                }
+            }
+        }
+        .includes-fields {
+            width: 100%;
+            legend {
+                border: none;
+                padding: 0;
+            }
+            ul {
+                border-bottom: 1px solid var(--background-gray);
+                padding-bottom: 1rem;
+                @include breakpoints.for-tablet-landscape-up {
+                    border: none;
+                    padding: 0;
+                }
+            }
+        }
+    }
+}
+
+// shared styles between people and places
+main.people,
+main.places,
+main.search {
+    // header row (result count and sort options)
+    div.header-row {
+        display: flex;
+        align-items: baseline;
+        flex-flow: row;
+        justify-content: space-between;
+        align-items: center;
+        gap: 0.75rem;
+        padding-top: 1.5rem;
+        @include breakpoints.for-tablet-landscape-up {
+            gap: 1rem;
+        }
+        span.result-count {
+            flex-grow: 1;
+            @include typography.meta;
+            font-weight: normal;
+        }
+        fieldset#sort-field {
+            display: flex;
+            align-items: center;
+            flex-flow: row nowrap;
+            gap: 0.5rem;
+            & > label {
+                @include typography.meta-bold;
+                &::after {
+                    content: ":";
+                }
+            }
+            // people/places sort "dropdown" (actually details/summary)
+            details {
+                position: relative;
+                summary {
+                    @include typography.meta;
+                    display: flex;
+                    align-items: center;
+                    cursor: pointer;
+                    list-style-type: none;
+                    // Suppress default details marker
+                    &::-webkit-details-marker {
+                        display: none;
+                    }
+                    &::after {
+                        content: "\f0c2"; // phosphor caret-down icon
+                        @include typography.icon-button-sm;
+                        margin-left: 0.5rem;
+                        transition: transform 0.75s ease;
+                        float: right;
+                    }
+                }
+                // sort options, floats above content
+                div#sort-options {
+                    position: absolute;
+                    right: 0;
+                    margin-top: 0.5rem;
+                    min-width: 13rem;
+                    padding: 1rem;
+                    background-color: var(--background);
+                    box-shadow: 0px 1px 8px 0px var(--on-background-25);
+                    ul {
+                        display: flex;
+                        flex-flow: column;
+                        gap: 0.35rem;
+                        // first UL = main sort options
+                        &:first-of-type {
+                            border-bottom: 1px solid var(--disabled);
+                            padding-bottom: 0.75rem;
+                            label:has(input:checked) {
+                                @include typography.meta-bold;
+                            }
+                            input {
+                                accent-color: var(--secondary);
+                                min-width: 1.05rem;
+                                height: 1rem;
+                                margin: 0 0.5rem 0.2rem 0;
+                                overflow: visible;
+                            }
+                        }
+                        // last UL = ascending/descending only
+                        &:last-of-type {
+                            padding-top: 0.75rem;
+                            input {
+                                @include a11y.sr-only;
+                            }
+                            label {
+                                border-radius: 5px;
+                                &:before {
+                                    font-family: "Phosphor";
+                                    margin: 0 0.5rem;
+                                }
+                                &:has(input:checked) {
+                                    background-color: var(--background-gray);
+                                }
+                                &:focus-within,
+                                &:has(*:focus-within) {
+                                    outline: 1px solid var(--secondary);
+                                }
+                            }
+                            li:first-of-type label::before {
+                                // ascending
+                                content: "\f061"; // phosphor arrow-up icon
+                            }
+                            li:last-of-type label::before {
+                                // descending
+                                content: "\f022"; // phosphor arrow-down icon
+                            }
+                        }
+                    }
+                    label {
+                        width: 100%;
+                        cursor: pointer;
+                        display: flex;
+                        flex-flow: row;
+                        align-items: center;
+                        @include typography.meta;
+                        input {
+                            cursor: pointer;
+                        }
+                    }
+                }
+            }
+            &:has(select) {
+                gap: 0.25rem;
+            }
+            select {
+                // A reset of styles, including removing the default dropdown arrow
+                // @link https://moderncss.dev/custom-select-styles-with-pure-css/
+                -webkit-appearance: none;
+                -moz-appearance: none;
+                appearance: none;
+                border: none;
+                font-family: inherit;
+                font-size: inherit;
+                border-radius: 0;
+                // Remove dropdown arrow in IE10 & IE11
+                // @link https://www.filamentgroup.com/lab/select-css.html
+                &::-ms-expand {
+                    display: none;
+                }
+                @include typography.meta;
+                position: relative;
+                cursor: pointer;
+                padding-left: 0.25rem;
+                padding-right: 2.25rem;
+                margin-right: spacing.$spacing-3xs;
+                background: transparent;
+                color: var(--on-background);
+                max-width: 33vw;
+                text-overflow: ellipsis;
+                @include breakpoints.for-tablet-landscape-up {
+                    max-width: none;
+                }
+            }
+            i.ph-caret-down {
+                @include typography.icon-button-md;
+                margin-left: -2.25rem;
+                margin-right: -0.25rem;
+                z-index: 1;
+                pointer-events: none;
+            }
+        }
+    }
+}
+
+// RTL overrides
+html[dir="rtl"] main.people,
+html[dir="rtl"] main.search {
+    div#filters-header #applied-filters::before {
+        margin-left: 0;
+        border-left: none;
+        margin-right: -1.5rem;
+        border-right: 1px solid colors.$gray;
+    }
+    a#filters-button {
+        padding: 0 0.5rem;
+        right: auto;
+        left: 1rem;
+        @include breakpoints.for-tablet-landscape-up {
+            padding: 0 0.5rem 0 2rem;
+            left: auto;
+        }
+        span {
+            margin-left: auto;
+            margin-right: 0.25rem;
+            &:last-of-type:after {
+                right: auto;
+                left: -1.5rem;
+            }
+        }
+    }
+    a#close-filters-modal {
+        right: auto;
+        left: 0.25rem;
+    }
+    form input[type="checkbox"] + span::before {
+        float: right;
+        padding-right: 0;
+        padding-left: 0.5rem;
+    }
+    fieldset#filters:target:not([aria-expanded="false"]),
+    fieldset#filters[aria-expanded="true"] {
+        right: auto;
+        left: 0;
+    }
+    div.header-row fieldset#sort-field {
+        details {
+            summary::after {
+                margin-right: 0.5rem;
+                margin-left: 0;
+                float: left;
+            }
+            div#sort-options {
+                right: auto;
+                left: 0;
+            }
+        }
+        select {
+            padding-right: 0.25rem;
+            padding-left: 2.25rem;
+            margin-left: spacing.$spacing-3xs;
+            margin-right: 0;
+        }
+        i.ph-caret-down {
+            margin-right: -2.25rem;
+            margin-left: -0.25rem;
+        }
+    }
+}

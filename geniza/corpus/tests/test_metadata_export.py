@@ -1,34 +1,10 @@
 import codecs
 import csv
-import time
-from datetime import datetime, timedelta
-from unittest.mock import Mock, patch
 
 import pytest
-from django.conf import settings
-from django.contrib import admin
-from django.contrib.admin.models import ADDITION, CHANGE, LogEntry
-from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
-from django.core.exceptions import ValidationError
-from django.db.models.query import EmptyQuerySet
-from django.forms import modelform_factory
-from django.forms.models import model_to_dict
-from django.http import HttpResponseRedirect
-from django.test import RequestFactory
-from django.urls import reverse
 from django.utils import timezone
-from django.utils.timezone import now
-from pytest_django.asserts import assertContains, assertNotContains
 
-from geniza.corpus.admin import (
-    DocumentAdmin,
-    DocumentForm,
-    FragmentAdmin,
-    FragmentTextBlockInline,
-    HasTranscriptionListFilter,
-    LanguageScriptAdmin,
-)
 from geniza.corpus.metadata_export import (
     AdminDocumentExporter,
     FragmentExporter,
@@ -42,7 +18,6 @@ from geniza.corpus.models import (
     DocumentType,
     Fragment,
     LanguageScript,
-    TextBlock,
 )
 from geniza.footnotes.models import Creator, Footnote, Source, SourceType
 

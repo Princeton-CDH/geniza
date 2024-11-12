@@ -5,7 +5,17 @@ import { ApplicationController, useDebounce } from "stimulus-use";
 import * as Turbo from "@hotwired/turbo";
 
 export default class extends Controller {
-    static targets = ["query", "sort", "filterModal", "doctypeFilter"];
+    static targets = [
+        "query",
+        "sort",
+        "filterModal",
+        "filtersButton",
+        "doctypeFilter",
+        "dropdownDetails",
+        "helpDialog",
+        "placesMode",
+        "peopleMode",
+    ];
     static debounces = ["update"];
 
     connect() {
@@ -26,26 +36,104 @@ export default class extends Controller {
     openFilters(e) {
         e.preventDefault();
         this.filterModalTarget.setAttribute("aria-expanded", "true");
-        window.sessionStorage.setItem("filters-expanded", "true");
+        const searchPage = this.element.dataset.page;
+        window.sessionStorage.setItem(`${searchPage}-filters-expanded`, "true");
+    }
+
+    toggleFiltersOpen(e) {
+        // toggle filters modal/panel open and closed
+        e.preventDefault();
+        e.currentTarget.classList.toggle("open");
+        const filtersOpen =
+            this.filterModalTarget.getAttribute("aria-expanded");
+        const newFiltersOpen = filtersOpen === "true" ? "false" : "true";
+        this.filterModalTarget.setAttribute("aria-expanded", newFiltersOpen);
+        const searchPage = this.element.dataset.page;
+        window.sessionStorage.setItem(
+            `${searchPage}-filters-expanded`,
+            newFiltersOpen
+        );
     }
 
     closeFilters(e) {
+        // close filter modal / panel if open
         e.preventDefault();
         this.filterModalTarget.setAttribute("aria-expanded", "false");
-        window.sessionStorage.setItem("filters-expanded", "false");
+        const searchPage = this.element.dataset.page;
+        window.sessionStorage.setItem(
+            `${searchPage}-filters-expanded`,
+            "false"
+        );
+        if (this.hasFiltersButtonTarget) {
+            this.filtersButtonTarget.classList.remove("open");
+        }
         this.navBackToSearch();
     }
 
     filterModalTargetConnected() {
         // Expanded/collapsed state should persist when connected
-        let savedFilterState =
-            window.sessionStorage.getItem("filters-expanded");
+        const searchPage = this.element.dataset.page;
+        let savedFilterState = window.sessionStorage.getItem(
+            `${searchPage}-filters-expanded`
+        );
         if (savedFilterState) {
             this.filterModalTarget.setAttribute(
                 "aria-expanded",
                 savedFilterState
             );
+            if (this.hasFiltersButtonTarget && savedFilterState === "true") {
+                this.filtersButtonTarget.classList.add("open");
+            }
         }
+    }
+
+    unapplyFilter(e) {
+        // unapply a filter by field and value pair
+        const filterName = e.currentTarget.dataset.field;
+        const filterValue = e.currentTarget.value;
+        const searchParams = new URLSearchParams(window.location.search);
+        if (searchParams.has(filterName, filterValue)) {
+            let selector = `value*="${filterValue}"`;
+            if (filterValue === "on") {
+                selector = "checked";
+            }
+            let appliedFilter = this.filterModalTarget.querySelector(
+                `label[for*="${filterName}"] input[${selector}]`
+            );
+            if (appliedFilter) {
+                appliedFilter.checked = false;
+            } else {
+                appliedFilter = this.filterModalTarget.querySelector(
+                    `label[for*="${filterName}"] option[${selector}]`
+                );
+                appliedFilter.selected = false;
+            }
+        } else if (
+            ["date_range", "docdate"].includes(filterName) &&
+            (searchParams.has("date_range_0") ||
+                searchParams.has("date_range_1") ||
+                searchParams.has("docdate_0") ||
+                searchParams.has("docdate_1"))
+        ) {
+            // special handling for date range filter
+            const appliedFilters = this.filterModalTarget.querySelectorAll(
+                `label[for*="${filterName}"] input`
+            );
+            appliedFilters.forEach((f) => (f.value = ""));
+        }
+    }
+
+    clearFilters(e) {
+        // clear all filters
+        e.preventDefault();
+        const appliedFilters =
+            this.filterModalTarget.querySelectorAll("input[checked]");
+        appliedFilters.forEach((f) => (f.checked = false));
+        const dateFilters = this.filterModalTarget.querySelectorAll(
+            "input[type='number']"
+        );
+        dateFilters.forEach((f) => (f.value = ""));
+        this.element.requestSubmit();
     }
 
     // doctype filter <details> element
@@ -131,5 +219,63 @@ export default class extends Controller {
         // disable relevance sort
         this.relevanceSortElement.disabled = true;
         this.relevanceSortElement.ariaDisabled = true;
+    }
+
+    clickCloseDropdown(e) {
+        // Event listener to close the list view sort dropdown <details> element when a click is
+        // registered outside of it. This needs to be on the whole document because the click could
+        // be from anywhere!
+        this.dropdownDetailsTargets.forEach((target) => {
+            if (target.open && !target.contains(e.target)) {
+                target.removeAttribute("open");
+            }
+        });
+    }
+
+    preventEnterKeypress(e) {
+        // text input elements like the date range will try to click buttons in the form
+        // if Enter is pressed while they are focused, so prevent that behavior
+        if (e.key === "Enter") {
+            e.preventDefault();
+        }
+    }
+
+    toggleHelpDialog() {
+        // open or close the help dialog modal
+        if (this.helpDialogTarget.open) {
+            this.helpDialogTarget.close();
+        } else {
+            this.helpDialogTarget.showModal();
+        }
+    }
+
+    onToggleMap(e) {
+        // for the places list page, handle toggling the map on and off on mobile
+        if (!e.currentTarget.checked) {
+            this.placesModeTargetConnected();
+        }
+    }
+
+    placesModeTargetConnected() {
+        // for the mobile places list page, scroll to the top on load if the map is visible
+        const isMobile = window.innerWidth <= 900;
+        if (isMobile) {
+            window.scrollTo({ top: 0 });
+        }
+    }
+
+    // person list view mode checkbox
+    togglePeopleViewMode(e) {
+        // save in session storage
+        window.sessionStorage.setItem("people-list-view", e.target.checked);
+    }
+
+    peopleModeTargetConnected() {
+        // Saved mode state should persist when connected
+        let isPeopleListMode =
+            window.sessionStorage.getItem("people-list-view");
+        if (isPeopleListMode === "true") {
+            this.peopleModeTarget.checked = true;
+        }
     }
 }

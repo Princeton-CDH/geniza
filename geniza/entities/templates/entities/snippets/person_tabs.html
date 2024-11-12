@@ -1,0 +1,44 @@
+{% load i18n %}
+<!-- person detail page navigation -->
+{# Translators: accessibility text label for person detail view tabs navigation #}
+<nav aria-label="{% translate "tabs" %}" id="tabs">
+    {% with n_reldocs=person.documents.count n_relpeople=person.related_people_count n_relplaces=person.personplacerelation_set.count %}
+        <ul class="tabs">
+            {% url 'entities:person' slug=person.slug as person_url %}
+            {% translate "Person Details" as details_text %}
+            <li><a href="{{ person_url }}"{% if request.path == person_url %} aria-current="page"{% endif %}>{{ details_text }}</a></li>
+
+            {# TODO: Enable these tabs when each design is implemented #}
+            {# Translators: n_reldocs is number of related documents #}
+            {% blocktranslate asvar reldoc_text %}Related Documents ({{ n_reldocs }}){% endblocktranslate %}
+            {% url 'entities:person-documents' slug=person.slug as reldoc_url %}
+            <li>{% if n_reldocs > 0 %}<a href="{{ reldoc_url }}"{% if request.path == reldoc_url %} aria-current="page"{% endif %}>{{ reldoc_text }}</a>{% else %}<span disabled aria-disabled="true">{{ reldoc_text }}</span>{% endif %}</li>
+
+            {# Translators: n_relpeople is number of related people #}
+            {% blocktranslate asvar relpeople_text %}Related People ({{ n_relpeople }}){% endblocktranslate %}
+            {% url 'entities:person-people' slug=person.slug as relpeople_url %}
+            <li>{% if n_relpeople > 0 %}<a href="{{ relpeople_url }}"{% if request.path == relpeople_url %} aria-current="page"{% endif %}>{{ relpeople_text }}</a>{% else %}<span disabled aria-disabled="true">{{ relpeople_text }}</span>{% endif %}</li>
+
+            {% url 'entities:person-places' slug=person.slug as relplace_url %}
+            {# Translators: n_relplaces is number of related places #}
+            {% blocktranslate asvar relplace_text %}Related Places ({{ n_relplaces }}){% endblocktranslate %}
+            <li>{% if n_relplaces > 0 %}<a href="{{ relplace_url }}"{% if request.path == relplace_url %} aria-current="page"{% endif %} data-turbo="false">{{ relplace_text }}</a>{% else %}<span disabled aria-disabled="true">{{ relplace_text }}</span>{% endif %}</li>
+        </ul>
+        {# select dropdown for mobile only #}
+        {# Translators: accessibility text label for person pages navigation on mobile devices #}
+        <select aria-label="{% translate "page select" %}" class="mobile-select" data-controller="menu" data-action="change->menu#changePage">
+            <option value="{{ person_url }}"{% if request.path == person_url %} selected{% endif %}>
+                {{ details_text }}
+            </option>
+            <option value="{{ reldoc_url }}"{% if n_reldocs == 0 %} disabled{% elif request.path == reldoc_url %} selected{% endif %}>
+                {{ reldoc_text }}
+            </option>
+            <option value="{{ relpeople_url }}"{% if n_relpeople == 0 %} disabled{% elif request.path == relpeople_url %} selected{% endif %}>
+                {{ relpeople_text }}
+            </option>
+            <option value="{{ relplace_url }}"{% if n_relplaces == 0 %} disabled{% elif request.path == relplace_url %} selected{% endif %}>
+                {{ relplace_text }}
+            </option>
+        </select>
+    {% endwith %}
+</nav>

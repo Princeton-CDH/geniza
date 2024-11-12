@@ -4,7 +4,10 @@
 {% block meta_title %}{{ page_title }}{% endblock meta_title %}
 {% block meta_description %}{{ page_description }}{% endblock meta_description %}
 {% block extrameta %}
-    <link rel="canonical" href="{{ document.permalink }}" />
+    {# use English page as canonical for search engine crawlers (no redirects) #}
+    {% language "en" %}
+        <link rel="canonical" href="{% fullurl "corpus:document" document.pk %}" />
+    {% endlanguage %}
     {% spaceless %}
         {% for lang_code in PUBLIC_SITE_LANGUAGES %}
             {% language lang_code %}
@@ -44,22 +47,6 @@
             <dl class="metadata-list primary">
                 <dt>{% translate 'Shelfmark' %}</dt>
                 <dd class="shelfmark">{{ document.shelfmark|shelfmark_wrap }}</dd>
-                {% if document.digital_editions %}
-                    <dt>
-                        {# Translators: Editor label #}
-                        {% blocktranslate count counter=document.editors.count trimmed %}
-                            Editor
-                        {% plural %}
-                            Editors
-                        {% endblocktranslate %}
-                    </dt>
-                    {% for ed in document.digital_editions %}
-                        {# ifchanged to avoid showing duplicate editions #}
-                        {% ifchanged %}
-                            <dd>{{ ed.display|safe }}</dd>
-                        {% endifchanged %}
-                    {% endfor %}
-                {% endif %}
             </dl>
             {# secondary metadata #}
             <dl class="metadata-list secondary">
@@ -120,6 +107,83 @@
             </dl>
         </section>
 
+        {% if document.has_image or document.digital_editions.count or document.digital_translations.count %}
+            {% with n_transcriptions=document.digital_editions.count n_translations=document.digital_translations.count %}
+                <section class="content-stats">
+                    {# Translators: label for document content stats (number of translations, transcriptions, images) #}
+                    <h2>{% translate "What's in the PGP" %}</h2>
+                    <ul>
+                        {# translators: indicator that a document has an image #}
+                        {% if document.has_image %}<li class="has-image">{% translate 'Image' %}</li>{% endif %}
+                        {% if n_transcriptions > 0 %}
+                            {# translators: n_transcriptions is the number of a document's digitized transcriptions #}
+                            <li class="transcription-count">
+                                {% blocktranslate count counter=n_transcriptions trimmed %}
+                                    {{ n_transcriptions }} Transcription
+                                {% plural %}
+                                    {{ n_transcriptions }} Transcriptions
+                                {% endblocktranslate %}
+                            </li>
+                        {% endif %}
+                        {% if n_translations > 0 %}
+                            {# translators: n_translations is the number of a document's digitized translations #}
+                            <li class="translation-count">
+                                {% blocktranslate count counter=n_translations trimmed %}
+                                    {{ n_translations }} Translation
+                                {% plural %}
+                                    {{ n_translations }} Translations
+                                {% endblocktranslate %}
+                            </li>
+                        {% endif %}
+                    </ul>
+                </section>
+            {% endwith %}
+        {% endif %}
+
+        <section class="description">
+            {# Translators: label for document description #}
+            <h2>{% translate 'Description' %}</h2>
+            <p>{{ document.description|pgp_urlize }}</p>
+        </section>
+
+        {# related people #}
+        {% if related_people.exists %}
+            <section class="related">
+                {# Translators: heading label for document related people #}
+                <h2>{% translate "Related People" %}</h2>
+                <dl>
+                    {% regroup related_people by type as person_relations %}
+                    {% for relation_type in person_relations %}
+                        <dt>{{ relation_type.grouper }}</dt>
+                        <dd>
+                            {% for relation in relation_type.list %}
+                                {% if relation.person.get_absolute_url %}<a data-turbo="false" href="{{ relation.person.get_absolute_url }}">{{ relation.person }}</a>{% else %}{{ relation.person }}{% endif %}{% if not forloop.last %}, {% endif %}
+                            {% endfor %}
+                        </dd>
+                    {% endfor %}
+                </dl>
+            </section>
+        {% endif %}
+
+        {# related places #}
+        {% if related_places.exists %}
+            <section class="related">
+                {# Translators: heading label for document related places #}
+                <h2>{% translate "Related Places" %}</h2>
+                <dl>
+                    {% regroup related_places.all by type as place_relations %}
+                    {% for relation_type in place_relations %}
+                        <dt>{{ relation_type.grouper }}</dt>
+                        <dd>
+                            {% for relation in relation_type.list %}
+                                <a data-turbo="false" href="{{ relation.place.get_absolute_url }}">{{ relation.place }}</a>{% if not forloop.last %}, {% endif %}
+                            {% endfor %}
+                        </dd>
+                    {% endfor %}
+                </dl>
+            </section>
+        {% endif %}
+
         {% if document.tags.exists %}
             <section>
                 {# Translators: label for tags on a document #}
@@ -133,37 +197,46 @@
                 </ul>
             </section>
         {% endif %}
-
-        <section class="extra-metadata">
-            <h2 class="sr-only">
-                {# Translators: label for secondary/historiographical metadata #}
-                {% translate 'Additional metadata' %}
-            </h2>
-            <dl>
-                {% if document.fragment_historical_shelfmarks %}
-                {# Translators: label for historical/old shelfmarks on document fragments #}
-                    <dt>{% translate 'Historical shelfmarks' %}</dt>
-                    <dd>{{ document.fragment_historical_shelfmarks }}</dd>
-                {% endif %}
-                {# Translators: Label for date document was first added to the PGP #}
-                <dt>{% translate 'Input date' %}</dt>
-                <dd>
-                    {# Translators: Date document was first added to the PGP #}
-                    {% blocktranslate with date=document.log_entries.last.action_time.year %}
-                        In PGP since {{ date }}
-                    {% endblocktranslate %}
-                </dd>
-            </dl>
-        </section>
-
-        <section class="description">
-            <h2>
-                {# Translators: label for document description #}
-                {% translate 'Description' %}
-            </h2>
-            <p>{{ document.description|pgp_urlize }}</p>
-        </section>
     </div>
+
+    <section class="extra-metadata">
+        <h2 class="sr-only">
+            {# Translators: label for secondary/historiographical metadata #}
+            {% translate 'Additional metadata' %}
+        </h2>
+        <dl>
+            <dt>
+                {# Translators: Document fragment collection(s) label #}
+                {% blocktranslate count counter=document.collections|length trimmed %}
+                    Collection
+                {% plural %}
+                    Collections
+                {% endblocktranslate %}
+            </dt>
+            <dd>
+                {% for collection in document.collections %}
+                    {% if collection.url %}
+                        <a href="{{ collection.url }}">{{ collection.full_name }}</a>{% if not forloop.last %}; {% endif %}
+                    {% else %}
+                        {{ collection.full_name }}{% if not forloop.last %}; {% endif %}
+                    {% endif %}
+                {% endfor %}
+            </dd>
+            {% if document.fragment_historical_shelfmarks %}
+            {# Translators: label for historical/old shelfmarks on document fragments #}
+                <dt>{% translate 'Historical shelfmarks' %}</dt>
+                <dd>{{ document.fragment_historical_shelfmarks }}</dd>
+            {% endif %}
+            {# Translators: Label for date document was first added to the PGP #}
+            <dt>{% translate 'Input date' %}</dt>
+            <dd>
+                {# Translators: Date document was first added to the PGP #}
+                {% blocktranslate with date=document.log_entries.last.action_time.year %}
+                    In PGP since {{ date }}
+                {% endblocktranslate %}
+            </dd>
+        </dl>
+    </section>
 
     {# viewer #}
     {% include "corpus/snippets/document_transcription.html" %}
@@ -171,13 +244,14 @@
     {# tertiary metadata #}
     <dl class="metadata-list tertiary">
         {# Translators: label for permanent link to a document #}
-        {% translate 'Permalink' as permalink %}
+        {% translate 'Link to this document:' as permalink %}
         <dt id="permalink" aria-hidden="true"> {# aria hidden because redundant for screen readers #}
-            <svg role="presentation"><use xlink:href="{% static 'img/ui/all/all/permalink-icon.svg' %}#permalink-icon" /></svg>
+            <i class="ph-link"></i>
             {{ permalink }}
         </dt>
         <dd>
-            <a href="{{ document.permalink }}" rel="bookmark" aria-label="{{ permalink }}">
+            {# Translators: accessibility label for permanent link to a document #}
+            <a href="{{ document.permalink }}" rel="bookmark" aria-label="{% translate 'Permalink' %}">
                 {{ document.permalink }}
             </a>
         </dd>

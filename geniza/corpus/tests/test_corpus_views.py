@@ -36,6 +36,13 @@ from geniza.corpus.views import (
     old_pgp_tabulate_data,
     pgp_metadata_for_old_site,
 )
+from geniza.entities.models import (
+    DocumentPlaceRelation,
+    Person,
+    PersonDocumentRelation,
+    PersonDocumentRelationType,
+    Place,
+)
 from geniza.footnotes.forms import SourceChoiceForm
 from geniza.footnotes.models import Creator, Footnote, Source, SourceType
 
@@ -69,7 +76,7 @@ class TestDocumentDetailView:
         """should contain permalink generated from absolutize_url"""
         response = client.get(reverse("corpus:document", args=(document.id,)))
         permalink = absolutize_url(document.get_absolute_url()).replace("/en/", "/")
-        assertContains(response, f'<link rel="canonical" href="{permalink}"')
+        assertContains(response, f'<a href="{permalink}"')
 
     def test_past_id_mixin(self, db, client):
         """should redirect from 404 to new pgpid when an old_pgpid is matched"""
@@ -168,14 +175,83 @@ class TestDocumentDetailView:
             doc_relation=Footnote.DIGITAL_TRANSLATION,
         )
         response = client.get(reverse("corpus:document", args=(document.pk,)))
-        # document has image (via fragment.iiif_url) and translation, so should show those
+        # document has image (via fragment.iiif_url) and translation, so should show all three
         assert "translation" in response.context["default_shown"]
         assert "images" in response.context["default_shown"]
         assert "translation" not in response.context["disabled"]
         assert "images" not in response.context["disabled"]
-        # should not show OR disable transcription
-        assert "transcription" not in response.context["default_shown"]
+        assert "transcription" in response.context["default_shown"]
         assert "transcription" not in response.context["disabled"]
+
+        # related people and places should be empty querysets
+        assert response.context["related_people"].count() == 0
+        assert response.context["related_places"].count() == 0
+
+        # add related people
+        abu = Person.objects.create(slug="abu-imran")
+        ezra = Person.objects.create(slug="ezra-b-hillel")
+        nahray = Person.objects.create(slug="nahray")
+        (author, _) = PersonDocumentRelationType.objects.get_or_create(name="Author")
+        (recipient, _) = PersonDocumentRelationType.objects.get_or_create(
+            name="Recipient"
+        )
+        PersonDocumentRelation.objects.create(
+            person=ezra, type=recipient, document=document
+        )
+        PersonDocumentRelation.objects.create(
+            person=abu, type=recipient, document=document
+        )
+        PersonDocumentRelation.objects.create(
+            person=nahray, type=author, document=document
+        )
+        response = client.get(reverse("corpus:document", args=(document.pk,)))
+        assert response.context["related_people"].count() == 3
+        # should sort alphabetically by type, then slug (name)
+        assert response.context["related_people"].first().person.pk == nahray.pk
+        assert response.context["related_people"][1].person.pk == abu.pk
+
+        # add related place
+        fustat = Place.objects.create(slug="fustat")
+        DocumentPlaceRelation.objects.create(place=fustat, document=document)
+        assert response.context["related_places"].count() == 1
+        assert response.context["related_places"].first().place.pk == fustat.pk
+
+    def test_related_entities(
+        self, client, document, person, person_diacritic, person_multiname
+    ):
+        # add related people
+        person.has_page = True
+        person.save()
+        (author, _) = PersonDocumentRelationType.objects.get_or_create(name="Author")
+        (recipient, _) = PersonDocumentRelationType.objects.get_or_create(
+            name="Recipient"
+        )
+        PersonDocumentRelation.objects.create(
+            person=person_multiname, type=recipient, document=document
+        )
+        PersonDocumentRelation.objects.create(
+            person=person_diacritic, type=recipient, document=document
+        )
+        PersonDocumentRelation.objects.create(
+            person=person, type=author, document=document
+        )
+        # add related place
+        fustat = Place.objects.create(slug="fustat")
+        DocumentPlaceRelation.objects.create(place=fustat, document=document)
+
+        # should group "recipient" people together and join their names by comma
+        response = client.get(reverse("corpus:document", args=(document.pk,)))
+        # should be "Halfon, Zed" = recipients
+        print(response.content)
+        assertContains(response, f"{person_diacritic}, {person_multiname}", html=True)
+        # should link to author because has_page=True
+        assertContains(
+            response, f'<a data-turbo="false" href="{person.get_absolute_url()}">'
+        )
+        # should link to place
+        assertContains(
+            response, f'<a data-turbo="false" href="{fustat.get_absolute_url()}">'
+        )
 
 
 @pytest.mark.django_db
@@ -315,50 +391,36 @@ class TestDocumentSearchView:
         # no params
         docsearch_view.request.GET = {}
         assert docsearch_view.get_form_kwargs() == {
-            "initial": {
-                "sort": "random",
-            },
+            "initial": {"mode": "general", "sort": "random"},
             "prefix": None,
-            "data": {"sort": "random"},
+            "data": {"mode": "general", "sort": "random"},
             "range_minmax": {},
         }
 
         # keyword search param
         docsearch_view.request.GET = {"q": "contract"}
         assert docsearch_view.get_form_kwargs() == {
-            "initial": {"sort": "random"},
+            "initial": {"mode": "general", "sort": "random"},
             "prefix": None,
-            "data": {
-                "q": "contract",
-                "sort": "relevance",
-            },
+            "data": {"mode": "general", "q": "contract", "sort": "relevance"},
             "range_minmax": {},
         }
 
         # sort search param
         docsearch_view.request.GET = {"sort": "scholarship_desc"}
         assert docsearch_view.get_form_kwargs() == {
-            "initial": {
-                "sort": "random",
-            },
+            "initial": {"mode": "general", "sort": "random"},
             "prefix": None,
-            "data": {
-                "sort": "scholarship_desc",
-            },
+            "data": {"mode": "general", "sort": "scholarship_desc"},
             "range_minmax": {},
         }
 
         # keyword and sort search params
         docsearch_view.request.GET = {"q": "contract", "sort": "scholarship_desc"}
         assert docsearch_view.get_form_kwargs() == {
-            "initial": {
-                "sort": "random",
-            },
+            "initial": {"mode": "general", "sort": "random"},
             "prefix": None,
-            "data": {
-                "q": "contract",
-                "sort": "scholarship_desc",
-            },
+            "data": {"mode": "general", "q": "contract", "sort": "scholarship_desc"},
             "range_minmax": {},
         }
 
@@ -367,7 +429,8 @@ class TestDocumentSearchView:
         with patch(
             "geniza.corpus.views.DocumentSolrQuerySet",
             new=self.mock_solr_queryset(
-                DocumentSolrQuerySet, extra_methods=["admin_search", "keyword_search"]
+                DocumentSolrQuerySet,
+                extra_methods=["admin_search", "keyword_search", "regex_search"],
             ),
         ) as mock_queryset_cls:
             docsearch_view = DocumentSearchView()
@@ -427,6 +490,7 @@ class TestDocumentSearchView:
                 "has_discussion": "on",
                 "has_translation": "on",
                 "has_image": "on",
+                "translation_language": "English",
             }
             qs = docsearch_view.get_queryset()
             mock_sqs = mock_queryset_cls.return_value
@@ -459,6 +523,17 @@ class TestDocumentSearchView:
             args = mock_sqs.order_by.call_args[0]
             assert args[0].startswith("random_")
 
+            # regex search param
+            mock_sqs.reset_mock()
+            docsearch_view.request = Mock()
+            docsearch_view.request.GET = {"q": "six apartments", "mode": "regex"}
+            docsearch_view.get_queryset()
+            mock_sqs = mock_queryset_cls.return_value
+            mock_sqs.regex_search.assert_called_with("six apartments")
+            mock_sqs.keyword_search.assert_not_called()
+            # should not highlight with parasolr
+            mock_sqs.regex_search.return_value.highlight.assert_not_called()
+
     @pytest.mark.usefixtures("mock_solr_queryset")
     def test_get_range_stats(self, mock_solr_queryset):
         with patch(
@@ -471,35 +546,41 @@ class TestDocumentSearchView:
             # mock_queryset_cls.return_value.stats.return_value.get_stats.return_value = {
             mock_queryset_cls.return_value.get_stats.return_value = {
                 "stats_fields": {
-                    "start_date_i": {"min": None},
-                    "end_date_i": {"max": None},
+                    "start_dating_i": {"min": None},
+                    "end_dating_i": {"max": None},
                 }
             }
             docsearch_view = DocumentSearchView()
             docsearch_view.request = Mock()
 
             # should not error if solr returns none
-            stats = docsearch_view.get_range_stats()
+            stats = docsearch_view.get_range_stats(
+                queryset_cls=mock_queryset_cls, field_name="docdate"
+            )
             assert stats == {"docdate": (None, None)}
             mock_queryset_cls.return_value.stats.assert_called_with(
-                "start_date_i", "end_date_i"
+                "start_dating_i", "end_dating_i"
             )
 
             # convert integer date to year
             mock_queryset_cls.return_value.get_stats.return_value = {
                 "stats_fields": {
-                    "start_date_i": {"min": 10380101.0},
-                    "end_date_i": {"max": 10421231.0},
+                    "start_dating_i": {"min": 10380101.0},
+                    "end_dating_i": {"max": 10421231.0},
                 }
             }
-            stats = docsearch_view.get_range_stats()
+            stats = docsearch_view.get_range_stats(
+                queryset_cls=mock_queryset_cls, field_name="docdate"
+            )
             assert stats == {"docdate": (1038, 1042)}
 
             # test three-digit year
             mock_queryset_cls.return_value.get_stats.return_value["stats_fields"][
-                "start_date_i"
+                "start_dating_i"
             ]["min"] = 8430101.0
-            stats = docsearch_view.get_range_stats()
+            stats = docsearch_view.get_range_stats(
+                queryset_cls=mock_queryset_cls, field_name="docdate"
+            )
             assert stats == {"docdate": (843, 1042)}
 
     @pytest.mark.usefixtures("mock_solr_queryset")
@@ -532,6 +613,19 @@ class TestDocumentSearchView:
             assert context_data["page_obj"].start_index() == 0
             # NOTE: test paginator isn't initialized properly from queryset count
             # assert context_data["paginator"].count == 22
+
+            # simulate 500 error from solr: get_facets returns {}
+            mock_queryset_cls.reset_mock()
+            mock_qs = mock_queryset_cls.return_value
+            mock_qs.get_facets = Mock(return_value={})
+            mock_qs.none = Mock()
+            # attribute error should be handled, and use queryset.none().get_facets()
+            mock_qs.none.return_value.get_facets.return_value.facet_fields = {}
+            # in regex mode, form should get an error message
+            assert not len(context_data["form"].errors)
+            docsearch_view.request = rf.get("/documents/", {"mode": "regex"})
+            context_data = docsearch_view.get_context_data()
+            assert len(context_data["form"].errors)
 
     def test_scholarship_sort(
         self,
@@ -896,6 +990,14 @@ class TestDocumentSearchView:
         random_sort = docsearch_view.get_solr_sort("random")
         assert random_sort.startswith("random_")
         assert int(random_sort.split("_")[1])
+
+        # doc dating without exclude_inferred: should include inferred
+        dating_sort = docsearch_view.get_solr_sort("docdate_asc")
+        assert dating_sort.startswith("start_dating_")
+
+        # with exclude_inferred: should use start_dating, which is dates without inferred
+        dating_sort = docsearch_view.get_solr_sort("docdate_asc", "true")
+        assert dating_sort.startswith("start_date_")
 
     def test_random_page_redirect(self, client):
         # any page of results other than one should redirect to the first page

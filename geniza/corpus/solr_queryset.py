@@ -3,6 +3,7 @@ import re
 
 from bs4 import BeautifulSoup
 from django.apps import apps
+from django.utils.safestring import mark_safe
 from django.utils.translation import gettext as _
 from parasolr.django import AliasedSolrQuerySet
 from piffle.image import IIIFImageClient
@@ -30,7 +31,12 @@ def clean_html(html_snippet):
         else:
             html_snippet = f"<li>{ellipsis}{html_snippet}"
 
-    return BeautifulSoup(html_snippet, "html.parser").prettify(formatter="minimal")
+    return BeautifulSoup(
+        html_snippet,
+        "html.parser",
+        # ensure li and em tags don't get extra whitespace, as this may break display
+        preserve_whitespace_tags=["li", "em"],
+    ).prettify(formatter="minimal")
 
 
 class DocumentSolrQuerySet(AliasedSolrQuerySet):
@@ -46,7 +52,9 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
         "type": "type_s",
         "status": "status_s",
         "shelfmark": "shelfmark_s",  # string version for display
+        "shelfmarks": "fragment_shelfmark_ss",
         "document_date": "document_date_t",  # text version for search & display
+        "document_dating": "document_dating_t",  # inferred date for display
         "original_date_t": "original_date",
         "collection": "collection_ss",
         "tags": "tags_ss_lower",
@@ -65,7 +73,9 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
         "transcription": "text_transcription",
         "language_code": "language_code_s",
         "language_script": "language_script_s",
+        "languages": "language_name_ss",
         "translation": "text_translation",
+        "translation_language": "translation_languages_ss",
         "translation_language_code": "translation_language_code_s",
         "translation_language_direction": "translation_language_direction_s",
         "iiif_images": "iiif_images_ss",
@@ -76,8 +86,13 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
         "has_digital_translation": "has_digital_translation_b",
         "has_discussion": "has_discussion_b",
         "old_shelfmark": "old_shelfmark_bigram",
+        "old_shelfmark_t": "old_shelfmark_t",
         "transcription_nostem": "transcription_nostem",
         "description_nostem": "description_nostem",
+        "related_people": "people_count_i",
+        "related_places": "places_count_i",
+        "related_documents": "documents_count_i",
+        "transcription_regex": "transcription_regex",
     }
 
     # regex to convert field aliases used in search to actual solr fields
@@ -116,6 +131,9 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
     # if keyword search includes an exact phrase, store unmodified query
     # to use as highlighting query
     highlight_query = None
+
+    # if search consists only of quoted phrase scoped to shelfmark, handle separately
+    shelfmark_query = None
 
     def _search_term_cleanup(self, search_term):
         # adjust user search string before sending to solr
@@ -167,6 +185,12 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
             search_term = search_term.replace(
                 "%s:" % self.shelfmark_qf, self.shelfmark_qf
             )
+            # special case: just a shelfmark query, in quotes
+            quoted_shelfmark_query = re.fullmatch(
+                rf'{re.escape(self.shelfmark_qf)}".+?"', search_term
+            )
+            if quoted_shelfmark_query:
+                self.shelfmark_query = quoted_shelfmark_query.group(0)
 
         return search_term
 
@@ -194,9 +218,14 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
         # nested edismax query no longer works since solr 7.2 (see above)
         if "{!type=edismax" in keyword_query:
             query_params.update({"uf": "* _query_"})
-        search = self.search(self.keyword_search_qf).raw_query_parameters(
-            **query_params
-        )
+        # if search term consists only of a shelfmark query in quotes, only search shelfmark fields
+        if self.shelfmark_query:
+            search = self.search(self.shelfmark_query)
+        else:
+            # otherwise, search all fields as usual
+            search = self.search(self.keyword_search_qf).raw_query_parameters(
+                **query_params
+            )
         # if search term cleanup identifies any exact phrase searches,
         # pass the unmodified search to Solr as a highlighting query,
         # since otherwise the highlighted fields (description/transcription)
@@ -214,11 +243,22 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
             )
         return search
 
+    def regex_search(self, search_term):
+        """Build a Lucene query for searching with regular expressions.
+        NOTE: this function may cause Lucene errors if input is not validated beforehand.
+        """
+        # surround passed query with wildcards to allow non-anchored matches,
+        # and slashes so that it is interpreted as regex by Lucene
+        search_term = f"/.*{search_term}.*/"
+        # match in the non-analyzed transcription_regex field
+        search = self.search(f"transcription_regex:{search_term}")
+        return search
+
     def related_to(self, document):
         "Return documents related to the given document (i.e. shares any shelfmarks)"
 
         # NOTE: using a string query filter because parasolr queryset
-        # # currently doesn't provide any kind of not/exclude filter
+        # currently doesn't provide any kind of not/exclude filter
         return (
             self.filter(status=document.PUBLIC_LABEL)
             .filter("NOT pgpid_i:%d" % document.id)
@@ -255,10 +295,52 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
 
         return doc
 
+    def get_regex_highlight(self, text):
+        """Helper method to manually highlight and truncate a snippet for regex matches
+        (automatic highlight unavailable due to solr regex search limitations)"""
+        # remove solr field name and lucene-required "match all" logic to get original query
+        regex_query = (
+            self.search_qs[0]
+            .replace("transcription_regex:/.*", "")
+            .rsplit(".*/", maxsplit=1)[0]
+        )
+        # get ~150 characters of context plus a word on either side of the matched portion
+        pattern = r"(\b\w+.{0,150})(%s)(.{0,150}\w+\b)" % regex_query
+        # find all matches in the snippet
+        matches = re.findall(pattern, text, flags=re.DOTALL)
+        # separate multiple matches by HTML line breaks and ellipsis
+        separator = "<br />[…]<br />"
+        # surround matched portion in <em> so it is visible in search results; join all into string
+        return (
+            separator.join([f"{m[0]}<em>{m[1]}</em>{m[2]}" for m in matches if m])
+            if matches
+            else None
+        )
+
     def get_highlighting(self):
         """highlight snippets within transcription/translation html may result in
         invalid tags that will render strangely; clean up the html before returning"""
         highlights = super().get_highlighting()
+        is_regex_search = any("transcription_regex" in q for q in self.search_qs)
+        if is_regex_search:
+            # highlight regex results manually due to solr limitation
+            highlights = {}
+            # highlighting takes place *after* solr, so use get_results()
+            for doc in self.get_results():
+                # highlight per document, keyed on id as expected in results
+                highlights[doc["id"]] = {
+                    "transcription": [
+                        highlighted_block
+                        # this field is split by block-level annotation/group
+                        for highlighted_block in (
+                            self.get_regex_highlight(block)
+                            for block in doc["transcription_regex"]
+                        )
+                        # only include a block if it actually has highlights
+                        if highlighted_block
+                    ]
+                }
+
         is_exact_search = "hl_query" in self.raw_params
         for doc in highlights.keys():
             # _nostem fields should take precedence over stemmed fields in the case of an
@@ -277,4 +359,16 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
                 highlights[doc]["translation"] = [
                     clean_html(s) for s in highlights[doc]["translation"]
                 ]
+
+            # handle old shelfmark highlighting; sometimes it's on one or the other
+            # field, and sometimes one of the highlight results is empty
+            if "old_shelfmark" in highlights[doc]:
+                highlights[doc]["old_shelfmark"] = ", ".join(
+                    [h for h in highlights[doc]["old_shelfmark"] if h]
+                )
+            elif "old_shelfmark_t" in highlights[doc]:
+                highlights[doc]["old_shelfmark"] = ", ".join(
+                    [h for h in highlights[doc]["old_shelfmark_t"] if h]
+                )
+
         return highlights

@@ -17,3 +17,9 @@
         @content;
     }
 }
+
+@mixin for-xl-up {
+    @media (min-width: 1440px) {
+        @content;
+    }
+}

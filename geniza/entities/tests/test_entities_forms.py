@@ -1,9 +1,16 @@
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
 import pytest
+from django.utils.translation import activate, get_language
 
-from geniza.entities.forms import PersonChoiceField, PersonMergeForm
-from geniza.entities.models import Name, Person
+from geniza.corpus.forms import FacetChoiceField
+from geniza.entities.forms import (
+    PersonChoiceField,
+    PersonListForm,
+    PersonMergeForm,
+    PlaceListForm,
+)
+from geniza.entities.models import Name, Person, PersonRole
 
 
 class TestPersonChoiceField:
@@ -42,3 +49,84 @@ class TestPersonMergeForm:
         assert mergeform.fields["primary_person"].queryset.count() == people.count() - 1
         # last person should not be an available choice
         assert people.last() not in mergeform.fields["primary_person"].queryset
+
+
+@pytest.mark.django_db
+class TestPersonListForm:
+    def test_set_choices_from_facets(self, person, person_diacritic):
+        form = PersonListForm()
+        with patch.object(FacetChoiceField, "populate_from_facets"):
+            facets = {
+                "gender": {"Male": 1, "Female": 2},
+            }
+            # should set labels and counts
+            form.set_choices_from_facets(facets)
+            form.fields["gender"].populate_from_facets.assert_called_with(
+                {
+                    "Female": ("Female", 2),
+                    "Male": ("Male", 1),
+                }
+            )
+            # should get translated labels
+            facets = {
+                "role": {person.role.name_en: 1},
+            }
+            form.set_choices_from_facets(facets)
+            form.fields["social_role"].populate_from_facets.assert_called_with(
+                {person.role.name_en: (person.role, 1)}
+            )
+
+    def test_get_translated_label(self):
+        form = PersonListForm()
+        # invalidate cached property (it is computed in other tests in the suite)
+        if "objects_by_label" in PersonRole.__dict__:
+            # __dict__["objects_by_label"] returns a classmethod
+            # __func__ returns a property
+            # fget returns the actual cached function
+            PersonRole.__dict__["objects_by_label"].__func__.fget.cache_clear()
+
+        # set lang to hebrew
+        current_lang = get_language()
+        activate("he")
+        # PersonRole should be able to find the translated label
+        pr = PersonRole.objects.create(
+            name_en="Author", display_label_en="Author", display_label_he="מְחַבֵּר"
+        )
+        assert str(pr) == "מְחַבֵּר"
+        assert str(form.get_translated_label("role", "Author")) == "מְחַבֵּר"
+        # Gender should be able to find the translated label
+        with patch("geniza.entities.models.Person") as mock_person:
+            mock_person.GENDER_CHOICES = {"M": "test"}
+            form.get_translated_label("gender", "Male") == "test"
+        # Any other field not present in db mapping should return label as-is
+        assert form.get_translated_label("no_field", "Test") == "Test"
+
+        # set lang back for remaining tests
+        activate(current_lang)
+
+    def test_filters_active(self):
+        # should correctly ascertain if filters are active
+        form = PersonListForm({"gender": None})
+        assert form.filters_active() == False
+        form = PersonListForm({"gender": [Person.FEMALE]})
+        assert form.filters_active() == True
+        # sort SHOULD count as a filter (required for accurate facet counts after sorting)
+        form = PersonListForm({"sort": "role"})
+        assert form.filters_active() == True
+
+    def test_get_sort_label(self):
+        form = PersonListForm({})
+        assert form.get_sort_label() is None
+
+        form = PersonListForm({"sort": "role"})
+        assert form.get_sort_label() == dict(PersonListForm.SORT_CHOICES)["role"]
+
+
+@pytest.mark.django_db
+class TestPlaceListForm:
+    def test_get_sort_label(self):
+        form = PlaceListForm({})
+        assert form.get_sort_label() is None
+
+        form = PlaceListForm({"sort": "name"})
+        assert form.get_sort_label() == dict(PlaceListForm.SORT_CHOICES)["name"]

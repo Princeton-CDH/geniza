@@ -5,14 +5,14 @@
     "build": "webpack --mode=production",
     "serve": "python manage.py runserver --insecure",
     "percy": "percy exec -- python manage.py visual_tests",
-    "test:visual": "start-server-and-test serve http://localhost:8000/documents/ percy"
+    "test:visual": "start-server-and-test serve http://localhost:8000/en/documents/ percy"
   },
   "volta": {
     "node": "16.14.0",
     "npm": "8.19.4"
   },
   "devDependencies": {
-    "@percy/cli": "^1.0.0-beta.70",
+    "@percy/cli": "^1.30.1",
     "start-server-and-test": "^1.14.0",
     "webpack-dev-server": "^4.0.0"
   },
@@ -24,13 +24,14 @@
     "@hotwired/turbo": "^7.1.0",
     "@recogito/annotorious": "^2.7.13",
     "@recogito/annotorious-openseadragon": "^2.7.17",
-    "angle-input": "^0.0.1",
     "annotorious-tahqiq": "^1.3.0",
     "autoprefixer": "^10.3.2",
     "babel-loader": "^8.2.2",
     "core-js": "^3.16.3",
     "css-loader": "^6.2.0",
     "css-minimizer-webpack-plugin": "^3.0.2",
+    "cytoscape": "^3.30.2",
+    "cytoscape-html": "^0.1.2",
     "maplibre-gl": "^4.1.0",
     "mini-css-extract-plugin": "^2.2.0",
     "openseadragon": "^3.0.0",
