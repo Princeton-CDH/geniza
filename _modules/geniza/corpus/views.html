@@ -4,10 +4,10 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>geniza.corpus.views &#8212; Princeton Geniza Project 4.17.3 documentation</title>
+    <title>geniza.corpus.views &#8212; Princeton Geniza Project 4.18.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=d1102ebc" />
     <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=12dfc556" />
-    <script src="../../../_static/documentation_options.js?v=2b5c064c"></script>
+    <script src="../../../_static/documentation_options.js?v=aab723a2"></script>
     <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
@@ -30,7 +30,8 @@
           <div class="body" role="main">
             
   <h1>Source code for geniza.corpus.views</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">ast</span> <span class="kn">import</span> <span class="n">literal_eval</span>
+<span></span><span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">from</span> <span class="nn">ast</span> <span class="kn">import</span> <span class="n">literal_eval</span>
 <span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
 <span class="kn">from</span> <span class="nn">random</span> <span class="kn">import</span> <span class="n">randint</span>
 
@@ -72,21 +73,59 @@
 <span class="kn">from</span> <span class="nn">geniza.footnotes.models</span> <span class="kn">import</span> <span class="n">Footnote</span><span class="p">,</span> <span class="n">Source</span>
 
 
+<div class="viewcode-block" id="SolrDateRangeMixin">
+<a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.SolrDateRangeMixin">[docs]</a>
+<span class="k">class</span> <span class="nc">SolrDateRangeMixin</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Mixin for solr-based views with start and end date fields to get</span>
+<span class="sd">    the full range of dates across the solr queryset.&quot;&quot;&quot;</span>
+
+    <span class="c1"># NOTE: should cache this, shouldn&#39;t really change that frequently</span>
+<div class="viewcode-block" id="SolrDateRangeMixin.get_range_stats">
+<a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.SolrDateRangeMixin.get_range_stats">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_range_stats</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">queryset_cls</span><span class="p">,</span> <span class="n">field_name</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the min and max for range fields based on Solr stats.</span>
+
+<span class="sd">        :returns: Dictionary keyed on form field name with a tuple of</span>
+<span class="sd">            (min, max) as integers. If stats are not returned from the field,</span>
+<span class="sd">            the key is not added to a dictionary.</span>
+<span class="sd">        :rtype: dict</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">stats</span> <span class="o">=</span> <span class="n">queryset_cls</span><span class="p">()</span><span class="o">.</span><span class="n">stats</span><span class="p">(</span><span class="s2">&quot;start_dating_i&quot;</span><span class="p">,</span> <span class="s2">&quot;end_dating_i&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">get_stats</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">stats</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;stats_fields&quot;</span><span class="p">):</span>
+            <span class="c1"># use minimum from start date and max from end date</span>
+            <span class="c1"># - we&#39;re storing YYYYMMDD as 8-digit number for this we only want year</span>
+            <span class="c1"># convert to str, take first 4 digits, then convert back to int</span>
+            <span class="n">min_val</span> <span class="o">=</span> <span class="n">stats</span><span class="p">[</span><span class="s2">&quot;stats_fields&quot;</span><span class="p">][</span><span class="s2">&quot;start_dating_i&quot;</span><span class="p">][</span><span class="s2">&quot;min&quot;</span><span class="p">]</span>
+            <span class="n">max_val</span> <span class="o">=</span> <span class="n">stats</span><span class="p">[</span><span class="s2">&quot;stats_fields&quot;</span><span class="p">][</span><span class="s2">&quot;end_dating_i&quot;</span><span class="p">][</span><span class="s2">&quot;max&quot;</span><span class="p">]</span>
+
+            <span class="c1"># trim from the end to handle 3-digit years; includes .0 at end</span>
+            <span class="n">min_year</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">min_val</span><span class="p">)[:</span><span class="o">-</span><span class="mi">6</span><span class="p">])</span> <span class="k">if</span> <span class="n">min_val</span> <span class="k">else</span> <span class="kc">None</span>
+            <span class="n">max_year</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">max_val</span><span class="p">)[:</span><span class="o">-</span><span class="mi">6</span><span class="p">])</span> <span class="k">if</span> <span class="n">max_val</span> <span class="k">else</span> <span class="kc">None</span>
+            <span class="k">return</span> <span class="p">{</span><span class="n">field_name</span><span class="p">:</span> <span class="p">(</span><span class="n">min_year</span><span class="p">,</span> <span class="n">max_year</span><span class="p">)}</span>
+
+        <span class="k">return</span> <span class="p">{}</span></div>
+</div>
+
+
+
 <div class="viewcode-block" id="DocumentSearchView">
 <a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.DocumentSearchView">[docs]</a>
-<span class="k">class</span> <span class="nc">DocumentSearchView</span><span class="p">(</span><span class="n">ListView</span><span class="p">,</span> <span class="n">FormMixin</span><span class="p">,</span> <span class="n">SolrLastModifiedMixin</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">DocumentSearchView</span><span class="p">(</span>
+    <span class="n">ListView</span><span class="p">,</span> <span class="n">FormMixin</span><span class="p">,</span> <span class="n">SolrLastModifiedMixin</span><span class="p">,</span> <span class="n">SolrDateRangeMixin</span>
+<span class="p">):</span>
     <span class="n">model</span> <span class="o">=</span> <span class="n">Document</span>
     <span class="n">form_class</span> <span class="o">=</span> <span class="n">DocumentSearchForm</span>
     <span class="n">context_object_name</span> <span class="o">=</span> <span class="s2">&quot;documents&quot;</span>
     <span class="n">template_name</span> <span class="o">=</span> <span class="s2">&quot;corpus/document_list.html&quot;</span>
     <span class="c1"># Translators: title of document search page</span>
-    <span class="n">page_title</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Search Documents&quot;</span><span class="p">)</span>
+    <span class="n">page_title</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Documents&quot;</span><span class="p">)</span>
     <span class="c1"># Translators: description of document search page, for search engines</span>
     <span class="n">page_description</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Search and browse Geniza documents.&quot;</span><span class="p">)</span>
     <span class="n">paginate_by</span> <span class="o">=</span> <span class="mi">50</span>
-    <span class="n">initial</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;sort&quot;</span><span class="p">:</span> <span class="s2">&quot;random&quot;</span><span class="p">}</span>
+    <span class="n">initial</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;sort&quot;</span><span class="p">:</span> <span class="s2">&quot;random&quot;</span><span class="p">,</span> <span class="s2">&quot;mode&quot;</span><span class="p">:</span> <span class="s2">&quot;general&quot;</span><span class="p">}</span>
     <span class="c1"># NOTE: does not filter on status, since changing status could modify the page</span>
     <span class="n">solr_lastmodified_filters</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;item_type_s&quot;</span><span class="p">:</span> <span class="s2">&quot;document&quot;</span><span class="p">}</span>
+    <span class="n">applied_filter_labels</span> <span class="o">=</span> <span class="p">[]</span>
 
     <span class="c1"># map form sort to solr sort field</span>
     <span class="n">solr_sort</span> <span class="o">=</span> <span class="p">{</span>
@@ -98,6 +137,8 @@
         <span class="s2">&quot;shelfmark&quot;</span><span class="p">:</span> <span class="s2">&quot;shelfmark_natsort&quot;</span><span class="p">,</span>
         <span class="s2">&quot;docdate_asc&quot;</span><span class="p">:</span> <span class="s2">&quot;start_date_i&quot;</span><span class="p">,</span>
         <span class="s2">&quot;docdate_desc&quot;</span><span class="p">:</span> <span class="s2">&quot;-end_date_i&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;docdating_asc&quot;</span><span class="p">:</span> <span class="s2">&quot;start_dating_i&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;docdating_desc&quot;</span><span class="p">:</span> <span class="s2">&quot;-end_dating_i&quot;</span><span class="p">,</span>
     <span class="p">}</span>
 
 <div class="viewcode-block" id="DocumentSearchView.dispatch">
@@ -126,41 +167,17 @@
 
 <div class="viewcode-block" id="DocumentSearchView.get_solr_sort">
 <a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.DocumentSearchView.get_solr_sort">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_solr_sort</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sort_option</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">get_solr_sort</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sort_option</span><span class="p">,</span> <span class="n">exclude_inferred</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return solr sort field for user-seleted sort option;</span>
 <span class="sd">        generates random sort field using solr random dynamic field;</span>
 <span class="sd">        otherwise uses solr sort field from :attr:`solr_sort`&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">sort_option</span> <span class="o">==</span> <span class="s2">&quot;random&quot;</span><span class="p">:</span>
             <span class="c1"># use solr&#39;s random dynamic field to sort randomly</span>
             <span class="k">return</span> <span class="s2">&quot;random_</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">randint</span><span class="p">(</span><span class="mi">1000</span><span class="p">,</span> <span class="mi">9999</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="s2">&quot;docdate&quot;</span> <span class="ow">in</span> <span class="n">sort_option</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">exclude_inferred</span><span class="p">:</span>
+            <span class="c1"># use inferred datings if exclude_inferred is not true</span>
+            <span class="n">sort_option</span> <span class="o">=</span> <span class="n">sort_option</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;date&quot;</span><span class="p">,</span> <span class="s2">&quot;dating&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">solr_sort</span><span class="p">[</span><span class="n">sort_option</span><span class="p">]</span></div>
-
-
-    <span class="c1"># NOTE: should cache this, shouldn&#39;t really change that frequently</span>
-<div class="viewcode-block" id="DocumentSearchView.get_range_stats">
-<a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.DocumentSearchView.get_range_stats">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_range_stats</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the min and max for range fields based on Solr stats.</span>
-
-<span class="sd">        :returns: Dictionary keyed on form field name with a tuple of</span>
-<span class="sd">            (min, max) as integers. If stats are not returned from the field,</span>
-<span class="sd">            the key is not added to a dictionary.</span>
-<span class="sd">        :rtype: dict</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">stats</span> <span class="o">=</span> <span class="n">DocumentSolrQuerySet</span><span class="p">()</span><span class="o">.</span><span class="n">stats</span><span class="p">(</span><span class="s2">&quot;start_date_i&quot;</span><span class="p">,</span> <span class="s2">&quot;end_date_i&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">get_stats</span><span class="p">()</span>
-        <span class="k">if</span> <span class="n">stats</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;stats_fields&quot;</span><span class="p">):</span>
-            <span class="c1"># use minimum from start date and max from end date</span>
-            <span class="c1"># - we&#39;re storing YYYYMMDD as 8-digit number for this we only want year</span>
-            <span class="c1"># convert to str, take first 4 digits, then convert back to int</span>
-            <span class="n">min_val</span> <span class="o">=</span> <span class="n">stats</span><span class="p">[</span><span class="s2">&quot;stats_fields&quot;</span><span class="p">][</span><span class="s2">&quot;start_date_i&quot;</span><span class="p">][</span><span class="s2">&quot;min&quot;</span><span class="p">]</span>
-            <span class="n">max_val</span> <span class="o">=</span> <span class="n">stats</span><span class="p">[</span><span class="s2">&quot;stats_fields&quot;</span><span class="p">][</span><span class="s2">&quot;end_date_i&quot;</span><span class="p">][</span><span class="s2">&quot;max&quot;</span><span class="p">]</span>
-
-            <span class="c1"># trim from the end to handle 3-digit years; includes .0 at end</span>
-            <span class="n">min_year</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">min_val</span><span class="p">)[:</span><span class="o">-</span><span class="mi">6</span><span class="p">])</span> <span class="k">if</span> <span class="n">min_val</span> <span class="k">else</span> <span class="kc">None</span>
-            <span class="n">max_year</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">max_val</span><span class="p">)[:</span><span class="o">-</span><span class="mi">6</span><span class="p">])</span> <span class="k">if</span> <span class="n">max_val</span> <span class="k">else</span> <span class="kc">None</span>
-            <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;docdate&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">min_year</span><span class="p">,</span> <span class="n">max_year</span><span class="p">)}</span>
-
-        <span class="k">return</span> <span class="p">{}</span></div>
 
 
 <div class="viewcode-block" id="DocumentSearchView.get_form_kwargs">
@@ -188,9 +205,38 @@
 
         <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;data&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">form_data</span>
         <span class="c1"># get min/max configuration for document date range field</span>
-        <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;range_minmax&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_range_stats</span><span class="p">()</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;range_minmax&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_range_stats</span><span class="p">(</span>
+            <span class="n">queryset_cls</span><span class="o">=</span><span class="n">DocumentSolrQuerySet</span><span class="p">,</span> <span class="n">field_name</span><span class="o">=</span><span class="s2">&quot;docdate&quot;</span>
+        <span class="p">)</span>
 
         <span class="k">return</span> <span class="n">kwargs</span></div>
+
+
+<div class="viewcode-block" id="DocumentSearchView.get_applied_filter_labels">
+<a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.DocumentSearchView.get_applied_filter_labels">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_applied_filter_labels</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">form</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">filters</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;return a list of objects with field/value pairs, and translated labels,</span>
+<span class="sd">        one for each applied filter&quot;&quot;&quot;</span>
+        <span class="n">labels</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">filters</span><span class="p">:</span>
+            <span class="c1"># remove escape characters</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\\</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+            <span class="c1"># get translated label using form helper method</span>
+            <span class="n">label</span> <span class="o">=</span> <span class="n">form</span><span class="o">.</span><span class="n">get_translated_label</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+            <span class="c1"># return object with original field and value, so we can unapply programmatically</span>
+            <span class="n">labels</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s2">&quot;field&quot;</span><span class="p">:</span> <span class="n">field</span><span class="p">,</span> <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="n">value</span><span class="p">,</span> <span class="s2">&quot;label&quot;</span><span class="p">:</span> <span class="n">label</span><span class="p">})</span>
+        <span class="k">return</span> <span class="n">labels</span></div>
+
+
+<div class="viewcode-block" id="DocumentSearchView.get_boolfield_label">
+<a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.DocumentSearchView.get_boolfield_label">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_boolfield_label</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">form</span><span class="p">,</span> <span class="n">fieldname</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a label dict for a boolean field (works differently than other fields)&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;field&quot;</span><span class="p">:</span> <span class="n">fieldname</span><span class="p">,</span>
+            <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="s2">&quot;on&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;label&quot;</span><span class="p">:</span> <span class="n">form</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="n">fieldname</span><span class="p">]</span><span class="o">.</span><span class="n">label</span><span class="p">,</span>
+        <span class="p">}</span></div>
 
 
 <div class="viewcode-block" id="DocumentSearchView.get_queryset">
@@ -208,8 +254,12 @@
                 <span class="s2">&quot;has_digital_translation&quot;</span><span class="p">,</span>
                 <span class="s2">&quot;has_discussion&quot;</span><span class="p">,</span>
             <span class="p">)</span>
+            <span class="o">.</span><span class="n">facet_field</span><span class="p">(</span>
+                <span class="s2">&quot;translation_language&quot;</span><span class="p">,</span> <span class="n">exclude</span><span class="o">=</span><span class="s2">&quot;translation_language&quot;</span><span class="p">,</span> <span class="n">sort</span><span class="o">=</span><span class="s2">&quot;value&quot;</span>
+            <span class="p">)</span>
             <span class="o">.</span><span class="n">facet_field</span><span class="p">(</span><span class="s2">&quot;type&quot;</span><span class="p">,</span> <span class="n">exclude</span><span class="o">=</span><span class="s2">&quot;type&quot;</span><span class="p">,</span> <span class="n">sort</span><span class="o">=</span><span class="s2">&quot;value&quot;</span><span class="p">)</span>
         <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">applied_filter_labels</span> <span class="o">=</span> <span class="p">[]</span>
 
         <span class="n">form</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_form</span><span class="p">()</span>
         <span class="c1"># return empty queryset if not valid</span>
@@ -220,7 +270,11 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">search_opts</span> <span class="o">=</span> <span class="n">form</span><span class="o">.</span><span class="n">cleaned_data</span>
 
-            <span class="k">if</span> <span class="n">search_opts</span><span class="p">[</span><span class="s2">&quot;q&quot;</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="n">search_opts</span><span class="p">[</span><span class="s2">&quot;q&quot;</span><span class="p">]</span> <span class="ow">and</span> <span class="n">search_opts</span><span class="p">[</span><span class="s2">&quot;mode&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;regex&quot;</span><span class="p">:</span>
+                <span class="c1"># use regex search if &quot;mode&quot; is &quot;regex&quot;</span>
+                <span class="n">documents</span> <span class="o">=</span> <span class="n">documents</span><span class="o">.</span><span class="n">regex_search</span><span class="p">(</span><span class="n">search_opts</span><span class="p">[</span><span class="s2">&quot;q&quot;</span><span class="p">])</span>
+
+            <span class="k">elif</span> <span class="n">search_opts</span><span class="p">[</span><span class="s2">&quot;q&quot;</span><span class="p">]:</span>
                 <span class="c1"># NOTE: using requireFieldMatch so that field-specific search</span>
                 <span class="c1"># terms will NOT be used for highlighting text matches</span>
                 <span class="c1"># (unless they are in the appropriate field)</span>
@@ -263,35 +317,81 @@
                     <span class="p">)</span>
                     <span class="c1"># highlight old shelfmark so we can show match in results</span>
                     <span class="o">.</span><span class="n">highlight</span><span class="p">(</span><span class="s2">&quot;old_shelfmark&quot;</span><span class="p">,</span> <span class="n">requireFieldMatch</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                    <span class="o">.</span><span class="n">highlight</span><span class="p">(</span><span class="s2">&quot;old_shelfmark_t&quot;</span><span class="p">,</span> <span class="n">requireFieldMatch</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
                     <span class="o">.</span><span class="n">also</span><span class="p">(</span><span class="s2">&quot;score&quot;</span><span class="p">)</span>
                 <span class="p">)</span>  <span class="c1"># include relevance score in results</span>
 
             <span class="c1"># order by sort option</span>
-            <span class="n">documents</span> <span class="o">=</span> <span class="n">documents</span><span class="o">.</span><span class="n">order_by</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_solr_sort</span><span class="p">(</span><span class="n">search_opts</span><span class="p">[</span><span class="s2">&quot;sort&quot;</span><span class="p">]))</span>
+            <span class="n">documents</span> <span class="o">=</span> <span class="n">documents</span><span class="o">.</span><span class="n">order_by</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">get_solr_sort</span><span class="p">(</span>
+                    <span class="n">search_opts</span><span class="p">[</span><span class="s2">&quot;sort&quot;</span><span class="p">],</span> <span class="n">search_opts</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;exclude_inferred&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
 
             <span class="c1"># filter by type if specified</span>
             <span class="k">if</span> <span class="n">search_opts</span><span class="p">[</span><span class="s2">&quot;doctype&quot;</span><span class="p">]:</span>
                 <span class="n">typelist</span> <span class="o">=</span> <span class="n">literal_eval</span><span class="p">(</span><span class="n">search_opts</span><span class="p">[</span><span class="s2">&quot;doctype&quot;</span><span class="p">])</span>
                 <span class="n">quoted_typelist</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;&quot;</span><span class="si">%s</span><span class="s1">&quot;&#39;</span> <span class="o">%</span> <span class="n">doctype</span> <span class="k">for</span> <span class="n">doctype</span> <span class="ow">in</span> <span class="n">typelist</span><span class="p">]</span>
                 <span class="n">documents</span> <span class="o">=</span> <span class="n">documents</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">type__in</span><span class="o">=</span><span class="n">quoted_typelist</span><span class="p">,</span> <span class="n">tag</span><span class="o">=</span><span class="s2">&quot;type&quot;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">applied_filter_labels</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_applied_filter_labels</span><span class="p">(</span>
+                    <span class="n">form</span><span class="p">,</span> <span class="s2">&quot;doctype&quot;</span><span class="p">,</span> <span class="n">typelist</span>
+                <span class="p">)</span>
+
+            <span class="c1"># filter by translation language if specified</span>
+            <span class="k">if</span> <span class="n">search_opts</span><span class="p">[</span><span class="s2">&quot;translation_language&quot;</span><span class="p">]:</span>
+                <span class="n">lang</span> <span class="o">=</span> <span class="n">search_opts</span><span class="p">[</span><span class="s2">&quot;translation_language&quot;</span><span class="p">]</span>
+                <span class="n">documents</span> <span class="o">=</span> <span class="n">documents</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span>
+                    <span class="n">translation_language</span><span class="o">=</span><span class="n">lang</span><span class="p">,</span> <span class="n">tag</span><span class="o">=</span><span class="s2">&quot;translation_language&quot;</span>
+                <span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">applied_filter_labels</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_applied_filter_labels</span><span class="p">(</span>
+                    <span class="n">form</span><span class="p">,</span> <span class="s2">&quot;translation_language&quot;</span><span class="p">,</span> <span class="p">[</span><span class="n">lang</span><span class="p">]</span>
+                <span class="p">)</span>
 
             <span class="c1"># image filter</span>
             <span class="k">if</span> <span class="n">search_opts</span><span class="p">[</span><span class="s2">&quot;has_image&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
                 <span class="n">documents</span> <span class="o">=</span> <span class="n">documents</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">has_image</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">applied_filter_labels</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">get_boolfield_label</span><span class="p">(</span><span class="n">form</span><span class="p">,</span> <span class="s2">&quot;has_image&quot;</span><span class="p">)</span>
+                <span class="p">)</span>
 
             <span class="c1"># scholarship filters</span>
             <span class="k">if</span> <span class="n">search_opts</span><span class="p">[</span><span class="s2">&quot;has_transcription&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
                 <span class="n">documents</span> <span class="o">=</span> <span class="n">documents</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">has_digital_edition</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">applied_filter_labels</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">get_boolfield_label</span><span class="p">(</span><span class="n">form</span><span class="p">,</span> <span class="s2">&quot;has_transcription&quot;</span><span class="p">)</span>
+                <span class="p">)</span>
             <span class="k">if</span> <span class="n">search_opts</span><span class="p">[</span><span class="s2">&quot;has_discussion&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
                 <span class="n">documents</span> <span class="o">=</span> <span class="n">documents</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">has_discussion</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">applied_filter_labels</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">get_boolfield_label</span><span class="p">(</span><span class="n">form</span><span class="p">,</span> <span class="s2">&quot;has_discussion&quot;</span><span class="p">)</span>
+                <span class="p">)</span>
             <span class="k">if</span> <span class="n">search_opts</span><span class="p">[</span><span class="s2">&quot;has_translation&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
                 <span class="n">documents</span> <span class="o">=</span> <span class="n">documents</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">has_digital_translation</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">applied_filter_labels</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">get_boolfield_label</span><span class="p">(</span><span class="n">form</span><span class="p">,</span> <span class="s2">&quot;has_translation&quot;</span><span class="p">)</span>
+                <span class="p">)</span>
             <span class="k">if</span> <span class="n">search_opts</span><span class="p">[</span><span class="s2">&quot;docdate&quot;</span><span class="p">]:</span>
                 <span class="c1"># date range filter; returns tuple of value or None for open-ended range</span>
                 <span class="n">start</span><span class="p">,</span> <span class="n">end</span> <span class="o">=</span> <span class="n">search_opts</span><span class="p">[</span><span class="s2">&quot;docdate&quot;</span><span class="p">]</span>
-                <span class="n">documents</span> <span class="o">=</span> <span class="n">documents</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span>
-                    <span class="n">document_date_dr</span><span class="o">=</span><span class="s2">&quot;[</span><span class="si">%s</span><span class="s2"> TO </span><span class="si">%s</span><span class="s2">]&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">start</span> <span class="ow">or</span> <span class="s2">&quot;*&quot;</span><span class="p">,</span> <span class="n">end</span> <span class="ow">or</span> <span class="s2">&quot;*&quot;</span><span class="p">)</span>
+                <span class="n">date_filter</span> <span class="o">=</span> <span class="s2">&quot;[</span><span class="si">%s</span><span class="s2"> TO </span><span class="si">%s</span><span class="s2">]&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">start</span> <span class="ow">or</span> <span class="s2">&quot;*&quot;</span><span class="p">,</span> <span class="n">end</span> <span class="ow">or</span> <span class="s2">&quot;*&quot;</span><span class="p">)</span>
+                <span class="n">date_field</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="s2">&quot;document_date_dr&quot;</span>
+                    <span class="k">if</span> <span class="n">search_opts</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;exclude_inferred&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+                    <span class="k">else</span> <span class="s2">&quot;document_dating_dr&quot;</span>
                 <span class="p">)</span>
+                <span class="n">documents</span> <span class="o">=</span> <span class="n">documents</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="o">**</span><span class="p">{</span><span class="n">date_field</span><span class="p">:</span> <span class="n">date_filter</span><span class="p">})</span>
+                <span class="n">label</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">–</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">start</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">end</span><span class="p">:</span>
+                    <span class="n">label</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;After </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">)</span> <span class="o">%</span> <span class="n">start</span>
+                <span class="k">elif</span> <span class="n">end</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">start</span><span class="p">:</span>
+                    <span class="n">label</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Before </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">)</span> <span class="o">%</span> <span class="n">end</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">applied_filter_labels</span> <span class="o">+=</span> <span class="p">[</span>
+                    <span class="p">{</span>
+                        <span class="s2">&quot;field&quot;</span><span class="p">:</span> <span class="s2">&quot;docdate&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="n">search_opts</span><span class="p">[</span><span class="s2">&quot;docdate&quot;</span><span class="p">],</span>
+                        <span class="s2">&quot;label&quot;</span><span class="p">:</span> <span class="n">label</span><span class="p">,</span>
+                    <span class="p">}</span>
+                <span class="p">]</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">queryset</span> <span class="o">=</span> <span class="n">documents</span>
 
@@ -328,7 +428,22 @@
         <span class="n">highlights</span> <span class="o">=</span> <span class="n">paged_result</span><span class="o">.</span><span class="n">get_highlighting</span><span class="p">()</span> <span class="k">if</span> <span class="n">paged_result</span><span class="o">.</span><span class="n">count</span><span class="p">()</span> <span class="k">else</span> <span class="p">{}</span>
         <span class="n">facet_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">queryset</span><span class="o">.</span><span class="n">get_facets</span><span class="p">()</span>
         <span class="c1"># populate choices for facet filter fields on the form</span>
-        <span class="n">context_data</span><span class="p">[</span><span class="s2">&quot;form&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">set_choices_from_facets</span><span class="p">(</span><span class="n">facet_dict</span><span class="o">.</span><span class="n">facet_fields</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">context_data</span><span class="p">[</span><span class="s2">&quot;form&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">set_choices_from_facets</span><span class="p">(</span><span class="n">facet_dict</span><span class="o">.</span><span class="n">facet_fields</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+            <span class="c1"># in the event of a solr error (which causes an AttributeError on facet_dict),</span>
+            <span class="c1"># reset queryset to none() so we can display facet fields</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">queryset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">queryset</span><span class="o">.</span><span class="n">none</span><span class="p">()</span>
+            <span class="n">facet_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">queryset</span><span class="o">.</span><span class="n">get_facets</span><span class="p">()</span>
+            <span class="n">context_data</span><span class="p">[</span><span class="s2">&quot;form&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">set_choices_from_facets</span><span class="p">(</span><span class="n">facet_dict</span><span class="o">.</span><span class="n">facet_fields</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;mode&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;regex&quot;</span><span class="p">:</span>
+                <span class="n">context_data</span><span class="p">[</span><span class="s2">&quot;form&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span>
+                    <span class="s2">&quot;q&quot;</span><span class="p">,</span>
+                    <span class="c1"># Translators: General error text for regular expression errors</span>
+                    <span class="n">_</span><span class="p">(</span>
+                        <span class="s2">&quot;Error retrieving search results. Check regular expression for errors such as unescaped or unclosed brackets or parentheses.&quot;</span>
+                    <span class="p">),</span>
+                <span class="p">)</span>
         <span class="n">context_data</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
             <span class="p">{</span>
                 <span class="s2">&quot;highlighting&quot;</span><span class="p">:</span> <span class="n">highlights</span><span class="p">,</span>
@@ -337,6 +452,7 @@
                 <span class="s2">&quot;page_type&quot;</span><span class="p">:</span> <span class="s2">&quot;search&quot;</span><span class="p">,</span>
                 <span class="s2">&quot;page_includes_transcriptions&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>  <span class="c1"># preload transcription font</span>
                 <span class="s2">&quot;highlighting&quot;</span><span class="p">:</span> <span class="n">highlights</span><span class="p">,</span>
+                <span class="s2">&quot;applied_filters&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">applied_filter_labels</span><span class="p">,</span>
             <span class="p">}</span>
         <span class="p">)</span>
 
@@ -447,14 +563,21 @@
                 <span class="s2">&quot;images&quot;</span><span class="p">:</span> <span class="n">images</span><span class="p">,</span>
                 <span class="c1"># first image for twitter/opengraph meta tags</span>
                 <span class="s2">&quot;meta_image&quot;</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="n">images</span><span class="o">.</span><span class="n">values</span><span class="p">())[</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;image&quot;</span><span class="p">]</span> <span class="k">if</span> <span class="n">images</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
-                <span class="c1"># show the first two available panels by default (in order of priority)</span>
-                <span class="s2">&quot;default_shown&quot;</span><span class="p">:</span> <span class="n">available_panels</span><span class="p">[:</span><span class="mi">2</span><span class="p">],</span>
+                <span class="c1"># show all available panels by default</span>
+                <span class="s2">&quot;default_shown&quot;</span><span class="p">:</span> <span class="n">available_panels</span><span class="p">,</span>
                 <span class="c1"># disable any fully unavailable panels</span>
                 <span class="s2">&quot;disabled&quot;</span><span class="p">:</span> <span class="p">[</span>
                     <span class="n">panel</span>
                     <span class="k">for</span> <span class="n">panel</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;images&quot;</span><span class="p">,</span> <span class="s2">&quot;translation&quot;</span><span class="p">,</span> <span class="s2">&quot;transcription&quot;</span><span class="p">]</span>
                     <span class="k">if</span> <span class="n">panel</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">available_panels</span>
                 <span class="p">],</span>
+                <span class="c1"># related entities: sorted by type for grouping, and slug for alphabetization</span>
+                <span class="s2">&quot;related_people&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">object</span><span class="o">.</span><span class="n">persondocumentrelation_set</span><span class="o">.</span><span class="n">order_by</span><span class="p">(</span>
+                    <span class="s2">&quot;type__name&quot;</span><span class="p">,</span> <span class="s2">&quot;person__slug&quot;</span>
+                <span class="p">),</span>
+                <span class="s2">&quot;related_places&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">object</span><span class="o">.</span><span class="n">documentplacerelation_set</span><span class="o">.</span><span class="n">order_by</span><span class="p">(</span>
+                    <span class="s2">&quot;type__name&quot;</span><span class="p">,</span> <span class="s2">&quot;place__slug&quot;</span>
+                <span class="p">),</span>
             <span class="p">}</span>
         <span class="p">)</span>
         <span class="k">return</span> <span class="n">context_data</span></div>
@@ -1068,6 +1191,7 @@
                 <span class="k">if</span> <span class="n">source</span>
                 <span class="k">else</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
                 <span class="s2">&quot;source_label&quot;</span><span class="p">:</span> <span class="n">source_label</span> <span class="k">if</span> <span class="n">source_label</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;authors_count&quot;</span><span class="p">:</span> <span class="n">source</span><span class="o">.</span><span class="n">authors</span><span class="o">.</span><span class="n">count</span><span class="p">()</span> <span class="k">if</span> <span class="n">source</span> <span class="k">else</span> <span class="mi">0</span><span class="p">,</span>
                 <span class="s2">&quot;page_type&quot;</span><span class="p">:</span> <span class="s2">&quot;document annotating&quot;</span><span class="p">,</span>
                 <span class="s2">&quot;disabled&quot;</span><span class="p">:</span> <span class="n">disabled</span><span class="p">,</span>
                 <span class="s2">&quot;default_shown&quot;</span><span class="p">:</span> <span class="n">default_shown</span><span class="p">,</span>

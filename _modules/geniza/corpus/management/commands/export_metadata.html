@@ -4,10 +4,10 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>geniza.corpus.management.commands.export_metadata &#8212; Princeton Geniza Project 4.17.3 documentation</title>
+    <title>geniza.corpus.management.commands.export_metadata &#8212; Princeton Geniza Project 4.18.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css?v=d1102ebc" />
     <link rel="stylesheet" type="text/css" href="../../../../../_static/alabaster.css?v=12dfc556" />
-    <script src="../../../../../_static/documentation_options.js?v=2b5c064c"></script>
+    <script src="../../../../../_static/documentation_options.js?v=aab723a2"></script>
     <script src="../../../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="../../../../../genindex.html" />
@@ -45,6 +45,7 @@
 <span class="kn">from</span> <span class="nn">geniza.corpus.annotation_export</span> <span class="kn">import</span> <span class="n">generate_coauthor_commit</span>
 <span class="kn">from</span> <span class="nn">geniza.corpus.management.lastrun_command</span> <span class="kn">import</span> <span class="n">LastRunCommand</span>
 <span class="kn">from</span> <span class="nn">geniza.corpus.metadata_export</span> <span class="kn">import</span> <span class="n">PublicDocumentExporter</span><span class="p">,</span> <span class="n">PublicFragmentExporter</span>
+<span class="kn">from</span> <span class="nn">geniza.entities.metadata_export</span> <span class="kn">import</span> <span class="n">PublicPersonExporter</span><span class="p">,</span> <span class="n">PublicPlaceExporter</span>
 <span class="kn">from</span> <span class="nn">geniza.footnotes.metadata_export</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">PublicFootnoteExporter</span><span class="p">,</span>
     <span class="n">PublicSourceExporter</span><span class="p">,</span>
@@ -71,6 +72,8 @@
         <span class="s2">&quot;fragments&quot;</span><span class="p">:</span> <span class="n">PublicFragmentExporter</span><span class="p">,</span>
         <span class="s2">&quot;sources&quot;</span><span class="p">:</span> <span class="n">PublicSourceExporter</span><span class="p">,</span>
         <span class="s2">&quot;footnotes&quot;</span><span class="p">:</span> <span class="n">PublicFootnoteExporter</span><span class="p">,</span>
+        <span class="s2">&quot;people&quot;</span><span class="p">:</span> <span class="n">PublicPersonExporter</span><span class="p">,</span>
+        <span class="s2">&quot;places&quot;</span><span class="p">:</span> <span class="n">PublicPlaceExporter</span><span class="p">,</span>
     <span class="p">}</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
@@ -143,12 +146,22 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_path_csv</span><span class="p">(</span><span class="s2">&quot;fragments&quot;</span><span class="p">)</span>
 
     <span class="nd">@cached_property</span>
+    <span class="k">def</span> <span class="nf">path_people_csv</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_path_csv</span><span class="p">(</span><span class="s2">&quot;people&quot;</span><span class="p">)</span>
+
+    <span class="nd">@cached_property</span>
+    <span class="k">def</span> <span class="nf">path_places_csv</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_path_csv</span><span class="p">(</span><span class="s2">&quot;places&quot;</span><span class="p">)</span>
+
+    <span class="nd">@cached_property</span>
     <span class="k">def</span> <span class="nf">paths</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="p">[</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">path_documents_csv</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">path_footnotes_csv</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">path_sources_csv</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">path_fragments_csv</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">path_people_csv</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">path_places_csv</span><span class="p">,</span>
         <span class="p">]</span>
 
     <span class="c1">############################################</span>
@@ -299,7 +312,6 @@
 <div class="viewcode-block" id="Command">
 <a class="viewcode-back" href="../../../../../codedocs/corpus.html#geniza.corpus.management.commands.export_metadata.Command">[docs]</a>
 <span class="k">class</span> <span class="nc">Command</span><span class="p">(</span><span class="n">LastRunCommand</span><span class="p">,</span> <span class="n">Timerable</span><span class="p">):</span>
-
     <span class="c1"># id for this script in the last run file info</span>
     <span class="n">script_id</span> <span class="o">=</span> <span class="s2">&quot;metadata-export&quot;</span>
 
