@@ -200,9 +200,13 @@ class Source(models.Model):
     def all_languages(self):
         """comma-delimited list of languages, in parentheses, used for the translation selector"""
         if self.languages.exists():
-            return "(in %s)" % ", ".join(
-                [str(lang) for lang in self.languages.all().order_by("name")]
-            )
+            langs = [
+                str(lang)
+                for lang in self.languages.all().order_by("name")
+                if "Unspecified" not in str(lang)
+            ]
+            if langs:
+                return "(in %s)" % ", ".join(langs)
         return ""
 
     def formatted_display(self, extra_fields=True, format_index_cards=False):
