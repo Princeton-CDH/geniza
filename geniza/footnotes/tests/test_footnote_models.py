@@ -223,7 +223,9 @@ class TestSource:
         )
 
     def test_formatted_indexcard(self, index_cards):
-        assert "unpublished index cards (1950–85)" in index_cards.formatted_display()
+        assert "unpublished index cards (1950–85)" in index_cards.formatted_display(
+            format_index_cards=True
+        )
 
     def test_get_volume_from_shelfmark(self):
         assert Source.get_volume_from_shelfmark("T-S 3564.5J") == "T-S 35"
