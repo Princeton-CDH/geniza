@@ -75,7 +75,7 @@ outcome==1.2.0
 packaging==21.3
 parasolr==0.9.1
 pathspec==0.10.2
-percy-selenium==1.0.5
+percy-selenium==2.1.1
 piffle==0.4.0
 Pillow==9.3.0
 platformdirs==2.5.4
@@ -94,9 +94,11 @@ PySocks==1.7.1
 pytest==7.2.0
 pytest-cov==4.0.0
 pytest-django==4.4.0
+pytest-order==1.2.0
 pytest-ordering==0.6
 python-cas==1.6.0
 python-dateutil==2.8.2
+python-slugify==7.0.0
 python-utils==3.4.5
 pytz==2022.6
 PyYAML==6.0
