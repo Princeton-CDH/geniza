@@ -102,6 +102,18 @@ class TestCollection:
         with pytest.raises(IntegrityError):
             Collection.objects.create(lib_abbrev="BL")
 
+    @pytest.mark.django_db
+    def test_full_name(self):
+        # library only
+        c = Collection.objects.create(library="British Library")
+        assert c.full_name == c.library
+        # collection only
+        c = Collection.objects.create(name="Chapira")
+        assert c.full_name == c.name
+        # library + collection
+        c = Collection.objects.create(library="Cambridge UL", name="Taylor-Schechter")
+        assert c.full_name == f"{c.library}, {c.name}"
+
 
 class TestLanguageScripts:
     def test_str(self):

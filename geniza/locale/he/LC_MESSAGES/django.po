@@ -1272,3 +1272,24 @@ msgstr "חזרה לתפריט הראשי"
 msgid "Enable dark mode"
 msgstr "הפעלת מצב כהה"
 
+#, fuzzy
+#~| msgid "Unknown type"
+#~ msgid "Unknown collection"
+#~ msgstr "סוג לא ידוע"
+
+#~ msgid "Document Dates (CE)"
+#~ msgstr "תאריכי המסמך (CE)"
+
+#~ msgid "Has Discussion"
+#~ msgstr "קיים דיון"
+
+#~ msgid "Apply"
+#~ msgstr "החל"
+
+#, python-format
+#~ msgid "for %(relation)s see"
+#~ msgstr "ל%(relation)s ראה"
+
+#, python-format
+#~ msgid "includes %(relation)s"
+#~ msgstr "כולל %(relation)s"

@@ -77,6 +77,9 @@ class Collection(models.Model):
     location = models.CharField(
         max_length=255, help_text="Current location of the collection", blank=True
     )
+    url = models.URLField(
+        "URL", blank=True, help_text="Link to this collection on the web"
+    )
 
     objects = CollectionManager()
 
@@ -114,6 +117,11 @@ class Collection(models.Model):
     def natural_key(self):
         """natural key: tuple of name and library"""
         return (self.name, self.library)
+
+    @property
+    def full_name(self):
+        """attempt to combine library and collection name into a human readable format"""
+        return ", ".join([n for n in [self.library, self.name] if n])
 
 
 class LanguageScriptManager(models.Manager):
@@ -668,20 +676,24 @@ class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin):
         )
 
     @property
+    def collections(self):
+        """collection objects for associated fragments"""
+        # use set to ensure unique; sort for reliable output order
+        return sorted(
+            set(
+                [
+                    block.fragment.collection
+                    for block in self.textblock_set.all()
+                    if block.fragment.collection
+                ]
+            ),
+            key=lambda c: c.abbrev,
+        )
+
+    @property
     def collection(self):
         """collection (abbreviation) for associated fragments"""
-        # use set to ensure unique; sort for reliable output order
-        return ", ".join(
-            sorted(
-                set(
-                    [
-                        block.fragment.collection.abbrev
-                        for block in self.textblock_set.all()
-                        if block.fragment.collection
-                    ]
-                )
-            )
-        )
+        return ", ".join([coll.abbrev for coll in self.collections])
 
     def all_languages(self):
         """comma delimited string of all primary languages for this document"""

@@ -1313,3 +1313,24 @@ msgstr "العودة إلى القائمة الرئيسية"
 msgid "Enable dark mode"
 msgstr "تفعيل الوضع المظلم"
 
+#, fuzzy
+#~| msgid "Unknown type"
+#~ msgid "Unknown collection"
+#~ msgstr "نوع غير معروف"
+
+#~ msgid "Document Dates (CE)"
+#~ msgstr "تواريخ المستند (التقويم الميلادي)"
+
+#~ msgid "Has Discussion"
+#~ msgstr "لديه مناقشة"
+
+#~ msgid "Apply"
+#~ msgstr "تطبيق"
+
+#, python-format
+#~ msgid "for %(relation)s see"
+#~ msgstr "لرؤية %(relation)s"
+
+#, python-format
+#~ msgid "includes %(relation)s"
+#~ msgstr "يشمل %(relation)s"
