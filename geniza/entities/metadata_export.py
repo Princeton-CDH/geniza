@@ -53,17 +53,7 @@ class PublicPersonExporter(Exporter):
     # queryset filter for content types included in this export
     content_type_filter = {
         "content_type__app_label__in": ["entities", "corpus"],
-        "content_type__model__in": [
-            "Dating",
-            "Document",
-            "Name",
-            "Person",
-            "PersonDocumentRelation",
-            "PersonPersonRelation",
-            "PersonPlaceRelation",
-            "PersonRole",
-            "Place",
-        ],
+        "content_type__model__in": ["document", "person", "place"],
     }
 
     def __init__(self, queryset=None, progress=False):
@@ -496,16 +486,7 @@ class PublicPlaceExporter(Exporter):
     # queryset filter for content types included in this export
     content_type_filter = {
         "content_type__app_label__in": ["entities", "corpus"],
-        "content_type__model__in": [
-            "Document",
-            "DocumentPlaceRelation",
-            "Name",
-            "Person",
-            "PersonPlaceRelation",
-            "Place",
-            "PlaceEventRelation",
-            "Event",
-        ],
+        "content_type__model__in": ["document", "person", "place", "event"],
     }
 
     def get_queryset(self):
