@@ -1,5 +1,11 @@
 # Deploy Notes
 
+## 4.18.1
+
+-   Metadata exports have been updated, and may require manually setting the
+    last run date in `~/.pgp_export_lastrun` and running the management command
+    `./manage.py export_metadata -w -s -v 2` to sync all data.
+
 ## 4.18
 
 -   Solr configuration has changed. Ensure Solr configset has been updated
