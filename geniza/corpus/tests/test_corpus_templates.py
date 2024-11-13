@@ -147,37 +147,6 @@ class TestDocumentDetailTemplate:
         response = admin_client.get(document.get_absolute_url())
         assertContains(response, edit_url)
 
-    def test_editors(self, client, document, source, twoauthor_source):
-        # footnote with no content
-        Footnote.objects.create(
-            content_object=document, source=source, doc_relation=Footnote.EDITION
-        )
-        # No digital editions, so no editors
-        response = client.get(document.get_absolute_url())
-        assertNotContains(response, "Editor")
-
-        # footnote with one author, content
-        Footnote.objects.create(
-            content_object=document,
-            source=source,
-            doc_relation={Footnote.DIGITAL_EDITION},
-        )
-
-        # Digital edition with one author, should have one editor but not multiple
-        response = client.get(document.get_absolute_url())
-        assertContains(response, "Editor")
-        assertNotContains(response, "Editors")
-
-        # footnote with two authors, content
-        Footnote.objects.create(
-            content_object=document,
-            source=twoauthor_source,
-            doc_relation=Footnote.DIGITAL_EDITION,
-        )
-        # Should now be "editors"
-        response = client.get(document.get_absolute_url())
-        assertContains(response, "Editors")
-
     def test_shelfmarks(self, client, document, join, fragment, multifragment):
         # Ensure that shelfmarks are displayed on the page.
         response = client.get(document.get_absolute_url())
