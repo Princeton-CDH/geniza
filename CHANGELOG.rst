@@ -1,6 +1,11 @@
 Change Log
 ==========
 
+4.18.1
+------
+
+- bugfix: Correct content type labels for public csv exports
+
 4.18
 ----
 
