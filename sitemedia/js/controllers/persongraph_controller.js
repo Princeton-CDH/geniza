@@ -5,7 +5,7 @@ import cytoscape from "cytoscape";
 import cytoscapeHTML from "cytoscape-html";
 
 export default class extends Controller {
-    static targets = ["graphContainer", "person"];
+    static targets = ["graphContainer", "person", "tooltip"];
     NODE_CONSTANTS = {
         selected: false,
         selectable: false,
@@ -48,7 +48,7 @@ export default class extends Controller {
                 .map((row) => {
                     // loop through each related person's data
                     const cols = row.querySelectorAll("td");
-                    const [persName, relType, _sharedDocs, _notes] = cols;
+                    const [persName, relType, sharedDocs, _notes] = cols;
                     const persId = row.dataset.id;
                     const persLink = row.dataset.href || "";
                     const relTypeNames = relType.textContent.trim().split(", ");
@@ -60,13 +60,20 @@ export default class extends Controller {
                             relationCat = relationCategories[relTypeName];
                         }
                     });
+                    const ndocs = parseInt(sharedDocs.textContent);
+                    const style = { width: (ndocs % 10) + 1 };
+                    const label = `${ndocs} document${
+                        ndocs == 1 ? "" : "s"
+                    } with ${persName.textContent.trim()}`;
                     if (["E", "I", "M"].includes(relationCat)) {
                         edges.push({
                             group: "edges",
                             data: {
                                 target: this.element.dataset.id,
                                 source: persId,
+                                label,
                             },
+                            style,
                         });
                         return {
                             group: "nodes",
@@ -91,7 +98,9 @@ export default class extends Controller {
                             data: {
                                 target: this.element.dataset.id,
                                 source: persId,
+                                label,
                             },
+                            style,
                         });
                         return {
                             group: "nodes",
@@ -179,13 +188,6 @@ export default class extends Controller {
                         height: "54px",
                     },
                 },
-                {
-                    selector: "edge",
-                    style: {
-                        "curve-style": "bezier",
-                        width: 1,
-                    },
-                },
             ],
         });
         this.cy.nodes().renderHTMLNodes({ hideOriginal: true });
@@ -211,6 +213,47 @@ export default class extends Controller {
                 event.cy.container().style.cursor = "grab";
             }
         });
+        this.updateTooltipSize();
+        this.cy.on("mouseover", "edge", (event) => {
+            this.tooltipTarget.innerText = event.target.data("label");
+            this.tooltipTarget.style.display = "flex";
+            this.updateTooltipSize();
+            event.cy.container().style.cursor = "pointer";
+            event.target.style({ "line-color": "#000" });
+        });
+        const destroyTooltip = (event) => {
+            this.tooltipTarget.innerText = "";
+            this.tooltipTarget.style.display = "none";
+            if (event.cy) {
+                event.cy.container().style.cursor = "grab";
+                event.target.style({ "line-color": "#999" });
+            } else {
+                this.cy.edges().style({ "line-color": "#999" });
+            }
+        };
+        this.cy.on("mouseout", "edge", destroyTooltip);
+        this.graphContainerTarget.addEventListener("mouseout", destroyTooltip);
+        this.cy.on("mousemove", "edge", (event) => {
+            const y = event.originalEvent.clientY + window.scrollY;
+            const x = event.originalEvent.clientX + window.scrollX + 5;
+            if (x + 200 * this.cy.zoom() > window.innerWidth) {
+                this.tooltipTarget.style.left = "auto";
+                this.tooltipTarget.style.right = `${
+                    window.innerWidth - event.originalEvent.clientX - 8
+                }px`;
+            } else {
+                this.tooltipTarget.style.right = "auto";
+                this.tooltipTarget.style.left = `${x}px`;
+            }
+            this.tooltipTarget.style.top = `${y}px`;
+        });
+        this.cy.on("zoom", this.updateTooltipSize.bind(this));
+    }
+
+    updateTooltipSize() {
+        // helper function to scale tooltip on cytoscape zoom
+        this.tooltipTarget.style.fontSize = `${Math.min(this.cy.zoom(), 2)}rem`;
+        this.tooltipTarget.style.maxWidth = this.cy.zoom() * 200;
     }
 
     getNodeHtml(className, persName, gender, relTypeName) {
