@@ -1,6 +1,11 @@
 Change Log
 ==========
 
+4.18.2
+------
+
+- bugfix: Ensure slugs are generated for new Place records
+
 4.18.1
 ------
 
