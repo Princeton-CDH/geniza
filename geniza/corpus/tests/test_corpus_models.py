@@ -676,6 +676,36 @@ class TestDocument:
         del doc.primary_script
         assert doc.primary_script is None
 
+    def test_formatted_citation(self, document, join, fragment, multifragment):
+        # none of these fragments have collections, so they will use shelfmark without
+        # full collection names
+        assert (
+            f"{document.shelfmark}. Available online through the Princeton Geniza Project at {document.permalink}, accessed"
+            in document.formatted_citation
+        )
+        assert (
+            f"{join.shelfmark}. Available online through the Princeton Geniza Project at {join.permalink}, accessed"
+            in join.formatted_citation
+        )
+        # add some collections with names and test again
+        c = Collection.objects.create(
+            library="Cambridge University Library", name="Additional Manuscripts"
+        )
+        fragment.collection = c
+        fragment.save()
+        c2 = Collection.objects.create(
+            library="Cambridge University Library", name="Taylor-Schechter"
+        )
+        multifragment.collection = c2
+        multifragment.save()
+        # should include all the collection libraries and names
+        assert (
+            f"{c.library}, {c.name}, {document.shelfmark}."
+            in document.formatted_citation
+        )
+        assert f"{c.library}, {c.name}" in join.formatted_citation
+        assert f"+ {c2.library}, {c2.name}" in join.formatted_citation
+
     def test_all_tags(self):
         doc = Document.objects.create()
         doc.tags.add("marriage", "women")

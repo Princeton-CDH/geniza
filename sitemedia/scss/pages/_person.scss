@@ -245,6 +245,12 @@ main.document {
             @include breakpoints.for-tablet-landscape-up {
                 margin-top: 3rem;
             }
+            dd + dt {
+                margin-top: spacing.$spacing-md;
+                @include breakpoints.for-tablet-landscape-up {
+                    margin-top: spacing.$spacing-lg;
+                }
+            }
             // hanging phosphor icons before citation and permalink
             dt#citation,
             dt#permalink {
@@ -270,6 +276,7 @@ main.document {
                     a {
                         text-decoration: none;
                     }
+                    max-width: 100%;
                 }
             }
         }

@@ -508,7 +508,7 @@ class PlaceAdmin(SortableAdminBase, admin.ModelAdmin):
     """Admin for Place entities in the PGP"""
 
     search_fields = ("name_unaccented", "names__name")
-    fields = (("latitude", "longitude"), "notes")
+    fields = ("slug", ("latitude", "longitude"), "notes")
     inlines = (
         NameInline,
         DocumentPlaceInline,
@@ -528,6 +528,17 @@ class PlaceAdmin(SortableAdminBase, admin.ModelAdmin):
         "i",  # PlaceEventInline
         "i",  # FootnoteInline
     )
+
+    def save_related(self, request, form, formsets, change):
+        """Override save to ensure slug is generated if empty. Adapted from mep-django"""
+        super().save_related(request, form, formsets, change)
+
+        # this must be done after related objects are saved, because generate_slug
+        # requires related Name records
+        place = form.instance
+        if not place.slug:
+            place.generate_slug()
+            place.save()
 
     def get_queryset(self, request):
         """Modify queryset to add unaccented name annotation field, so that places

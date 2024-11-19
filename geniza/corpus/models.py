@@ -3,9 +3,9 @@ import logging
 import re
 from collections import defaultdict
 from copy import deepcopy
+from datetime import datetime
 from functools import cached_property
 from itertools import chain
-from time import sleep
 
 from django.conf import settings
 from django.contrib import admin, messages
@@ -726,6 +726,27 @@ class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin):
         # if there is only one script, return it; otherwire return None
         if len(scripts) == 1:
             return list(scripts)[0]
+
+    @property
+    def formatted_citation(self):
+        """a formatted citation for display at the bottom of Document detail pages"""
+        available_at = "Available online through the Princeton Geniza Project at"
+        today = datetime.today().strftime("%B %-d, %Y")
+        tb_set = self.textblock_set.all()
+        long_name = (
+            " + ".join(
+                dict.fromkeys(
+                    f"{block.fragment.collection.full_name}, {block.fragment.shelfmark}"
+                    for block in tb_set
+                    if block.certain  # filter locally instead of in the db
+                )
+            )
+            if all(block.fragment.collection for block in tb_set)
+            else self.shelfmark
+        )
+        return mark_safe(
+            f"{long_name}. {available_at} {self.permalink}, accessed {today}."
+        )
 
     def all_tags(self):
         """comma delimited string of all tags for this document"""

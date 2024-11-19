@@ -243,6 +243,17 @@
 
     {# tertiary metadata #}
     <dl class="metadata-list tertiary">
+        <dt id="citation" aria-hidden="true"> {# aria hidden because redundant for screen readers #}
+            <i class="ph-quotes-fill"></i>
+            {# Translators: label for a citation for a document detail page #}
+            {% translate 'How to cite this record:' %}
+        </dt>
+        <dd>
+            {# Translators: accessibility label for a citation for a document #}
+            <span aria-label="{% translate 'Citation' %}">
+                {{ document.formatted_citation }}
+            </span>
+        </dd>
         {# Translators: label for permanent link to a document #}
         {% translate 'Link to this document:' as permalink %}
         <dt id="permalink" aria-hidden="true"> {# aria hidden because redundant for screen readers #}
