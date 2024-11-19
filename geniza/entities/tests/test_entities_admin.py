@@ -350,6 +350,19 @@ class TestEventDocumentInline:
 
 @pytest.mark.django_db
 class TestPlaceAdmin:
+    def test_save_related(self):
+        # if a place does not have a slug, the form should generate one after related_save
+        # (i.e. the Name association has been saved)
+        place = Place.objects.create()
+        Name.objects.create(name="Fusṭāṭ", content_object=place)
+        assert not place.slug
+        # mock all arguments to admin method; form.instance should be our place
+        mockform = Mock()
+        mockform.instance = place
+        with patch.object(admin.ModelAdmin, "save_related"):
+            PlaceAdmin(Place, Mock()).save_related(Mock(), mockform, Mock(), Mock())
+        assert place.slug
+
     def test_get_queryset(self):
         # create a place
         place = Place.objects.create()
