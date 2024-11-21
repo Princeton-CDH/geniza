@@ -142,8 +142,8 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
         # if any word begins with one of the prefixes, update search to include the word
         # without that prefix as well
         prefixed_words = self.re_hebrew_prefix.finditer(search_term)
+        prefixed_words = [w.group(0) for w in prefixed_words]
         if prefixed_words:
-            prefixed_words = [w.group(0) for w in prefixed_words]
             prefixed_or_nonprefixed_query = [
                 # handle two-charater prefix אל by removing 2 chars
                 f"({word} OR {word[2:] if word.startswith('אל') else word[1:]})"
