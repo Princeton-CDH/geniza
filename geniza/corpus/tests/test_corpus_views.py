@@ -1307,6 +1307,38 @@ class TestDocumentSearchView:
             in dqs.get_highlighting()[f"document.{document.pk}"]["transcription"][0]
         )
 
+    @pytest.mark.django_db
+    def test_hebrew_prefix_highlight(self, source, empty_solr):
+        # test matching for words without searched hebrew prefixes
+        document = Document.objects.create()
+        footnote = Footnote.objects.create(
+            content_object=document,
+            source=source,
+            doc_relation=Footnote.DIGITAL_EDITION,
+        )
+        Annotation.objects.create(
+            footnote=footnote,
+            content={
+                # body contains word מרכב without prefix אל
+                "body": [{"value": "מרכב"}],
+                "target": {
+                    "source": {
+                        "id": source.uri,
+                    }
+                },
+            },
+        )
+        SolrClient().update.index([document.index_data()], commit=True)
+        docsearch_view = DocumentSearchView(kwargs={})
+        docsearch_view.request = Mock()
+
+        # should match word without prefix, smaller than the entered query
+        docsearch_view.request.GET = {"q": "אלמרכב"}
+        dqs = docsearch_view.get_queryset()
+        assert dqs.get_highlighting()[f"document.{document.pk}"]["transcription"][
+            0
+        ] == clean_html("<em>מרכב</em>")
+
 
 class TestDocumentScholarshipView:
     def test_page_title(self, document, client, source):

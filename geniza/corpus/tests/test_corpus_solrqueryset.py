@@ -217,6 +217,16 @@ class TestDocumentSolrQuerySet:
         assert "NS" in dqs._search_term_cleanup("shelfmark:NS")
         assert not dqs.shelfmark_query
 
+    def test_handle_hebrew_prefixes(self):
+        dqs = DocumentSolrQuerySet()
+        # should replace words with hebrew prefixes with OR queries
+        # on the same word with or without prefix
+        assert dqs._search_term_cleanup("אלמרכב") == "(אלמרכב OR מרכב)"
+        assert (
+            dqs._search_term_cleanup("test one משיח two כבוד")
+            == "test one (משיח OR שיח) two (כבוד OR בוד)"
+        )
+
     def test_keyword_search__quoted_shelfmark(self):
         dqs = DocumentSolrQuerySet()
         with patch.object(dqs, "search") as mocksearch:
