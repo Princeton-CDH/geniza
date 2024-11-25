@@ -195,7 +195,7 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
             # add in judaeo-arabic conversion for the rest (double-quoted phrase should NOT be
             # converted to JA, as this breaks if any brackets or other sigla are in doublequotes)
             remaining_phrases = [
-                self._handle_hebrew_prefixes(arabic_or_ja(p))
+                arabic_or_ja(self._handle_hebrew_prefixes(p))
                 for p in self.re_exact_match.split(search_term)
             ]
             # stitch the search query back together, in order, so that boolean operators
@@ -210,7 +210,7 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
                 )
             )
         else:
-            search_term = self._handle_hebrew_prefixes(arabic_or_ja(search_term))
+            search_term = arabic_or_ja(self._handle_hebrew_prefixes(search_term))
 
         # convert any field aliases used in search terms to actual solr fields
         # (i.e. "pgpid:950 shelfmark:ena" -> "pgpid_i:950 shelfmark_t:ena")

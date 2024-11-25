@@ -221,10 +221,15 @@ class TestDocumentSolrQuerySet:
         dqs = DocumentSolrQuerySet()
         # should replace words with hebrew prefixes with OR queries
         # on the same word with or without prefix
-        assert dqs._search_term_cleanup("אלמרכב") == "(אלמרכב OR מרכב)"
+        assert dqs._handle_hebrew_prefixes("אלמרכב") == "(אלמרכב OR מרכב)"
         assert (
-            dqs._search_term_cleanup("test one משיח two כבוד")
+            dqs._handle_hebrew_prefixes("test one משיח two כבוד")
             == "test one (משיח OR שיח) two (כבוד OR בוד)"
+        )
+        # when cleanup is applied, will also apply JA to Arabic conversion
+        assert (
+            dqs._search_term_cleanup("אלמרכב")
+            == "((אלמרכב^2.0 OR المركب OR المرخب) OR (מרכב^2.0 OR مركب OR مرخب))"
         )
 
     def test_keyword_search__quoted_shelfmark(self):
