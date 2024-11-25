@@ -164,7 +164,7 @@ class TestDocumentSolrQuerySet:
     def test_search_term_cleanup__arabic_to_ja(self):
         dqs = DocumentSolrQuerySet()
         # confirm arabic to judaeo-arabic runs here (with boost)
-        assert dqs._search_term_cleanup("دينار") == "(دينار^2.0|דינאר)"
+        assert dqs._search_term_cleanup("دينار") == "(دينار^2.0 OR דינאר)"
         # confirm arabic to judaeo-arabic does not run here
         assert (
             dqs._search_term_cleanup('"دي[نا]ر"')
