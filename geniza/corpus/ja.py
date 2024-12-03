@@ -134,7 +134,7 @@ def ja_to_arabic(text):
             texts = []
             for option in v:
                 texts.append(re.sub(k, option, text))
-            text = " OR ".join(texts)
+            text = "|".join(texts)
         elif type(v) == str:
             # only one possible translation
             text = re.sub(k, v, text)
@@ -151,7 +151,7 @@ def make_translingual(text, boost, pattern, trans_func):
 
     # rewrite phrasematches using translingual function, boost, and OR query
     translingual_wordphrases = [
-        f"({wordphrase}{'^2.0' if boost else ''} OR {trans_func(wordphrase)})"
+        f"({wordphrase}{'^5.0' if boost else ''}|{trans_func(wordphrase)})"
         for wordphrase in matching_wordphrases
     ]
 
@@ -188,4 +188,4 @@ def arabic_or_ja(text, boost=True):
         texts.append(make_translingual(text, boost, re_HE_WORD_OR_PHRASE, ja_to_arabic))
     if contains_arabic(text):
         texts.append(make_translingual(text, boost, re_AR_WORD_OR_PHRASE, arabic_to_ja))
-    return f"({' OR '.join(texts)})" if len(texts) > 1 else texts[0]
+    return f"({'|'.join(texts)})" if len(texts) > 1 else texts[0]
