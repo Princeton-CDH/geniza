@@ -679,15 +679,12 @@ class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin):
     def collections(self):
         """collection objects for associated fragments"""
         # use set to ensure unique; sort for reliable output order
-        return sorted(
-            set(
-                [
-                    block.fragment.collection
-                    for block in self.textblock_set.all()
-                    if block.fragment.collection
-                ]
-            ),
-            key=lambda c: c.abbrev,
+        return set(
+            [
+                block.fragment.collection
+                for block in self.textblock_set.all().order_by("order")
+                if block.fragment.collection
+            ]
         )
 
     @property

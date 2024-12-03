@@ -593,6 +593,27 @@ class TestDocument:
         frag2.save()
         assert doc.collection == "CUL, JTS"
 
+    def test_collections(self):
+        cul = Collection.objects.create(library="Cambridge", abbrev="CUL")
+        frag = Fragment.objects.create(shelfmark="T-S 8J22.21", collection=cul)
+        aiu = Collection.objects.create(
+            library="Alliance Israélite Universelle", abbrev="AIU"
+        )
+        frag2 = Fragment.objects.create(shelfmark="AIU VII.A.23", collection=aiu)
+        frag3 = Fragment.objects.create(shelfmark="AIU VII.F.55", collection=aiu)
+        doc = Document.objects.create()
+        TextBlock.objects.create(document=doc, fragment=frag, order=1)
+        TextBlock.objects.create(document=doc, fragment=frag2, order=2)
+        TextBlock.objects.create(document=doc, fragment=frag3, order=3)
+
+        # collections should be length 2 because it's a set
+        assert len(doc.collections) == 2
+        # collections should be listed in textblock order, NOT alphabetically
+        colls = list(doc.collections)
+        assert colls[0].pk == cul.pk
+        assert colls[1].pk == aiu.pk
+        assert doc.collection == "CUL, AIU"
+
     def test_all_languages(self):
         doc = Document.objects.create()
         lang = LanguageScript.objects.create(language="Judaeo-Arabic", script="Hebrew")
