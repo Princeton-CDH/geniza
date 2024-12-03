@@ -38,10 +38,10 @@ export default class extends Controller {
     rotationTargetConnected() {
         // initialize angle rotation input
         if (this.osdTarget.dataset.rotation !== "0") {
-            // subtract angle from 360 as angle rotation input tracks counterclockwise
-            // rotation, whereas our number tracks clockwise rotation
             this.updateRotationUI(
-                360 - parseInt(this.osdTarget.dataset.rotation)
+                parseInt(this.osdTarget.dataset.rotation),
+                false,
+                true
             );
         }
     }
@@ -97,7 +97,9 @@ export default class extends Controller {
         this.rotationTarget.classList.remove("active");
         if (this.osdTarget.dataset.rotation !== "0") {
             this.updateRotationUI(
-                360 - parseInt(this.osdTarget.dataset.rotation)
+                parseInt(this.osdTarget.dataset.rotation),
+                false,
+                true
             );
         }
         const OSD = this.osdTarget.querySelector(".openseadragon-container");
@@ -131,7 +133,7 @@ export default class extends Controller {
             sequenceMode: false,
             autoHideControls: true,
             showHomeControl: false,
-            degrees: 360 - parseInt(this.osdTarget.dataset.rotation),
+            degrees: parseInt(this.osdTarget.dataset.rotation),
             // Enable touch rotation on tactile devices
             gestureSettingsTouch: {
                 pinchRotate: true,
@@ -217,8 +219,7 @@ export default class extends Controller {
     handleRotationInput(viewer) {
         return (evt) => {
             let angle = parseInt(evt.currentTarget.value);
-            // set rotation to -angle for natural UX
-            viewer.viewport.setRotation(-1 * angle);
+            viewer.viewport.setRotation(angle);
             this.updateRotationUI(angle, evt);
         };
     }
@@ -245,9 +246,11 @@ export default class extends Controller {
         };
     }
     updateSlider(slider, percent, deactivating) {
+        let color = "--link-primary";
         if (deactivating) {
             this.zoomSliderTarget.classList.remove("active-thumb");
             this.rotationTarget.classList.remove("active-thumb");
+            color = "--filter-active";
         } else if (!slider.classList.contains("active-thumb")) {
             this.zoomSliderTarget.classList.add("active-thumb");
             this.rotationTarget.classList.add("active-thumb");
@@ -255,7 +258,7 @@ export default class extends Controller {
         // switch gradient direction for RTL layout
         const dir = document.documentElement.dir == "rtl" ? "left" : "right";
         // use gradient for two-tone slider track background
-        slider.style.background = `linear-gradient(to ${dir}, var(--link-primary) 0%, var(--link-primary) ${percent}%, var(--zoom-control-bg) ${percent}%, var(--zoom-control-bg) 100%)`;
+        slider.style.background = `linear-gradient(to ${dir}, var(${color}) 0%, var(${color}) ${percent}%, var(--zoom-control-bg) ${percent}%, var(--zoom-control-bg) 100%)`;
     }
     updateZoomUI(zoom, deactivating) {
         // update the zoom controls UI with the new value
@@ -268,7 +271,11 @@ export default class extends Controller {
             100;
         this.updateSlider(this.zoomSliderTarget, percent, deactivating);
         if (deactivating) {
-            this.updateRotationUI(0, false, true);
+            this.updateRotationUI(
+                parseInt(this.osdTarget.dataset.rotation) || 0,
+                false,
+                true
+            );
         }
     }
     updateRotationUI(angle, autoUpdate, deactivating) {
@@ -276,7 +283,7 @@ export default class extends Controller {
         this.rotationLabelTarget.innerHTML = `${angle}&deg;`;
         if (!autoUpdate) {
             // update input value and pivot angle
-            this.rotationTarget.value = -1 * angle.toString();
+            this.rotationTarget.value = angle.toString();
         }
         const percent = (angle / 360) * 100;
         this.updateSlider(this.rotationTarget, percent, deactivating);
