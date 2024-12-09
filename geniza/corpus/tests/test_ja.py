@@ -31,10 +31,10 @@ def test_contains_hebrew():
 
 
 def test_ja_to_arabic():
-    assert ja_to_arabic("דינאר") == "دىنار|ذىنار|دينار|ذينار"
-    assert ja_to_arabic("מצחף") == "مصحف|مضحف"
-    assert ja_to_arabic("סנה") == "سنة|سنه"
-    assert ja_to_arabic("טבאךֹ") == "طباكֹ|ظباكֹ|طباخֹ|ظباخֹ"
+    assert ja_to_arabic("דינאר") == "دىنار OR ذىنار OR دينار OR ذينار"
+    assert ja_to_arabic("מצחף") == "مصحف OR مضحف"
+    assert ja_to_arabic("סנה") == "سنة OR سنه"
+    assert ja_to_arabic("טבאךֹ") == "طباكֹ OR ظباكֹ OR طباخֹ OR ظباخֹ"
     assert ja_to_arabic("מ") == "م"
     assert ja_to_arabic("") == ""
     assert ja_to_arabic("english text") == "english text"
@@ -49,54 +49,64 @@ def test_arabic_or_ja__no_arabic_or_ja():
 
 def test_arabic_or_ja__arabic():
     # single word — should return match for arabic or judaeo-arabic
-    assert arabic_or_ja("دينار", boost=False) == "(دينار|דינאר)"
+    assert arabic_or_ja("دينار", boost=False) == "(دينار OR דינאר)"
     # multiple words — should return match for arabic or judaeo-arabic
-    assert arabic_or_ja("دينار مصحف", boost=False) == "(دينار|דינאר) (مصحف|מצחף)"
+    assert arabic_or_ja("دينار مصحف", boost=False) == "(دينار OR דינאר) (مصحف OR מצחף)"
     # mixed english and arabic
-    assert arabic_or_ja("help مصحف", boost=False) == "help (مصحف|מצחף)"
+    assert arabic_or_ja("help مصحف", boost=False) == "help (مصحف OR מצחף)"
     # with boosting
-    assert arabic_or_ja("دينار") == "(دينار^5.0|דינאר)"
+    assert arabic_or_ja("دينار") == "(دينار^100.0 OR דינאר)"
 
 
 def test_arabic_or_ja__ja():
     # single word — should return match for arabic or judaeo-arabic
-    assert arabic_or_ja("דינאר", boost=False) == "(דינאר|دىنار|ذىنار|دينار|ذينار)"
+    assert (
+        arabic_or_ja("דינאר", boost=False)
+        == "(דינאר OR دىنار OR ذىنار OR دينار OR ذينار)"
+    )
     # multiple words — should return match for arabic or judaeo-arabic
     assert (
         arabic_or_ja("דינאר מצחף", boost=False)
-        == "(דינאר|دىنار|ذىنار|دينار|ذينار) (מצחף|مصحف|مضحف)"
+        == "(דינאר OR دىنار OR ذىنار OR دينار OR ذينار) (מצחף OR مصحف OR مضحف)"
     )
     # mixed english and judaeo-arabic
-    assert arabic_or_ja("help מצחף", boost=False) == "help (מצחף|مصحف|مضحف)"
+    assert arabic_or_ja("help מצחף", boost=False) == "help (מצחף OR مصحف OR مضحف)"
     # with boosting
-    assert arabic_or_ja("דינאר") == "(דינאר^5.0|دىنار|ذىنار|دينار|ذينار)"
+    assert arabic_or_ja("דינאר") == "(דינאר^100.0 OR دىنار OR ذىنار OR دينار OR ذينار)"
 
 
 def test_arabic_or_ja_exact_phrase():
     # make sure basic exact quote is working
-    assert arabic_or_ja('"تعطل شغله"', boost=False) == '("تعطل شغله"|"תעטל שגלה")'
+    assert arabic_or_ja('"تعطل شغله"', boost=False) == '("تعطل شغله" OR "תעטל שגלה")'
 
     # make sure broken quotes are ignored and arabic words are converted
-    assert arabic_or_ja('"تعطل شغله', boost=False) == '"(تعطل|תעטל) (شغله|שגלה)'
+    assert arabic_or_ja('"تعطل شغله', boost=False) == '"(تعطل OR תעטל) (شغله OR שגלה)'
 
     # to test what would happen if we had 1+ arabic phrases
     # (within quotation marks) and 1+ arabic words (not inside quotes)
     assert (
         arabic_or_ja('"تعطل شغله" etc etc شغله', boost=False)
-        == '("تعطل شغله"|"תעטל שגלה") etc etc (شغله|שגלה)'
+        == '("تعطل شغله" OR "תעטל שגלה") etc etc (شغله OR שגלה)'
     )
 
     # proximity
-    assert arabic_or_ja('"تعطل شغله"~10', boost=False) == '("تعطل شغله"|"תעטל שגלה")~10'
+    assert (
+        arabic_or_ja('"تعطل شغله"~10', boost=False) == '("تعطل شغله" OR "תעטל שגלה")~10'
+    )
 
     # with boosting
-    assert arabic_or_ja("تعطل شغله", boost=True) == "(تعطل^5.0|תעטל) (شغله^5.0|שגלה)"
-    assert arabic_or_ja('"تعطل شغله"', boost=True) == '("تعطل شغله"^5.0|"תעטל שגלה")'
+    assert (
+        arabic_or_ja("تعطل شغله", boost=True)
+        == "(تعطل^100.0 OR תעטל) (شغله^100.0 OR שגלה)"
+    )
+    assert (
+        arabic_or_ja('"تعطل شغله"', boost=True) == '("تعطل شغله"^100.0 OR "תעטל שגלה")'
+    )
 
     # make sure query string is working
     assert (
         arabic_or_ja('transcription:("تعطل شغله") etc etc شغله', boost=False)
-        == 'transcription:(("تعطل شغله"|"תעטל שגלה")) etc etc (شغله|שגלה)'
+        == 'transcription:(("تعطل شغله" OR "תעטל שגלה")) etc etc (شغله OR שגלה)'
     )
 
     # make sure non-arabic field query is left unchanged
