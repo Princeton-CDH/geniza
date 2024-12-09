@@ -594,11 +594,11 @@ class TestDocument:
         assert doc.collection == "CUL, JTS"
 
     def test_collections(self):
-        cul = Collection.objects.create(library="Cambridge", abbrev="CUL")
-        frag = Fragment.objects.create(shelfmark="T-S 8J22.21", collection=cul)
         aiu = Collection.objects.create(
             library="Alliance Israélite Universelle", abbrev="AIU"
         )
+        cul = Collection.objects.create(library="Cambridge", abbrev="CUL")
+        frag = Fragment.objects.create(shelfmark="T-S 8J22.21", collection=cul)
         frag2 = Fragment.objects.create(shelfmark="AIU VII.A.23", collection=aiu)
         frag3 = Fragment.objects.create(shelfmark="AIU VII.F.55", collection=aiu)
         doc = Document.objects.create()
