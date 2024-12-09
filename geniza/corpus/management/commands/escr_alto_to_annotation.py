@@ -5,7 +5,6 @@ from django.contrib.admin.models import ADDITION, LogEntry
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.core.management.base import BaseCommand
-from django.db.models import Q
 from djiffy.models import Canvas, Manifest
 from eulxml import xmlmap
 from parasolr.django.signals import IndexableSignalHandler
@@ -60,7 +59,7 @@ class EscriptoriumAlto(AltoObject):
 
 class Command(BaseCommand):
     # regex pattern for image filenames
-    filename_pattern = r"PGPID_(?P<pgpid>\d+)_(?P<shelfmark>[\w\-]+)_(?P<img>\d)\..+"
+    filename_pattern = r"PGPID_(?P<pgpid>\d+)_(?P<shelfmark>[\w\-]+)_(?P<img>\d+)\..+"
 
     # tags used for rotated blocks and lines
     rotation_tags = [
@@ -73,10 +72,19 @@ class Command(BaseCommand):
         "Oblique_315",  # 315°
     ]
 
+    # ignore these block types
+    bad_block_types = ["Arabic", "Page_Number", "Running_Header"]
+
     def add_arguments(self, parser):
         # needs xml filenames as input
         parser.add_argument(
             "alto", metavar="ALTOXML", nargs="+", help="ALTO files to be processed"
+        )
+        parser.add_argument(
+            "-b",
+            "--block-level",
+            action="store_true",
+            help="Include this flag if only block-level annotations should be produced (e.g. Weiss ingest)",
         )
 
     def handle(self, *args, **options):
@@ -95,7 +103,7 @@ class Command(BaseCommand):
         # process all files
         for xmlfile in options["alto"]:
             self.stdout.write("Processing %s" % xmlfile)
-            self.ingest_xml(xmlfile)
+            self.ingest_xml(xmlfile, block_level=options["block_level"])
 
         # report
         self.stdout.write(f"Done! Processed {len(options['alto'])} file(s).")
@@ -114,7 +122,7 @@ class Command(BaseCommand):
             for filename in self.canvas_errors:
                 self.stdout.write(f"\t- {filename}")
 
-    def ingest_xml(self, xmlfile):
+    def ingest_xml(self, xmlfile, block_level=False):
         alto = xmlmap.load_xmlobject_from_file(xmlfile, EscriptoriumAlto)
         # associate filename with pgpid
         m = re.match(self.filename_pattern, alto.filename)
@@ -158,13 +166,20 @@ class Command(BaseCommand):
                     block_type = tag.label
 
             # skip arabic; these are Hebrew script transcriptions
-            if not (block_type and "Arabic" in block_type) and len(tb.lines):
+            if not (
+                block_type and any(t in block_type for t in self.bad_block_types)
+            ) and len(tb.lines):
                 # get or create footnote
                 footnote = self.get_footnote(doc)
                 # create annotation and log entry
                 block = Annotation.objects.create(
                     content=self.create_block_annotation(
-                        tb, canvas_uri, scale_factor, block_type, tb_idx
+                        tb,
+                        canvas_uri,
+                        scale_factor,
+                        block_type,
+                        tb_idx,
+                        include_content=block_level,
                     ),
                     footnote=footnote,
                 )
@@ -178,31 +193,32 @@ class Command(BaseCommand):
                 )
 
                 # create line annotations from lines and link to block
-                for i, line in enumerate(tb.lines, start=1):
-                    line_type = None
-                    if line.line_type_id:
-                        # find first tag in tag list whose id matches line type id
-                        tag_matches = filter(
-                            lambda t: t.id == line.line_type_id, alto.tags
+                if not block_level:
+                    for i, line in enumerate(tb.lines, start=1):
+                        line_type = None
+                        if line.line_type_id:
+                            # find first tag in tag list whose id matches line type id
+                            tag_matches = filter(
+                                lambda t: t.id == line.line_type_id, alto.tags
+                            )
+                            tag = next(tag_matches, None)
+                            if tag:
+                                line_type = tag
+                        line_anno = Annotation.objects.create(
+                            content=self.create_line_annotation(
+                                line, block, scale_factor, line_type, order=i
+                            ),
+                            block=block,
+                            footnote=footnote,
                         )
-                        tag = next(tag_matches, None)
-                        if tag:
-                            line_type = tag
-                    line_anno = Annotation.objects.create(
-                        content=self.create_line_annotation(
-                            line, block, scale_factor, line_type, order=i
-                        ),
-                        block=block,
-                        footnote=footnote,
-                    )
-                    LogEntry.objects.log_action(
-                        user_id=self.script_user.pk,
-                        content_type_id=self.anno_contenttype,
-                        object_id=line_anno.pk,
-                        object_repr=str(line_anno),
-                        change_message="Imported line from eScriptorium HTR ALTO",
-                        action_flag=ADDITION,
-                    )
+                        LogEntry.objects.log_action(
+                            user_id=self.script_user.pk,
+                            content_type_id=self.anno_contenttype,
+                            object_id=line_anno.pk,
+                            object_repr=str(line_anno),
+                            change_message="Imported line from eScriptorium HTR ALTO",
+                            action_flag=ADDITION,
+                        )
 
         # index after all blocks added
         doc.index()
@@ -284,7 +300,13 @@ class Command(BaseCommand):
         return " ".join([str(point) for point in scaled_points])
 
     def create_block_annotation(
-        self, textblock, canvas_uri, scale_factor, block_type, order
+        self,
+        textblock,
+        canvas_uri,
+        scale_factor,
+        block_type,
+        order,
+        include_content=False,
     ):
         """Produce a valid IIIF annotation with the block-level content and geometry,
         linked to the IIIF canvas by URI"""
@@ -300,12 +322,30 @@ class Command(BaseCommand):
                 "type": "Canvas",
             },
         }
-        if block_type:
+        if include_content:
+            # lines to HTML list
+            block_text = "<ol>\n"
+            for line in textblock.lines:
+                block_text += f"<li>{line.content}</li>\n"
+            block_text += "</ol>"
+            # include HTML list as content if we're producing only block-level
             anno_content["body"] = [
                 {
-                    "label": block_type,
+                    "TextInput": "rtl",
+                    "format": "text/html",
+                    "type": "TextualBody",
+                    "value": block_text,
                 }
             ]
+        if block_type:
+            if "body" in anno_content:
+                anno_content["body"][0]["label"] = block_type
+            else:
+                anno_content["body"] = [
+                    {
+                        "label": block_type,
+                    }
+                ]
             if block_type in self.rotation_tags:
                 # add rotation tag as a CSS class to this block
                 anno_content["target"]["styleClass"] = block_type

@@ -93,6 +93,15 @@ class TestEscrToAltoAnnotation:
         )
         assert anno_content["target"]["selector"]["value"] == "xywh=percent:1,1,98,98"
 
+        # with include_content, SHOULD include transcription text
+        with patch.object(self.cmd, "scale_polygon") as scale_mock:
+            scale_mock.return_value = "100 200"
+            anno_content = self.cmd.create_block_annotation(
+                block, "mock_canvas", 2, "Oblique_225", 1, include_content=True
+            )
+            assert "value" in anno_content["body"][0]
+            assert "חטל אללה בקאך נ[" in anno_content["body"][0]["value"]
+
     def test_create_line_annotation(self, annotation):
         alto = xmlmap.load_xmlobject_from_file(xmlfile, EscriptoriumAlto)
         line = alto.printspace.textblocks[0].lines[0]
@@ -181,7 +190,17 @@ class TestEscrToAltoAnnotation:
             call_command("escr_alto_to_annotation", xmlfile, stdout=out)
             # should print a message and call the ingest function once per xml file
             assert "Processing %s" % xmlfile in out.getvalue()
-            mock_ingest.assert_called_once_with(xmlfile)
+            mock_ingest.assert_called_once_with(xmlfile, block_level=False)
+            assert "Done! Processed 1 file(s)." in out.getvalue()
+
+        with patch.object(Command, "ingest_xml") as mock_ingest:
+            out = StringIO()
+            call_command(
+                "escr_alto_to_annotation", xmlfile, block_level=True, stdout=out
+            )
+            # should print a message and call the ingest function once per xml file
+            assert "Processing %s" % xmlfile in out.getvalue()
+            mock_ingest.assert_called_once_with(xmlfile, block_level=True)
             assert "Done! Processed 1 file(s)." in out.getvalue()
 
         # no document match, should report files that failed this way
@@ -248,7 +267,9 @@ class TestEscrToAltoAnnotation:
                 # mock indexing
                 with patch.object(Document, "index"):
                     call_command("escr_alto_to_annotation", xmlfile, stdout=out)
-                    mock_create_anno.assert_called_with(ANY, canvas.uri, ANY, ANY, ANY)
+                    mock_create_anno.assert_called_with(
+                        ANY, canvas.uri, ANY, ANY, ANY, include_content=False
+                    )
 
         # should have created log entries for the new annotations
         assert LogEntry.objects.filter(
