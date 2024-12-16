@@ -58,6 +58,9 @@ class EscriptoriumAlto(AltoObject):
 
 
 class Command(BaseCommand):
+    # default escr model name
+    default_model_name = "HTR for PGP model 1.0"
+
     # regex pattern for image filenames
     filename_pattern = r"PGPID_(?P<pgpid>\d+)_(?P<shelfmark>[\w\-]+)_(?P<img>\d+)\..+"
 
@@ -86,6 +89,12 @@ class Command(BaseCommand):
             action="store_true",
             help="Include this flag if only block-level annotations should be produced (e.g. Weiss ingest)",
         )
+        parser.add_argument(
+            "-m",
+            "--model-name",
+            help=f"Optionally supply a custom name for the HTR/OCR model (default: {self.default_model_name})",
+            default=self.default_model_name,
+        )
 
     def handle(self, *args, **options):
         self.script_user = User.objects.get(username=settings.SCRIPT_USERNAME)
@@ -103,7 +112,11 @@ class Command(BaseCommand):
         # process all files
         for xmlfile in options["alto"]:
             self.stdout.write("Processing %s" % xmlfile)
-            self.ingest_xml(xmlfile, block_level=options["block_level"])
+            self.ingest_xml(
+                xmlfile,
+                model_name=options["model_name"],
+                block_level=options["block_level"],
+            )
 
         # report
         self.stdout.write(f"Done! Processed {len(options['alto'])} file(s).")
@@ -122,7 +135,7 @@ class Command(BaseCommand):
             for filename in self.canvas_errors:
                 self.stdout.write(f"\t- {filename}")
 
-    def ingest_xml(self, xmlfile, block_level=False):
+    def ingest_xml(self, xmlfile, model_name=default_model_name, block_level=False):
         alto = xmlmap.load_xmlobject_from_file(xmlfile, EscriptoriumAlto)
         # associate filename with pgpid
         m = re.match(self.filename_pattern, alto.filename)
@@ -170,7 +183,7 @@ class Command(BaseCommand):
                 block_type and any(t in block_type for t in self.bad_block_types)
             ) and len(tb.lines):
                 # get or create footnote
-                footnote = self.get_footnote(doc)
+                footnote = self.get_footnote(doc, model_name)
                 # create annotation and log entry
                 block = Annotation.objects.create(
                     content=self.create_block_annotation(
@@ -261,12 +274,12 @@ class Command(BaseCommand):
         else:
             return None
 
-    def get_footnote(self, document):
+    def get_footnote(self, document, model_name=default_model_name):
         """Get or create a digital edition footnote for the HTR transcription"""
         # TODO: Replace this with desired source type and source after decision is made
         (model, _) = SourceType.objects.get_or_create(type="Machine learning model")
         (source, _) = Source.objects.get_or_create(
-            title_en="HTR for PGP model 1.0",
+            title_en=model_name,
             source_type=model,
         )
         try:

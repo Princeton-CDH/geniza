@@ -183,6 +183,11 @@ class TestEscrToAltoAnnotation:
         # footnote already exists, should find it
         assert self.cmd.get_footnote(document).pk == fn.pk
 
+        # use a different model name, should create a new footnote
+        fn2 = self.cmd.get_footnote(document, model_name="Test")
+        assert LogEntry.objects.filter(object_id=fn2.pk, action_flag=ADDITION).exists()
+        assert self.cmd.get_footnote(document, model_name="Test").pk == fn2.pk
+
     @pytest.mark.django_db
     def test_handle(self, fragment):
         with patch.object(Command, "ingest_xml") as mock_ingest:
@@ -190,7 +195,9 @@ class TestEscrToAltoAnnotation:
             call_command("escr_alto_to_annotation", xmlfile, stdout=out)
             # should print a message and call the ingest function once per xml file
             assert "Processing %s" % xmlfile in out.getvalue()
-            mock_ingest.assert_called_once_with(xmlfile, block_level=False)
+            mock_ingest.assert_called_once_with(
+                xmlfile, model_name=Command.default_model_name, block_level=False
+            )
             assert "Done! Processed 1 file(s)." in out.getvalue()
 
         with patch.object(Command, "ingest_xml") as mock_ingest:
@@ -198,9 +205,25 @@ class TestEscrToAltoAnnotation:
             call_command(
                 "escr_alto_to_annotation", xmlfile, block_level=True, stdout=out
             )
-            # should print a message and call the ingest function once per xml file
             assert "Processing %s" % xmlfile in out.getvalue()
-            mock_ingest.assert_called_once_with(xmlfile, block_level=True)
+            mock_ingest.assert_called_once_with(
+                xmlfile, model_name=Command.default_model_name, block_level=True
+            )
+            assert "Done! Processed 1 file(s)." in out.getvalue()
+
+        with patch.object(Command, "ingest_xml") as mock_ingest:
+            out = StringIO()
+            call_command(
+                "escr_alto_to_annotation",
+                xmlfile,
+                model_name="Test",
+                block_level=True,
+                stdout=out,
+            )
+            assert "Processing %s" % xmlfile in out.getvalue()
+            mock_ingest.assert_called_once_with(
+                xmlfile, model_name="Test", block_level=True
+            )
             assert "Done! Processed 1 file(s)." in out.getvalue()
 
         # no document match, should report files that failed this way
