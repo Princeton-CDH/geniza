@@ -169,16 +169,35 @@
                 color: var(--on-background);
                 flex: 1 0 auto;
                 display: flex;
-                justify-content: space-between;
+                justify-content: flex-start;
+                gap: 0.5rem;
                 align-items: center;
                 @include typography.meta-bold;
+                @include breakpoints.for-tablet-landscape-up {
+                    gap: 0.75rem;
+                }
                 &::after {
                     content: "\f0c2"; // phosphor caret-down icon
                     @include typography.icon-button-md;
                     float: right;
+                    flex-grow: 1;
+                    text-align: right;
                     margin-right: 1rem;
                     @include breakpoints.for-tablet-landscape-up {
                         margin-right: 0;
+                    }
+                }
+                &.escr:before {
+                    content: " ";
+                    display: inline-block;
+                    width: 1.5rem;
+                    height: 1.5rem;
+                    background-color: var(--secondary);
+                    mask-image: url("/static/img/logos/all/all/escr-logo.svg");
+                    mask-repeat: no-repeat;
+                    @include breakpoints.for-tablet-landscape-up {
+                        width: 2.25rem;
+                        height: 2.25rem;
                     }
                 }
             }
@@ -1512,6 +1531,9 @@ html.dark-mode #itt-panel {
 
 // tweaks for RTL ITT panel for hebrew, arabic
 html[dir="rtl"] #itt-panel {
+    details.itt-select summary span::after {
+        text-align: left;
+    }
     input[type="checkbox"].toggle + label:first-of-type {
         margin-right: auto;
         margin-left: 9px;
