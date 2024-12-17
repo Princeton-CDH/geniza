@@ -93,6 +93,15 @@ class TestEscrToAltoAnnotation:
         )
         assert anno_content["target"]["selector"]["value"] == "xywh=percent:1,1,98,98"
 
+        # with include_content, SHOULD include transcription text
+        with patch.object(self.cmd, "scale_polygon") as scale_mock:
+            scale_mock.return_value = "100 200"
+            anno_content = self.cmd.create_block_annotation(
+                block, "mock_canvas", 2, "Oblique_225", 1, include_content=True
+            )
+            assert "value" in anno_content["body"][0]
+            assert "חטל אללה בקאך נ[" in anno_content["body"][0]["value"]
+
     def test_create_line_annotation(self, annotation):
         alto = xmlmap.load_xmlobject_from_file(xmlfile, EscriptoriumAlto)
         line = alto.printspace.textblocks[0].lines[0]
@@ -163,7 +172,7 @@ class TestEscrToAltoAnnotation:
         # no manifest, should return None
         assert self.cmd.get_canvas(None, id, "") is None
 
-    def test_get_footnote(self, document):
+    def test_get_footnote(self, document, source):
         self.cmd.script_user = User.objects.get(username=settings.SCRIPT_USERNAME)
 
         # footnote does not exist, should create and log
@@ -174,14 +183,79 @@ class TestEscrToAltoAnnotation:
         # footnote already exists, should find it
         assert self.cmd.get_footnote(document).pk == fn.pk
 
+        # use a different model name, should create a new footnote
+        fn2 = self.cmd.get_footnote(document, model_name="Test")
+        assert LogEntry.objects.filter(object_id=fn2.pk, action_flag=ADDITION).exists()
+        assert self.cmd.get_footnote(document, model_name="Test").pk == fn2.pk
+
+        # use a specific source ID, should create a new footnote
+        fn3 = self.cmd.get_footnote(document, source_id=source.pk)
+        assert LogEntry.objects.filter(object_id=fn3.pk, action_flag=ADDITION).exists()
+        assert self.cmd.get_footnote(document, source_id=source.pk).pk == fn3.pk
+
     @pytest.mark.django_db
-    def test_handle(self, fragment):
+    def test_handle(self, fragment, source):
         with patch.object(Command, "ingest_xml") as mock_ingest:
             out = StringIO()
             call_command("escr_alto_to_annotation", xmlfile, stdout=out)
             # should print a message and call the ingest function once per xml file
             assert "Processing %s" % xmlfile in out.getvalue()
-            mock_ingest.assert_called_once_with(xmlfile)
+            mock_ingest.assert_called_once_with(
+                xmlfile,
+                model_name=Command.default_model_name,
+                block_level=False,
+                source_id=None,
+            )
+            assert "Done! Processed 1 file(s)." in out.getvalue()
+
+        with patch.object(Command, "ingest_xml") as mock_ingest:
+            out = StringIO()
+            call_command(
+                "escr_alto_to_annotation", xmlfile, block_level=True, stdout=out
+            )
+            assert "Processing %s" % xmlfile in out.getvalue()
+            mock_ingest.assert_called_once_with(
+                xmlfile,
+                model_name=Command.default_model_name,
+                block_level=True,
+                source_id=None,
+            )
+            assert "Done! Processed 1 file(s)." in out.getvalue()
+
+        with patch.object(Command, "ingest_xml") as mock_ingest:
+            out = StringIO()
+            call_command(
+                "escr_alto_to_annotation",
+                xmlfile,
+                model_name="Test",
+                block_level=True,
+                stdout=out,
+            )
+            assert "Processing %s" % xmlfile in out.getvalue()
+            mock_ingest.assert_called_once_with(
+                xmlfile,
+                model_name="Test",
+                block_level=True,
+                source_id=None,
+            )
+            assert "Done! Processed 1 file(s)." in out.getvalue()
+
+        with patch.object(Command, "ingest_xml") as mock_ingest:
+            out = StringIO()
+            call_command(
+                "escr_alto_to_annotation",
+                xmlfile,
+                block_level=True,
+                source_id=source.pk,
+                stdout=out,
+            )
+            assert "Processing %s" % xmlfile in out.getvalue()
+            mock_ingest.assert_called_once_with(
+                xmlfile,
+                model_name=Command.default_model_name,
+                block_level=True,
+                source_id=source.pk,
+            )
             assert "Done! Processed 1 file(s)." in out.getvalue()
 
         # no document match, should report files that failed this way
@@ -248,7 +322,9 @@ class TestEscrToAltoAnnotation:
                 # mock indexing
                 with patch.object(Document, "index"):
                     call_command("escr_alto_to_annotation", xmlfile, stdout=out)
-                    mock_create_anno.assert_called_with(ANY, canvas.uri, ANY, ANY, ANY)
+                    mock_create_anno.assert_called_with(
+                        ANY, canvas.uri, ANY, ANY, ANY, include_content=False
+                    )
 
         # should have created log entries for the new annotations
         assert LogEntry.objects.filter(
