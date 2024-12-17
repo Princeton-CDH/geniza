@@ -172,7 +172,7 @@ class TestEscrToAltoAnnotation:
         # no manifest, should return None
         assert self.cmd.get_canvas(None, id, "") is None
 
-    def test_get_footnote(self, document):
+    def test_get_footnote(self, document, source):
         self.cmd.script_user = User.objects.get(username=settings.SCRIPT_USERNAME)
 
         # footnote does not exist, should create and log
@@ -188,15 +188,23 @@ class TestEscrToAltoAnnotation:
         assert LogEntry.objects.filter(object_id=fn2.pk, action_flag=ADDITION).exists()
         assert self.cmd.get_footnote(document, model_name="Test").pk == fn2.pk
 
+        # use a specific source ID, should create a new footnote
+        fn3 = self.cmd.get_footnote(document, source_id=source.pk)
+        assert LogEntry.objects.filter(object_id=fn3.pk, action_flag=ADDITION).exists()
+        assert self.cmd.get_footnote(document, source_id=source.pk).pk == fn3.pk
+
     @pytest.mark.django_db
-    def test_handle(self, fragment):
+    def test_handle(self, fragment, source):
         with patch.object(Command, "ingest_xml") as mock_ingest:
             out = StringIO()
             call_command("escr_alto_to_annotation", xmlfile, stdout=out)
             # should print a message and call the ingest function once per xml file
             assert "Processing %s" % xmlfile in out.getvalue()
             mock_ingest.assert_called_once_with(
-                xmlfile, model_name=Command.default_model_name, block_level=False
+                xmlfile,
+                model_name=Command.default_model_name,
+                block_level=False,
+                source_id=None,
             )
             assert "Done! Processed 1 file(s)." in out.getvalue()
 
@@ -207,7 +215,10 @@ class TestEscrToAltoAnnotation:
             )
             assert "Processing %s" % xmlfile in out.getvalue()
             mock_ingest.assert_called_once_with(
-                xmlfile, model_name=Command.default_model_name, block_level=True
+                xmlfile,
+                model_name=Command.default_model_name,
+                block_level=True,
+                source_id=None,
             )
             assert "Done! Processed 1 file(s)." in out.getvalue()
 
@@ -222,7 +233,28 @@ class TestEscrToAltoAnnotation:
             )
             assert "Processing %s" % xmlfile in out.getvalue()
             mock_ingest.assert_called_once_with(
-                xmlfile, model_name="Test", block_level=True
+                xmlfile,
+                model_name="Test",
+                block_level=True,
+                source_id=None,
+            )
+            assert "Done! Processed 1 file(s)." in out.getvalue()
+
+        with patch.object(Command, "ingest_xml") as mock_ingest:
+            out = StringIO()
+            call_command(
+                "escr_alto_to_annotation",
+                xmlfile,
+                block_level=True,
+                source_id=source.pk,
+                stdout=out,
+            )
+            assert "Processing %s" % xmlfile in out.getvalue()
+            mock_ingest.assert_called_once_with(
+                xmlfile,
+                model_name=Command.default_model_name,
+                block_level=True,
+                source_id=source.pk,
             )
             assert "Done! Processed 1 file(s)." in out.getvalue()
 

@@ -95,6 +95,11 @@ class Command(BaseCommand):
             help=f"Optionally supply a custom name for the HTR/OCR model (default: {self.default_model_name})",
             default=self.default_model_name,
         )
+        parser.add_argument(
+            "-s",
+            "--source-id",
+            help=f"Optionally supply a custom source ID for the HTR/OCR model",
+        )
 
     def handle(self, *args, **options):
         self.script_user = User.objects.get(username=settings.SCRIPT_USERNAME)
@@ -116,6 +121,7 @@ class Command(BaseCommand):
                 xmlfile,
                 model_name=options["model_name"],
                 block_level=options["block_level"],
+                source_id=options["source_id"],
             )
 
         # report
@@ -135,7 +141,9 @@ class Command(BaseCommand):
             for filename in self.canvas_errors:
                 self.stdout.write(f"\t- {filename}")
 
-    def ingest_xml(self, xmlfile, model_name=default_model_name, block_level=False):
+    def ingest_xml(
+        self, xmlfile, model_name=default_model_name, block_level=False, source_id=None
+    ):
         alto = xmlmap.load_xmlobject_from_file(xmlfile, EscriptoriumAlto)
         # associate filename with pgpid
         m = re.match(self.filename_pattern, alto.filename)
@@ -183,7 +191,7 @@ class Command(BaseCommand):
                 block_type and any(t in block_type for t in self.bad_block_types)
             ) and len(tb.lines):
                 # get or create footnote
-                footnote = self.get_footnote(doc, model_name)
+                footnote = self.get_footnote(doc, model_name, source_id)
                 # create annotation and log entry
                 block = Annotation.objects.create(
                     content=self.create_block_annotation(
@@ -274,14 +282,18 @@ class Command(BaseCommand):
         else:
             return None
 
-    def get_footnote(self, document, model_name=default_model_name):
+    def get_footnote(self, document, model_name=default_model_name, source_id=None):
         """Get or create a digital edition footnote for the HTR transcription"""
-        # TODO: Replace this with desired source type and source after decision is made
-        (model, _) = SourceType.objects.get_or_create(type="Machine learning model")
-        (source, _) = Source.objects.get_or_create(
-            title_en=model_name,
-            source_type=model,
-        )
+        if source_id:
+            # this command should actually error on Source.DoesNotExist in this case
+            source = Source.objects.get(pk=int(source_id))
+        else:
+            # TODO: Replace this with desired source type and source after decision is made
+            (model, _) = SourceType.objects.get_or_create(type="Machine learning model")
+            (source, _) = Source.objects.get_or_create(
+                title_en=model_name,
+                source_type=model,
+            )
         try:
             return Footnote.objects.get(
                 doc_relation__contains=Footnote.DIGITAL_EDITION,
