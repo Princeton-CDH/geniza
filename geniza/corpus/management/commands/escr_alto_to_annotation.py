@@ -376,7 +376,7 @@ class Command(BaseCommand):
                 anno_content["target"]["styleClass"] = block_type
 
         # add selector
-        if textblock.polygon:
+        if textblock.polygon and not include_content:
             # scale polygon points and use SvgSelector
             points = self.scale_polygon(textblock.polygon, scale_factor)
             anno_content["target"]["selector"] = {
@@ -384,8 +384,12 @@ class Command(BaseCommand):
                 "value": f'<svg><polygon points="{points}"></polygon></svg>',
             }
         else:
-            self.stdout.write(f"No block-level geometry available for {textblock.id}")
-            # when no block-level geometry available, use full image FragmentSelector
+            if not textblock.polygon:
+                self.stdout.write(
+                    f"No block-level geometry available for {textblock.id}"
+                )
+            # if no block-level geometry available, or this is Weiss, use
+            # full image FragmentSelector
             anno_content["target"]["selector"] = {
                 "conformsTo": "http://www.w3.org/TR/media-frags/",
                 "type": "FragmentSelector",
