@@ -13,6 +13,7 @@ from django.http import HttpResponseRedirect
 from django.urls import path, reverse
 from modeltranslation.admin import TabbedTranslationAdmin
 
+from geniza.common.admin import TypedRelationInline
 from geniza.corpus.dates import standard_date_display
 from geniza.corpus.models import DocumentEventRelation
 from geniza.entities.forms import (
@@ -89,6 +90,12 @@ class NameInline(GenericTabularInline):
         TextField: {"widget": Textarea(attrs={"rows": 4})},
     }
 
+    def get_formset(self, request, obj=None, **kwargs):
+        """Override in order to remove the delete button from the language field"""
+        formset = super().get_formset(request, obj, **kwargs)
+        formset.form.base_fields["language"].widget.can_delete_related = False
+        return formset
+
 
 class PersonInline(admin.TabularInline):
     """Generic inline for people related to other objects"""
@@ -147,7 +154,7 @@ class DocumentInline(admin.TabularInline):
         return standard_date_display("/".join(dating_range)) or "-"
 
 
-class PersonDocumentInline(DocumentInline):
+class PersonDocumentInline(TypedRelationInline, DocumentInline):
     """Related documents inline for the Person admin"""
 
     model = PersonDocumentRelation
@@ -161,7 +168,7 @@ class PlaceInline(admin.TabularInline):
     extra = 1
 
 
-class PersonPlaceInline(PlaceInline):
+class PersonPlaceInline(TypedRelationInline, PlaceInline):
     """Inline for places related to people"""
 
     model = PersonPlaceRelation
@@ -438,20 +445,20 @@ class DocumentPlaceRelationTypeAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
     ordering = ("name",)
 
 
-class DocumentPlaceInline(DocumentInline):
+class DocumentPlaceInline(TypedRelationInline, DocumentInline):
     """Related documents inline for the Person admin"""
 
     model = DocumentPlaceRelation
 
 
-class PlacePersonInline(PersonInline):
+class PlacePersonInline(TypedRelationInline, PersonInline):
     """Inline for people related to a place"""
 
     model = PersonPlaceRelation
     form = PlacePersonForm
 
 
-class PlacePlaceInline(admin.TabularInline):
+class PlacePlaceInline(TypedRelationInline, admin.TabularInline):
     """Place-Place relationships inline for the Place admin"""
 
     model = PlacePlaceRelation
