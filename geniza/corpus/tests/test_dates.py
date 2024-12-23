@@ -58,13 +58,11 @@ class TestDocumentDateMixin:
         assert doc.document_date == doc.original_date
         # should wrap standard date in parentheses and add CE
         doc.doc_date_standard = "1113/1114"
-        assert (
-            doc.document_date == "<span>507 Hijrī</span> <span>(1113 – 1114 CE)</span>"
-        )
+        assert doc.document_date == "<span>507 Hijrī</span> <span>(1113–1114 CE)</span>"
         # should return standard date only, no parentheses
         doc.doc_date_original = ""
         doc.doc_date_calendar = ""
-        assert doc.document_date == "1113 – 1114 CE"
+        assert doc.document_date == "1113–1114 CE"
 
     def test_standardize_date(self):
         doc = Document()
@@ -267,7 +265,7 @@ def test_convert_islamic_date():
 class TestPartialDate:
     def test_partialdate_str(self):
         # single day
-        assert str(PartialDate("1569-10-23")) == "23 October, 1569"
+        assert str(PartialDate("1569-10-23")) == "23 October 1569"
 
         # month/year
         assert str(PartialDate("1569-10")) == "October 1569"
@@ -329,13 +327,12 @@ def test_standard_date_display():
 
     # single day
     doc.doc_date_standard = "1569-10-23"
-    assert standard_date_display(doc.doc_date_standard) == "23 October, 1569 CE"
+    assert standard_date_display(doc.doc_date_standard) == "23 October 1569 CE"
 
     # date range
     doc.doc_date_standard = "1839-03-17/1840-03-04"
     assert (
-        standard_date_display(doc.doc_date_standard)
-        == "17 March, 1839 – 4 March, 1840 CE"
+        standard_date_display(doc.doc_date_standard) == "17 March 1839–4 March 1840 CE"
     )
 
     # year/month
