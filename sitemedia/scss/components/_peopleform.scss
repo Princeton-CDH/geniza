@@ -395,6 +395,14 @@ html[dir="rtl"] main.search {
         right: auto;
         left: 0;
     }
+    fieldset#filters
+        div.fieldset-left-column
+        fieldset
+        label.has-page
+        > span
+        span.count {
+        text-align: left;
+    }
     div.header-row fieldset#sort-field {
         details {
             summary::after {
