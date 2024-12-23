@@ -161,7 +161,7 @@ export default class extends Controller {
             } else {
                 // allow alignment in transcription edit mode (i.e. no selectedTranscriptionInput)
                 transcriptionChunks = document.querySelectorAll(
-                    ".tahqiq-body-display"
+                    ".annotate.transcription"
                 );
             }
             const selectedTranslationInput = document.querySelector(
@@ -174,7 +174,7 @@ export default class extends Controller {
             } else {
                 // allow alignment in translation edit mode (i.e. no selectedTranslationInput)
                 translationChunks = document.querySelectorAll(
-                    ".tahqiq-body-display"
+                    ".annotate.translation"
                 );
             }
 
