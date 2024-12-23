@@ -66,6 +66,9 @@ class PersonPersonForm(forms.ModelForm):
             "notes": forms.Textarea(attrs={"rows": 4}),
             "to_person": autocomplete.ModelSelect2(url="entities:person-autocomplete"),
         }
+        help_texts = {
+            "to_person": "Please check auto-populated and manually-input people sections to ensure you are not entering the same relationship twice."
+        }
 
 
 class PersonPlaceForm(forms.ModelForm):
