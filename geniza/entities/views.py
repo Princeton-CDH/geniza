@@ -543,9 +543,6 @@ class PersonListView(ListView, FormMixin, SolrDateRangeMixin):
     form_class = PersonListForm
     applied_filter_labels = []
 
-    # ORM references to database fields to facet
-    # facet_fields = ["gender", "role__name", "persondocumentrelation__type__name"]
-
     # sort options mapped to solr fields
     sort_fields = {
         "name": "slug_s",
@@ -576,7 +573,9 @@ class PersonListView(ListView, FormMixin, SolrDateRangeMixin):
 
     def get_queryset(self, *args, **kwargs):
         """modify queryset to sort and filter on people in the list"""
-        people = PersonSolrQuerySet().facet("gender", "role", "document_relations")
+        people = PersonSolrQuerySet().facet(
+            "gender", "role", "document_relations", "has_page"
+        )
 
         form = self.get_form()
         # bail out if form is invalid
@@ -606,6 +605,15 @@ class PersonListView(ListView, FormMixin, SolrDateRangeMixin):
                     "field": "date_range",
                     "value": search_opts["date_range"],
                     "label": label,
+                }
+            ]
+        if search_opts.get("has_page") == True:
+            people = people.filter(has_page=True)
+            self.applied_filter_labels += [
+                {
+                    "field": "has_page",
+                    "value": "on",
+                    "label": _("Detail page available"),
                 }
             ]
         if search_opts.get("social_role"):
