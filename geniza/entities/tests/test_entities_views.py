@@ -282,6 +282,7 @@ class TestPersonListView:
             person=person_multiname, document=join, type=author
         )
         person.date = "990/1020"
+        person.has_page = True
         person.save()
         person_diacritic.date = "1150"
         person_diacritic.save()
@@ -348,6 +349,15 @@ class TestPersonListView:
             }
             qs = personlist_view.get_queryset()
             assert qs.count() == 1
+
+            # filter by detail page
+            mock_get_form.return_value.cleaned_data = {"has_page": True}
+            qs = personlist_view.get_queryset()
+            assert qs.count() == 1
+            assert any(
+                (f["field"] == "has_page" and f["value"] == "on")
+                for f in personlist_view.applied_filter_labels
+            )
 
             # filter by dates
             mock_get_form.return_value.cleaned_data = {

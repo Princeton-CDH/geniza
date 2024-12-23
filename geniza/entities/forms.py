@@ -4,7 +4,7 @@ from django.template.loader import get_template
 from django.utils.translation import gettext_lazy as _
 
 from geniza.common.fields import RangeField, RangeForm
-from geniza.corpus.forms import FacetChoiceField, YearRangeWidget
+from geniza.corpus.forms import BooleanFacetField, FacetChoiceField, YearRangeWidget
 from geniza.entities.models import (
     Person,
     PersonDocumentRelationType,
@@ -115,6 +115,7 @@ class PlacePlaceForm(forms.ModelForm):
 
 class PersonListForm(RangeForm):
     gender = FacetChoiceField(label=_("Gender"))
+    has_page = BooleanFacetField(label=_("Detail page available"))
     social_role = FacetChoiceField(label=_("Social role"))
     document_relation = FacetChoiceField(label=_("Relation to documents"))
     # translators: label for person activity dates field
@@ -159,6 +160,7 @@ class PersonListForm(RangeForm):
     # mapping of solr facet fields to form input
     solr_facet_fields = {
         "gender": "gender",
+        "has_page": "has_page",
         "role": "social_role",
         "document_relations": "document_relation",
     }

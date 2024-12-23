@@ -865,6 +865,7 @@ class Person(ModelIndexable, SlugMixin, DocumentDatableMixin, PermalinkMixin):
     def index_data(self):
         """data for indexing in Solr"""
         index_data = super().index_data()
+        url = self.get_absolute_url()
         index_data.update(
             {
                 # basic metadata
@@ -873,7 +874,8 @@ class Person(ModelIndexable, SlugMixin, DocumentDatableMixin, PermalinkMixin):
                 "description_txt": self.description_en,
                 "gender_s": self.get_gender_display(),
                 "role_s": self.role.name_en if self.role else None,
-                "url_s": self.get_absolute_url(),
+                "url_s": url,
+                "has_page_b": bool(url),
                 # related object counts
                 "documents_i": self.documents.count(),
                 "people_i": self.related_people_count,
@@ -960,6 +962,7 @@ class PersonSolrQuerySet(AliasedSolrQuerySet):
         "places": "places_i",
         "document_relations": "document_relation_ss",
         "date_str": "date_str_s",
+        "has_page": "has_page_b",
     }
 
 

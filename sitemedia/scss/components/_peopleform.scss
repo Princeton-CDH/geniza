@@ -127,7 +127,7 @@ main.search {
             gap: 1rem;
             @include breakpoints.for-tablet-landscape-up {
                 width: auto;
-                gap: 3rem;
+                gap: 2.5rem;
             }
             display: flex;
             flex-flow: column;
@@ -150,6 +150,22 @@ main.search {
                     @include typography.meta;
                     &::placeholder {
                         color: var(--date-placeholder);
+                    }
+                }
+            }
+            fieldset {
+                span.fieldname {
+                    cursor: default;
+                }
+                label.has-page {
+                    cursor: pointer;
+                    & > span {
+                        display: flex;
+                        align-items: center;
+                        span.count {
+                            flex: 1 0 auto;
+                            text-align: right;
+                        }
                     }
                 }
             }
@@ -378,6 +394,14 @@ html[dir="rtl"] main.search {
     fieldset#filters[aria-expanded="true"] {
         right: auto;
         left: 0;
+    }
+    fieldset#filters
+        div.fieldset-left-column
+        fieldset
+        label.has-page
+        > span
+        span.count {
+        text-align: left;
     }
     div.header-row fieldset#sort-field {
         details {
