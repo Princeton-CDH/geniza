@@ -18,7 +18,7 @@ from django.utils.html import format_html
 from modeltranslation.admin import TabbedTranslationAdmin
 
 from geniza.annotations.models import Annotation
-from geniza.common.admin import custom_empty_field_list_filter
+from geniza.common.admin import TypedRelationInline, custom_empty_field_list_filter
 from geniza.corpus.dates import DocumentDateMixin, standard_date_display
 from geniza.corpus.forms import (
     DocumentEventWidgetWrapper,
@@ -39,7 +39,7 @@ from geniza.corpus.models import (
 from geniza.corpus.solr_queryset import DocumentSolrQuerySet
 from geniza.corpus.views import DocumentMerge
 from geniza.entities.admin import PersonInline, PlaceInline
-from geniza.entities.models import DocumentPlaceRelation, Event, PersonDocumentRelation
+from geniza.entities.models import DocumentPlaceRelation, PersonDocumentRelation
 from geniza.footnotes.admin import DocumentFootnoteInline
 from geniza.footnotes.models import Footnote
 
@@ -367,14 +367,14 @@ class DocumentDatingInline(admin.TabularInline):
     }
 
 
-class DocumentPersonInline(PersonInline):
+class DocumentPersonInline(TypedRelationInline, PersonInline):
     """Inline for people related to a document"""
 
     model = PersonDocumentRelation
     form = DocumentPersonForm
 
 
-class DocumentPlaceInline(PlaceInline):
+class DocumentPlaceInline(TypedRelationInline, PlaceInline):
     """Inline for places related to a document"""
 
     model = DocumentPlaceRelation
