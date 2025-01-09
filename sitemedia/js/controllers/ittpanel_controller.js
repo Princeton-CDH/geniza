@@ -32,6 +32,11 @@ export default class extends Controller {
         }
         // on resize, retrigger alignment
         window.addEventListener("resize", this.boundResizeHandler);
+        // a bit hacky; on annotation load, short wait for elements to be created, then align
+        // (this is only used in editor environment)
+        document.addEventListener("annotations-loaded", () =>
+            setTimeout(this.boundResizeHandler, 50)
+        );
     }
 
     disconnect() {
