@@ -1468,13 +1468,13 @@
 
     &[dir="ltr"] {
         li {
-            margin-left: 1.5em;
+            margin-left: 1.6em;
             padding-left: 1em; /* shift to make space for line numbers */
         }
         p {
             // match alignment of list items
             margin-left: 1em;
-            padding-left: 1.5em;
+            padding-left: 1.6em;
         }
         li > p {
             // if inside a list item, don't pad <p>
