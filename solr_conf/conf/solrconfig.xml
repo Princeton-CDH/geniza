@@ -1371,7 +1371,6 @@
         <lst name="params">
           <str name="config_param">example config parameter</str>
         </lst>
-        
       </processor>
       <processor class="solr.RunUpdateProcessorFactory" />
     </updateRequestProcessorChain>

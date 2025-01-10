@@ -421,7 +421,7 @@ class TestPersonListView:
                 mock_order_by.assert_called_with("start_dating_i")
 
     def test_get_queryset__keyword_query(
-        self, person, person_diacritic, person_multiname
+        self, person, person_diacritic, person_multiname, empty_solr
     ):
         SolrClient().update.index(
             [
