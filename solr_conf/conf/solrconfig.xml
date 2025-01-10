@@ -804,6 +804,20 @@
         old_shelfmark_textnum
         old_shelfmark_bigram
       </str>
+
+      <!-- search fields for people -->
+      <str name="people_qf">
+        name_nostem^30
+        name_bigram^20
+        other_names_nostem^10
+        other_names_bigram
+      </str>
+      <str name="people_pf">
+        name_nostem^30
+        name_bigram^20
+        other_names_nostem^10
+        other_names_bigram
+      </str>
     </lst>
 
     <!-- In addition to defaults, "appends" params can be specified
@@ -1357,6 +1371,7 @@
         <lst name="params">
           <str name="config_param">example config parameter</str>
         </lst>
+        
       </processor>
       <processor class="solr.RunUpdateProcessorFactory" />
     </updateRequestProcessorChain>

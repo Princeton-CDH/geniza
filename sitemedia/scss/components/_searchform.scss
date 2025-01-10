@@ -14,8 +14,6 @@
 main.search form {
     // search query box and button
     fieldset#query {
-        display: flex;
-        align-items: center;
         margin-bottom: 1.5rem;
         // search mode switch label (hidden on mobile)
         span.fieldname {
@@ -153,51 +151,6 @@ main.search form {
                 }
             }
         }
-        // search box
-        input[type="search"] {
-            flex-basis: 100%;
-            border: none;
-            border-radius: 5px;
-            border-top-right-radius: 0;
-            border-bottom-right-radius: 0;
-            border: 1px solid var(--background-gray);
-            border-right: none;
-            height: 3rem;
-            padding: 0 1rem;
-            @include typography.body;
-            background-color: var(--background-light);
-            color: var(--on-background-light);
-            @include breakpoints.for-tablet-landscape-up {
-                height: 2.5rem;
-            }
-        }
-        button[type="submit"] {
-            cursor: pointer;
-            width: 3rem;
-            height: 3rem;
-            border-radius: 5px;
-            border-top-left-radius: 0;
-            border-bottom-left-radius: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: none;
-            margin-left: 0; // Needed to prevent wrapping on mobile
-            background-color: var(--secondary);
-            color: var(--on-secondary);
-            @include breakpoints.for-tablet-landscape-up {
-                height: 2.5rem;
-                min-width: 2.5rem;
-            }
-            // Magnifying glass icon
-            &::after {
-                content: "\f5e6"; // phosphor magnifying glass bold icon
-                @include typography.icon-button-md;
-                @include breakpoints.for-tablet-landscape-up {
-                    @include typography.icon-button-sm;
-                }
-            }
-        }
     }
     // dropdown in facet filters
     #filters label:has(select) {
@@ -250,6 +203,55 @@ main.people {
         flex-flow: column;
         width: 100%;
         padding: 0;
+    }
+    fieldset#query {
+        display: flex;
+        align-items: center;
+    }
+    // search box
+    input[type="search"] {
+        flex-basis: 100%;
+        border: none;
+        border-radius: 5px;
+        border-top-right-radius: 0;
+        border-bottom-right-radius: 0;
+        border: 1px solid var(--background-gray);
+        border-right: none;
+        height: 3rem;
+        padding: 0 1rem;
+        @include typography.body;
+        background-color: var(--background-light);
+        color: var(--on-background-light);
+        @include breakpoints.for-tablet-landscape-up {
+            height: 2.5rem;
+        }
+    }
+    button[type="submit"] {
+        cursor: pointer;
+        width: 3rem;
+        height: 3rem;
+        border-radius: 5px;
+        border-top-left-radius: 0;
+        border-bottom-left-radius: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: none;
+        margin-left: 0; // Needed to prevent wrapping on mobile
+        background-color: var(--secondary);
+        color: var(--on-secondary);
+        @include breakpoints.for-tablet-landscape-up {
+            height: 2.5rem;
+            min-width: 2.5rem;
+        }
+        // Magnifying glass icon
+        &::after {
+            content: "\f5e6"; // phosphor magnifying glass bold icon
+            @include typography.icon-button-md;
+            @include breakpoints.for-tablet-landscape-up {
+                @include typography.icon-button-sm;
+            }
+        }
     }
     div#filters-header {
         display: flex;

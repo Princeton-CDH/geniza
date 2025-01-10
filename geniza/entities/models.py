@@ -16,6 +16,7 @@ from django.db.models import F, Q, Value
 from django.db.models.query import Prefetch
 from django.forms import ValidationError
 from django.urls import reverse
+from django.utils.html import strip_tags
 from django.utils.translation import gettext as _
 from gfklookupwidget.fields import GfkLookupField
 from parasolr.django import AliasedSolrQuerySet
@@ -871,6 +872,7 @@ class Person(ModelIndexable, SlugMixin, DocumentDatableMixin, PermalinkMixin):
                 # basic metadata
                 "slug_s": self.slug,
                 "name_s": str(self),
+                "other_names_ss": [n.name for n in self.names.non_primary()],
                 "description_txt": self.description_en,
                 "gender_s": self.get_gender_display(),
                 "role_s": self.role.name_en if self.role else None,
@@ -951,8 +953,12 @@ class PersonSolrQuerySet(AliasedSolrQuerySet):
 
     #: map readable field names to actual solr fields
     field_aliases = {
+        "id": "id",  # needed to match results with highlighting
         "slug": "slug_s",
         "name": "name_s",
+        # need access to these other_names fields for highlighting
+        "other_names_nostem": "other_names_nostem",
+        "other_names_bigram": "other_names_bigram",
         "description": "description_txt",
         "gender": "gender_s",
         "role": "role_s",
@@ -964,6 +970,33 @@ class PersonSolrQuerySet(AliasedSolrQuerySet):
         "date_str": "date_str_s",
         "has_page": "has_page_b",
     }
+
+    keyword_search_qf = "{!type=edismax qf=$people_qf pf=$people_pf v=$keyword_query}"
+
+    def keyword_search(self, search_term):
+        """Allow searching using keywords with the specified query and phrase match
+        fields, and set the default operator to AND"""
+        query_params = {"keyword_query": search_term, "q.op": "AND"}
+        return self.search(self.keyword_search_qf).raw_query_parameters(
+            **query_params,
+        )
+
+    def get_highlighting(self):
+        """dedupe highlights across variant fields (e.g. for other_names)"""
+        highlights = super().get_highlighting()
+        for person in highlights.keys():
+            other_names = set()
+            # iterate through other_names_* fields to get all matches
+            for hls in [
+                highlights[person][field]
+                for field in highlights[person].keys()
+                if field.startswith("other_names_")
+            ]:
+                # strip highglight tags and whitespace, then add to set
+                cleaned_names = [strip_tags(hl.strip()) for hl in hls]
+                other_names.update(set(cleaned_names))
+            highlights[person]["other_names"] = [n for n in other_names if n]
+        return highlights
 
 
 class PastPersonSlug(models.Model):

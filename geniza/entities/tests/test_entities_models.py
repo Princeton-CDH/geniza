@@ -31,6 +31,7 @@ from geniza.entities.models import (
     PersonPlaceRelationType,
     PersonRole,
     PersonSignalHandlers,
+    PersonSolrQuerySet,
     Place,
     PlaceEventRelation,
     PlacePlaceRelation,
@@ -455,7 +456,7 @@ class TestPerson:
     def test_total_to_index(self, person, person_multiname):
         assert Person.total_to_index() == 2
 
-    def test_index_data(self, person, document):
+    def test_index_data(self, person, person_multiname, document):
         document.doc_date_standard = "1200/1300"
         document.save()
         (pdrtype, _) = PersonDocumentRelationType.objects.get_or_create(name="test")
@@ -484,6 +485,63 @@ class TestPerson:
         assert index_data["end_dating_i"] == PartialDate("1300").numeric_format(
             mode="max"
         )
+        index_data = person_multiname.index_data()
+        assert str(person_multiname) not in index_data["other_names_ss"]
+        assert (
+            str(person_multiname.names.non_primary().first())
+            in index_data["other_names_ss"]
+        )
+
+
+class TestPersonSolrQuerySet:
+    def test_keyword_search(self):
+        pqs = PersonSolrQuerySet()
+        with patch.object(pqs, "search") as mocksearch:
+            pqs.keyword_search("halfon")
+            mocksearch.assert_called_with(pqs.keyword_search_qf)
+            mocksearch.return_value.raw_query_parameters.assert_called_with(
+                **{
+                    "keyword_query": "halfon",
+                    "q.op": "AND",
+                }
+            )
+
+    def test_get_highlighting(self):
+        pqs = PersonSolrQuerySet()
+        with patch("geniza.entities.models.super") as mock_super:
+            # no highlighting
+            mock_get_highlighting = mock_super.return_value.get_highlighting
+            mock_get_highlighting.return_value = {}
+            assert pqs.get_highlighting() == {}
+
+            # highlighting but no other_names field
+            test_highlight = {"person.1": {"description": ["foo bar baz"]}}
+            mock_get_highlighting.return_value = test_highlight
+            # returned unchanged
+            assert pqs.get_highlighting() == test_highlight
+
+            # highlighting single other_names field
+            test_highlight = {
+                "person.1": {"other_names_bigram": ["<em>Yaʿaqov</em> b. Shemuʾel"]}
+            }
+            mock_get_highlighting.return_value = test_highlight
+            # should strip html tags
+            assert pqs.get_highlighting()["person.1"]["other_names"] == [
+                "Yaʿaqov b. Shemuʾel"
+            ]
+
+            # highlighting multiple other_names fields
+            test_highlight = {
+                "person.1": {
+                    "other_names_nostem": ["", "<em>Ibn</em> al-Qaṭāʾif"],
+                    "other_names_bigram": ["", "<em>Ibn</em> al-Qaṭāʾif"],
+                }
+            }
+            mock_get_highlighting.return_value = test_highlight
+            # should strip html tags, dedupe, and remove empty strings
+            assert pqs.get_highlighting()["person.1"]["other_names"] == [
+                "Ibn al-Qaṭāʾif"
+            ]
 
 
 @pytest.mark.django_db
