@@ -383,11 +383,22 @@ class TestDocumentSolrQuerySet:
                 mock_get_results.return_value = [
                     {"id": "document.1", "transcription_regex": ["a test text"]}
                 ]
-                highlighting = dqs.get_highlighting()
-                assert highlighting != test_highlight
-                assert "match" not in highlighting["document.1"]["transcription"]
-                assert len(highlighting["document.1"]["transcription"]) == 1
-                assert "<em>test</em>" in highlighting["document.1"]["transcription"][0]
+                with patch("geniza.corpus.solr_queryset.clean_html") as mock_clean_html:
+                    highlighting = dqs.get_highlighting()
+                    assert highlighting != test_highlight
+                    assert "match" not in highlighting["document.1"]["transcription"]
+                    assert len(highlighting["document.1"]["transcription"]) == 1
+                    assert (
+                        "<em>test</em>"
+                        in highlighting["document.1"]["transcription"][0]
+                    )
+                    # in regex, clean_html should not be called
+                    mock_clean_html.assert_not_called
+                    # it should stil be called in other types of searches
+                    mock_get_results.return_value = [
+                        {"id": "document.1", "transcription_nostem": ["a test text"]}
+                    ]
+                    mock_clean_html.assert_called_once
 
     def test_regex_search(self):
         dqs = DocumentSolrQuerySet()
