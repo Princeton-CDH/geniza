@@ -379,35 +379,37 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
                         if highlighted_block
                     ]
                 }
+        else:
+            is_exact_search = "hl_query" in self.raw_params
+            for doc in highlights.keys():
+                # _nostem fields should take precedence over stemmed fields in the case of an
+                # exact search; in that case, replace highlights for stemmed fields with nostem
+                if is_exact_search and "description_nostem" in highlights[doc]:
+                    highlights[doc]["description"] = highlights[doc][
+                        "description_nostem"
+                    ]
+                if is_exact_search and "transcription_nostem" in highlights[doc]:
+                    highlights[doc]["transcription"] = [
+                        clean_html(s) for s in highlights[doc]["transcription_nostem"]
+                    ]
+                elif "transcription" in highlights[doc]:
+                    highlights[doc]["transcription"] = [
+                        clean_html(s) for s in highlights[doc]["transcription"]
+                    ]
+                if "translation" in highlights[doc]:
+                    highlights[doc]["translation"] = [
+                        clean_html(s) for s in highlights[doc]["translation"]
+                    ]
 
-        is_exact_search = "hl_query" in self.raw_params
-        for doc in highlights.keys():
-            # _nostem fields should take precedence over stemmed fields in the case of an
-            # exact search; in that case, replace highlights for stemmed fields with nostem
-            if is_exact_search and "description_nostem" in highlights[doc]:
-                highlights[doc]["description"] = highlights[doc]["description_nostem"]
-            if is_exact_search and "transcription_nostem" in highlights[doc]:
-                highlights[doc]["transcription"] = [
-                    clean_html(s) for s in highlights[doc]["transcription_nostem"]
-                ]
-            elif "transcription" in highlights[doc]:
-                highlights[doc]["transcription"] = [
-                    clean_html(s) for s in highlights[doc]["transcription"]
-                ]
-            if "translation" in highlights[doc]:
-                highlights[doc]["translation"] = [
-                    clean_html(s) for s in highlights[doc]["translation"]
-                ]
-
-            # handle old shelfmark highlighting; sometimes it's on one or the other
-            # field, and sometimes one of the highlight results is empty
-            if "old_shelfmark" in highlights[doc]:
-                highlights[doc]["old_shelfmark"] = ", ".join(
-                    [h for h in highlights[doc]["old_shelfmark"] if h]
-                )
-            elif "old_shelfmark_t" in highlights[doc]:
-                highlights[doc]["old_shelfmark"] = ", ".join(
-                    [h for h in highlights[doc]["old_shelfmark_t"] if h]
-                )
+                # handle old shelfmark highlighting; sometimes it's on one or the other
+                # field, and sometimes one of the highlight results is empty
+                if "old_shelfmark" in highlights[doc]:
+                    highlights[doc]["old_shelfmark"] = ", ".join(
+                        [h for h in highlights[doc]["old_shelfmark"] if h]
+                    )
+                elif "old_shelfmark_t" in highlights[doc]:
+                    highlights[doc]["old_shelfmark"] = ", ".join(
+                        [h for h in highlights[doc]["old_shelfmark_t"] if h]
+                    )
 
         return highlights
