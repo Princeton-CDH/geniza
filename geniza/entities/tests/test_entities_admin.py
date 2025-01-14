@@ -48,7 +48,7 @@ class TestPersonDocumentInline:
         assert inline.dating_range(relation) == "-"
 
         Dating.objects.create(standard_date="1000/1010", document=doc)
-        assert inline.dating_range(relation) == "1000 – 1010 CE"
+        assert inline.dating_range(relation) == "1000–1010 CE"
 
 
 @pytest.mark.django_db

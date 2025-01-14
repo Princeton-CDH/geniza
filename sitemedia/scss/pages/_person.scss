@@ -404,6 +404,20 @@ main.person {
             }
         }
     }
+    .networkgraph-tooltip {
+        position: absolute;
+        display: none;
+        z-index: 2;
+        pointer-events: none;
+        background-color: var(--background);
+        border-radius: 5px;
+        padding: 0.25rem 0.75rem;
+        font-size: typography.$text-size-sm;
+        box-shadow: 0px 2px 4px var(--on-background-25);
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+    }
 }
 
 // RTL overrides

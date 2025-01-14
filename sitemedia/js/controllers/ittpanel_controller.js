@@ -32,6 +32,11 @@ export default class extends Controller {
         }
         // on resize, retrigger alignment
         window.addEventListener("resize", this.boundResizeHandler);
+        // a bit hacky; on annotation load, short wait for elements to be created, then align
+        // (this is only used in editor environment)
+        document.addEventListener("annotations-loaded", () =>
+            setTimeout(this.boundResizeHandler, 50)
+        );
     }
 
     disconnect() {
@@ -161,7 +166,7 @@ export default class extends Controller {
             } else {
                 // allow alignment in transcription edit mode (i.e. no selectedTranscriptionInput)
                 transcriptionChunks = document.querySelectorAll(
-                    ".tahqiq-body-display"
+                    ".annotate.transcription"
                 );
             }
             const selectedTranslationInput = document.querySelector(
@@ -174,7 +179,7 @@ export default class extends Controller {
             } else {
                 // allow alignment in translation edit mode (i.e. no selectedTranslationInput)
                 translationChunks = document.querySelectorAll(
-                    ".tahqiq-body-display"
+                    ".annotate.translation"
                 );
             }
 

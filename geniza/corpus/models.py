@@ -678,17 +678,18 @@ class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin):
     @property
     def collections(self):
         """collection objects for associated fragments"""
-        # use set to ensure unique; sort for reliable output order
-        return sorted(
-            set(
-                [
-                    block.fragment.collection
-                    for block in self.textblock_set.all()
-                    if block.fragment.collection
-                ]
-            ),
-            key=lambda c: c.abbrev,
-        )
+        # append to a list in order.
+        collections = []
+        # cannot cast as set and then order because we need these ordered by
+        # TextBlock.order, which cannot be retrieved from Collection objects
+        # (the objects that would populate the set)
+        for block in self.textblock_set.all().order_by("order"):
+            if (
+                block.fragment.collection
+                and block.fragment.collection not in collections
+            ):
+                collections.append(block.fragment.collection)
+        return collections
 
     @property
     def collection(self):

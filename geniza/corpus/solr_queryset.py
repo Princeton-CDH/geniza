@@ -135,6 +135,44 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
     # if search consists only of quoted phrase scoped to shelfmark, handle separately
     shelfmark_query = None
 
+    # hebrew prefixes that should be removed to produce an additional keyword to search
+    re_hebrew_prefix = re.compile(r"\b(אל|[ולבכמהשׁפ])[\u0590-\u05fe]+\b")
+
+    def _handle_hebrew_prefixes(self, search_term):
+        # if any word begins with one of the prefixes, update search to include the word
+        # without that prefix as well
+        prefixed_words = self.re_hebrew_prefix.finditer(search_term)
+        prefixed_words = [w.group(0) for w in prefixed_words]
+        if prefixed_words:
+            prefixed_or_nonprefixed_query = [
+                # handle two-charater prefix אל by removing 2 chars
+                f"({word} OR {word[2:] if word.startswith('אל') else word[1:]})"
+                for word in prefixed_words
+            ]
+            # use a custom delimiter to split on, since we need a capturing
+            # group in the original expression, but it changes the split function's
+            # behavior in an undesirable way
+            delim = "!SPLITME!"
+            nonprefixed_words = [
+                n
+                for n in re.sub(self.re_hebrew_prefix, delim, search_term).split(delim)
+                if n
+            ]
+
+            # stitch the search query back together
+            return "".join(
+                itertools.chain.from_iterable(
+                    (
+                        itertools.zip_longest(
+                            nonprefixed_words,
+                            prefixed_or_nonprefixed_query,
+                            fillvalue="",
+                        )
+                    )
+                )
+            )
+        return search_term
+
     def _search_term_cleanup(self, search_term):
         # adjust user search string before sending to solr
 
@@ -157,7 +195,8 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
             # add in judaeo-arabic conversion for the rest (double-quoted phrase should NOT be
             # converted to JA, as this breaks if any brackets or other sigla are in doublequotes)
             remaining_phrases = [
-                arabic_or_ja(p) for p in self.re_exact_match.split(search_term)
+                arabic_or_ja(self._handle_hebrew_prefixes(p))
+                for p in self.re_exact_match.split(search_term)
             ]
             # stitch the search query back together, in order, so that boolean operators
             # and phrase order are preserved
@@ -171,7 +210,7 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
                 )
             )
         else:
-            search_term = arabic_or_ja(search_term)
+            search_term = arabic_or_ja(self._handle_hebrew_prefixes(search_term))
 
         # convert any field aliases used in search terms to actual solr fields
         # (i.e. "pgpid:950 shelfmark:ena" -> "pgpid_i:950 shelfmark_t:ena")
@@ -340,35 +379,37 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
                         if highlighted_block
                     ]
                 }
+        else:
+            is_exact_search = "hl_query" in self.raw_params
+            for doc in highlights.keys():
+                # _nostem fields should take precedence over stemmed fields in the case of an
+                # exact search; in that case, replace highlights for stemmed fields with nostem
+                if is_exact_search and "description_nostem" in highlights[doc]:
+                    highlights[doc]["description"] = highlights[doc][
+                        "description_nostem"
+                    ]
+                if is_exact_search and "transcription_nostem" in highlights[doc]:
+                    highlights[doc]["transcription"] = [
+                        clean_html(s) for s in highlights[doc]["transcription_nostem"]
+                    ]
+                elif "transcription" in highlights[doc]:
+                    highlights[doc]["transcription"] = [
+                        clean_html(s) for s in highlights[doc]["transcription"]
+                    ]
+                if "translation" in highlights[doc]:
+                    highlights[doc]["translation"] = [
+                        clean_html(s) for s in highlights[doc]["translation"]
+                    ]
 
-        is_exact_search = "hl_query" in self.raw_params
-        for doc in highlights.keys():
-            # _nostem fields should take precedence over stemmed fields in the case of an
-            # exact search; in that case, replace highlights for stemmed fields with nostem
-            if is_exact_search and "description_nostem" in highlights[doc]:
-                highlights[doc]["description"] = highlights[doc]["description_nostem"]
-            if is_exact_search and "transcription_nostem" in highlights[doc]:
-                highlights[doc]["transcription"] = [
-                    clean_html(s) for s in highlights[doc]["transcription_nostem"]
-                ]
-            elif "transcription" in highlights[doc]:
-                highlights[doc]["transcription"] = [
-                    clean_html(s) for s in highlights[doc]["transcription"]
-                ]
-            if "translation" in highlights[doc]:
-                highlights[doc]["translation"] = [
-                    clean_html(s) for s in highlights[doc]["translation"]
-                ]
-
-            # handle old shelfmark highlighting; sometimes it's on one or the other
-            # field, and sometimes one of the highlight results is empty
-            if "old_shelfmark" in highlights[doc]:
-                highlights[doc]["old_shelfmark"] = ", ".join(
-                    [h for h in highlights[doc]["old_shelfmark"] if h]
-                )
-            elif "old_shelfmark_t" in highlights[doc]:
-                highlights[doc]["old_shelfmark"] = ", ".join(
-                    [h for h in highlights[doc]["old_shelfmark_t"] if h]
-                )
+                # handle old shelfmark highlighting; sometimes it's on one or the other
+                # field, and sometimes one of the highlight results is empty
+                if "old_shelfmark" in highlights[doc]:
+                    highlights[doc]["old_shelfmark"] = ", ".join(
+                        [h for h in highlights[doc]["old_shelfmark"] if h]
+                    )
+                elif "old_shelfmark_t" in highlights[doc]:
+                    highlights[doc]["old_shelfmark"] = ", ".join(
+                        [h for h in highlights[doc]["old_shelfmark_t"] if h]
+                    )
 
         return highlights

@@ -85,29 +85,35 @@
                     {# dropdown is disabled by default; enable if javascript is active #}
                     <details class="itt-select" aria-expanded="false" data-transcription-target="dropdownDetails" data-relation="transcription" data-count="{{ document.digital_editions.count }}" disabled="true">
                         <summary data-action="keydown->transcription#shiftTabCloseDropdown">
-                            <span data-transcription-target="transcriptionShortLabel" data-ittpanel-target="shortLabel">
-                                {% if document.digital_editions.0 %}
+                            <span data-transcription-target="transcriptionShortLabel" data-ittpanel-target="shortLabel"{% if document.digital_editions.0 and 'model' in document.digital_editions.0.source.source_type.type %} class="escr"{% endif %}>
+                                {% if document.digital_editions.0 and not 'model' in document.digital_editions.0.source.source_type.type %}
                                     {# Translators: Label for editors of a transcription #}
                                     {% blocktranslate with eds=document.digital_editions.0.source.all_authors|default:document.digital_editions.0.source count counter=document.digital_editions.0.source.authors.count trimmed %}
                                         Editor: {{ eds }}
                                     {% plural %}
                                         Editors: {{ eds }}
                                     {% endblocktranslate %}
+                                {% elif document.digital_editions.0 %}
+                                    {{ document.digital_editions.0.source }}
                                 {% endif %}
                             </span>
                         </summary>
                         <ul>
                             {% for ed in document.digital_editions.all %}
                                 <li>
-                                    <label for="transcription-{{ forloop.counter }}">
+                                    <label for="transcription-{{ forloop.counter }}"{% if 'model' in ed.source.source_type.type %} class="escr"{% endif %}>
                                         <input type="radio" name="transcription" {% if forloop.first %} checked="true"{% endif %} value="relevance" data-action="input->transcription#changeDropdown input->ittpanel#clickToggle keydown->transcription#keyboardCloseDropdown" id="transcription-{{ forloop.counter }}" data-transcription="ed-{{ ed.pk }}" />
                                         <span>
-                                            {# Translators: Label for editors of a transcription #}
-                                            {% blocktranslate with eds=ed.source.all_authors|default:ed.source count counter=ed.source.authors.count trimmed %}
-                                                Editor: {{ eds }}
-                                            {% plural %}
-                                                Editors: {{ eds }}
-                                            {% endblocktranslate %}
+                                            {% if not 'model' in ed.source.source_type.type %}
+                                                {# Translators: Label for editors of a transcription #}
+                                                {% blocktranslate with eds=ed.source.all_authors|default:ed.source count counter=ed.source.authors.count trimmed %}
+                                                    Editor: {{ eds }}
+                                                {% plural %}
+                                                    Editors: {{ eds }}
+                                                {% endblocktranslate %}
+                                            {% else %}
+                                                {{ ed.source }}
+                                            {% endif %}
                                         </span>
                                     </label>
                                 </li>

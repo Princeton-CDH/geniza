@@ -15,6 +15,16 @@ from geniza.common.models import UserProfile
 from geniza.corpus.views import TagMerge
 
 
+class TypedRelationInline:
+    """admin inline for a relation referencing a separate model for relationship type"""
+
+    def get_formset(self, request, obj=None, **kwargs):
+        """Override in order to remove the delete button from the type field"""
+        formset = super().get_formset(request, obj, **kwargs)
+        formset.form.base_fields["type"].widget.can_delete_related = False
+        return formset
+
+
 class UserProfileInline(admin.StackedInline):
     """admin inline for editing custom user profile information"""
 
@@ -110,7 +120,8 @@ class CustomTagAdmin(TagAdmin):
     @admin.display(description="Merge selected tags")
     def merge_tags(self, request, queryset=None):
         """Admin action to merge selected tags. This action redirects to an intermediate
-        page, which displays a form to review for confirmation and choose the primary tag before merging."""
+        page, which displays a form to review for confirmation and choose the primary tag before merging.
+        """
         # Adapted from corpus.admin.DocumentAdmin.merge_documents
 
         # NOTE: using selected ids from form and ignoring queryset

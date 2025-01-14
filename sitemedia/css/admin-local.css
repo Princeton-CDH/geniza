@@ -156,6 +156,17 @@ a#needsreview:target {
 .form-row .translation[dir="ltr"] ol li:not([value])::before {
     line-height: 20px;
 }
+.form-row div.img,
+.form-row div.transcription-panel,
+.form-row div.translation-panel {
+    box-sizing: border-box;
+}
+.transcription li::marker {
+    direction: rtl;
+}
+.form-row #itt-panel label {
+    padding: 0;
+}
 /* headers */
 .form-row .transcription h3,
 .form-row .translation h3 {
@@ -213,10 +224,6 @@ fieldset.transcriptions-field
     .deep-zoom-container {
     background-color: var(--background-gray);
     opacity: 1;
-}
-
-.transcription li::marker {
-    direction: rtl;
 }
 
 /* keep document relationship choices labels in line with checkboxes */

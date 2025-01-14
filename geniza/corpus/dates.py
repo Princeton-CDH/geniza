@@ -44,7 +44,7 @@ class PartialDate:
     display_format = {
         "year": "Y",
         "month": "F Y",
-        "day": "DATE_FORMAT",  # honors locale formatting
+        "day": "j F Y",
     }
     #: ISO format based on date precision
     iso_format = {
@@ -544,7 +544,7 @@ def standard_date_display(standard_date):
     # join dates with en-dash if more than one;
     # add CE to the end to make calendar system explicit
     try:
-        return "%s CE" % " – ".join(str(PartialDate(d)) for d in dates)
+        return "%s CE" % "–".join(str(PartialDate(d)) for d in dates)
     except ValueError:
         # dates entered before validation was applied may not parse
         # as fallback, display as is

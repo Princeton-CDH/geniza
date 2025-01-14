@@ -164,7 +164,7 @@ class TestDocumentSolrQuerySet:
     def test_search_term_cleanup__arabic_to_ja(self):
         dqs = DocumentSolrQuerySet()
         # confirm arabic to judaeo-arabic runs here (with boost)
-        assert dqs._search_term_cleanup("دينار") == "(دينار^2.0|דינאר)"
+        assert dqs._search_term_cleanup("دينار") == "(دينار^100.0 OR דינאר)"
         # confirm arabic to judaeo-arabic does not run here
         assert (
             dqs._search_term_cleanup('"دي[نا]ر"')
@@ -216,6 +216,21 @@ class TestDocumentSolrQuerySet:
         assert not dqs.shelfmark_query
         assert "NS" in dqs._search_term_cleanup("shelfmark:NS")
         assert not dqs.shelfmark_query
+
+    def test_handle_hebrew_prefixes(self):
+        dqs = DocumentSolrQuerySet()
+        # should replace words with hebrew prefixes with OR queries
+        # on the same word with or without prefix
+        assert dqs._handle_hebrew_prefixes("אלמרכב") == "(אלמרכב OR מרכב)"
+        assert (
+            dqs._handle_hebrew_prefixes("test one משיח two כבוד")
+            == "test one (משיח OR שיח) two (כבוד OR בוד)"
+        )
+        # when cleanup is applied, will also apply JA to Arabic conversion
+        assert (
+            dqs._search_term_cleanup("אלמרכב")
+            == "((אלמרכב^100.0 OR المركب OR المرخب) OR (מרכב^100.0 OR مركب OR مرخب))"
+        )
 
     def test_keyword_search__quoted_shelfmark(self):
         dqs = DocumentSolrQuerySet()
@@ -368,11 +383,22 @@ class TestDocumentSolrQuerySet:
                 mock_get_results.return_value = [
                     {"id": "document.1", "transcription_regex": ["a test text"]}
                 ]
-                highlighting = dqs.get_highlighting()
-                assert highlighting != test_highlight
-                assert "match" not in highlighting["document.1"]["transcription"]
-                assert len(highlighting["document.1"]["transcription"]) == 1
-                assert "<em>test</em>" in highlighting["document.1"]["transcription"][0]
+                with patch("geniza.corpus.solr_queryset.clean_html") as mock_clean_html:
+                    highlighting = dqs.get_highlighting()
+                    assert highlighting != test_highlight
+                    assert "match" not in highlighting["document.1"]["transcription"]
+                    assert len(highlighting["document.1"]["transcription"]) == 1
+                    assert (
+                        "<em>test</em>"
+                        in highlighting["document.1"]["transcription"][0]
+                    )
+                    # in regex, clean_html should not be called
+                    mock_clean_html.assert_not_called
+                    # it should stil be called in other types of searches
+                    mock_get_results.return_value = [
+                        {"id": "document.1", "transcription_nostem": ["a test text"]}
+                    ]
+                    mock_clean_html.assert_called_once
 
     def test_regex_search(self):
         dqs = DocumentSolrQuerySet()

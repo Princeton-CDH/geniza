@@ -469,10 +469,12 @@ class TestPerson:
         assert index_data["gender_s"] == person.get_gender_display()
         assert index_data["role_s"] == str(person.role)
         assert not index_data["url_s"]
+        assert index_data["has_page_b"] == False
         person.has_page = True
         person.save()
         index_data = person.index_data()
         assert index_data["url_s"] == person.get_absolute_url()
+        assert index_data["has_page_b"] == True
         assert index_data["documents_i"] == 1
         assert index_data["people_i"] == index_data["places_i"] == 0
         assert index_data["document_relation_ss"] == [str(pdrtype)]

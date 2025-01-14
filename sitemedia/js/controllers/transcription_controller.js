@@ -48,6 +48,13 @@ export default class extends Controller {
         // Mimic "header" functionality by copying the shortened transcription metadata from option to summary
         this[`${relation}ShortLabelTarget`].innerHTML =
             evt.currentTarget.parentElement.textContent;
+
+        // add escr class when appropriate, so we can add logo
+        if (evt.currentTarget.parentElement.classList.contains("escr")) {
+            this[`${relation}ShortLabelTarget`].classList.add("escr");
+        } else {
+            this[`${relation}ShortLabelTarget`].classList.remove("escr");
+        }
     }
 
     keyboardCloseDropdown(e) {
