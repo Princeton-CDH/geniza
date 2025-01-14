@@ -1,6 +1,29 @@
 Change Log
 ==========
 
+4.19
+----
+
+- public site
+    - As a front end user, I want to be able to access up-to-date metadata exports about people and places via GitHub, so that I can use that data in my own research.
+    - As a public site user, I want to see formatted citations at the bottom of the doc detail pages so that I know how to cite the doc detail page as a whole.
+    - As a public site user, in the network graph, I want the number of relationships between people to be represented by differing line thicknesses, with an option to hover over and see the exact number, so that I can see at a glance the strength of certain relationships in the documentary record.
+    - As a frontend user, I want to search in Judaeo-Arabic (Hebrew script) and get search results from both Arabic and Judaeo-Arabic transcriptions so that I can find more content that matches my search.
+    - As a public site user, I want the image in the transcription viewer to rotate clockwise so it goes to the right margin first to facilitate the reading and transcription of the text.
+    - As a public user, I want to be able to filter people records by those who do and do not have people pages, so that I can easily find important people or people with further context.
+    - bugfix: When searching in Hebrew, search results are excluded when the keyword searched is longer than the word that appears in transcriptions
+    - bugfix: Collections on document detail page sometimes listed in the wrong order for joins
+    - bugfix: Partial search in RegEx introducing spaces before and after the search term even if it's part of a word
+    - chore: Remove edition information from the top of the doc detail page
+    - chore: Weiss PhD and MA transcription ingest
+    - chore: Please format automatic date field for person page (in admin and public) to delete commas after days and to remove spaces around the en-dash between years.
+
+- admin
+    - As a content admin, I do not want the button to delete a document-place relationship type to appear inline, as it may appear to indicate only removing one relationship and not the type.
+    - As a content editor, when entering person-person relationships, I want help text pointing towards both automatic and manual relationships, so that we avoid duplicating relationships between two people.
+    - bugfix: Line numbers for transcription not appearing in admin transcription editor (but they appear fine on the public site)
+    - bugfix: Transcription/translation alignment fails, during editing only
+
 4.18.2
 ------
 
