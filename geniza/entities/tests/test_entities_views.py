@@ -420,6 +420,47 @@ class TestPersonListView:
                 personlist_view.get_queryset()
                 mock_order_by.assert_called_with("start_dating_i")
 
+    def test_get_queryset__keyword_query(
+        self, person, person_diacritic, person_multiname, empty_solr
+    ):
+        SolrClient().update.index(
+            [
+                person.index_data(),
+                person_diacritic.index_data(),
+                person_multiname.index_data(),
+            ],
+            commit=True,
+        )
+        personlist_view = PersonListView()
+        with patch.object(personlist_view, "get_form") as mock_get_form:
+            mock_get_form.return_value.cleaned_data = {"q": str(person)}
+            qs = personlist_view.get_queryset()
+            # should return the person
+            assert qs.count() == 1
+            resulting_ids = [result["id"] for result in qs]
+            assert f"person.{person.id}" in resulting_ids
+
+            Name.objects.create(name=str(person), content_object=person_multiname)
+            SolrClient().update.index([person_multiname.index_data()], commit=True)
+            mock_get_form.return_value.cleaned_data = {
+                "q": str(person),
+                "sort": "relevance",
+                "sort_dir": "desc",
+            }
+            qs = personlist_view.get_queryset()
+            # should return both people
+            assert qs.count() == 2
+            resulting_ids = [result["id"] for result in qs]
+            assert f"person.{person.id}" in resulting_ids
+            assert f"person.{person_multiname.id}" in resulting_ids
+            # primary name should be prioritized above other names in relevance
+            assert qs[0]["id"] == f"person.{person.id}"
+            assert qs[0]["score"] > qs[1]["score"]
+            # other names should be highlighted
+            highlights = qs.get_highlighting()
+            assert f"person.{person_multiname.id}" in highlights
+            assert "other_names" in highlights[f"person.{person_multiname.id}"]
+
     def test_get_context_data(self, client, person):
         with patch.object(PersonListForm, "set_choices_from_facets") as mock_setchoices:
             response = client.get(reverse("entities:person-list"))

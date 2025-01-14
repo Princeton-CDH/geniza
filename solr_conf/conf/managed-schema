@@ -354,6 +354,12 @@
   <copyField source="description_en_bigram" dest="description_nostem" maxChars="30000" />
   <copyField source="text_transcription" dest="transcription_nostem" maxChars="30000" />
 
+  <!-- copy people name fields to text fields -->
+  <copyField source="name_s" dest="name_bigram" maxChars="30000" />
+  <copyField source="name_s" dest="name_nostem" maxChars="30000" />
+  <copyField source="other_names_ss" dest="other_names_bigram" maxChars="30000" />
+  <copyField source="other_names_ss" dest="other_names_nostem" maxChars="30000" />
+
   <dynamicField name="*_descendent_path" type="descendent_path" indexed="true" stored="true"/>
   <dynamicField name="*_ancestor_path" type="ancestor_path" indexed="true" stored="true"/>
   <dynamicField name="ignored_*" type="ignored" multiValued="true"/>

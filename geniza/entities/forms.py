@@ -117,6 +117,19 @@ class PlacePlaceForm(forms.ModelForm):
 
 
 class PersonListForm(RangeForm):
+    q = forms.CharField(
+        label="Keyword or Phrase",
+        required=False,
+        widget=forms.TextInput(
+            attrs={
+                # Translators: placeholder for people keyword search input
+                "placeholder": _("Search for people by name"),
+                # Translators: accessible label for people keyword search input
+                "aria-label": _("word or phrase"),
+                "type": "search",
+            }
+        ),
+    )
     gender = FacetChoiceField(label=_("Gender"))
     has_page = BooleanFacetField(label=_("Detail page available"))
     social_role = FacetChoiceField(label=_("Social role"))
@@ -125,6 +138,8 @@ class PersonListForm(RangeForm):
     date_range = RangeField(label=_("Dates"), required=False, widget=YearRangeWidget())
 
     SORT_CHOICES = [
+        # Translators: label for sort by relevance
+        ("relevance", _("Relevance")),
         # Translators: label for sort by name
         ("name", _("Name")),
         # Translators: label for sort by person activity dates

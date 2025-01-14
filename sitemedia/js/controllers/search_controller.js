@@ -15,6 +15,7 @@ export default class extends Controller {
         "helpDialog",
         "placesMode",
         "peopleMode",
+        "radioSort",
     ];
     static debounces = ["update"];
 
@@ -205,20 +206,77 @@ export default class extends Controller {
         }
     }
 
-    sortByRelevance() {
-        this.sortTarget.value = this.relevanceSortElement.value;
+    sortByRelevance(radio = false) {
+        if (radio && !this.relevanceSortElement.checked) {
+            this.relevanceSortElement.checked = true;
+            this.relevanceSortDirectionElement.checked = true;
+            this.dropdownDetailsTarget.querySelector("summary").textContent =
+                this.relevanceSortLabel;
+        } else if (!radio) {
+            this.sortTarget.value = this.relevanceSortElement.value;
+        }
         this.relevanceSortElement.disabled = false;
         this.relevanceSortElement.ariaDisabled = false;
     }
 
-    disableRelevanceSort() {
+    disableRelevanceSort(radio = false) {
         // if relevance sort was selected, set back to default
-        if (this.sortTarget.value == this.relevanceSortElement.value) {
+        if (radio && this.relevanceSortElement.checked) {
+            this.relevanceSortElement.checked = false;
+            this.defaultSortElement.checked = true;
+            this.defaultSortDirectionElement.checked = true;
+            this.dropdownDetailsTarget.querySelector("summary").textContent =
+                this.defaultSortLabel;
+        } else if (
+            !radio &&
+            this.sortTarget.value == this.relevanceSortElement.value
+        ) {
             this.sortTarget.value = this.defaultSortElement.value;
         }
         // disable relevance sort
         this.relevanceSortElement.disabled = true;
         this.relevanceSortElement.ariaDisabled = true;
+    }
+
+    radioSortTargetConnected() {
+        // similar to sortTargetConnected, but handled differently for radio inputs
+        // as their DOM structure is different
+        const sortOptions = Array.from(
+            this.radioSortTarget.querySelectorAll("input")
+        );
+        this.relevanceSortElement = sortOptions.find(
+            (target) => target.value === "relevance"
+        );
+        // a search using radio input elements is only doing so because it is split into
+        // separate fields for sort field and direction, so handle direction too
+        this.relevanceSortDirectionElement = sortOptions.find(
+            (target) => target.value === "desc"
+        );
+        // keep track of labels since they aren't stored on the input elements
+        this.relevanceSortLabel = this.radioSortTarget.querySelector(
+            `label[for=${this.relevanceSortElement.id}]`
+        ).textContent;
+        this.defaultSortElement = sortOptions.find(
+            (target) => target.value === "name"
+        );
+        this.defaultSortDirectionElement = sortOptions.find(
+            (target) => target.value === "asc"
+        );
+        this.defaultSortLabel = this.radioSortTarget.querySelector(
+            `label[for=${this.defaultSortElement.id}]`
+        ).textContent;
+        this.autoUpdateRadioSort();
+    }
+
+    autoUpdateRadioSort(event) {
+        // when query is empty, disable sort by relevance
+        if (this.queryTarget.value.trim() == "") {
+            this.disableRelevanceSort(true);
+        } else if (event && this.defaultSortElement.checked) {
+            // if this was triggered by an event and not in sortTargetConnected,
+            // and the sort is currently the default, sort by relevance
+            this.sortByRelevance(true);
+        }
     }
 
     clickCloseDropdown(e) {

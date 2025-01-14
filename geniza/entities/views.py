@@ -545,6 +545,7 @@ class PersonListView(ListView, FormMixin, SolrDateRangeMixin):
 
     # sort options mapped to solr fields
     sort_fields = {
+        "relevance": "score",
         "name": "slug_s",
         "role": "role_s",
         "documents": "documents_i",
@@ -582,8 +583,18 @@ class PersonListView(ListView, FormMixin, SolrDateRangeMixin):
         if not form.is_valid():
             return people.none()
 
-        # filter by database fields using the Django ORM
         search_opts = form.cleaned_data
+        if search_opts.get("q"):
+            # keyword search query, highlighting, and relevance scoring.
+            # highlight non-primary names so that we know to show them in the
+            # result list if they match the query; by default they are hidden
+            people = (
+                people.keyword_search(search_opts["q"].replace("'", ""))
+                .highlight("other_names_nostem", snippets=3, method="unified")
+                .highlight("other_names_bigram", snippets=3, method="unified")
+                .also("score")
+            )
+
         self.applied_filter_labels = []
         if search_opts.get("gender"):
             genders = literal_eval(search_opts["gender"])
@@ -680,6 +691,9 @@ class PersonListView(ListView, FormMixin, SolrDateRangeMixin):
         facet_dict = self.queryset.get_facets()
         # populate choices for facet filter fields on the form
         context_data["form"].set_choices_from_facets(facet_dict.facet_fields)
+        # get highlighting
+        paged_result = context_data["page_obj"].object_list
+        highlights = paged_result.get_highlighting() if paged_result.count() else {}
 
         context_data.update(
             {
@@ -687,6 +701,7 @@ class PersonListView(ListView, FormMixin, SolrDateRangeMixin):
                 "page_description": self.page_description,
                 "page_type": "people",
                 "applied_filters": self.applied_filter_labels,
+                "highlighting": highlights,
             }
         )
         return context_data
