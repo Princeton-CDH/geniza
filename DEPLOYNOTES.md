@@ -1,5 +1,9 @@
 # Deploy Notes
 
+## 4.19
+
+-   Indexing logic has changed. Reindex all content: `python manage.py index`.
+
 ## 4.18.1
 
 -   Metadata exports have been updated, and may require manually setting the
