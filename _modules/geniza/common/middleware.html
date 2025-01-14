@@ -4,10 +4,10 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>geniza.common.middleware &#8212; Princeton Geniza Project 4.18.2 documentation</title>
-    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=d1102ebc" />
+    <title>geniza.common.middleware &#8212; Princeton Geniza Project 4.19.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=5ecbeea2" />
     <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=12dfc556" />
-    <script src="../../../_static/documentation_options.js?v=39372dd1"></script>
+    <script src="../../../_static/documentation_options.js?v=db6269fb"></script>
     <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
@@ -30,26 +30,26 @@
           <div class="body" role="main">
             
   <h1>Source code for geniza.common.middleware</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">django.conf</span> <span class="kn">import</span> <span class="n">settings</span>
-<span class="kn">from</span> <span class="nn">django.contrib.auth.backends</span> <span class="kn">import</span> <span class="n">BaseBackend</span>
-<span class="kn">from</span> <span class="nn">django.http</span> <span class="kn">import</span> <span class="n">HttpRequest</span>
-<span class="kn">from</span> <span class="nn">django.middleware.locale</span> <span class="kn">import</span> <span class="n">LocaleMiddleware</span> <span class="k">as</span> <span class="n">DjangoLocaleMiddleware</span>
-<span class="kn">from</span> <span class="nn">django.utils</span> <span class="kn">import</span> <span class="n">translation</span>
-<span class="kn">from</span> <span class="nn">django.views.i18n</span> <span class="kn">import</span> <span class="n">set_language</span>
-<span class="kn">from</span> <span class="nn">rest_framework.authentication</span> <span class="kn">import</span> <span class="n">TokenAuthentication</span>
-<span class="kn">from</span> <span class="nn">rest_framework.authtoken.models</span> <span class="kn">import</span> <span class="n">Token</span>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">django.conf</span><span class="w"> </span><span class="kn">import</span> <span class="n">settings</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">django.contrib.auth.backends</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseBackend</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">django.http</span><span class="w"> </span><span class="kn">import</span> <span class="n">HttpRequest</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">django.middleware.locale</span><span class="w"> </span><span class="kn">import</span> <span class="n">LocaleMiddleware</span> <span class="k">as</span> <span class="n">DjangoLocaleMiddleware</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">django.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">translation</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">django.views.i18n</span><span class="w"> </span><span class="kn">import</span> <span class="n">set_language</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">rest_framework.authentication</span><span class="w"> </span><span class="kn">import</span> <span class="n">TokenAuthentication</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">rest_framework.authtoken.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">Token</span>
 
 
 <div class="viewcode-block" id="PublicLocaleMiddleware">
 <a class="viewcode-back" href="../../../codedocs/common.html#geniza.common.middleware.PublicLocaleMiddleware">[docs]</a>
-<span class="k">class</span> <span class="nc">PublicLocaleMiddleware</span><span class="p">:</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">PublicLocaleMiddleware</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Middleware to redirect anonymous users attempting to access locales that are not in</span>
 <span class="sd">    the list of public site languages.&quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">get_response</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">get_response</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">get_response</span> <span class="o">=</span> <span class="n">get_response</span>
 
-    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">:</span> <span class="n">HttpRequest</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">:</span> <span class="n">HttpRequest</span><span class="p">):</span>
         <span class="n">public_site_languages</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s2">&quot;PUBLIC_SITE_LANGUAGES&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">public_site_languages</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">is_authenticated</span><span class="p">:</span>
             <span class="n">language_from_path</span> <span class="o">=</span> <span class="n">translation</span><span class="o">.</span><span class="n">get_language_from_path</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">path_info</span><span class="p">)</span>
@@ -72,7 +72,7 @@
 
 <div class="viewcode-block" id="LocaleMiddleware">
 <a class="viewcode-back" href="../../../codedocs/common.html#geniza.common.middleware.LocaleMiddleware">[docs]</a>
-<span class="k">class</span> <span class="nc">LocaleMiddleware</span><span class="p">(</span><span class="n">DjangoLocaleMiddleware</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">LocaleMiddleware</span><span class="p">(</span><span class="n">DjangoLocaleMiddleware</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot; &quot;Customize django&#39;s default locale middleware to exempt some urls from redirects&quot;&quot;&quot;</span>
 
     <span class="c1"># adapted from https://code.djangoproject.com/ticket/17734</span>
@@ -82,7 +82,7 @@
 
 <div class="viewcode-block" id="LocaleMiddleware.process_response">
 <a class="viewcode-back" href="../../../codedocs/common.html#geniza.common.middleware.LocaleMiddleware.process_response">[docs]</a>
-    <span class="k">def</span> <span class="nf">process_response</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">response</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">process_response</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">response</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;exempt untranslated paths from locale redirects&quot;&quot;&quot;</span>
 
         <span class="n">path_parts</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">path_info</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)</span>

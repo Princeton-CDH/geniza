@@ -4,10 +4,10 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>geniza.footnotes.models &#8212; Princeton Geniza Project 4.18.2 documentation</title>
-    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=d1102ebc" />
+    <title>geniza.footnotes.models &#8212; Princeton Geniza Project 4.19.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=5ecbeea2" />
     <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=12dfc556" />
-    <script src="../../../_static/documentation_options.js?v=39372dd1"></script>
+    <script src="../../../_static/documentation_options.js?v=db6269fb"></script>
     <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
@@ -30,49 +30,49 @@
           <div class="body" role="main">
             
   <h1>Source code for geniza.footnotes.models</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">re</span>
-<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">defaultdict</span>
-<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">cached_property</span>
-<span class="kn">from</span> <span class="nn">os</span> <span class="kn">import</span> <span class="n">path</span>
-<span class="kn">from</span> <span class="nn">urllib.parse</span> <span class="kn">import</span> <span class="n">urljoin</span>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections</span><span class="w"> </span><span class="kn">import</span> <span class="n">defaultdict</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">cached_property</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">os</span><span class="w"> </span><span class="kn">import</span> <span class="n">path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">urllib.parse</span><span class="w"> </span><span class="kn">import</span> <span class="n">urljoin</span>
 
-<span class="kn">from</span> <span class="nn">bs4</span> <span class="kn">import</span> <span class="n">BeautifulSoup</span>
-<span class="kn">from</span> <span class="nn">django.conf</span> <span class="kn">import</span> <span class="n">settings</span>
-<span class="kn">from</span> <span class="nn">django.contrib.contenttypes.fields</span> <span class="kn">import</span> <span class="n">GenericForeignKey</span>
-<span class="kn">from</span> <span class="nn">django.contrib.contenttypes.models</span> <span class="kn">import</span> <span class="n">ContentType</span>
-<span class="kn">from</span> <span class="nn">django.contrib.humanize.templatetags.humanize</span> <span class="kn">import</span> <span class="n">ordinal</span>
-<span class="kn">from</span> <span class="nn">django.db</span> <span class="kn">import</span> <span class="n">models</span>
-<span class="kn">from</span> <span class="nn">django.db.models</span> <span class="kn">import</span> <span class="n">Count</span><span class="p">,</span> <span class="n">Q</span>
-<span class="kn">from</span> <span class="nn">django.db.models.functions</span> <span class="kn">import</span> <span class="n">NullIf</span>
-<span class="kn">from</span> <span class="nn">django.db.models.query</span> <span class="kn">import</span> <span class="n">Prefetch</span>
-<span class="kn">from</span> <span class="nn">django.urls</span> <span class="kn">import</span> <span class="n">reverse</span>
-<span class="kn">from</span> <span class="nn">django.utils.html</span> <span class="kn">import</span> <span class="n">strip_tags</span>
-<span class="kn">from</span> <span class="nn">django.utils.translation</span> <span class="kn">import</span> <span class="n">gettext</span>
-<span class="kn">from</span> <span class="nn">django.utils.translation</span> <span class="kn">import</span> <span class="n">gettext_lazy</span> <span class="k">as</span> <span class="n">_</span>
-<span class="kn">from</span> <span class="nn">gfklookupwidget.fields</span> <span class="kn">import</span> <span class="n">GfkLookupField</span>
-<span class="kn">from</span> <span class="nn">modeltranslation.manager</span> <span class="kn">import</span> <span class="n">MultilingualManager</span><span class="p">,</span> <span class="n">MultilingualQuerySet</span>
-<span class="kn">from</span> <span class="nn">multiselectfield</span> <span class="kn">import</span> <span class="n">MultiSelectField</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">bs4</span><span class="w"> </span><span class="kn">import</span> <span class="n">BeautifulSoup</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">django.conf</span><span class="w"> </span><span class="kn">import</span> <span class="n">settings</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">django.contrib.contenttypes.fields</span><span class="w"> </span><span class="kn">import</span> <span class="n">GenericForeignKey</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">django.contrib.contenttypes.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">ContentType</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">django.contrib.humanize.templatetags.humanize</span><span class="w"> </span><span class="kn">import</span> <span class="n">ordinal</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">django.db</span><span class="w"> </span><span class="kn">import</span> <span class="n">models</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">django.db.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">Count</span><span class="p">,</span> <span class="n">Q</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">django.db.models.functions</span><span class="w"> </span><span class="kn">import</span> <span class="n">NullIf</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">django.db.models.query</span><span class="w"> </span><span class="kn">import</span> <span class="n">Prefetch</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">django.urls</span><span class="w"> </span><span class="kn">import</span> <span class="n">reverse</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">django.utils.html</span><span class="w"> </span><span class="kn">import</span> <span class="n">strip_tags</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">django.utils.translation</span><span class="w"> </span><span class="kn">import</span> <span class="n">gettext</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">django.utils.translation</span><span class="w"> </span><span class="kn">import</span> <span class="n">gettext_lazy</span> <span class="k">as</span> <span class="n">_</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">gfklookupwidget.fields</span><span class="w"> </span><span class="kn">import</span> <span class="n">GfkLookupField</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">modeltranslation.manager</span><span class="w"> </span><span class="kn">import</span> <span class="n">MultilingualManager</span><span class="p">,</span> <span class="n">MultilingualQuerySet</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">multiselectfield</span><span class="w"> </span><span class="kn">import</span> <span class="n">MultiSelectField</span>
 
-<span class="kn">from</span> <span class="nn">geniza.common.fields</span> <span class="kn">import</span> <span class="n">NaturalSortField</span>
-<span class="kn">from</span> <span class="nn">geniza.common.models</span> <span class="kn">import</span> <span class="n">TrackChangesModel</span>
-<span class="kn">from</span> <span class="nn">geniza.footnotes.utils</span> <span class="kn">import</span> <span class="n">HTMLLineNumberParser</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">geniza.common.fields</span><span class="w"> </span><span class="kn">import</span> <span class="n">NaturalSortField</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">geniza.common.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">TrackChangesModel</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">geniza.footnotes.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">HTMLLineNumberParser</span>
 
 
 <div class="viewcode-block" id="SourceType">
 <a class="viewcode-back" href="../../../codedocs/footnotes.html#geniza.footnotes.models.SourceType">[docs]</a>
-<span class="k">class</span> <span class="nc">SourceType</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">SourceType</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;type of source&quot;&quot;&quot;</span>
 
     <span class="nb">type</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">255</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span></div>
 
 
 
 <div class="viewcode-block" id="SourceLanguage">
 <a class="viewcode-back" href="../../../codedocs/footnotes.html#geniza.footnotes.models.SourceLanguage">[docs]</a>
-<span class="k">class</span> <span class="nc">SourceLanguage</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">SourceLanguage</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;language of a source document&quot;&quot;&quot;</span>
 
     <span class="n">name</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">255</span><span class="p">)</span>
@@ -82,19 +82,19 @@
     <span class="n">DIRECTION_CHOICES</span> <span class="o">=</span> <span class="p">((</span><span class="n">LTR</span><span class="p">,</span> <span class="s2">&quot;Left to right&quot;</span><span class="p">),</span> <span class="p">(</span><span class="n">RTL</span><span class="p">,</span> <span class="s2">&quot;Right to left&quot;</span><span class="p">))</span>
     <span class="n">direction</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">LTR</span><span class="p">,</span> <span class="n">choices</span><span class="o">=</span><span class="n">DIRECTION_CHOICES</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span></div>
 
 
 
 <div class="viewcode-block" id="CreatorManager">
 <a class="viewcode-back" href="../../../codedocs/footnotes.html#geniza.footnotes.models.CreatorManager">[docs]</a>
-<span class="k">class</span> <span class="nc">CreatorManager</span><span class="p">(</span><span class="n">MultilingualManager</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">CreatorManager</span><span class="p">(</span><span class="n">MultilingualManager</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Custom manager for :class:`Creator` with natural key lookup&quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="CreatorManager.get_by_natural_key">
 <a class="viewcode-back" href="../../../codedocs/footnotes.html#geniza.footnotes.models.CreatorManager.get_by_natural_key">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_by_natural_key</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">last_name</span><span class="p">,</span> <span class="n">first_name</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_by_natural_key</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">last_name</span><span class="p">,</span> <span class="n">first_name</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;natural key lookup: based on combination of last name and first name&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">last_name</span><span class="o">=</span><span class="n">last_name</span><span class="p">,</span> <span class="n">first_name</span><span class="o">=</span><span class="n">first_name</span><span class="p">)</span></div>
 </div>
@@ -103,7 +103,7 @@
 
 <div class="viewcode-block" id="Creator">
 <a class="viewcode-back" href="../../../codedocs/footnotes.html#geniza.footnotes.models.Creator">[docs]</a>
-<span class="k">class</span> <span class="nc">Creator</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Creator</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;author or other contributor to a source&quot;&quot;&quot;</span>
 
     <span class="n">first_name</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">255</span><span class="p">)</span>
@@ -111,7 +111,7 @@
 
     <span class="n">objects</span> <span class="o">=</span> <span class="n">CreatorManager</span><span class="p">()</span>
 
-    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+    <span class="k">class</span><span class="w"> </span><span class="nc">Meta</span><span class="p">:</span>
         <span class="n">ordering</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;last_name&quot;</span><span class="p">,</span> <span class="s2">&quot;first_name&quot;</span><span class="p">]</span>
         <span class="n">constraints</span> <span class="o">=</span> <span class="p">[</span>
             <span class="n">models</span><span class="o">.</span><span class="n">UniqueConstraint</span><span class="p">(</span>
@@ -119,19 +119,19 @@
             <span class="p">)</span>
         <span class="p">]</span>
 
-    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">n</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">last_name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">first_name</span><span class="p">]</span> <span class="k">if</span> <span class="n">n</span><span class="p">])</span>
 
 <div class="viewcode-block" id="Creator.natural_key">
 <a class="viewcode-back" href="../../../codedocs/footnotes.html#geniza.footnotes.models.Creator.natural_key">[docs]</a>
-    <span class="k">def</span> <span class="nf">natural_key</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">natural_key</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;natural key: tuple of last name, first name&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">last_name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">first_name</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="Creator.firstname_lastname">
 <a class="viewcode-back" href="../../../codedocs/footnotes.html#geniza.footnotes.models.Creator.firstname_lastname">[docs]</a>
-    <span class="k">def</span> <span class="nf">firstname_lastname</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">firstname_lastname</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Creator full name, with first name first&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">n</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">first_name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">last_name</span><span class="p">]</span> <span class="k">if</span> <span class="n">n</span><span class="p">])</span></div>
 </div>
@@ -140,17 +140,17 @@
 
 <div class="viewcode-block" id="Authorship">
 <a class="viewcode-back" href="../../../codedocs/footnotes.html#geniza.footnotes.models.Authorship">[docs]</a>
-<span class="k">class</span> <span class="nc">Authorship</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Authorship</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Ordered relationship between :class:`Creator` and :class:`Source`.&quot;&quot;&quot;</span>
 
     <span class="n">creator</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">ForeignKey</span><span class="p">(</span><span class="n">Creator</span><span class="p">,</span> <span class="n">on_delete</span><span class="o">=</span><span class="n">models</span><span class="o">.</span><span class="n">CASCADE</span><span class="p">)</span>
     <span class="n">source</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">ForeignKey</span><span class="p">(</span><span class="s2">&quot;Source&quot;</span><span class="p">,</span> <span class="n">on_delete</span><span class="o">=</span><span class="n">models</span><span class="o">.</span><span class="n">CASCADE</span><span class="p">)</span>
     <span class="n">sort_order</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">PositiveSmallIntegerField</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 
-    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+    <span class="k">class</span><span class="w"> </span><span class="nc">Meta</span><span class="p">:</span>
         <span class="n">ordering</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;sort_order&quot;</span><span class="p">,)</span>
 
-    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
         <span class="k">return</span> <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">, </span><span class="si">%s</span><span class="s1"> author on &quot;</span><span class="si">%s</span><span class="s1">&quot;&#39;</span> <span class="o">%</span> <span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">creator</span><span class="p">,</span>
             <span class="n">ordinal</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sort_order</span><span class="p">),</span>
@@ -161,13 +161,13 @@
 
 <div class="viewcode-block" id="SourceQuerySet">
 <a class="viewcode-back" href="../../../codedocs/footnotes.html#geniza.footnotes.models.SourceQuerySet">[docs]</a>
-<span class="k">class</span> <span class="nc">SourceQuerySet</span><span class="p">(</span><span class="n">MultilingualQuerySet</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">SourceQuerySet</span><span class="p">(</span><span class="n">MultilingualQuerySet</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Custom queryset for :class:`Source`, for reusable</span>
 <span class="sd">    prefetching and count annotation.&quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="SourceQuerySet.metadata_prefetch">
 <a class="viewcode-back" href="../../../codedocs/footnotes.html#geniza.footnotes.models.SourceQuerySet.metadata_prefetch">[docs]</a>
-    <span class="k">def</span> <span class="nf">metadata_prefetch</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">metadata_prefetch</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="s2">&quot;prefetch source type and authors&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">select_related</span><span class="p">(</span><span class="s2">&quot;source_type&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">prefetch_related</span><span class="p">(</span>
             <span class="s2">&quot;languages&quot;</span><span class="p">,</span>
@@ -180,7 +180,7 @@
 
 <div class="viewcode-block" id="SourceQuerySet.footnote_count">
 <a class="viewcode-back" href="../../../codedocs/footnotes.html#geniza.footnotes.models.SourceQuerySet.footnote_count">[docs]</a>
-    <span class="k">def</span> <span class="nf">footnote_count</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">footnote_count</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="s2">&quot;annotate with footnote count&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span><span class="n">Count</span><span class="p">(</span><span class="s2">&quot;footnote&quot;</span><span class="p">,</span> <span class="n">distinct</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span></div>
 </div>
@@ -189,7 +189,7 @@
 
 <div class="viewcode-block" id="Source">
 <a class="viewcode-back" href="../../../codedocs/footnotes.html#geniza.footnotes.models.Source">[docs]</a>
-<span class="k">class</span> <span class="nc">Source</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Source</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;a published or unpublished work related to geniza materials&quot;&quot;&quot;</span>
 
     <span class="n">authors</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">ManyToManyField</span><span class="p">(</span><span class="n">Creator</span><span class="p">,</span> <span class="n">through</span><span class="o">=</span><span class="n">Authorship</span><span class="p">)</span>
@@ -245,12 +245,12 @@
 
     <span class="n">objects</span> <span class="o">=</span> <span class="n">SourceQuerySet</span><span class="o">.</span><span class="n">as_manager</span><span class="p">()</span>
 
-    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+    <span class="k">class</span><span class="w"> </span><span class="nc">Meta</span><span class="p">:</span>
         <span class="c1"># set default order to title, year for now since first-author order</span>
         <span class="c1"># requires queryset annotation</span>
         <span class="n">ordering</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;title&quot;</span><span class="p">,</span> <span class="s2">&quot;year&quot;</span><span class="p">]</span>
 
-    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Method used for for internal/data admin use.</span>
 <span class="sd">        Please use the `display` or `formatted_display` methods for public display.&quot;&quot;&quot;</span>
         <span class="c1"># Append volume for unpublished</span>
@@ -262,14 +262,14 @@
 
 <div class="viewcode-block" id="Source.all_authors">
 <a class="viewcode-back" href="../../../codedocs/footnotes.html#geniza.footnotes.models.Source.all_authors">[docs]</a>
-    <span class="k">def</span> <span class="nf">all_authors</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">all_authors</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;semi-colon delimited list of authors in order&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="s2">&quot;; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">creator</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">authorship_set</span><span class="o">.</span><span class="n">all</span><span class="p">()])</span></div>
 
 
 <div class="viewcode-block" id="Source.all_languages">
 <a class="viewcode-back" href="../../../codedocs/footnotes.html#geniza.footnotes.models.Source.all_languages">[docs]</a>
-    <span class="k">def</span> <span class="nf">all_languages</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">all_languages</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;comma-delimited list of languages, in parentheses, used for the translation selector&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">languages</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
             <span class="k">return</span> <span class="s2">&quot;(in </span><span class="si">%s</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
@@ -280,7 +280,7 @@
 
 <div class="viewcode-block" id="Source.formatted_display">
 <a class="viewcode-back" href="../../../codedocs/footnotes.html#geniza.footnotes.models.Source.formatted_display">[docs]</a>
-    <span class="k">def</span> <span class="nf">formatted_display</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">extra_fields</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">formatted_display</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">extra_fields</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Format source for display; used on document scholarship page.</span>
 <span class="sd">        To omit publisher, place_published, and page_range fields,</span>
 <span class="sd">        specify `extra_fields=False`.&quot;&quot;&quot;</span>
@@ -481,7 +481,7 @@
 
 <div class="viewcode-block" id="Source.display">
 <a class="viewcode-back" href="../../../codedocs/footnotes.html#geniza.footnotes.models.Source.display">[docs]</a>
-    <span class="k">def</span> <span class="nf">display</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">display</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;strip HTML tags from formatted display&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">strip_tags</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">formatted_display</span><span class="p">(</span><span class="n">extra_fields</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span></div>
 
@@ -489,7 +489,7 @@
 <div class="viewcode-block" id="Source.get_volume_from_shelfmark">
 <a class="viewcode-back" href="../../../codedocs/footnotes.html#geniza.footnotes.models.Source.get_volume_from_shelfmark">[docs]</a>
     <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">get_volume_from_shelfmark</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">shelfmark</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_volume_from_shelfmark</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">shelfmark</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Given a shelfmark, get our volume label. This logic was determined in</span>
 <span class="sd">        migration 0011_split_goitein_typedtexts.py</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -502,7 +502,7 @@
 
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">uri</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">uri</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate a URI for this source to be used in transcription annotations,</span>
 <span class="sd">        in order to filter them by associated source&quot;&quot;&quot;</span>
         <span class="c1"># TODO: add a minimal view with json representation of the source so that this uri resolves</span>
@@ -512,7 +512,7 @@
 <div class="viewcode-block" id="Source.id_from_uri">
 <a class="viewcode-back" href="../../../codedocs/footnotes.html#geniza.footnotes.models.Source.id_from_uri">[docs]</a>
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">id_from_uri</span><span class="p">(</span><span class="n">uri</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">id_from_uri</span><span class="p">(</span><span class="n">uri</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Given a URi for a source (as used in transcription annotations), return</span>
 <span class="sd">        the source id&quot;&quot;&quot;</span>
         <span class="c1"># TODO: Use resolve() when the json source view exists</span>
@@ -523,7 +523,7 @@
 <div class="viewcode-block" id="Source.from_uri">
 <a class="viewcode-back" href="../../../codedocs/footnotes.html#geniza.footnotes.models.Source.from_uri">[docs]</a>
     <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">from_uri</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">uri</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_uri</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">uri</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Given a URI for a Source (as used in transcription annotations), return the Source</span>
 <span class="sd">        object matching the pk&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">pk</span><span class="o">=</span><span class="n">Source</span><span class="o">.</span><span class="n">id_from_uri</span><span class="p">(</span><span class="n">uri</span><span class="p">))</span></div>
@@ -533,10 +533,10 @@
 
 <div class="viewcode-block" id="FootnoteQuerySet">
 <a class="viewcode-back" href="../../../codedocs/footnotes.html#geniza.footnotes.models.FootnoteQuerySet">[docs]</a>
-<span class="k">class</span> <span class="nc">FootnoteQuerySet</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">QuerySet</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">FootnoteQuerySet</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">QuerySet</span><span class="p">):</span>
 <div class="viewcode-block" id="FootnoteQuerySet.includes_footnote">
 <a class="viewcode-back" href="../../../codedocs/footnotes.html#geniza.footnotes.models.FootnoteQuerySet.includes_footnote">[docs]</a>
-    <span class="k">def</span> <span class="nf">includes_footnote</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">includes_footnote</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if the current queryset includes a match for the</span>
 <span class="sd">        specified footnote. Matches are made by comparing content source,</span>
 <span class="sd">        location, document relation type, and notes.</span>
@@ -558,14 +558,14 @@
 
 <div class="viewcode-block" id="FootnoteQuerySet.editions">
 <a class="viewcode-back" href="../../../codedocs/footnotes.html#geniza.footnotes.models.FootnoteQuerySet.editions">[docs]</a>
-    <span class="k">def</span> <span class="nf">editions</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">editions</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Filter to all footnotes that provide editions/transcriptions.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">doc_relation__contains</span><span class="o">=</span><span class="n">Footnote</span><span class="o">.</span><span class="n">EDITION</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="FootnoteQuerySet.metadata_prefetch">
 <a class="viewcode-back" href="../../../codedocs/footnotes.html#geniza.footnotes.models.FootnoteQuerySet.metadata_prefetch">[docs]</a>
-    <span class="k">def</span> <span class="nf">metadata_prefetch</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">metadata_prefetch</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="s2">&quot;prefetch source, source authors, and content object&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">select_related</span><span class="p">(</span><span class="s2">&quot;source&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">prefetch_related</span><span class="p">(</span>
             <span class="s2">&quot;content_object&quot;</span><span class="p">,</span> <span class="s2">&quot;source__authorship_set__creator&quot;</span>
@@ -576,7 +576,7 @@
 
 <div class="viewcode-block" id="Footnote">
 <a class="viewcode-back" href="../../../codedocs/footnotes.html#geniza.footnotes.models.Footnote">[docs]</a>
-<span class="k">class</span> <span class="nc">Footnote</span><span class="p">(</span><span class="n">TrackChangesModel</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Footnote</span><span class="p">(</span><span class="n">TrackChangesModel</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;a footnote that links a :class:`~geniza.corpus.models.Document` to a :class:`Source`&quot;&quot;&quot;</span>
 
     <span class="n">source</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">ForeignKey</span><span class="p">(</span><span class="n">Source</span><span class="p">,</span> <span class="n">on_delete</span><span class="o">=</span><span class="n">models</span><span class="o">.</span><span class="n">CASCADE</span><span class="p">)</span>
@@ -644,7 +644,7 @@
     <span class="c1"># replace default queryset with customized version</span>
     <span class="n">objects</span> <span class="o">=</span> <span class="n">FootnoteQuerySet</span><span class="o">.</span><span class="n">as_manager</span><span class="p">()</span>
 
-    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+    <span class="k">class</span><span class="w"> </span><span class="nc">Meta</span><span class="p">:</span>
         <span class="n">ordering</span> <span class="o">=</span> <span class="p">[</span>
             <span class="s2">&quot;source&quot;</span><span class="p">,</span>
             <span class="c1"># sort footnote with empty locations after footnote with location</span>
@@ -668,7 +668,7 @@
             <span class="p">),</span>
         <span class="p">]</span>
 
-    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">choices</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">DOCUMENT_RELATION_TYPES</span><span class="p">)</span>
 
         <span class="n">rel</span> <span class="o">=</span> <span class="p">(</span>
@@ -679,7 +679,7 @@
 
 <div class="viewcode-block" id="Footnote.display">
 <a class="viewcode-back" href="../../../codedocs/footnotes.html#geniza.footnotes.models.Footnote.display">[docs]</a>
-    <span class="k">def</span> <span class="nf">display</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">display</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;format footnote for display; used on document detail page</span>
 <span class="sd">        and metadata export for old pgp site&quot;&quot;&quot;</span>
         <span class="c1"># source, location. notes.</span>
@@ -696,7 +696,7 @@
 
 <div class="viewcode-block" id="Footnote.has_url">
 <a class="viewcode-back" href="../../../codedocs/footnotes.html#geniza.footnotes.models.Footnote.has_url">[docs]</a>
-    <span class="k">def</span> <span class="nf">has_url</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">has_url</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Admin display field indicating if footnote has a url.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="nb">bool</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="p">)</span></div>
 
@@ -705,7 +705,7 @@
     <span class="n">has_url</span><span class="o">.</span><span class="n">admin_order_field</span> <span class="o">=</span> <span class="s2">&quot;url&quot;</span>
 
     <span class="nd">@cached_property</span>
-    <span class="k">def</span> <span class="nf">content_html</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">content_html</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;content as html, if available; returns a dictionary of lists.</span>
 <span class="sd">        keys are canvas ids, list is html content.&quot;&quot;&quot;</span>
         <span class="c1"># NOTE: previously only returned if type was digital edition;</span>
@@ -729,7 +729,7 @@
         <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">html_content</span><span class="p">)</span>
 
     <span class="nd">@cached_property</span>
-    <span class="k">def</span> <span class="nf">content_html_str</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">content_html_str</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="s2">&quot;content as a single string of html, if available&quot;</span>
         <span class="c1"># content html is a dict; values are lists of html content</span>
         <span class="n">content_html</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">content_html</span>
@@ -743,7 +743,7 @@
             <span class="p">)</span>
 
     <span class="nd">@cached_property</span>
-    <span class="k">def</span> <span class="nf">content_text_canvases</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">content_text_canvases</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;content as a list of strings, one per canvas&quot;&quot;&quot;</span>
         <span class="c1"># used for regex search indexing</span>
         <span class="n">content_html</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">content_html</span>
@@ -763,7 +763,7 @@
 <div class="viewcode-block" id="Footnote.explicit_line_numbers">
 <a class="viewcode-back" href="../../../codedocs/footnotes.html#geniza.footnotes.models.Footnote.explicit_line_numbers">[docs]</a>
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">explicit_line_numbers</span><span class="p">(</span><span class="n">html</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">explicit_line_numbers</span><span class="p">(</span><span class="n">html</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;add explicit line numbers to passed HTML (in value attributes of ol &gt; li)&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">html</span><span class="p">:</span>  <span class="c1"># don&#39;t attempt to parse if html is not set</span>
             <span class="n">parser</span> <span class="o">=</span> <span class="n">HTMLLineNumberParser</span><span class="p">()</span>
@@ -772,7 +772,7 @@
 
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">content_text</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">content_text</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="s2">&quot;content as plain text, if available&quot;</span>
         <span class="c1"># use beautiful soup to parse html content and return as text</span>
         <span class="c1"># (strips tags and convert entities to plain text equivalent)</span>
@@ -782,7 +782,7 @@
 
 <div class="viewcode-block" id="Footnote.iiif_annotation_content">
 <a class="viewcode-back" href="../../../codedocs/footnotes.html#geniza.footnotes.models.Footnote.iiif_annotation_content">[docs]</a>
-    <span class="k">def</span> <span class="nf">iiif_annotation_content</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">iiif_annotation_content</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return transcription content from this footnote (if any)</span>
 <span class="sd">        as a IIIF annotation resource that can be associated with a canvas.</span>
 <span class="sd">        &quot;&quot;&quot;</span>

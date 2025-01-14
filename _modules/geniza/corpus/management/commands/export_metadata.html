@@ -4,10 +4,10 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>geniza.corpus.management.commands.export_metadata &#8212; Princeton Geniza Project 4.18.2 documentation</title>
-    <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css?v=d1102ebc" />
+    <title>geniza.corpus.management.commands.export_metadata &#8212; Princeton Geniza Project 4.19.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css?v=5ecbeea2" />
     <link rel="stylesheet" type="text/css" href="../../../../../_static/alabaster.css?v=12dfc556" />
-    <script src="../../../../../_static/documentation_options.js?v=39372dd1"></script>
+    <script src="../../../../../_static/documentation_options.js?v=db6269fb"></script>
     <script src="../../../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="../../../../../genindex.html" />
@@ -30,23 +30,23 @@
           <div class="body" role="main">
             
   <h1>Source code for geniza.corpus.management.commands.export_metadata</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">import</span> <span class="nn">time</span>
-<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">cached_property</span>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">cached_property</span>
 
-<span class="kn">from</span> <span class="nn">django.conf</span> <span class="kn">import</span> <span class="n">settings</span>
-<span class="kn">from</span> <span class="nn">django.contrib.admin.models</span> <span class="kn">import</span> <span class="n">LogEntry</span>
-<span class="kn">from</span> <span class="nn">django.contrib.auth.models</span> <span class="kn">import</span> <span class="n">User</span>
-<span class="kn">from</span> <span class="nn">django.core.management.base</span> <span class="kn">import</span> <span class="n">CommandError</span>
-<span class="kn">from</span> <span class="nn">django.utils</span> <span class="kn">import</span> <span class="n">timezone</span>
-<span class="kn">from</span> <span class="nn">git</span> <span class="kn">import</span> <span class="n">GitCommandError</span><span class="p">,</span> <span class="n">Repo</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">django.conf</span><span class="w"> </span><span class="kn">import</span> <span class="n">settings</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">django.contrib.admin.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">LogEntry</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">django.contrib.auth.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">User</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">django.core.management.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">CommandError</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">django.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">timezone</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">git</span><span class="w"> </span><span class="kn">import</span> <span class="n">GitCommandError</span><span class="p">,</span> <span class="n">Repo</span>
 
-<span class="kn">from</span> <span class="nn">geniza.common.utils</span> <span class="kn">import</span> <span class="n">Timer</span><span class="p">,</span> <span class="n">Timerable</span>
-<span class="kn">from</span> <span class="nn">geniza.corpus.annotation_export</span> <span class="kn">import</span> <span class="n">generate_coauthor_commit</span>
-<span class="kn">from</span> <span class="nn">geniza.corpus.management.lastrun_command</span> <span class="kn">import</span> <span class="n">LastRunCommand</span>
-<span class="kn">from</span> <span class="nn">geniza.corpus.metadata_export</span> <span class="kn">import</span> <span class="n">PublicDocumentExporter</span><span class="p">,</span> <span class="n">PublicFragmentExporter</span>
-<span class="kn">from</span> <span class="nn">geniza.entities.metadata_export</span> <span class="kn">import</span> <span class="n">PublicPersonExporter</span><span class="p">,</span> <span class="n">PublicPlaceExporter</span>
-<span class="kn">from</span> <span class="nn">geniza.footnotes.metadata_export</span> <span class="kn">import</span> <span class="p">(</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">geniza.common.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">Timer</span><span class="p">,</span> <span class="n">Timerable</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">geniza.corpus.annotation_export</span><span class="w"> </span><span class="kn">import</span> <span class="n">generate_coauthor_commit</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">geniza.corpus.management.lastrun_command</span><span class="w"> </span><span class="kn">import</span> <span class="n">LastRunCommand</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">geniza.corpus.metadata_export</span><span class="w"> </span><span class="kn">import</span> <span class="n">PublicDocumentExporter</span><span class="p">,</span> <span class="n">PublicFragmentExporter</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">geniza.entities.metadata_export</span><span class="w"> </span><span class="kn">import</span> <span class="n">PublicPersonExporter</span><span class="p">,</span> <span class="n">PublicPlaceExporter</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">geniza.footnotes.metadata_export</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">PublicFootnoteExporter</span><span class="p">,</span>
     <span class="n">PublicSourceExporter</span><span class="p">,</span>
 <span class="p">)</span>
@@ -54,7 +54,7 @@
 
 <div class="viewcode-block" id="MetadataExportRepo">
 <a class="viewcode-back" href="../../../../../codedocs/corpus.html#geniza.corpus.management.commands.export_metadata.MetadataExportRepo">[docs]</a>
-<span class="k">class</span> <span class="nc">MetadataExportRepo</span><span class="p">(</span><span class="n">Timerable</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">MetadataExportRepo</span><span class="p">(</span><span class="n">Timerable</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Utility class with functionality for generating metadata exports</span>
 <span class="sd">    and commiting to git.&quot;&quot;&quot;</span>
 
@@ -76,7 +76,7 @@
         <span class="s2">&quot;places&quot;</span><span class="p">:</span> <span class="n">PublicPlaceExporter</span><span class="p">,</span>
     <span class="p">}</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">local_path</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">remote_url</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">print_func</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">progress</span><span class="o">=</span><span class="kc">True</span>
     <span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_local_path</span> <span class="o">=</span> <span class="n">local_path</span>
@@ -98,7 +98,7 @@
             <span class="p">)</span>
 
     <span class="nd">@cached_property</span>
-    <span class="k">def</span> <span class="nf">local_path</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">local_path</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_local_path</span> <span class="ow">or</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">local_path_key</span><span class="p">)):</span>
             <span class="k">raise</span> <span class="n">CommandError</span><span class="p">(</span>
                 <span class="sa">f</span><span class="s2">&quot;Please set </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">local_path_key</span><span class="si">}</span><span class="s2"> in local_settings.py or settings file.&quot;</span>
@@ -108,7 +108,7 @@
         <span class="p">)</span>
 
     <span class="nd">@cached_property</span>
-    <span class="k">def</span> <span class="nf">remote_url</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">remote_url</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_remote_url</span> <span class="ow">or</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">remote_url_key</span><span class="p">)):</span>
             <span class="k">raise</span> <span class="n">CommandError</span><span class="p">(</span>
                 <span class="sa">f</span><span class="s2">&quot;Please set </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">remote_url_key</span><span class="si">}</span><span class="s2"> in local_settings.py or settings file.&quot;</span>
@@ -116,7 +116,7 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_remote_url</span> <span class="ow">or</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">remote_url_key</span><span class="p">)</span>
 
     <span class="nd">@cached_property</span>
-    <span class="k">def</span> <span class="nf">path_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">path_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">odir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">local_path</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">repo_dir_data</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">odir</span><span class="p">):</span>
             <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">odir</span><span class="p">)</span>
@@ -124,37 +124,37 @@
 
 <div class="viewcode-block" id="MetadataExportRepo.get_path_csv">
 <a class="viewcode-back" href="../../../../../codedocs/corpus.html#geniza.corpus.management.commands.export_metadata.MetadataExportRepo.get_path_csv">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_path_csv</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">docname</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_path_csv</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">docname</span><span class="p">):</span>
         <span class="s2">&quot;generate export path based on export type&quot;</span>
         <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">path_data</span><span class="p">,</span> <span class="n">docname</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">ext_csv</span><span class="p">)</span></div>
 
 
     <span class="nd">@cached_property</span>
-    <span class="k">def</span> <span class="nf">path_documents_csv</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">path_documents_csv</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_path_csv</span><span class="p">(</span><span class="s2">&quot;documents&quot;</span><span class="p">)</span>
 
     <span class="nd">@cached_property</span>
-    <span class="k">def</span> <span class="nf">path_footnotes_csv</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">path_footnotes_csv</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_path_csv</span><span class="p">(</span><span class="s2">&quot;footnotes&quot;</span><span class="p">)</span>
 
     <span class="nd">@cached_property</span>
-    <span class="k">def</span> <span class="nf">path_sources_csv</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">path_sources_csv</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_path_csv</span><span class="p">(</span><span class="s2">&quot;sources&quot;</span><span class="p">)</span>
 
     <span class="nd">@cached_property</span>
-    <span class="k">def</span> <span class="nf">path_fragments_csv</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">path_fragments_csv</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_path_csv</span><span class="p">(</span><span class="s2">&quot;fragments&quot;</span><span class="p">)</span>
 
     <span class="nd">@cached_property</span>
-    <span class="k">def</span> <span class="nf">path_people_csv</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">path_people_csv</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_path_csv</span><span class="p">(</span><span class="s2">&quot;people&quot;</span><span class="p">)</span>
 
     <span class="nd">@cached_property</span>
-    <span class="k">def</span> <span class="nf">path_places_csv</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">path_places_csv</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_path_csv</span><span class="p">(</span><span class="s2">&quot;places&quot;</span><span class="p">)</span>
 
     <span class="nd">@cached_property</span>
-    <span class="k">def</span> <span class="nf">paths</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">paths</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="p">[</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">path_documents_csv</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">path_footnotes_csv</span><span class="p">,</span>
@@ -170,7 +170,7 @@
 
 <div class="viewcode-block" id="MetadataExportRepo.export_data">
 <a class="viewcode-back" href="../../../../../codedocs/corpus.html#geniza.corpus.management.commands.export_metadata.MetadataExportRepo.export_data">[docs]</a>
-    <span class="k">def</span> <span class="nf">export_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lastrun</span><span class="p">,</span> <span class="n">sync</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">export_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lastrun</span><span class="p">,</span> <span class="n">sync</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="s2">&quot;generate all exports&quot;</span>
 
         <span class="c1"># pull any remote changes before making any local modifications</span>
@@ -208,7 +208,7 @@
 
 <div class="viewcode-block" id="MetadataExportRepo.get_modifying_users">
 <a class="viewcode-back" href="../../../../../codedocs/corpus.html#geniza.corpus.management.commands.export_metadata.MetadataExportRepo.get_modifying_users">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_modifying_users</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">log_entries</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_modifying_users</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">log_entries</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Given a :class:`~django.contrib.admin.models.LogEentry` queryset,</span>
 <span class="sd">        return a :class:`~django.contrib.admin.models.User` queryset</span>
 <span class="sd">        for the set of users who associated with any of the log entries.&quot;&quot;&quot;</span>
@@ -225,7 +225,7 @@
 
 <div class="viewcode-block" id="MetadataExportRepo.repo_origin">
 <a class="viewcode-back" href="../../../../../codedocs/corpus.html#geniza.corpus.management.commands.export_metadata.MetadataExportRepo.repo_origin">[docs]</a>
-    <span class="k">def</span> <span class="nf">repo_origin</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">repo_origin</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="s2">&quot;check if git repository has a remote origin&quot;</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">repo</span><span class="o">.</span><span class="n">remote</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;origin&quot;</span><span class="p">)</span>
@@ -235,7 +235,7 @@
 
 <div class="viewcode-block" id="MetadataExportRepo.repo_pull">
 <a class="viewcode-back" href="../../../../../codedocs/corpus.html#geniza.corpus.management.commands.export_metadata.MetadataExportRepo.repo_pull">[docs]</a>
-    <span class="k">def</span> <span class="nf">repo_pull</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">repo_pull</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="s2">&quot;pull changes from remote&quot;</span>
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">timer</span><span class="p">(</span><span class="s2">&quot;Pulling repository&quot;</span><span class="p">):</span>
             <span class="n">origin</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">repo_origin</span><span class="p">()</span>
@@ -245,7 +245,7 @@
 
 <div class="viewcode-block" id="MetadataExportRepo.repo_add">
 <a class="viewcode-back" href="../../../../../codedocs/corpus.html#geniza.corpus.management.commands.export_metadata.MetadataExportRepo.repo_add">[docs]</a>
-    <span class="k">def</span> <span class="nf">repo_add</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">repo_add</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="s2">&quot;add modified files to git&quot;</span>
         <span class="n">files_to_add</span> <span class="o">=</span> <span class="p">[</span><span class="n">filename</span><span class="p">]</span> <span class="k">if</span> <span class="n">filename</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">paths</span>
         <span class="n">path</span> <span class="o">=</span> <span class="n">filename</span> <span class="ow">or</span> <span class="s2">&quot;any changes&quot;</span>
@@ -257,7 +257,7 @@
 
 <div class="viewcode-block" id="MetadataExportRepo.repo_commit">
 <a class="viewcode-back" href="../../../../../codedocs/corpus.html#geniza.corpus.management.commands.export_metadata.MetadataExportRepo.repo_commit">[docs]</a>
-    <span class="k">def</span> <span class="nf">repo_commit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">modifying_users</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">msg</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">repo_commit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">modifying_users</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">msg</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="s2">&quot;commit changes to local git repository&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">repo</span><span class="o">.</span><span class="n">is_dirty</span><span class="p">():</span>  <span class="c1"># only commit if there are changes</span>
             <span class="n">commit_msg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_commit_message</span><span class="p">(</span><span class="n">modifying_users</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span>
@@ -266,7 +266,7 @@
 
 <div class="viewcode-block" id="MetadataExportRepo.get_commit_message">
 <a class="viewcode-back" href="../../../../../codedocs/corpus.html#geniza.corpus.management.commands.export_metadata.MetadataExportRepo.get_commit_message">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_commit_message</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">modifying_users</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">msg</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_commit_message</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">modifying_users</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">msg</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct a commit message. Uses the default commit with</span>
 <span class="sd">        optional addendum specified by `msg` parameter,</span>
 <span class="sd">        constructs a co-author commit if there are any modifying users,</span>
@@ -286,7 +286,7 @@
 
 <div class="viewcode-block" id="MetadataExportRepo.repo_push">
 <a class="viewcode-back" href="../../../../../codedocs/corpus.html#geniza.corpus.management.commands.export_metadata.MetadataExportRepo.repo_push">[docs]</a>
-    <span class="k">def</span> <span class="nf">repo_push</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">repo_push</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="s2">&quot;push changes to remote git repository&quot;</span>
         <span class="c1"># push data updates</span>
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">timer</span><span class="p">(</span><span class="s2">&quot;Pushing any changes&quot;</span><span class="p">):</span>
@@ -297,7 +297,7 @@
 
 <div class="viewcode-block" id="MetadataExportRepo.sync_remote">
 <a class="viewcode-back" href="../../../../../codedocs/corpus.html#geniza.corpus.management.commands.export_metadata.MetadataExportRepo.sync_remote">[docs]</a>
-    <span class="k">def</span> <span class="nf">sync_remote</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">sync_remote</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="s2">&quot;synchronize with remote git repository&quot;</span>
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">timer</span><span class="p">(</span><span class="s2">&quot;Syncing metadata into remote repo&quot;</span><span class="p">):</span>
             <span class="c1"># NOTE: can&#39;t pull here because it errors if there are</span>
@@ -311,13 +311,13 @@
 
 <div class="viewcode-block" id="Command">
 <a class="viewcode-back" href="../../../../../codedocs/corpus.html#geniza.corpus.management.commands.export_metadata.Command">[docs]</a>
-<span class="k">class</span> <span class="nc">Command</span><span class="p">(</span><span class="n">LastRunCommand</span><span class="p">,</span> <span class="n">Timerable</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Command</span><span class="p">(</span><span class="n">LastRunCommand</span><span class="p">,</span> <span class="n">Timerable</span><span class="p">):</span>
     <span class="c1"># id for this script in the last run file info</span>
     <span class="n">script_id</span> <span class="o">=</span> <span class="s2">&quot;metadata-export&quot;</span>
 
 <div class="viewcode-block" id="Command.print">
 <a class="viewcode-back" href="../../../../../codedocs/corpus.html#geniza.corpus.management.commands.export_metadata.Command.print">[docs]</a>
-    <span class="k">def</span> <span class="nf">print</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">x</span><span class="p">,</span> <span class="o">**</span><span class="n">y</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">print</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">x</span><span class="p">,</span> <span class="o">**</span><span class="n">y</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        A stdout-friendly method of printing for manage.py commands</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -327,7 +327,7 @@
 
 <div class="viewcode-block" id="Command.add_arguments">
 <a class="viewcode-back" href="../../../../../codedocs/corpus.html#geniza.corpus.management.commands.export_metadata.Command.add_arguments">[docs]</a>
-    <span class="k">def</span> <span class="nf">add_arguments</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parser</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_arguments</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parser</span><span class="p">):</span>
         <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
             <span class="s2">&quot;-w&quot;</span><span class="p">,</span>
             <span class="s2">&quot;--write&quot;</span><span class="p">,</span>
@@ -361,7 +361,7 @@
 
 <div class="viewcode-block" id="Command.handle">
 <a class="viewcode-back" href="../../../../../codedocs/corpus.html#geniza.corpus.management.commands.export_metadata.Command.handle">[docs]</a>
-    <span class="k">def</span> <span class="nf">handle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">handle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">to_print</span> <span class="o">=</span> <span class="n">options</span><span class="p">[</span><span class="s2">&quot;verbosity&quot;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="mi">2</span>
 
         <span class="n">mrepo</span> <span class="o">=</span> <span class="n">MetadataExportRepo</span><span class="p">(</span>

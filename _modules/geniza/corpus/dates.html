@@ -4,10 +4,10 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>geniza.corpus.dates &#8212; Princeton Geniza Project 4.18.2 documentation</title>
-    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=d1102ebc" />
+    <title>geniza.corpus.dates &#8212; Princeton Geniza Project 4.19.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=5ecbeea2" />
     <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=12dfc556" />
-    <script src="../../../_static/documentation_options.js?v=39372dd1"></script>
+    <script src="../../../_static/documentation_options.js?v=db6269fb"></script>
     <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
@@ -32,24 +32,24 @@
   <h1>Source code for geniza.corpus.dates</h1><div class="highlight"><pre>
 <span></span><span class="c1"># methods to convert historical dates to standard dates</span>
 <span class="c1"># will be used for reporting and automatic conversion in admin</span>
-<span class="kn">import</span> <span class="nn">calendar</span>
-<span class="kn">import</span> <span class="nn">re</span>
-<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">date</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">calendar</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">date</span>
 
-<span class="kn">import</span> <span class="nn">convertdate</span>
-<span class="kn">from</span> <span class="nn">django.core.exceptions</span> <span class="kn">import</span> <span class="n">ValidationError</span>
-<span class="kn">from</span> <span class="nn">django.core.validators</span> <span class="kn">import</span> <span class="n">RegexValidator</span>
-<span class="kn">from</span> <span class="nn">django.db</span> <span class="kn">import</span> <span class="n">models</span>
-<span class="kn">from</span> <span class="nn">django.utils.formats</span> <span class="kn">import</span> <span class="n">date_format</span>
-<span class="kn">from</span> <span class="nn">django.utils.safestring</span> <span class="kn">import</span> <span class="n">mark_safe</span>
-<span class="kn">from</span> <span class="nn">unidecode</span> <span class="kn">import</span> <span class="n">unidecode</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">convertdate</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">django.core.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">ValidationError</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">django.core.validators</span><span class="w"> </span><span class="kn">import</span> <span class="n">RegexValidator</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">django.db</span><span class="w"> </span><span class="kn">import</span> <span class="n">models</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">django.utils.formats</span><span class="w"> </span><span class="kn">import</span> <span class="n">date_format</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">django.utils.safestring</span><span class="w"> </span><span class="kn">import</span> <span class="n">mark_safe</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">unidecode</span><span class="w"> </span><span class="kn">import</span> <span class="n">unidecode</span>
 
-<span class="kn">from</span> <span class="nn">geniza.common.models</span> <span class="kn">import</span> <span class="n">TrackChangesModel</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">geniza.common.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">TrackChangesModel</span>
 
 
 <div class="viewcode-block" id="Calendar">
 <a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.dates.Calendar">[docs]</a>
-<span class="k">class</span> <span class="nc">Calendar</span><span class="p">:</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Calendar</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Codes for supported calendars&quot;&quot;&quot;</span>
 
     <span class="c1">#: Hijri calendar (Islamic)</span>
@@ -71,7 +71,7 @@
 
 <div class="viewcode-block" id="PartialDate">
 <a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.dates.PartialDate">[docs]</a>
-<span class="k">class</span> <span class="nc">PartialDate</span><span class="p">:</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">PartialDate</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Simple partial date object to handle parsing and display of</span>
 <span class="sd">    dates in the format YYYY, YYYY-MM, or YYYY-MM-DD. Display format</span>
 <span class="sd">    is based on known precision of year, month, or day.&quot;&quot;&quot;</span>
@@ -81,7 +81,7 @@
     <span class="n">display_format</span> <span class="o">=</span> <span class="p">{</span>
         <span class="s2">&quot;year&quot;</span><span class="p">:</span> <span class="s2">&quot;Y&quot;</span><span class="p">,</span>
         <span class="s2">&quot;month&quot;</span><span class="p">:</span> <span class="s2">&quot;F Y&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;day&quot;</span><span class="p">:</span> <span class="s2">&quot;DATE_FORMAT&quot;</span><span class="p">,</span>  <span class="c1"># honors locale formatting</span>
+        <span class="s2">&quot;day&quot;</span><span class="p">:</span> <span class="s2">&quot;j F Y&quot;</span><span class="p">,</span>
     <span class="p">}</span>
     <span class="c1">#: ISO format based on date precision</span>
     <span class="n">iso_format</span> <span class="o">=</span> <span class="p">{</span>
@@ -92,7 +92,7 @@
     <span class="c1">#: numeric format for indexing and sorting</span>
     <span class="n">num_fmt</span> <span class="o">=</span> <span class="s2">&quot;%Y%m</span><span class="si">%d</span><span class="s2">&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
         <span class="c1"># TODO: probably still need more validation/error handling here</span>
         <span class="c1"># for real world use</span>
         <span class="n">date_parts</span> <span class="o">=</span> <span class="nb">str</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;-&quot;</span><span class="p">)</span>
@@ -106,16 +106,16 @@
         <span class="c1"># cast to integer and convert to datetime.date</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">date</span> <span class="o">=</span> <span class="n">date</span><span class="p">(</span><span class="o">*</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">date_parts</span><span class="p">])</span>
 
-    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="c1"># format the date based on known precision</span>
         <span class="k">return</span> <span class="n">date_format</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">date</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">display_format</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">precision</span><span class="p">],</span> <span class="n">use_l10n</span><span class="o">=</span><span class="kc">True</span>
         <span class="p">)</span>
 
-    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
         <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;PartialDate(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">isoformat</span><span class="p">()</span><span class="si">}</span><span class="s2">)&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">PartialDate</span><span class="p">):</span>
             <span class="c1"># don&#39;t attempt to compare against unrelated types</span>
             <span class="k">return</span> <span class="bp">NotImplemented</span>
@@ -125,7 +125,7 @@
 
 <div class="viewcode-block" id="PartialDate.isoformat">
 <a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.dates.PartialDate.isoformat">[docs]</a>
-    <span class="k">def</span> <span class="nf">isoformat</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;min&quot;</span><span class="p">,</span> <span class="n">fmt</span><span class="o">=</span><span class="s2">&quot;precision&quot;</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">isoformat</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;min&quot;</span><span class="p">,</span> <span class="n">fmt</span><span class="o">=</span><span class="s2">&quot;precision&quot;</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Display partial date in ISO format. By default, will display</span>
 <span class="sd">        YYYY, YYYY-MM, or YYYY-MM-DD according to known precision. If min</span>
 <span class="sd">        or max is requested, will display YYYY-MM-DD for earliest or latest</span>
@@ -163,7 +163,7 @@
 
 <div class="viewcode-block" id="PartialDate.numeric_format">
 <a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.dates.PartialDate.numeric_format">[docs]</a>
-    <span class="k">def</span> <span class="nf">numeric_format</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;min&quot;</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">numeric_format</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;min&quot;</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot; &quot;Date in numeric format for sorting; max or min for unknowns.</span>
 <span class="sd">        See :meth:`isoformat` for more details.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">isoformat</span><span class="p">(</span><span class="n">mode</span><span class="p">,</span> <span class="s2">&quot;numeric&quot;</span><span class="p">)</span></div>
@@ -172,7 +172,7 @@
 <div class="viewcode-block" id="PartialDate.get_date_range">
 <a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.dates.PartialDate.get_date_range">[docs]</a>
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">get_date_range</span><span class="p">(</span><span class="n">old_range</span><span class="p">,</span> <span class="n">new_range</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_date_range</span><span class="p">(</span><span class="n">old_range</span><span class="p">,</span> <span class="n">new_range</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute the union (widest possible date range) between two PartialDate ranges.&quot;&quot;&quot;</span>
         <span class="n">minmax</span> <span class="o">=</span> <span class="n">old_range</span>
         <span class="p">[</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_range</span>
@@ -197,7 +197,7 @@
 
 <div class="viewcode-block" id="DocumentDateMixin">
 <a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.dates.DocumentDateMixin">[docs]</a>
-<span class="k">class</span> <span class="nc">DocumentDateMixin</span><span class="p">(</span><span class="n">TrackChangesModel</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">DocumentDateMixin</span><span class="p">(</span><span class="n">TrackChangesModel</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Mixin for document date fields (original and standardized),</span>
 <span class="sd">    and related logic for displaying, converting,a nd validating dates.&quot;&quot;&quot;</span>
 
@@ -242,11 +242,11 @@
         <span class="n">validators</span><span class="o">=</span><span class="p">[</span><span class="n">RegexValidator</span><span class="p">(</span><span class="n">re_date_format</span><span class="p">)],</span>
     <span class="p">)</span>
 
-    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+    <span class="k">class</span><span class="w"> </span><span class="nc">Meta</span><span class="p">:</span>
         <span class="n">abstract</span> <span class="o">=</span> <span class="kc">True</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">original_date</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">original_date</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate formatted display for the document&#39;s original/historical date&quot;&quot;&quot;</span>
         <span class="c1"># combine date and calendar or return empty string</span>
         <span class="k">return</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
@@ -254,7 +254,7 @@
         <span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">document_date</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">document_date</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate formatted display of combined original and standardized dates&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">doc_date_standard</span><span class="p">:</span>
             <span class="n">standardized_date</span> <span class="o">=</span> <span class="n">standard_date_display</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">doc_date_standard</span><span class="p">)</span>
@@ -277,7 +277,7 @@
 
 <div class="viewcode-block" id="DocumentDateMixin.clean">
 <a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.dates.DocumentDateMixin.clean">[docs]</a>
-    <span class="k">def</span> <span class="nf">clean</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">clean</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Require doc_date_original and doc_date_calendar to be set</span>
 <span class="sd">        if either one is present.</span>
@@ -290,7 +290,7 @@
 
 <div class="viewcode-block" id="DocumentDateMixin.standardize_date">
 <a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.dates.DocumentDateMixin.standardize_date">[docs]</a>
-    <span class="k">def</span> <span class="nf">standardize_date</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">update</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">standardize_date</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">update</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Convert the document&#39;s original date to a standardized date, if possible.</span>
 <span class="sd">        If update is requested, will store the converted value on :attr:`doc_date_standard`</span>
@@ -310,7 +310,7 @@
     <span class="n">_parsed_date</span> <span class="o">=</span> <span class="p">{}</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">parsed_date</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">parsed_date</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Parse standard date (if set) and return as dictionary</span>
 <span class="sd">        of start/end :class:`PartialDate` objects&quot;&quot;&quot;</span>
         <span class="c1"># for efficiency, parse and cache standard date into</span>
@@ -338,14 +338,14 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parsed_date</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">start_date</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">start_date</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return the start date of the document&#39;s standardized date or date range, if set.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">parsed_date</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;start&quot;</span><span class="p">)</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">end_date</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">end_date</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return the end date of the document&#39;s standardized date or date range, if set.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -353,7 +353,7 @@
 
 <div class="viewcode-block" id="DocumentDateMixin.solr_date_range">
 <a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.dates.DocumentDateMixin.solr_date_range">[docs]</a>
-    <span class="k">def</span> <span class="nf">solr_date_range</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">solr_date_range</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return a Solr date range for the document&#39;s standardized date.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -388,7 +388,7 @@
 
 <div class="viewcode-block" id="get_hebrew_month">
 <a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.dates.get_hebrew_month">[docs]</a>
-<span class="k">def</span> <span class="nf">get_hebrew_month</span><span class="p">(</span><span class="n">month_name</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_hebrew_month</span><span class="p">(</span><span class="n">month_name</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert Hebrew month name to month number.</span>
 <span class="sd">    Supports local month name aliases for alternate spellings.&quot;&quot;&quot;</span>
     <span class="c1"># use unidecode to simplify handling with/without accents</span>
@@ -415,7 +415,7 @@
 
 <div class="viewcode-block" id="get_calendar_month">
 <a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.dates.get_calendar_month">[docs]</a>
-<span class="k">def</span> <span class="nf">get_calendar_month</span><span class="p">(</span><span class="n">convertdate_module</span><span class="p">,</span> <span class="n">month</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_calendar_month</span><span class="p">(</span><span class="n">convertdate_module</span><span class="p">,</span> <span class="n">month</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot; &quot;Convert month name to month number for the specified calendar.</span>
 
 <span class="sd">    :param convertdate_module: `convertdate` calendar module to use</span>
@@ -431,7 +431,7 @@
 
 <div class="viewcode-block" id="convert_hebrew_date">
 <a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.dates.convert_hebrew_date">[docs]</a>
-<span class="k">def</span> <span class="nf">convert_hebrew_date</span><span class="p">(</span><span class="n">historic_date</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">convert_hebrew_date</span><span class="p">(</span><span class="n">historic_date</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert a date in the Hebrew Anno Mundi calendar to the Julian or Gregorian calendar&quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">standardize_date</span><span class="p">(</span><span class="n">historic_date</span><span class="p">,</span> <span class="n">Calendar</span><span class="o">.</span><span class="n">ANNO_MUNDI</span><span class="p">)</span></div>
 
@@ -439,7 +439,7 @@
 
 <div class="viewcode-block" id="convert_seleucid_date">
 <a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.dates.convert_seleucid_date">[docs]</a>
-<span class="k">def</span> <span class="nf">convert_seleucid_date</span><span class="p">(</span><span class="n">historic_date</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">convert_seleucid_date</span><span class="p">(</span><span class="n">historic_date</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert a date in the Greek Seleucid calendar to the Julian or Gregorian calendar&quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">standardize_date</span><span class="p">(</span><span class="n">historic_date</span><span class="p">,</span> <span class="n">Calendar</span><span class="o">.</span><span class="n">SELEUCID</span><span class="p">)</span></div>
 
@@ -447,7 +447,7 @@
 
 <div class="viewcode-block" id="convert_islamic_date">
 <a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.dates.convert_islamic_date">[docs]</a>
-<span class="k">def</span> <span class="nf">convert_islamic_date</span><span class="p">(</span><span class="n">historic_date</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">convert_islamic_date</span><span class="p">(</span><span class="n">historic_date</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert a date in the Islamic Hijri calendar to the Julian or Gregorian calendar&quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">standardize_date</span><span class="p">(</span><span class="n">historic_date</span><span class="p">,</span> <span class="n">Calendar</span><span class="o">.</span><span class="n">HIJRI</span><span class="p">)</span></div>
 
@@ -465,7 +465,7 @@
 
 <div class="viewcode-block" id="standardize_date">
 <a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.dates.standardize_date">[docs]</a>
-<span class="k">def</span> <span class="nf">standardize_date</span><span class="p">(</span><span class="n">historic_date</span><span class="p">,</span> <span class="n">calendar</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">standardize_date</span><span class="p">(</span><span class="n">historic_date</span><span class="p">,</span> <span class="n">calendar</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    convert hebrew date in text format to standard date range</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -509,7 +509,7 @@
 
 <div class="viewcode-block" id="get_calendar_date">
 <a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.dates.get_calendar_date">[docs]</a>
-<span class="k">def</span> <span class="nf">get_calendar_date</span><span class="p">(</span><span class="n">converter</span><span class="p">,</span> <span class="n">year</span><span class="p">,</span> <span class="n">month</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">day</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_calendar_date</span><span class="p">(</span><span class="n">converter</span><span class="p">,</span> <span class="n">year</span><span class="p">,</span> <span class="n">month</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">day</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Convert a date from a supported calendar and return</span>
 <span class="sd">    as a :class:`datetime.date` or tuple of dates for a date range,</span>
@@ -577,7 +577,7 @@
 
 <div class="viewcode-block" id="display_date_range">
 <a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.dates.display_date_range">[docs]</a>
-<span class="k">def</span> <span class="nf">display_date_range</span><span class="p">(</span><span class="n">earliest</span><span class="p">,</span> <span class="n">latest</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">display_date_range</span><span class="p">(</span><span class="n">earliest</span><span class="p">,</span> <span class="n">latest</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    display a date range or single date in a isoformat</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -609,7 +609,7 @@
 
 <div class="viewcode-block" id="get_islamic_month">
 <a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.dates.get_islamic_month">[docs]</a>
-<span class="k">def</span> <span class="nf">get_islamic_month</span><span class="p">(</span><span class="n">month_name</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_islamic_month</span><span class="p">(</span><span class="n">month_name</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert Islamic month name to month number; works</span>
 <span class="sd">    with or without accents, and supports local month-name overrides.&quot;&quot;&quot;</span>
     <span class="n">month_name</span> <span class="o">=</span> <span class="n">unidecode</span><span class="p">(</span><span class="n">month_name</span><span class="p">)</span>
@@ -619,7 +619,7 @@
 
 <div class="viewcode-block" id="standard_date_display">
 <a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.dates.standard_date_display">[docs]</a>
-<span class="k">def</span> <span class="nf">standard_date_display</span><span class="p">(</span><span class="n">standard_date</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">standard_date_display</span><span class="p">(</span><span class="n">standard_date</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Display a standardized CE date in human readable format.&quot;&quot;&quot;</span>
     <span class="c1"># bail out if there is nothing to display</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">standard_date</span><span class="p">:</span>
@@ -632,7 +632,7 @@
     <span class="c1"># join dates with en-dash if more than one;</span>
     <span class="c1"># add CE to the end to make calendar system explicit</span>
     <span class="k">try</span><span class="p">:</span>
-        <span class="k">return</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> CE&quot;</span> <span class="o">%</span> <span class="s2">&quot; – &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">PartialDate</span><span class="p">(</span><span class="n">d</span><span class="p">))</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">dates</span><span class="p">)</span>
+        <span class="k">return</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> CE&quot;</span> <span class="o">%</span> <span class="s2">&quot;–&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">PartialDate</span><span class="p">(</span><span class="n">d</span><span class="p">))</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">dates</span><span class="p">)</span>
     <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
         <span class="c1"># dates entered before validation was applied may not parse</span>
         <span class="c1"># as fallback, display as is</span>

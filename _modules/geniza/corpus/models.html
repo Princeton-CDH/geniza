@@ -4,10 +4,10 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>geniza.corpus.models &#8212; Princeton Geniza Project 4.18.2 documentation</title>
-    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=d1102ebc" />
+    <title>geniza.corpus.models &#8212; Princeton Geniza Project 4.19.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=5ecbeea2" />
     <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=12dfc556" />
-    <script src="../../../_static/documentation_options.js?v=39372dd1"></script>
+    <script src="../../../_static/documentation_options.js?v=db6269fb"></script>
     <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
@@ -30,70 +30,70 @@
           <div class="body" role="main">
             
   <h1>Source code for geniza.corpus.models</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">itertools</span>
-<span class="kn">import</span> <span class="nn">logging</span>
-<span class="kn">import</span> <span class="nn">re</span>
-<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">defaultdict</span>
-<span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
-<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
-<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">cached_property</span>
-<span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">chain</span>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">itertools</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections</span><span class="w"> </span><span class="kn">import</span> <span class="n">defaultdict</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">copy</span><span class="w"> </span><span class="kn">import</span> <span class="n">deepcopy</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">cached_property</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">itertools</span><span class="w"> </span><span class="kn">import</span> <span class="n">chain</span>
 
-<span class="kn">from</span> <span class="nn">django.conf</span> <span class="kn">import</span> <span class="n">settings</span>
-<span class="kn">from</span> <span class="nn">django.contrib</span> <span class="kn">import</span> <span class="n">admin</span><span class="p">,</span> <span class="n">messages</span>
-<span class="kn">from</span> <span class="nn">django.contrib.admin.models</span> <span class="kn">import</span> <span class="n">CHANGE</span><span class="p">,</span> <span class="n">LogEntry</span>
-<span class="kn">from</span> <span class="nn">django.contrib.auth.models</span> <span class="kn">import</span> <span class="n">User</span>
-<span class="kn">from</span> <span class="nn">django.contrib.contenttypes.fields</span> <span class="kn">import</span> <span class="n">GenericRelation</span>
-<span class="kn">from</span> <span class="nn">django.contrib.contenttypes.models</span> <span class="kn">import</span> <span class="n">ContentType</span>
-<span class="kn">from</span> <span class="nn">django.contrib.postgres.fields</span> <span class="kn">import</span> <span class="n">ArrayField</span>
-<span class="kn">from</span> <span class="nn">django.core.exceptions</span> <span class="kn">import</span> <span class="n">ValidationError</span>
-<span class="kn">from</span> <span class="nn">django.core.validators</span> <span class="kn">import</span> <span class="n">RegexValidator</span>
-<span class="kn">from</span> <span class="nn">django.db</span> <span class="kn">import</span> <span class="n">models</span>
-<span class="kn">from</span> <span class="nn">django.db.models.functions</span> <span class="kn">import</span> <span class="n">Concat</span>
-<span class="kn">from</span> <span class="nn">django.db.models.functions.text</span> <span class="kn">import</span> <span class="n">Lower</span>
-<span class="kn">from</span> <span class="nn">django.db.models.query</span> <span class="kn">import</span> <span class="n">Prefetch</span>
-<span class="kn">from</span> <span class="nn">django.db.models.signals</span> <span class="kn">import</span> <span class="n">pre_delete</span>
-<span class="kn">from</span> <span class="nn">django.dispatch</span> <span class="kn">import</span> <span class="n">receiver</span>
-<span class="kn">from</span> <span class="nn">django.templatetags.static</span> <span class="kn">import</span> <span class="n">static</span>
-<span class="kn">from</span> <span class="nn">django.urls</span> <span class="kn">import</span> <span class="n">reverse</span>
-<span class="kn">from</span> <span class="nn">django.utils.html</span> <span class="kn">import</span> <span class="n">strip_tags</span>
-<span class="kn">from</span> <span class="nn">django.utils.safestring</span> <span class="kn">import</span> <span class="n">mark_safe</span>
-<span class="kn">from</span> <span class="nn">django.utils.translation</span> <span class="kn">import</span> <span class="n">get_language</span>
-<span class="kn">from</span> <span class="nn">django.utils.translation</span> <span class="kn">import</span> <span class="n">gettext</span> <span class="k">as</span> <span class="n">_</span>
-<span class="kn">from</span> <span class="nn">djiffy.models</span> <span class="kn">import</span> <span class="n">Manifest</span>
-<span class="kn">from</span> <span class="nn">modeltranslation.manager</span> <span class="kn">import</span> <span class="n">MultilingualQuerySet</span>
-<span class="kn">from</span> <span class="nn">parasolr.django.indexing</span> <span class="kn">import</span> <span class="n">ModelIndexable</span>
-<span class="kn">from</span> <span class="nn">piffle.image</span> <span class="kn">import</span> <span class="n">IIIFImageClient</span>
-<span class="kn">from</span> <span class="nn">piffle.presentation</span> <span class="kn">import</span> <span class="n">IIIFException</span><span class="p">,</span> <span class="n">IIIFPresentation</span>
-<span class="kn">from</span> <span class="nn">requests.exceptions</span> <span class="kn">import</span> <span class="ne">ConnectionError</span>
-<span class="kn">from</span> <span class="nn">taggit_selectize.managers</span> <span class="kn">import</span> <span class="n">TaggableManager</span>
-<span class="kn">from</span> <span class="nn">unidecode</span> <span class="kn">import</span> <span class="n">unidecode</span>
-<span class="kn">from</span> <span class="nn">urllib3.exceptions</span> <span class="kn">import</span> <span class="n">HTTPError</span><span class="p">,</span> <span class="n">NewConnectionError</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">django.conf</span><span class="w"> </span><span class="kn">import</span> <span class="n">settings</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">django.contrib</span><span class="w"> </span><span class="kn">import</span> <span class="n">admin</span><span class="p">,</span> <span class="n">messages</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">django.contrib.admin.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">CHANGE</span><span class="p">,</span> <span class="n">LogEntry</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">django.contrib.auth.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">User</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">django.contrib.contenttypes.fields</span><span class="w"> </span><span class="kn">import</span> <span class="n">GenericRelation</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">django.contrib.contenttypes.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">ContentType</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">django.contrib.postgres.fields</span><span class="w"> </span><span class="kn">import</span> <span class="n">ArrayField</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">django.core.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">ValidationError</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">django.core.validators</span><span class="w"> </span><span class="kn">import</span> <span class="n">RegexValidator</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">django.db</span><span class="w"> </span><span class="kn">import</span> <span class="n">models</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">django.db.models.functions</span><span class="w"> </span><span class="kn">import</span> <span class="n">Concat</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">django.db.models.functions.text</span><span class="w"> </span><span class="kn">import</span> <span class="n">Lower</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">django.db.models.query</span><span class="w"> </span><span class="kn">import</span> <span class="n">Prefetch</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">django.db.models.signals</span><span class="w"> </span><span class="kn">import</span> <span class="n">pre_delete</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">django.dispatch</span><span class="w"> </span><span class="kn">import</span> <span class="n">receiver</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">django.templatetags.static</span><span class="w"> </span><span class="kn">import</span> <span class="n">static</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">django.urls</span><span class="w"> </span><span class="kn">import</span> <span class="n">reverse</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">django.utils.html</span><span class="w"> </span><span class="kn">import</span> <span class="n">strip_tags</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">django.utils.safestring</span><span class="w"> </span><span class="kn">import</span> <span class="n">mark_safe</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">django.utils.translation</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_language</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">django.utils.translation</span><span class="w"> </span><span class="kn">import</span> <span class="n">gettext</span> <span class="k">as</span> <span class="n">_</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">djiffy.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">Manifest</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">modeltranslation.manager</span><span class="w"> </span><span class="kn">import</span> <span class="n">MultilingualQuerySet</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">parasolr.django.indexing</span><span class="w"> </span><span class="kn">import</span> <span class="n">ModelIndexable</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">piffle.image</span><span class="w"> </span><span class="kn">import</span> <span class="n">IIIFImageClient</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">piffle.presentation</span><span class="w"> </span><span class="kn">import</span> <span class="n">IIIFException</span><span class="p">,</span> <span class="n">IIIFPresentation</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">requests.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="ne">ConnectionError</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">taggit_selectize.managers</span><span class="w"> </span><span class="kn">import</span> <span class="n">TaggableManager</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">unidecode</span><span class="w"> </span><span class="kn">import</span> <span class="n">unidecode</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">urllib3.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">HTTPError</span><span class="p">,</span> <span class="n">NewConnectionError</span>
 
-<span class="kn">from</span> <span class="nn">geniza.annotations.models</span> <span class="kn">import</span> <span class="n">Annotation</span>
-<span class="kn">from</span> <span class="nn">geniza.common.models</span> <span class="kn">import</span> <span class="p">(</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">geniza.annotations.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">Annotation</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">geniza.common.models</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">DisplayLabelMixin</span><span class="p">,</span>
     <span class="n">TrackChangesModel</span><span class="p">,</span>
     <span class="n">cached_class_property</span><span class="p">,</span>
 <span class="p">)</span>
-<span class="kn">from</span> <span class="nn">geniza.common.utils</span> <span class="kn">import</span> <span class="n">absolutize_url</span>
-<span class="kn">from</span> <span class="nn">geniza.corpus.annotation_utils</span> <span class="kn">import</span> <span class="n">document_id_from_manifest_uri</span>
-<span class="kn">from</span> <span class="nn">geniza.corpus.dates</span> <span class="kn">import</span> <span class="n">DocumentDateMixin</span><span class="p">,</span> <span class="n">PartialDate</span><span class="p">,</span> <span class="n">standard_date_display</span>
-<span class="kn">from</span> <span class="nn">geniza.corpus.iiif_utils</span> <span class="kn">import</span> <span class="n">GenizaManifestImporter</span><span class="p">,</span> <span class="n">get_iiif_string</span>
-<span class="kn">from</span> <span class="nn">geniza.corpus.solr_queryset</span> <span class="kn">import</span> <span class="n">DocumentSolrQuerySet</span>
-<span class="kn">from</span> <span class="nn">geniza.footnotes.models</span> <span class="kn">import</span> <span class="n">Creator</span><span class="p">,</span> <span class="n">Footnote</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">geniza.common.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">absolutize_url</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">geniza.corpus.annotation_utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">document_id_from_manifest_uri</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">geniza.corpus.dates</span><span class="w"> </span><span class="kn">import</span> <span class="n">DocumentDateMixin</span><span class="p">,</span> <span class="n">PartialDate</span><span class="p">,</span> <span class="n">standard_date_display</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">geniza.corpus.iiif_utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">GenizaManifestImporter</span><span class="p">,</span> <span class="n">get_iiif_string</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">geniza.corpus.solr_queryset</span><span class="w"> </span><span class="kn">import</span> <span class="n">DocumentSolrQuerySet</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">geniza.footnotes.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">Creator</span><span class="p">,</span> <span class="n">Footnote</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="CollectionManager">
 <a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.models.CollectionManager">[docs]</a>
-<span class="k">class</span> <span class="nc">CollectionManager</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Manager</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">CollectionManager</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Manager</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Custom manager for :class:`Collection` with natural key lookup&quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="CollectionManager.get_by_natural_key">
 <a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.models.CollectionManager.get_by_natural_key">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_by_natural_key</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">library</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_by_natural_key</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">library</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;get by natural key: combination of name and library&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">library</span><span class="o">=</span><span class="n">library</span><span class="p">)</span></div>
 </div>
@@ -102,7 +102,7 @@
 
 <div class="viewcode-block" id="Collection">
 <a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.models.Collection">[docs]</a>
-<span class="k">class</span> <span class="nc">Collection</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Collection</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Collection or library that holds Geniza fragments&quot;&quot;&quot;</span>
 
     <span class="n">library</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">255</span><span class="p">,</span> <span class="n">blank</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>  <span class="c1"># optional</span>
@@ -123,7 +123,7 @@
 
     <span class="n">objects</span> <span class="o">=</span> <span class="n">CollectionManager</span><span class="p">()</span>
 
-    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+    <span class="k">class</span><span class="w"> </span><span class="nc">Meta</span><span class="p">:</span>
         <span class="c1"># sort on the combination of these fields, since many are optional</span>
         <span class="c1"># NOTE: this causes problems for sorting related models in django admin</span>
         <span class="c1"># (i.e., sorting fragments by collection); see corpus admin for workaround</span>
@@ -146,7 +146,7 @@
             <span class="p">),</span>
         <span class="p">]</span>
 
-    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="c1"># by default, combine abbreviations</span>
         <span class="n">values</span> <span class="o">=</span> <span class="p">[</span><span class="n">val</span> <span class="k">for</span> <span class="n">val</span> <span class="ow">in</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lib_abbrev</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">abbrev</span><span class="p">)</span> <span class="k">if</span> <span class="n">val</span><span class="p">]</span>
         <span class="c1"># but abbreviations are optional, so fallback to names</span>
@@ -156,13 +156,13 @@
 
 <div class="viewcode-block" id="Collection.natural_key">
 <a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.models.Collection.natural_key">[docs]</a>
-    <span class="k">def</span> <span class="nf">natural_key</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">natural_key</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;natural key: tuple of name and library&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">library</span><span class="p">)</span></div>
 
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">full_name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">full_name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;attempt to combine library and collection name into a human readable format&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">n</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">library</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="k">if</span> <span class="n">n</span><span class="p">])</span></div>
 
@@ -170,12 +170,12 @@
 
 <div class="viewcode-block" id="LanguageScriptManager">
 <a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.models.LanguageScriptManager">[docs]</a>
-<span class="k">class</span> <span class="nc">LanguageScriptManager</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Manager</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">LanguageScriptManager</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Manager</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Custom manager for :class:`LanguageScript` with natural key lookup&quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="LanguageScriptManager.get_by_natural_key">
 <a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.models.LanguageScriptManager.get_by_natural_key">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_by_natural_key</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">language</span><span class="p">,</span> <span class="n">script</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_by_natural_key</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">language</span><span class="p">,</span> <span class="n">script</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;get by natural key: combination of language and script&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">language</span><span class="o">=</span><span class="n">language</span><span class="p">,</span> <span class="n">script</span><span class="o">=</span><span class="n">script</span><span class="p">)</span></div>
 </div>
@@ -184,7 +184,7 @@
 
 <div class="viewcode-block" id="LanguageScript">
 <a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.models.LanguageScript">[docs]</a>
-<span class="k">class</span> <span class="nc">LanguageScript</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">LanguageScript</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Combination language and script&quot;&quot;&quot;</span>
 
     <span class="n">language</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">255</span><span class="p">)</span>
@@ -205,7 +205,7 @@
 
     <span class="n">objects</span> <span class="o">=</span> <span class="n">LanguageScriptManager</span><span class="p">()</span>
 
-    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+    <span class="k">class</span><span class="w"> </span><span class="nc">Meta</span><span class="p">:</span>
         <span class="n">verbose_name</span> <span class="o">=</span> <span class="s2">&quot;Language + Script&quot;</span>
         <span class="n">verbose_name_plural</span> <span class="o">=</span> <span class="s2">&quot;Languages + Scripts&quot;</span>
         <span class="n">ordering</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;language&quot;</span><span class="p">]</span>
@@ -215,7 +215,7 @@
             <span class="p">)</span>
         <span class="p">]</span>
 
-    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="c1"># Allow display_name to override autogenerated string</span>
         <span class="c1"># otherwise combine language and script</span>
         <span class="c1">#   e.g. Judaeo-Arabic (Hebrew script)</span>
@@ -223,7 +223,7 @@
 
 <div class="viewcode-block" id="LanguageScript.natural_key">
 <a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.models.LanguageScript.natural_key">[docs]</a>
-    <span class="k">def</span> <span class="nf">natural_key</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">natural_key</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;natural key: tuple of language and script&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">language</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">script</span><span class="p">)</span></div>
 </div>
@@ -232,12 +232,12 @@
 
 <div class="viewcode-block" id="FragmentManager">
 <a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.models.FragmentManager">[docs]</a>
-<span class="k">class</span> <span class="nc">FragmentManager</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Manager</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">FragmentManager</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Manager</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Custom manager for :class:`Fragment` with natural key lookup&quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="FragmentManager.get_by_natural_key">
 <a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.models.FragmentManager.get_by_natural_key">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_by_natural_key</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">shelfmark</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_by_natural_key</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">shelfmark</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;get fragment by natural key: shelfmark&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">shelfmark</span><span class="o">=</span><span class="n">shelfmark</span><span class="p">)</span></div>
 </div>
@@ -246,7 +246,7 @@
 
 <div class="viewcode-block" id="Fragment">
 <a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.models.Fragment">[docs]</a>
-<span class="k">class</span> <span class="nc">Fragment</span><span class="p">(</span><span class="n">TrackChangesModel</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Fragment</span><span class="p">(</span><span class="n">TrackChangesModel</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;A single fragment or multifragment held by a</span>
 <span class="sd">    particular library or archive.&quot;&quot;&quot;</span>
 
@@ -290,22 +290,22 @@
     <span class="c1"># NOTE: may want to add optional ForeignKey to djiffy Manifest here</span>
     <span class="c1"># (or property to find by URI if not an actual FK)</span>
 
-    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+    <span class="k">class</span><span class="w"> </span><span class="nc">Meta</span><span class="p">:</span>
         <span class="n">ordering</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;shelfmark&quot;</span><span class="p">]</span>
 
-    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">shelfmark</span>
 
 <div class="viewcode-block" id="Fragment.natural_key">
 <a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.models.Fragment.natural_key">[docs]</a>
-    <span class="k">def</span> <span class="nf">natural_key</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">natural_key</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;natural key: shelfmark&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">shelfmark</span><span class="p">,)</span></div>
 
 
 <div class="viewcode-block" id="Fragment.iiif_images">
 <a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.models.Fragment.iiif_images">[docs]</a>
-    <span class="k">def</span> <span class="nf">iiif_images</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">iiif_images</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;IIIF image URLs for this fragment. Returns a list of</span>
 <span class="sd">        :class:`~piffle.image.IIIFImageClient` and corresponding list of labels,</span>
 <span class="sd">        or None if this fragement has no IIIF url associated.&quot;&quot;&quot;</span>
@@ -348,7 +348,7 @@
 <div class="viewcode-block" id="Fragment.admin_thumbnails">
 <a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.models.Fragment.admin_thumbnails">[docs]</a>
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">admin_thumbnails</span><span class="p">(</span><span class="n">images</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">canvases</span><span class="o">=</span><span class="p">[],</span> <span class="n">selected</span><span class="o">=</span><span class="p">[]):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">admin_thumbnails</span><span class="p">(</span><span class="n">images</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">canvases</span><span class="o">=</span><span class="p">[],</span> <span class="n">selected</span><span class="o">=</span><span class="p">[]):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Convenience method for generating IIIF thumbnails HTML from lists of images and labels;</span>
 <span class="sd">        separated for reuse in Document&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">mark_safe</span><span class="p">(</span>
@@ -370,7 +370,7 @@
 
 <div class="viewcode-block" id="Fragment.iiif_thumbnails">
 <a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.models.Fragment.iiif_thumbnails">[docs]</a>
-    <span class="k">def</span> <span class="nf">iiif_thumbnails</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">selected</span><span class="o">=</span><span class="p">[]):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">iiif_thumbnails</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">selected</span><span class="o">=</span><span class="p">[]):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;html for thumbnails of iiif image, for display in admin&quot;&quot;&quot;</span>
         <span class="n">iiif_images</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">iiif_images</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">iiif_images</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -391,7 +391,7 @@
     <span class="n">cudl_metadata_str</span> <span class="o">=</span> <span class="s2">&quot;This metadata is published free of restrictions, under the terms of the Creative Commons CC0 1.0 Universal Public Domain Dedication.&quot;</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">attribution</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">attribution</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate an attribution for this fragment&quot;&quot;&quot;</span>
         <span class="c1"># pull from locally cached manifest</span>
         <span class="c1"># (don&#39;t hit remote url if not cached)</span>
@@ -407,21 +407,21 @@
 
     <span class="nd">@property</span>
     <span class="nd">@admin</span><span class="o">.</span><span class="n">display</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;Provenance from IIIF manifest&quot;</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">iiif_provenance</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">iiif_provenance</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate a provenance statement for this fragment from IIIF&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">manifest</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">manifest</span><span class="o">.</span><span class="n">metadata</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">get_iiif_string</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">manifest</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;Provenance&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
 
 <div class="viewcode-block" id="Fragment.clean">
 <a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.models.Fragment.clean">[docs]</a>
-    <span class="k">def</span> <span class="nf">clean</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">clean</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Custom validation and cleaning; currently only :meth:`clean_iiif_url`&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">clean_iiif_url</span><span class="p">()</span></div>
 
 
 <div class="viewcode-block" id="Fragment.clean_iiif_url">
 <a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.models.Fragment.clean_iiif_url">[docs]</a>
-    <span class="k">def</span> <span class="nf">clean_iiif_url</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">clean_iiif_url</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Remove redundant manifest parameter from IIIF url when present&quot;&quot;&quot;</span>
         <span class="c1"># some iiif viewers have a terrible convention of repeating the full manifest</span>
         <span class="c1"># url in a query string; strip that out if it&#39;s there</span>
@@ -430,7 +430,7 @@
 
 <div class="viewcode-block" id="Fragment.save">
 <a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.models.Fragment.save">[docs]</a>
-    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Remember how shelfmarks have changed by keeping a semi-colon list</span>
 <span class="sd">        in the old_shelfmarks field&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">pk</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_changed</span><span class="p">(</span><span class="s2">&quot;shelfmark&quot;</span><span class="p">):</span>
@@ -472,12 +472,12 @@
 
 <div class="viewcode-block" id="DocumentTypeManager">
 <a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.models.DocumentTypeManager">[docs]</a>
-<span class="k">class</span> <span class="nc">DocumentTypeManager</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Manager</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">DocumentTypeManager</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Manager</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Custom manager for :class:`DocumentType` with natural key lookup&quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="DocumentTypeManager.get_by_natural_key">
 <a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.models.DocumentTypeManager.get_by_natural_key">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_by_natural_key</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_by_natural_key</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
         <span class="s2">&quot;natural key lookup, based on name&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name_en</span><span class="o">=</span><span class="n">name</span><span class="p">)</span></div>
 </div>
@@ -486,7 +486,7 @@
 
 <div class="viewcode-block" id="DocumentType">
 <a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.models.DocumentType">[docs]</a>
-<span class="k">class</span> <span class="nc">DocumentType</span><span class="p">(</span><span class="n">DisplayLabelMixin</span><span class="p">,</span> <span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">DocumentType</span><span class="p">(</span><span class="n">DisplayLabelMixin</span><span class="p">,</span> <span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Controlled vocabulary of document types.&quot;&quot;&quot;</span>
 
     <span class="n">name</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">255</span><span class="p">,</span> <span class="n">unique</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -498,14 +498,14 @@
     <span class="n">objects</span> <span class="o">=</span> <span class="n">DocumentTypeManager</span><span class="p">()</span>
 
     <span class="nd">@cached_class_property</span>
-    <span class="k">def</span> <span class="nf">objects_by_label</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">objects_by_label</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
         <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">objects_by_label</span><span class="p">()</span></div>
 
 
 
 <div class="viewcode-block" id="DocumentSignalHandlers">
 <a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.models.DocumentSignalHandlers">[docs]</a>
-<span class="k">class</span> <span class="nc">DocumentSignalHandlers</span><span class="p">:</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">DocumentSignalHandlers</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Signal handlers for indexing :class:`Document` records when</span>
 <span class="sd">    related records are saved or deleted.&quot;&quot;&quot;</span>
 
@@ -526,7 +526,7 @@
 <div class="viewcode-block" id="DocumentSignalHandlers.related_change">
 <a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.models.DocumentSignalHandlers.related_change">[docs]</a>
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">related_change</span><span class="p">(</span><span class="n">instance</span><span class="p">,</span> <span class="n">raw</span><span class="p">,</span> <span class="n">mode</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">related_change</span><span class="p">(</span><span class="n">instance</span><span class="p">,</span> <span class="n">raw</span><span class="p">,</span> <span class="n">mode</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;reindex all associated documents when related data is changed&quot;&quot;&quot;</span>
         <span class="c1"># common logic for save and delete</span>
         <span class="c1"># raw = saved as presented; don&#39;t query the database</span>
@@ -558,7 +558,7 @@
 <div class="viewcode-block" id="DocumentSignalHandlers.related_save">
 <a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.models.DocumentSignalHandlers.related_save">[docs]</a>
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">related_save</span><span class="p">(</span><span class="n">sender</span><span class="p">,</span> <span class="n">instance</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">raw</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">_kwargs</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">related_save</span><span class="p">(</span><span class="n">sender</span><span class="p">,</span> <span class="n">instance</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">raw</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">_kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;reindex associated documents when a related object is saved&quot;&quot;&quot;</span>
         <span class="c1"># delegate to common method</span>
         <span class="n">DocumentSignalHandlers</span><span class="o">.</span><span class="n">related_change</span><span class="p">(</span><span class="n">instance</span><span class="p">,</span> <span class="n">raw</span><span class="p">,</span> <span class="s2">&quot;save&quot;</span><span class="p">)</span></div>
@@ -567,7 +567,7 @@
 <div class="viewcode-block" id="DocumentSignalHandlers.related_delete">
 <a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.models.DocumentSignalHandlers.related_delete">[docs]</a>
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">related_delete</span><span class="p">(</span><span class="n">sender</span><span class="p">,</span> <span class="n">instance</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">raw</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">_kwargs</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">related_delete</span><span class="p">(</span><span class="n">sender</span><span class="p">,</span> <span class="n">instance</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">raw</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">_kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;reindex associated documents when a related object is deleted&quot;&quot;&quot;</span>
         <span class="c1"># delegate to common method</span>
         <span class="n">DocumentSignalHandlers</span><span class="o">.</span><span class="n">related_change</span><span class="p">(</span><span class="n">instance</span><span class="p">,</span> <span class="n">raw</span><span class="p">,</span> <span class="s2">&quot;delete&quot;</span><span class="p">)</span></div>
@@ -577,13 +577,13 @@
 
 <div class="viewcode-block" id="TagSignalHandlers">
 <a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.models.TagSignalHandlers">[docs]</a>
-<span class="k">class</span> <span class="nc">TagSignalHandlers</span><span class="p">:</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">TagSignalHandlers</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Signal handlers for :class:`taggit.Tag` records.&quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="TagSignalHandlers.unidecode_tag">
 <a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.models.TagSignalHandlers.unidecode_tag">[docs]</a>
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">unidecode_tag</span><span class="p">(</span><span class="n">sender</span><span class="p">,</span> <span class="n">instance</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">unidecode_tag</span><span class="p">(</span><span class="n">sender</span><span class="p">,</span> <span class="n">instance</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert saved tags to ascii, stripping diacritics.&quot;&quot;&quot;</span>
         <span class="n">instance</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">unidecode</span><span class="p">(</span><span class="n">instance</span><span class="o">.</span><span class="n">name</span><span class="p">)</span></div>
 
@@ -591,7 +591,7 @@
 <div class="viewcode-block" id="TagSignalHandlers.tagged_item_change">
 <a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.models.TagSignalHandlers.tagged_item_change">[docs]</a>
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">tagged_item_change</span><span class="p">(</span><span class="n">sender</span><span class="p">,</span> <span class="n">instance</span><span class="p">,</span> <span class="n">action</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">tagged_item_change</span><span class="p">(</span><span class="n">sender</span><span class="p">,</span> <span class="n">instance</span><span class="p">,</span> <span class="n">action</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Ensure document (=instance) is indexed after the tags m2m relationship is saved and the</span>
 <span class="sd">        list of tags is pulled from the database, on any tag change.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">action</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;post_add&quot;</span><span class="p">,</span> <span class="s2">&quot;post_remove&quot;</span><span class="p">,</span> <span class="s2">&quot;post_clear&quot;</span><span class="p">]:</span>
@@ -603,10 +603,10 @@
 
 <div class="viewcode-block" id="DocumentQuerySet">
 <a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.models.DocumentQuerySet">[docs]</a>
-<span class="k">class</span> <span class="nc">DocumentQuerySet</span><span class="p">(</span><span class="n">MultilingualQuerySet</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">DocumentQuerySet</span><span class="p">(</span><span class="n">MultilingualQuerySet</span><span class="p">):</span>
 <div class="viewcode-block" id="DocumentQuerySet.metadata_prefetch">
 <a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.models.DocumentQuerySet.metadata_prefetch">[docs]</a>
-    <span class="k">def</span> <span class="nf">metadata_prefetch</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">metadata_prefetch</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns a further QuerySet that has been prefetched for relevant document information.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -626,7 +626,7 @@
 
 <div class="viewcode-block" id="DocumentQuerySet.get_by_any_pgpid">
 <a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.models.DocumentQuerySet.get_by_any_pgpid">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_by_any_pgpid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pgpid</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_by_any_pgpid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pgpid</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Find a document by current or old pgpid&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Q</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="n">pgpid</span><span class="p">)</span> <span class="o">|</span> <span class="n">models</span><span class="o">.</span><span class="n">Q</span><span class="p">(</span><span class="n">old_pgpids__contains</span><span class="o">=</span><span class="p">[</span><span class="n">pgpid</span><span class="p">]))</span></div>
 </div>
@@ -635,12 +635,12 @@
 
 <div class="viewcode-block" id="PermalinkMixin">
 <a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.models.PermalinkMixin">[docs]</a>
-<span class="k">class</span> <span class="nc">PermalinkMixin</span><span class="p">:</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">PermalinkMixin</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Mixin to generate a permalink for Django model objects by removing language code</span>
 <span class="sd">    from the object&#39;s absolute URL.&quot;&quot;&quot;</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">permalink</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">permalink</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="c1"># generate permalink without language url so that all versions have</span>
         <span class="c1"># the same link and users will be directed to their preferred language</span>
         <span class="c1"># - get current active language, or default language if not active</span>
@@ -651,7 +651,7 @@
 
 <div class="viewcode-block" id="Document">
 <a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.models.Document">[docs]</a>
-<span class="k">class</span> <span class="nc">Document</span><span class="p">(</span><span class="n">ModelIndexable</span><span class="p">,</span> <span class="n">DocumentDateMixin</span><span class="p">,</span> <span class="n">PermalinkMixin</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Document</span><span class="p">(</span><span class="n">ModelIndexable</span><span class="p">,</span> <span class="n">DocumentDateMixin</span><span class="p">,</span> <span class="n">PermalinkMixin</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;A unified document such as a letter or legal document that</span>
 <span class="sd">    appears on one or more fragments.&quot;&quot;&quot;</span>
 
@@ -735,17 +735,17 @@
 
     <span class="c1"># NOTE: default ordering disabled for now because it results in duplicates</span>
     <span class="c1"># in django admin; see admin for ArrayAgg sorting solution</span>
-    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+    <span class="k">class</span><span class="w"> </span><span class="nc">Meta</span><span class="p">:</span>
         <span class="k">pass</span>
         <span class="c1"># abstract = False</span>
         <span class="c1"># ordering = [Least(&#39;textblock__fragment__shelfmark&#39;)]</span>
 
-    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">shelfmark_display</span><span class="w"> </span><span class="ow">or</span><span class="w"> </span><span class="s1">&#39;??&#39;</span><span class="si">}</span><span class="s2"> (PGPID </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="w"> </span><span class="ow">or</span><span class="w"> </span><span class="s1">&#39;??&#39;</span><span class="si">}</span><span class="s2">)&quot;</span>
 
 <div class="viewcode-block" id="Document.save">
 <a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.models.Document.save">[docs]</a>
-    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="c1"># update standardized date if appropriate/supported</span>
         <span class="c1"># TODO: could improve by making use of track changes;</span>
         <span class="c1"># should we overwrite standard if original changed?</span>
@@ -774,7 +774,7 @@
 <div class="viewcode-block" id="Document.from_manifest_uri">
 <a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.models.Document.from_manifest_uri">[docs]</a>
     <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">from_manifest_uri</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">uri</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_manifest_uri</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">uri</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Given a manifest URI (as used in transcription annotations), find a Document matching</span>
 <span class="sd">        its pgpid&quot;&quot;&quot;</span>
         <span class="c1"># will raise Resolver404 if url does not resolve</span>
@@ -782,7 +782,7 @@
 
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">shelfmark</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">shelfmark</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;shelfmarks for associated fragments&quot;&quot;&quot;</span>
         <span class="c1"># access via textblock so we follow specified order,</span>
         <span class="c1"># use dict keys to ensure unique</span>
@@ -796,14 +796,14 @@
 
     <span class="nd">@property</span>
     <span class="nd">@admin</span><span class="o">.</span><span class="n">display</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;Shelfmark&quot;</span><span class="p">,</span> <span class="n">ordering</span><span class="o">=</span><span class="s2">&quot;shelfmk_all&quot;</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">shelfmark_display</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">shelfmark_display</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Label for this document; by default, based on the combined shelfmarks from all certain</span>
 <span class="sd">        associated fragments; uses :attr:`shelfmark_override` if set&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">shelfmark_override</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">shelfmark</span>
 
     <span class="nd">@property</span>
     <span class="nd">@admin</span><span class="o">.</span><span class="n">display</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;Historical shelfmarks&quot;</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">fragment_historical_shelfmarks</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">fragment_historical_shelfmarks</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Property to display set of all historical shelfmarks on the document&quot;&quot;&quot;</span>
         <span class="n">all_textblocks</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">textblock_set</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
         <span class="n">all_fragments</span> <span class="o">=</span> <span class="p">[</span><span class="n">tb</span><span class="o">.</span><span class="n">fragment</span> <span class="k">for</span> <span class="n">tb</span> <span class="ow">in</span> <span class="n">all_textblocks</span><span class="p">]</span>
@@ -812,28 +812,29 @@
         <span class="p">)</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">collections</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">collections</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;collection objects for associated fragments&quot;&quot;&quot;</span>
-        <span class="c1"># use set to ensure unique; sort for reliable output order</span>
-        <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span>
-            <span class="nb">set</span><span class="p">(</span>
-                <span class="p">[</span>
-                    <span class="n">block</span><span class="o">.</span><span class="n">fragment</span><span class="o">.</span><span class="n">collection</span>
-                    <span class="k">for</span> <span class="n">block</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">textblock_set</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
-                    <span class="k">if</span> <span class="n">block</span><span class="o">.</span><span class="n">fragment</span><span class="o">.</span><span class="n">collection</span>
-                <span class="p">]</span>
-            <span class="p">),</span>
-            <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">c</span><span class="p">:</span> <span class="n">c</span><span class="o">.</span><span class="n">abbrev</span><span class="p">,</span>
-        <span class="p">)</span>
+        <span class="c1"># append to a list in order.</span>
+        <span class="n">collections</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="c1"># cannot cast as set and then order because we need these ordered by</span>
+        <span class="c1"># TextBlock.order, which cannot be retrieved from Collection objects</span>
+        <span class="c1"># (the objects that would populate the set)</span>
+        <span class="k">for</span> <span class="n">block</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">textblock_set</span><span class="o">.</span><span class="n">all</span><span class="p">()</span><span class="o">.</span><span class="n">order_by</span><span class="p">(</span><span class="s2">&quot;order&quot;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="p">(</span>
+                <span class="n">block</span><span class="o">.</span><span class="n">fragment</span><span class="o">.</span><span class="n">collection</span>
+                <span class="ow">and</span> <span class="n">block</span><span class="o">.</span><span class="n">fragment</span><span class="o">.</span><span class="n">collection</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">collections</span>
+            <span class="p">):</span>
+                <span class="n">collections</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">block</span><span class="o">.</span><span class="n">fragment</span><span class="o">.</span><span class="n">collection</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">collections</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">collection</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">collection</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;collection (abbreviation) for associated fragments&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">coll</span><span class="o">.</span><span class="n">abbrev</span> <span class="k">for</span> <span class="n">coll</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">collections</span><span class="p">])</span>
 
 <div class="viewcode-block" id="Document.all_languages">
 <a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.models.Document.all_languages">[docs]</a>
-    <span class="k">def</span> <span class="nf">all_languages</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">all_languages</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;comma delimited string of all primary languages for this document&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">lang</span><span class="p">)</span> <span class="k">for</span> <span class="n">lang</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">languages</span><span class="o">.</span><span class="n">all</span><span class="p">()])</span></div>
 
@@ -842,7 +843,7 @@
 
 <div class="viewcode-block" id="Document.all_secondary_languages">
 <a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.models.Document.all_secondary_languages">[docs]</a>
-    <span class="k">def</span> <span class="nf">all_secondary_languages</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">all_secondary_languages</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;comma delimited string of all secondary languages for this document&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="s2">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">lang</span><span class="p">)</span> <span class="k">for</span> <span class="n">lang</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">secondary_languages</span><span class="o">.</span><span class="n">all</span><span class="p">()])</span></div>
 
@@ -850,7 +851,7 @@
     <span class="n">all_secondary_languages</span><span class="o">.</span><span class="n">short_description</span> <span class="o">=</span> <span class="s2">&quot;Secondary Language&quot;</span>
 
     <span class="nd">@cached_property</span>
-    <span class="k">def</span> <span class="nf">primary_lang_code</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">primary_lang_code</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Primary language code for this document, when there is only one</span>
 <span class="sd">        primary language set and it has an ISO code available. Returns</span>
 <span class="sd">        None if unset or unavailable.</span>
@@ -860,7 +861,7 @@
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">languages</span><span class="o">.</span><span class="n">all</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">iso_code</span> <span class="ow">or</span> <span class="kc">None</span>
 
     <span class="nd">@cached_property</span>
-    <span class="k">def</span> <span class="nf">primary_script</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">primary_script</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Primary script for this document, if shared across all primary languages.&quot;&quot;&quot;</span>
         <span class="c1"># aggregate all scripts for primary document languages</span>
         <span class="c1"># convert to set for uniqueness</span>
@@ -870,7 +871,7 @@
             <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">scripts</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">formatted_citation</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">formatted_citation</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;a formatted citation for display at the bottom of Document detail pages&quot;&quot;&quot;</span>
         <span class="n">available_at</span> <span class="o">=</span> <span class="s2">&quot;Available online through the Princeton Geniza Project at&quot;</span>
         <span class="n">today</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">today</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%B </span><span class="si">%-d</span><span class="s2">, %Y&quot;</span><span class="p">)</span>
@@ -892,7 +893,7 @@
 
 <div class="viewcode-block" id="Document.all_tags">
 <a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.models.Document.all_tags">[docs]</a>
-    <span class="k">def</span> <span class="nf">all_tags</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">all_tags</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;comma delimited string of all tags for this document&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">tags</span><span class="o">.</span><span class="n">all</span><span class="p">())</span></div>
 
@@ -901,14 +902,14 @@
 
 <div class="viewcode-block" id="Document.alphabetized_tags">
 <a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.models.Document.alphabetized_tags">[docs]</a>
-    <span class="k">def</span> <span class="nf">alphabetized_tags</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">alphabetized_tags</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;tags in alphabetical order, case-insensitive sorting&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">tags</span><span class="o">.</span><span class="n">order_by</span><span class="p">(</span><span class="n">Lower</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">))</span></div>
 
 
 <div class="viewcode-block" id="Document.is_public">
 <a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.models.Document.is_public">[docs]</a>
-    <span class="k">def</span> <span class="nf">is_public</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">is_public</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;admin display field indicating if doc is public or suppressed&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">PUBLIC</span></div>
 
@@ -919,14 +920,14 @@
 
 <div class="viewcode-block" id="Document.get_absolute_url">
 <a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.models.Document.get_absolute_url">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_absolute_url</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_absolute_url</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;url for this document&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">reverse</span><span class="p">(</span><span class="s2">&quot;corpus:document&quot;</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">)])</span></div>
 
 
 <div class="viewcode-block" id="Document.iiif_urls">
 <a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.models.Document.iiif_urls">[docs]</a>
-    <span class="k">def</span> <span class="nf">iiif_urls</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">iiif_urls</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;List of IIIF urls for images of the Document&#39;s Fragments.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="nb">list</span><span class="p">(</span>
             <span class="nb">dict</span><span class="o">.</span><span class="n">fromkeys</span><span class="p">(</span>
@@ -937,7 +938,7 @@
 
 <div class="viewcode-block" id="Document.iiif_images">
 <a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.models.Document.iiif_images">[docs]</a>
-    <span class="k">def</span> <span class="nf">iiif_images</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filter_side</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">with_placeholders</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">iiif_images</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filter_side</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">with_placeholders</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Dict of IIIF images and labels for images of the Document&#39;s Fragments, keyed on canvas.</span>
 
@@ -1037,7 +1038,7 @@
 
 <div class="viewcode-block" id="Document.list_thumbnail">
 <a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.models.Document.list_thumbnail">[docs]</a>
-    <span class="k">def</span> <span class="nf">list_thumbnail</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">list_thumbnail</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;generate html for thumbnail of first image, for display in related documents lists&quot;&quot;&quot;</span>
         <span class="n">iiif_images</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">iiif_images</span><span class="p">()</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">iiif_images</span><span class="p">:</span>
@@ -1057,7 +1058,7 @@
 
 <div class="viewcode-block" id="Document.admin_thumbnails">
 <a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.models.Document.admin_thumbnails">[docs]</a>
-    <span class="k">def</span> <span class="nf">admin_thumbnails</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">admin_thumbnails</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;generate html for thumbnails of all iiif images, for image reordering UI in admin&quot;&quot;&quot;</span>
         <span class="n">iiif_images</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">iiif_images</span><span class="p">()</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">iiif_images</span><span class="p">:</span>
@@ -1076,7 +1077,7 @@
 
 <div class="viewcode-block" id="Document.fragment_urls">
 <a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.models.Document.fragment_urls">[docs]</a>
-    <span class="k">def</span> <span class="nf">fragment_urls</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">fragment_urls</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;List of external URLs to view the Document&#39;s Fragments.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="nb">list</span><span class="p">(</span>
             <span class="nb">dict</span><span class="o">.</span><span class="n">fromkeys</span><span class="p">(</span>
@@ -1087,7 +1088,7 @@
 
 <div class="viewcode-block" id="Document.fragments_other_docs">
 <a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.models.Document.fragments_other_docs">[docs]</a>
-    <span class="k">def</span> <span class="nf">fragments_other_docs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">fragments_other_docs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;List of other documents that are on the same fragment(s) as this</span>
 <span class="sd">        document (does not include suppressed documents). Returns a list of</span>
 <span class="sd">        :class:`~corpus.models.Document` objects.&quot;&quot;&quot;</span>
@@ -1106,7 +1107,7 @@
 
 
     <span class="nd">@cached_property</span>
-    <span class="k">def</span> <span class="nf">related_documents</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">related_documents</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;List of other documents with any of the same shelfmarks as this</span>
 <span class="sd">        document; does not include suppressed documents. Queries Solr and</span>
 <span class="sd">        returns a list of :class:`dict` objects.&quot;&quot;&quot;</span>
@@ -1114,7 +1115,7 @@
 
 <div class="viewcode-block" id="Document.has_transcription">
 <a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.models.Document.has_transcription">[docs]</a>
-    <span class="k">def</span> <span class="nf">has_transcription</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">has_transcription</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Admin display field indicating if document has a transcription.&quot;&quot;&quot;</span>
         <span class="c1"># avoids an additional DB call for admin list view</span>
         <span class="k">return</span> <span class="nb">any</span><span class="p">(</span>
@@ -1130,7 +1131,7 @@
 
 <div class="viewcode-block" id="Document.has_translation">
 <a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.models.Document.has_translation">[docs]</a>
-    <span class="k">def</span> <span class="nf">has_translation</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">has_translation</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Helper method to determine if document has a translation.</span>
 
 <span class="sd">        :return: Whether document has translation</span>
@@ -1149,7 +1150,7 @@
 
 <div class="viewcode-block" id="Document.has_image">
 <a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.models.Document.has_image">[docs]</a>
-    <span class="k">def</span> <span class="nf">has_image</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">has_image</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Admin display field indicating if document has a IIIF image.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="nb">any</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">iiif_urls</span><span class="p">())</span></div>
 
@@ -1160,7 +1161,7 @@
 
 <div class="viewcode-block" id="Document.has_digital_content">
 <a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.models.Document.has_digital_content">[docs]</a>
-    <span class="k">def</span> <span class="nf">has_digital_content</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">has_digital_content</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Helper method for the ITT viewer on the public front-end to determine whether a document</span>
 <span class="sd">        has any images, digital editions, or digital translations.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="nb">any</span><span class="p">(</span>
@@ -1178,7 +1179,7 @@
 
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">available_digital_content</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">available_digital_content</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Helper method for the ITT viewer to collect all available panels into a list&quot;&quot;&quot;</span>
 
         <span class="c1"># NOTE: this is ordered by priority, with images first, then translations over</span>
@@ -1193,13 +1194,13 @@
         <span class="k">return</span> <span class="n">available_panels</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">title</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">title</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Short title for identifying the document, e.g. via search.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">doctype</span><span class="w"> </span><span class="ow">or</span><span class="w"> </span><span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unknown type&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">shelfmark_display</span><span class="w"> </span><span class="ow">or</span><span class="w"> </span><span class="s1">&#39;??&#39;</span><span class="si">}</span><span class="s2">&quot;</span>
 
 <div class="viewcode-block" id="Document.dating_range">
 <a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.models.Document.dating_range">[docs]</a>
-    <span class="k">def</span> <span class="nf">dating_range</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">dating_range</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return the start and end of the document&#39;s possible date range, as PartialDate objects,</span>
 <span class="sd">        including standardized document dates and inferred Datings, if any exist.</span>
@@ -1231,7 +1232,7 @@
 
 <div class="viewcode-block" id="Document.solr_dating_range">
 <a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.models.Document.solr_dating_range">[docs]</a>
-    <span class="k">def</span> <span class="nf">solr_dating_range</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">solr_dating_range</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the document&#39;s dating range, including inferred, as a Solr date range.&quot;&quot;&quot;</span>
         <span class="n">solr_dating_range</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="c1"># self.dating_range() should always return a tuple of two values</span>
@@ -1252,7 +1253,7 @@
 
 <div class="viewcode-block" id="Document.editions">
 <a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.models.Document.editions">[docs]</a>
-    <span class="k">def</span> <span class="nf">editions</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">editions</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;All footnotes for this document where the document relation includes</span>
 <span class="sd">        edition.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">footnotes</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">doc_relation__contains</span><span class="o">=</span><span class="n">Footnote</span><span class="o">.</span><span class="n">EDITION</span><span class="p">)</span><span class="o">.</span><span class="n">order_by</span><span class="p">(</span>
@@ -1262,7 +1263,7 @@
 
 <div class="viewcode-block" id="Document.digital_editions">
 <a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.models.Document.digital_editions">[docs]</a>
-    <span class="k">def</span> <span class="nf">digital_editions</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">digital_editions</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;All footnotes for this document where the document relation includes</span>
 <span class="sd">        digital edition.&quot;&quot;&quot;</span>
 
@@ -1273,7 +1274,7 @@
 
 <div class="viewcode-block" id="Document.editors">
 <a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.models.Document.editors">[docs]</a>
-    <span class="k">def</span> <span class="nf">editors</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">editors</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;All unique authors of digital editions for this document.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">Creator</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span>
             <span class="n">source__footnote__doc_relation__contains</span><span class="o">=</span><span class="n">Footnote</span><span class="o">.</span><span class="n">DIGITAL_EDITION</span><span class="p">,</span>
@@ -1283,7 +1284,7 @@
 
 <div class="viewcode-block" id="Document.digital_translations">
 <a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.models.Document.digital_translations">[docs]</a>
-    <span class="k">def</span> <span class="nf">digital_translations</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">digital_translations</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;All footnotes for this document where the document relation includes</span>
 <span class="sd">        digital translation.&quot;&quot;&quot;</span>
 
@@ -1293,7 +1294,7 @@
 
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">default_translation</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">default_translation</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;The first translation footnote that is in the current language, or the first</span>
 <span class="sd">        translation footnote ordered alphabetically by source if one is not available</span>
 <span class="sd">        in the current language.&quot;&quot;&quot;</span>
@@ -1304,7 +1305,7 @@
 
 <div class="viewcode-block" id="Document.digital_footnotes">
 <a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.models.Document.digital_footnotes">[docs]</a>
-    <span class="k">def</span> <span class="nf">digital_footnotes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">digital_footnotes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;All footnotes for this document where the document relation includes</span>
 <span class="sd">        digital edition or digital translation.&quot;&quot;&quot;</span>
 
@@ -1316,7 +1317,7 @@
 
 <div class="viewcode-block" id="Document.sources">
 <a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.models.Document.sources">[docs]</a>
-    <span class="k">def</span> <span class="nf">sources</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">sources</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;All unique sources attached to footnotes on this document.&quot;&quot;&quot;</span>
         <span class="c1"># use set and local references to avoid an extra db call</span>
         <span class="k">return</span> <span class="nb">set</span><span class="p">([</span><span class="n">fn</span><span class="o">.</span><span class="n">source</span> <span class="k">for</span> <span class="n">fn</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">footnotes</span><span class="o">.</span><span class="n">all</span><span class="p">()])</span></div>
@@ -1325,7 +1326,7 @@
 
 <div class="viewcode-block" id="Document.attribution">
 <a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.models.Document.attribution">[docs]</a>
-    <span class="k">def</span> <span class="nf">attribution</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">attribution</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate a tuple of three attribution components for use in IIIF manifests</span>
 <span class="sd">        or wherever images/transcriptions need attribution.&quot;&quot;&quot;</span>
 
@@ -1363,7 +1364,7 @@
 <div class="viewcode-block" id="Document.total_to_index">
 <a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.models.Document.total_to_index">[docs]</a>
     <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">total_to_index</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">total_to_index</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;static method to efficiently count the number of documents to index in Solr&quot;&quot;&quot;</span>
         <span class="c1"># quick count for parasolr indexing (don&#39;t do prefetching just to get the total!)</span>
         <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">count</span><span class="p">()</span></div>
@@ -1372,7 +1373,7 @@
 <div class="viewcode-block" id="Document.items_to_index">
 <a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.models.Document.items_to_index">[docs]</a>
     <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">items_to_index</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">items_to_index</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Custom logic for finding items to be indexed when indexing in</span>
 <span class="sd">        bulk.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">Document</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">prefetch_related</span><span class="p">(</span>
@@ -1407,7 +1408,7 @@
 <div class="viewcode-block" id="Document.prep_index_chunk">
 <a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.models.Document.prep_index_chunk">[docs]</a>
     <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">prep_index_chunk</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">chunk</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">prep_index_chunk</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">chunk</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Prefetch related information when indexing in chunks</span>
 <span class="sd">        (modifies queryset chunk in place)&quot;&quot;&quot;</span>
         <span class="n">models</span><span class="o">.</span><span class="n">prefetch_related_objects</span><span class="p">(</span>
@@ -1446,7 +1447,7 @@
 
 <div class="viewcode-block" id="Document.index_data">
 <a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.models.Document.index_data">[docs]</a>
-    <span class="k">def</span> <span class="nf">index_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">index_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;data for indexing in Solr&quot;&quot;&quot;</span>
         <span class="n">index_data</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">index_data</span><span class="p">()</span>
 
@@ -1694,7 +1695,7 @@
     <span class="p">}</span>
 
     <span class="nd">@cached_property</span>
-    <span class="k">def</span> <span class="nf">manifest_uri</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">manifest_uri</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="c1"># manifest uri for the current document</span>
         <span class="k">return</span> <span class="s2">&quot;</span><span class="si">%s%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span>
             <span class="n">settings</span><span class="o">.</span><span class="n">ANNOTATION_MANIFEST_BASE_URL</span><span class="p">,</span>
@@ -1703,7 +1704,7 @@
 
 <div class="viewcode-block" id="Document.merge_with">
 <a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.models.Document.merge_with">[docs]</a>
-    <span class="k">def</span> <span class="nf">merge_with</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">merge_docs</span><span class="p">,</span> <span class="n">rationale</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">merge_with</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">merge_docs</span><span class="p">,</span> <span class="n">rationale</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Merge the specified documents into this one. Combines all</span>
 <span class="sd">        metadata into this document, adds the merged documents into</span>
 <span class="sd">        list of old PGP IDs, and creates a log entry documenting</span>
@@ -1851,7 +1852,7 @@
         <span class="p">)</span></div>
 
 
-    <span class="k">def</span> <span class="nf">_merge_footnotes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">doc</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_merge_footnotes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">doc</span><span class="p">):</span>
         <span class="c1"># combine footnotes; footnote logic for merge_with</span>
         <span class="k">for</span> <span class="n">footnote</span> <span class="ow">in</span> <span class="n">doc</span><span class="o">.</span><span class="n">footnotes</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
             <span class="c1"># check for match. for each pair of footnotes, there are two possible cases for</span>
@@ -1900,7 +1901,7 @@
                 <span class="c1"># then add to this document</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">footnotes</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">footnote</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_merge_logentries</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">doc</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_merge_logentries</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">doc</span><span class="p">):</span>
         <span class="c1"># reassociate log entries; logic for merge_with</span>
         <span class="c1"># make a list of currently associated log entries to skip duplicates</span>
         <span class="n">current_logs</span> <span class="o">=</span> <span class="p">[</span>
@@ -1934,7 +1935,7 @@
 <div class="viewcode-block" id="detach_document_logentries">
 <a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.models.detach_document_logentries">[docs]</a>
 <span class="nd">@receiver</span><span class="p">(</span><span class="n">pre_delete</span><span class="p">,</span> <span class="n">sender</span><span class="o">=</span><span class="n">Document</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">detach_document_logentries</span><span class="p">(</span><span class="n">sender</span><span class="p">,</span> <span class="n">instance</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">detach_document_logentries</span><span class="p">(</span><span class="n">sender</span><span class="p">,</span> <span class="n">instance</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;:class:`~Document` pre-delete signal handler.</span>
 
 <span class="sd">    To avoid deleting log entries caused by the generic relation</span>
@@ -1946,7 +1947,7 @@
 
 <div class="viewcode-block" id="TextBlock">
 <a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.models.TextBlock">[docs]</a>
-<span class="k">class</span> <span class="nc">TextBlock</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">TextBlock</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;The portion of a document that appears on a particular fragment.&quot;&quot;&quot;</span>
 
     <span class="n">document</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">ForeignKey</span><span class="p">(</span><span class="n">Document</span><span class="p">,</span> <span class="n">on_delete</span><span class="o">=</span><span class="n">models</span><span class="o">.</span><span class="n">CASCADE</span><span class="p">)</span>
@@ -1984,11 +1985,11 @@
         <span class="o">+</span> <span class="s2">&quot;top to bottom or right to left&quot;</span><span class="p">,</span>
     <span class="p">)</span>
 
-    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+    <span class="k">class</span><span class="w"> </span><span class="nc">Meta</span><span class="p">:</span>
         <span class="n">ordering</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;order&quot;</span><span class="p">]</span>
         <span class="n">verbose_name</span> <span class="o">=</span> <span class="s2">&quot;Related Fragment&quot;</span>  <span class="c1"># for researcher legibility in admin</span>
 
-    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="c1"># combine shelfmark, multifragment, side, region, and certainty</span>
         <span class="n">certainty_str</span> <span class="o">=</span> <span class="s2">&quot;(?)&quot;</span> <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">certain</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
         <span class="n">parts</span> <span class="o">=</span> <span class="p">[</span>
@@ -2001,7 +2002,7 @@
         <span class="k">return</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">p</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">parts</span> <span class="k">if</span> <span class="n">p</span><span class="p">)</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">side</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">side</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Recto/verso side information based on selected image indices&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">selected_images</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">selected_images</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
@@ -2016,7 +2017,7 @@
 
 <div class="viewcode-block" id="TextBlock.thumbnail">
 <a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.models.TextBlock.thumbnail">[docs]</a>
-    <span class="k">def</span> <span class="nf">thumbnail</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">thumbnail</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;iiif thumbnails for this TextBlock, with selected images highlighted&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">fragment</span><span class="o">.</span><span class="n">iiif_thumbnails</span><span class="p">(</span><span class="n">selected</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">selected_images</span><span class="p">)</span></div>
 </div>
@@ -2025,10 +2026,10 @@
 
 <div class="viewcode-block" id="Dating">
 <a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.models.Dating">[docs]</a>
-<span class="k">class</span> <span class="nc">Dating</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Dating</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;An inferred date for a document.&quot;&quot;&quot;</span>
 
-    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+    <span class="k">class</span><span class="w"> </span><span class="nc">Meta</span><span class="p">:</span>
         <span class="n">verbose_name_plural</span> <span class="o">=</span> <span class="s2">&quot;Inferred datings (not written on the document)&quot;</span>
 
     <span class="n">document</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">ForeignKey</span><span class="p">(</span>
@@ -2078,7 +2079,7 @@
     <span class="p">)</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">standard_date_display</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">standard_date_display</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Standard date in human-readable format for document details pages&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">standard_date_display</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">standard_date</span><span class="p">)</span></div>
 
@@ -2086,14 +2087,14 @@
 
 <div class="viewcode-block" id="DocumentEventRelation">
 <a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.models.DocumentEventRelation">[docs]</a>
-<span class="k">class</span> <span class="nc">DocumentEventRelation</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">DocumentEventRelation</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;A relationship between a document and an event&quot;&quot;&quot;</span>
 
     <span class="n">document</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">ForeignKey</span><span class="p">(</span><span class="n">Document</span><span class="p">,</span> <span class="n">on_delete</span><span class="o">=</span><span class="n">models</span><span class="o">.</span><span class="n">CASCADE</span><span class="p">)</span>
     <span class="n">event</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">ForeignKey</span><span class="p">(</span><span class="s2">&quot;entities.Event&quot;</span><span class="p">,</span> <span class="n">on_delete</span><span class="o">=</span><span class="n">models</span><span class="o">.</span><span class="n">CASCADE</span><span class="p">)</span>
     <span class="n">notes</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">TextField</span><span class="p">(</span><span class="n">blank</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;Document-Event relation: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">document</span><span class="si">}</span><span class="s2"> and </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">event</span><span class="si">}</span><span class="s2">&quot;</span></div>
 
 </pre></div>

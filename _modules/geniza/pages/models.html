@@ -4,10 +4,10 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>geniza.pages.models &#8212; Princeton Geniza Project 4.18.2 documentation</title>
-    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=d1102ebc" />
+    <title>geniza.pages.models &#8212; Princeton Geniza Project 4.19.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=5ecbeea2" />
     <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=12dfc556" />
-    <script src="../../../_static/documentation_options.js?v=39372dd1"></script>
+    <script src="../../../_static/documentation_options.js?v=db6269fb"></script>
     <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
@@ -30,15 +30,15 @@
           <div class="body" role="main">
             
   <h1>Source code for geniza.pages.models</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">django.db</span> <span class="kn">import</span> <span class="n">models</span>
-<span class="kn">from</span> <span class="nn">django.http.response</span> <span class="kn">import</span> <span class="n">HttpResponseRedirect</span>
-<span class="kn">from</span> <span class="nn">django.utils.translation</span> <span class="kn">import</span> <span class="n">gettext_lazy</span> <span class="k">as</span> <span class="n">_</span>
-<span class="kn">from</span> <span class="nn">wagtail.admin.edit_handlers</span> <span class="kn">import</span> <span class="n">FieldPanel</span><span class="p">,</span> <span class="n">StreamFieldPanel</span>
-<span class="kn">from</span> <span class="nn">wagtail.core</span> <span class="kn">import</span> <span class="n">blocks</span>
-<span class="kn">from</span> <span class="nn">wagtail.core.fields</span> <span class="kn">import</span> <span class="n">StreamField</span>
-<span class="kn">from</span> <span class="nn">wagtail.core.models</span> <span class="kn">import</span> <span class="n">Page</span>
-<span class="kn">from</span> <span class="nn">wagtail.documents.blocks</span> <span class="kn">import</span> <span class="n">DocumentChooserBlock</span>
-<span class="kn">from</span> <span class="nn">wagtail.images.blocks</span> <span class="kn">import</span> <span class="n">ImageChooserBlock</span>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">django.db</span><span class="w"> </span><span class="kn">import</span> <span class="n">models</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">django.http.response</span><span class="w"> </span><span class="kn">import</span> <span class="n">HttpResponseRedirect</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">django.utils.translation</span><span class="w"> </span><span class="kn">import</span> <span class="n">gettext_lazy</span> <span class="k">as</span> <span class="n">_</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">wagtail.admin.edit_handlers</span><span class="w"> </span><span class="kn">import</span> <span class="n">FieldPanel</span><span class="p">,</span> <span class="n">StreamFieldPanel</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">wagtail.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">blocks</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">wagtail.core.fields</span><span class="w"> </span><span class="kn">import</span> <span class="n">StreamField</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">wagtail.core.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">Page</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">wagtail.documents.blocks</span><span class="w"> </span><span class="kn">import</span> <span class="n">DocumentChooserBlock</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">wagtail.images.blocks</span><span class="w"> </span><span class="kn">import</span> <span class="n">ImageChooserBlock</span>
 
 <span class="c1"># Translators: help text for image alternative text</span>
 <span class="n">ALT_TEXT_HELP</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span>
@@ -49,7 +49,7 @@
 
 <div class="viewcode-block" id="CaptionedImageBlock">
 <a class="viewcode-back" href="../../../codedocs/pages.html#geniza.pages.models.CaptionedImageBlock">[docs]</a>
-<span class="k">class</span> <span class="nc">CaptionedImageBlock</span><span class="p">(</span><span class="n">blocks</span><span class="o">.</span><span class="n">StructBlock</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">CaptionedImageBlock</span><span class="p">(</span><span class="n">blocks</span><span class="o">.</span><span class="n">StructBlock</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;:class:`~wagtail.core.blocks.StructBlock` for an image with</span>
 <span class="sd">    alternative text and optional formatted caption, so</span>
 <span class="sd">    that both caption and alternative text can be context-specific.&quot;&quot;&quot;</span>
@@ -63,7 +63,7 @@
         <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="p">)</span>
 
-    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+    <span class="k">class</span><span class="w"> </span><span class="nc">Meta</span><span class="p">:</span>
         <span class="n">icon</span> <span class="o">=</span> <span class="s2">&quot;image&quot;</span>
         <span class="n">template</span> <span class="o">=</span> <span class="s2">&quot;pages/blocks/captioned_image_block.html&quot;</span></div>
 
@@ -71,7 +71,7 @@
 
 <div class="viewcode-block" id="SVGImageBlock">
 <a class="viewcode-back" href="../../../codedocs/pages.html#geniza.pages.models.SVGImageBlock">[docs]</a>
-<span class="k">class</span> <span class="nc">SVGImageBlock</span><span class="p">(</span><span class="n">blocks</span><span class="o">.</span><span class="n">StructBlock</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">SVGImageBlock</span><span class="p">(</span><span class="n">blocks</span><span class="o">.</span><span class="n">StructBlock</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;:class:`~wagtail.core.blocks.StructBlock` for an SVG image with</span>
 <span class="sd">    alternative text and optional formatted caption. Separate from</span>
 <span class="sd">    :class:`CaptionedImageBlock` because Wagtail image handling</span>
@@ -95,7 +95,7 @@
         <span class="n">features</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;p&quot;</span><span class="p">],</span> <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">help_text</span><span class="o">=</span><span class="n">extended_description_help</span>
     <span class="p">)</span>
 
-    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+    <span class="k">class</span><span class="w"> </span><span class="nc">Meta</span><span class="p">:</span>
         <span class="n">icon</span> <span class="o">=</span> <span class="s2">&quot;image&quot;</span>
         <span class="n">label</span> <span class="o">=</span> <span class="s2">&quot;SVG&quot;</span>
         <span class="n">template</span> <span class="o">=</span> <span class="s2">&quot;pages/blocks/svg_image_block.html&quot;</span></div>
@@ -104,7 +104,7 @@
 
 <div class="viewcode-block" id="AccordionBlock">
 <a class="viewcode-back" href="../../../codedocs/pages.html#geniza.pages.models.AccordionBlock">[docs]</a>
-<span class="k">class</span> <span class="nc">AccordionBlock</span><span class="p">(</span><span class="n">blocks</span><span class="o">.</span><span class="n">StructBlock</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">AccordionBlock</span><span class="p">(</span><span class="n">blocks</span><span class="o">.</span><span class="n">StructBlock</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Accordion :class:`~wagtail.core.blocks.StructBlock` for collapsible</span>
 <span class="sd">    sections and/or FAQs&quot;&quot;&quot;</span>
 
@@ -126,7 +126,7 @@
         <span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
     <span class="p">)</span>
 
-    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+    <span class="k">class</span><span class="w"> </span><span class="nc">Meta</span><span class="p">:</span>
         <span class="n">icon</span> <span class="o">=</span> <span class="s2">&quot;folder-open-1&quot;</span>
         <span class="n">template</span> <span class="o">=</span> <span class="s2">&quot;pages/blocks/accordion_block.html&quot;</span>
         <span class="n">label</span> <span class="o">=</span> <span class="s2">&quot;Collapsible paragraph (accordion)&quot;</span></div>
@@ -135,7 +135,7 @@
 
 <div class="viewcode-block" id="BodyContentBlock">
 <a class="viewcode-back" href="../../../codedocs/pages.html#geniza.pages.models.BodyContentBlock">[docs]</a>
-<span class="k">class</span> <span class="nc">BodyContentBlock</span><span class="p">(</span><span class="n">blocks</span><span class="o">.</span><span class="n">StreamBlock</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">BodyContentBlock</span><span class="p">(</span><span class="n">blocks</span><span class="o">.</span><span class="n">StreamBlock</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Common set of content blocks for content pages.&quot;&quot;&quot;</span>
 
     <span class="c1"># Adapted from mep-django</span>
@@ -166,7 +166,7 @@
 
 <div class="viewcode-block" id="HomePage">
 <a class="viewcode-back" href="../../../codedocs/pages.html#geniza.pages.models.HomePage">[docs]</a>
-<span class="k">class</span> <span class="nc">HomePage</span><span class="p">(</span><span class="n">Page</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">HomePage</span><span class="p">(</span><span class="n">Page</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;:class:`wagtail.core.models.Page` model for Geniza home page.&quot;&quot;&quot;</span>
 
     <span class="c1"># fields</span>
@@ -180,12 +180,12 @@
         <span class="n">StreamFieldPanel</span><span class="p">(</span><span class="s2">&quot;body&quot;</span><span class="p">),</span>
     <span class="p">]</span>
 
-    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+    <span class="k">class</span><span class="w"> </span><span class="nc">Meta</span><span class="p">:</span>
         <span class="n">verbose_name</span> <span class="o">=</span> <span class="s2">&quot;homepage&quot;</span>
 
 <div class="viewcode-block" id="HomePage.get_context">
 <a class="viewcode-back" href="../../../codedocs/pages.html#geniza.pages.models.HomePage.get_context">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_context</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_context</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;add page type to context&quot;&quot;&quot;</span>
         <span class="n">context</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">HomePage</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">get_context</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
         <span class="n">context</span><span class="p">[</span><span class="s2">&quot;page_type&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;homepage&quot;</span>
@@ -196,7 +196,7 @@
 
 <div class="viewcode-block" id="ContainerPage">
 <a class="viewcode-back" href="../../../codedocs/pages.html#geniza.pages.models.ContainerPage">[docs]</a>
-<span class="k">class</span> <span class="nc">ContainerPage</span><span class="p">(</span><span class="n">Page</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">ContainerPage</span><span class="p">(</span><span class="n">Page</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;An empty :class:`Page` type that has :class:`ContentPage` instances</span>
 <span class="sd">    as its subpages.&quot;&quot;&quot;</span>
 
@@ -210,7 +210,7 @@
     <span class="c1"># should not ever actually render</span>
 <div class="viewcode-block" id="ContainerPage.serve">
 <a class="viewcode-back" href="../../../codedocs/pages.html#geniza.pages.models.ContainerPage.serve">[docs]</a>
-    <span class="k">def</span> <span class="nf">serve</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">serve</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;override serve method to redirect to parent page instead of rendering&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_parent</span><span class="p">():</span>
             <span class="k">return</span> <span class="n">HttpResponseRedirect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_parent</span><span class="p">()</span><span class="o">.</span><span class="n">get_url</span><span class="p">(</span><span class="n">request</span><span class="p">))</span></div>
@@ -220,7 +220,7 @@
 
 <div class="viewcode-block" id="ContentPage">
 <a class="viewcode-back" href="../../../codedocs/pages.html#geniza.pages.models.ContentPage">[docs]</a>
-<span class="k">class</span> <span class="nc">ContentPage</span><span class="p">(</span><span class="n">Page</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">ContentPage</span><span class="p">(</span><span class="n">Page</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;A simple :class:`Page` type for content pages.&quot;&quot;&quot;</span>
 
     <span class="c1"># fields</span>
@@ -238,7 +238,7 @@
 
 <div class="viewcode-block" id="ContentPage.get_context">
 <a class="viewcode-back" href="../../../codedocs/pages.html#geniza.pages.models.ContentPage.get_context">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_context</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_context</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;add page type to context&quot;&quot;&quot;</span>
         <span class="n">context</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">ContentPage</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">get_context</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
         <span class="n">context</span><span class="p">[</span><span class="s2">&quot;page_type&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;content-page&quot;</span>

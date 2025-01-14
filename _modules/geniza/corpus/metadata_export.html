@@ -4,10 +4,10 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>geniza.corpus.metadata_export &#8212; Princeton Geniza Project 4.18.2 documentation</title>
-    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=d1102ebc" />
+    <title>geniza.corpus.metadata_export &#8212; Princeton Geniza Project 4.19.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=5ecbeea2" />
     <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=12dfc556" />
-    <script src="../../../_static/documentation_options.js?v=39372dd1"></script>
+    <script src="../../../_static/documentation_options.js?v=db6269fb"></script>
     <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
@@ -30,16 +30,16 @@
           <div class="body" role="main">
             
   <h1>Source code for geniza.corpus.metadata_export</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">django.db.models.query</span> <span class="kn">import</span> <span class="n">Prefetch</span>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">django.db.models.query</span><span class="w"> </span><span class="kn">import</span> <span class="n">Prefetch</span>
 
-<span class="kn">from</span> <span class="nn">geniza.common.metadata_export</span> <span class="kn">import</span> <span class="n">Exporter</span>
-<span class="kn">from</span> <span class="nn">geniza.corpus.models</span> <span class="kn">import</span> <span class="n">Document</span><span class="p">,</span> <span class="n">Fragment</span>
-<span class="kn">from</span> <span class="nn">geniza.footnotes.models</span> <span class="kn">import</span> <span class="n">Footnote</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">geniza.common.metadata_export</span><span class="w"> </span><span class="kn">import</span> <span class="n">Exporter</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">geniza.corpus.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">Document</span><span class="p">,</span> <span class="n">Fragment</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">geniza.footnotes.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">Footnote</span>
 
 
 <div class="viewcode-block" id="DocumentExporter">
 <a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.metadata_export.DocumentExporter">[docs]</a>
-<span class="k">class</span> <span class="nc">DocumentExporter</span><span class="p">(</span><span class="n">Exporter</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">DocumentExporter</span><span class="p">(</span><span class="n">Exporter</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A subclass of :class:`geniza.common.metadata_export.Exporter` that</span>
 <span class="sd">    exports information relating to :class:`~geniza.corpus.models.Document`.</span>
@@ -97,7 +97,7 @@
 
 <div class="viewcode-block" id="DocumentExporter.get_queryset">
 <a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.metadata_export.DocumentExporter.get_queryset">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_queryset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_queryset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Applies some prefetching to the base Exporter&#39;s get_queryset functionality.</span>
 
@@ -134,7 +134,7 @@
 
 <div class="viewcode-block" id="DocumentExporter.get_export_data_dict">
 <a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.metadata_export.DocumentExporter.get_export_data_dict">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_export_data_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">doc</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_export_data_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">doc</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get back data about a document in dictionary format.</span>
 
@@ -242,7 +242,7 @@
 
 <div class="viewcode-block" id="AdminDocumentExporter">
 <a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.metadata_export.AdminDocumentExporter">[docs]</a>
-<span class="k">class</span> <span class="nc">AdminDocumentExporter</span><span class="p">(</span><span class="n">DocumentExporter</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">AdminDocumentExporter</span><span class="p">(</span><span class="n">DocumentExporter</span><span class="p">):</span>
     <span class="n">csv_fields</span> <span class="o">=</span> <span class="n">DocumentExporter</span><span class="o">.</span><span class="n">csv_fields</span> <span class="o">+</span> <span class="p">[</span>
         <span class="s2">&quot;notes&quot;</span><span class="p">,</span>
         <span class="s2">&quot;needs_review&quot;</span><span class="p">,</span>
@@ -252,7 +252,7 @@
 
 <div class="viewcode-block" id="AdminDocumentExporter.get_export_data_dict">
 <a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.metadata_export.AdminDocumentExporter.get_export_data_dict">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_export_data_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">doc</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_export_data_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">doc</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Adding certain fields to DocumentExporter.get_export_data_dict that are admin-only.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -272,14 +272,14 @@
 
 <div class="viewcode-block" id="PublicDocumentExporter">
 <a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.metadata_export.PublicDocumentExporter">[docs]</a>
-<span class="k">class</span> <span class="nc">PublicDocumentExporter</span><span class="p">(</span><span class="n">DocumentExporter</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">PublicDocumentExporter</span><span class="p">(</span><span class="n">DocumentExporter</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Public version of the document exporter. It can e.g. modify the get_queryset to ensure it deals with public documents.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="PublicDocumentExporter.get_queryset">
 <a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.metadata_export.PublicDocumentExporter.get_queryset">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_queryset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_queryset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">get_queryset</span><span class="p">()</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">status</span><span class="o">=</span><span class="n">Document</span><span class="o">.</span><span class="n">PUBLIC</span><span class="p">)</span></div>
 </div>
 
@@ -287,7 +287,7 @@
 
 <div class="viewcode-block" id="FragmentExporter">
 <a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.metadata_export.FragmentExporter">[docs]</a>
-<span class="k">class</span> <span class="nc">FragmentExporter</span><span class="p">(</span><span class="n">Exporter</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">FragmentExporter</span><span class="p">(</span><span class="n">Exporter</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A subclass of :class:`geniza.common.metadata_export.Exporter` that</span>
 <span class="sd">    exports information relating to :class:`~geniza.corpus.models.Fragment`.</span>
@@ -318,7 +318,7 @@
 
 <div class="viewcode-block" id="FragmentExporter.get_queryset">
 <a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.metadata_export.FragmentExporter.get_queryset">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_queryset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_queryset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Applies some prefetching to the base Exporter&#39;s get_queryset functionality.</span>
 
@@ -335,7 +335,7 @@
 
 <div class="viewcode-block" id="FragmentExporter.get_export_data_dict">
 <a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.metadata_export.FragmentExporter.get_export_data_dict">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_export_data_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fragment</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_export_data_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fragment</span><span class="p">):</span>
         <span class="n">data</span> <span class="o">=</span> <span class="p">{</span>
             <span class="s2">&quot;shelfmark&quot;</span><span class="p">:</span> <span class="n">fragment</span><span class="o">.</span><span class="n">shelfmark</span><span class="p">,</span>
             <span class="s2">&quot;pgpids&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">doc</span><span class="o">.</span><span class="n">pk</span> <span class="k">for</span> <span class="n">doc</span> <span class="ow">in</span> <span class="n">fragment</span><span class="o">.</span><span class="n">documents</span><span class="o">.</span><span class="n">all</span><span class="p">()],</span>
@@ -366,7 +366,7 @@
 
 <div class="viewcode-block" id="PublicFragmentExporter">
 <a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.metadata_export.PublicFragmentExporter">[docs]</a>
-<span class="k">class</span> <span class="nc">PublicFragmentExporter</span><span class="p">(</span><span class="n">FragmentExporter</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">PublicFragmentExporter</span><span class="p">(</span><span class="n">FragmentExporter</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Public version of the fragment exporter; limits fragments</span>
 <span class="sd">    to those associated with public documents. Unassociated fragments</span>
@@ -375,7 +375,7 @@
 
 <div class="viewcode-block" id="PublicFragmentExporter.get_queryset">
 <a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.metadata_export.PublicFragmentExporter.get_queryset">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_queryset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_queryset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">get_queryset</span><span class="p">()</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">documents__status</span><span class="o">=</span><span class="n">Document</span><span class="o">.</span><span class="n">PUBLIC</span><span class="p">)</span></div>
 </div>
 
@@ -383,13 +383,13 @@
 
 <div class="viewcode-block" id="AdminFragmentExporter">
 <a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.metadata_export.AdminFragmentExporter">[docs]</a>
-<span class="k">class</span> <span class="nc">AdminFragmentExporter</span><span class="p">(</span><span class="n">FragmentExporter</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">AdminFragmentExporter</span><span class="p">(</span><span class="n">FragmentExporter</span><span class="p">):</span>
     <span class="s2">&quot;Admin fragment export variant; adds notes, review, and admin url fields.&quot;</span>
     <span class="n">csv_fields</span> <span class="o">=</span> <span class="n">FragmentExporter</span><span class="o">.</span><span class="n">csv_fields</span> <span class="o">+</span> <span class="p">[</span><span class="s2">&quot;notes&quot;</span><span class="p">,</span> <span class="s2">&quot;needs_review&quot;</span><span class="p">,</span> <span class="s2">&quot;url_admin&quot;</span><span class="p">]</span>
 
 <div class="viewcode-block" id="AdminFragmentExporter.get_export_data_dict">
 <a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.metadata_export.AdminFragmentExporter.get_export_data_dict">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_export_data_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fragment</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_export_data_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fragment</span><span class="p">):</span>
         <span class="n">data</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">get_export_data_dict</span><span class="p">(</span><span class="n">fragment</span><span class="p">)</span>
         <span class="n">data</span><span class="p">[</span><span class="s2">&quot;notes&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">fragment</span><span class="o">.</span><span class="n">notes</span>
         <span class="n">data</span><span class="p">[</span><span class="s2">&quot;needs_review&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">fragment</span><span class="o">.</span><span class="n">needs_review</span>

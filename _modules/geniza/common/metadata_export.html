@@ -4,10 +4,10 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>geniza.common.metadata_export &#8212; Princeton Geniza Project 4.18.2 documentation</title>
-    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=d1102ebc" />
+    <title>geniza.common.metadata_export &#8212; Princeton Geniza Project 4.19.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=5ecbeea2" />
     <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=12dfc556" />
-    <script src="../../../_static/documentation_options.js?v=39372dd1"></script>
+    <script src="../../../_static/documentation_options.js?v=db6269fb"></script>
     <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
@@ -30,23 +30,23 @@
           <div class="body" role="main">
             
   <h1>Source code for geniza.common.metadata_export</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">codecs</span>
-<span class="kn">import</span> <span class="nn">csv</span>
-<span class="kn">import</span> <span class="nn">os</span>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">codecs</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">csv</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 
-<span class="kn">from</span> <span class="nn">django.conf</span> <span class="kn">import</span> <span class="n">settings</span>
-<span class="kn">from</span> <span class="nn">django.contrib.admin.models</span> <span class="kn">import</span> <span class="n">ADDITION</span><span class="p">,</span> <span class="n">CHANGE</span><span class="p">,</span> <span class="n">DELETION</span><span class="p">,</span> <span class="n">LogEntry</span>
-<span class="kn">from</span> <span class="nn">django.contrib.sites.models</span> <span class="kn">import</span> <span class="n">Site</span>
-<span class="kn">from</span> <span class="nn">django.http</span> <span class="kn">import</span> <span class="n">StreamingHttpResponse</span>
-<span class="kn">from</span> <span class="nn">django.utils</span> <span class="kn">import</span> <span class="n">timezone</span>
-<span class="kn">from</span> <span class="nn">rich.progress</span> <span class="kn">import</span> <span class="n">track</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">django.conf</span><span class="w"> </span><span class="kn">import</span> <span class="n">settings</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">django.contrib.admin.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">ADDITION</span><span class="p">,</span> <span class="n">CHANGE</span><span class="p">,</span> <span class="n">DELETION</span><span class="p">,</span> <span class="n">LogEntry</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">django.contrib.sites.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">Site</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">django.http</span><span class="w"> </span><span class="kn">import</span> <span class="n">StreamingHttpResponse</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">django.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">timezone</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">rich.progress</span><span class="w"> </span><span class="kn">import</span> <span class="n">track</span>
 
-<span class="kn">from</span> <span class="nn">geniza.common.utils</span> <span class="kn">import</span> <span class="n">Echo</span><span class="p">,</span> <span class="n">Timerable</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">geniza.common.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">Echo</span><span class="p">,</span> <span class="n">Timerable</span>
 
 
 <div class="viewcode-block" id="Exporter">
 <a class="viewcode-back" href="../../../codedocs/common.html#geniza.common.metadata_export.Exporter">[docs]</a>
-<span class="k">class</span> <span class="nc">Exporter</span><span class="p">(</span><span class="n">Timerable</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Exporter</span><span class="p">(</span><span class="n">Timerable</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Base class for data exports. See DocumentExporter `geniza/corpus/metadata_export.py` for an example of a subclass implementation of Exporter.</span>
 
@@ -63,19 +63,19 @@
     <span class="n">sep_within_cells</span> <span class="o">=</span> <span class="s2">&quot; ; &quot;</span>
     <span class="n">true_false</span> <span class="o">=</span> <span class="p">{</span><span class="kc">True</span><span class="p">:</span> <span class="s2">&quot;Y&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">:</span> <span class="s2">&quot;N&quot;</span><span class="p">}</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">queryset</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">progress</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">queryset</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">progress</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">queryset</span> <span class="o">=</span> <span class="n">queryset</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">progress</span> <span class="o">=</span> <span class="n">progress</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">script_user</span> <span class="o">=</span> <span class="n">settings</span><span class="o">.</span><span class="n">SCRIPT_USERNAME</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">site_domain</span> <span class="o">=</span> <span class="n">Site</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get_current</span><span class="p">()</span><span class="o">.</span><span class="n">domain</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">url_scheme</span> <span class="o">=</span> <span class="s2">&quot;https://&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">iter_dicts</span><span class="p">()</span>
 
 <div class="viewcode-block" id="Exporter.csv_filename">
 <a class="viewcode-back" href="../../../codedocs/common.html#geniza.common.metadata_export.Exporter.csv_filename">[docs]</a>
-    <span class="k">def</span> <span class="nf">csv_filename</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">csv_filename</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate the appropriate CSV filename for model and time</span>
 
 <span class="sd">        :return: Filename string</span>
@@ -88,7 +88,7 @@
 
 <div class="viewcode-block" id="Exporter.get_queryset">
 <a class="viewcode-back" href="../../../codedocs/common.html#geniza.common.metadata_export.Exporter.get_queryset">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_queryset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_queryset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the queryset in use. If not set at init, this will be all objects from the given model.</span>
 
 <span class="sd">        :return: QuerySet of documents to export</span>
@@ -99,7 +99,7 @@
 
 <div class="viewcode-block" id="Exporter.get_export_data_dict">
 <a class="viewcode-back" href="../../../codedocs/common.html#geniza.common.metadata_export.Exporter.get_export_data_dict">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_export_data_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_export_data_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;A given Exporter class (DocumentExporter, FootnoteExporter, etc) must implement this function. It ought to return a dictionary of exported information for a given object.</span>
 
 <span class="sd">        :param obj: Model object (document, footnote, etc)</span>
@@ -111,7 +111,7 @@
 
 <div class="viewcode-block" id="Exporter.iter_dicts">
 <a class="viewcode-back" href="../../../codedocs/common.html#geniza.common.metadata_export.Exporter.iter_dicts">[docs]</a>
-    <span class="k">def</span> <span class="nf">iter_dicts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;Iterating rows&quot;</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">iter_dicts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;Iterating rows&quot;</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Iterate over the exportable data, one dictionary per row</span>
 
 <span class="sd">        :yield: Dictionary of information for each object</span>
@@ -129,7 +129,7 @@
 
 <div class="viewcode-block" id="Exporter.serialize_value">
 <a class="viewcode-back" href="../../../codedocs/common.html#geniza.common.metadata_export.Exporter.serialize_value">[docs]</a>
-    <span class="k">def</span> <span class="nf">serialize_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">serialize_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;A quick serialize method to transform a value into a CSV-friendly string.</span>
 
 <span class="sd">        :param value: Any value</span>
@@ -159,7 +159,7 @@
 
 <div class="viewcode-block" id="Exporter.serialize_dict">
 <a class="viewcode-back" href="../../../codedocs/common.html#geniza.common.metadata_export.Exporter.serialize_dict">[docs]</a>
-    <span class="k">def</span> <span class="nf">serialize_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">serialize_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a new dictionary whose keys and values are safe, serialized string versions of the keys and values in input dictionary `data`.</span>
 
 <span class="sd">        :param data: Dictionary of keys and values</span>
@@ -173,7 +173,7 @@
 
 <div class="viewcode-block" id="Exporter.iter_csv">
 <a class="viewcode-back" href="../../../codedocs/common.html#geniza.common.metadata_export.Exporter.iter_csv">[docs]</a>
-    <span class="k">def</span> <span class="nf">iter_csv</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fn</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pseudo_buffer</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">iter_csv</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fn</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pseudo_buffer</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Iterate over the string lines of a CSV file as it&#39;s being written, either to file or a string buffer.</span>
 
 <span class="sd">        :param fn: Filename to save CSV to (if pseudo_buffer is False), defaults to None</span>
@@ -210,7 +210,7 @@
 
 <div class="viewcode-block" id="Exporter.write_export_data_csv">
 <a class="viewcode-back" href="../../../codedocs/common.html#geniza.common.metadata_export.Exporter.write_export_data_csv">[docs]</a>
-    <span class="k">def</span> <span class="nf">write_export_data_csv</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fn</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">write_export_data_csv</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fn</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Save CSV of exportable data to file.</span>
 
 <span class="sd">        :param fn: Filename to save CSV to, defaults to None</span>
@@ -226,7 +226,7 @@
 
 <div class="viewcode-block" id="Exporter.http_export_data_csv">
 <a class="viewcode-back" href="../../../codedocs/common.html#geniza.common.metadata_export.Exporter.http_export_data_csv">[docs]</a>
-    <span class="k">def</span> <span class="nf">http_export_data_csv</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fn</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">http_export_data_csv</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fn</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Download CSV of exportable data to file.</span>
 
 <span class="sd">        :param fn: Filename to download CSV as, defaults to None</span>
@@ -247,7 +247,7 @@
 
 <div class="viewcode-block" id="LogEntryExporter">
 <a class="viewcode-back" href="../../../codedocs/common.html#geniza.common.metadata_export.LogEntryExporter">[docs]</a>
-<span class="k">class</span> <span class="nc">LogEntryExporter</span><span class="p">(</span><span class="n">Exporter</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">LogEntryExporter</span><span class="p">(</span><span class="n">Exporter</span><span class="p">):</span>
     <span class="n">model</span> <span class="o">=</span> <span class="n">LogEntry</span>
     <span class="n">csv_fields</span> <span class="o">=</span> <span class="p">[</span>
         <span class="s2">&quot;action_time&quot;</span><span class="p">,</span>
@@ -264,13 +264,13 @@
 
 <div class="viewcode-block" id="LogEntryExporter.get_queryset">
 <a class="viewcode-back" href="../../../codedocs/common.html#geniza.common.metadata_export.LogEntryExporter.get_queryset">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_queryset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_queryset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">get_queryset</span><span class="p">()</span><span class="o">.</span><span class="n">select_related</span><span class="p">(</span><span class="s2">&quot;content_type&quot;</span><span class="p">,</span> <span class="s2">&quot;user&quot;</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="LogEntryExporter.get_export_data_dict">
 <a class="viewcode-back" href="../../../codedocs/common.html#geniza.common.metadata_export.LogEntryExporter.get_export_data_dict">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_export_data_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">log</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_export_data_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">log</span><span class="p">):</span>
         <span class="k">return</span> <span class="p">{</span>
             <span class="s2">&quot;action_time&quot;</span><span class="p">:</span> <span class="n">log</span><span class="o">.</span><span class="n">action_time</span><span class="p">,</span>
             <span class="s2">&quot;user&quot;</span><span class="p">:</span> <span class="n">log</span><span class="o">.</span><span class="n">user</span><span class="p">,</span>
