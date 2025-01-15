@@ -122,7 +122,9 @@ a#needsreview:target {
 }
 /* need to apply these manually for overriding purposes */
 .form-row .transcription p,
-.form-row .transcription li {
+.form-row .transcription li,
+.form-row .translation[lang="he"] p,
+.form-row .translation[lang="he"] li {
     font-family: "FrankRuhl 1924 MF Medium", "Amiri", "Times New Roman", serif;
     box-sizing: border-box;
 }

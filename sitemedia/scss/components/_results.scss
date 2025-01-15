@@ -159,12 +159,20 @@ section#document-list {
 
         .transcription {
             @include typography.transcription-search;
-
+        }
+        .transcription,
+        .translation {
             // arabic script
             &[lang="ar"],
             &[data-lang-script="arabic"],
             span[lang="ar"] {
                 @include typography.arabic-transcription-search;
+            }
+            // hebrew script
+            &[lang="he"],
+            &[data-lang-script="hebrew"],
+            span[lang="he"] {
+                @include typography.transcription-search;
             }
         }
 
