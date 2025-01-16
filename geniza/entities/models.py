@@ -11,7 +11,7 @@ from django.contrib.auth.models import User
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
 from django.core.validators import RegexValidator
-from django.db import models
+from django.db import IntegrityError, models
 from django.db.models import F, Q, Value
 from django.db.models.query import Prefetch
 from django.forms import ValidationError
@@ -1025,6 +1025,9 @@ class PersonDocumentRelationType(models.Model):
 
     name = models.CharField(max_length=255, unique=True)
     objects = PersonDocumentRelationTypeManager()
+    log_entries = GenericRelation(
+        LogEntry, related_query_name="persondocumentrelationtype"
+    )
 
     class Meta:
         verbose_name = "Person-Document relationship"
@@ -1040,6 +1043,64 @@ class PersonDocumentRelationType(models.Model):
             obj.name_en: obj
             for obj in cls.objects.all()
         }
+
+    def merge_with(self, merge_relation_types, user=None):
+        """Merge the specified relation types into this one. Combines all
+        relationships into this relation type and creates a log entry
+        documenting the merge.
+
+        Closely adapted from :class:`Person` merge."""
+
+        # if user is not specified, log entry will be associated with script
+        if user is None:
+            user = User.objects.get(username=settings.SCRIPT_USERNAME)
+
+        for rel_type in merge_relation_types:
+            # combine log entries
+            for log_entry in rel_type.log_entries.all():
+                # annotate and reassociate
+                # - modify change message to type which object this event applied to
+                log_entry.change_message = "%s [merged type %s (id = %d)]" % (
+                    log_entry.get_change_message(),
+                    str(rel_type),
+                    rel_type.pk,
+                )
+
+                # - associate with the primary relation type
+                log_entry.object_id = self.id
+                log_entry.content_type_id = ContentType.objects.get_for_model(
+                    PersonDocumentRelationType
+                )
+                log_entry.save()
+
+            # combine person-document relationships
+            for relationship in rel_type.persondocumentrelation_set.all():
+                relationship.type = self
+                # handle unique constraint violation (one relationship per type
+                # between doc and person): only reassign type if it doesn't
+                # create a duplicate, otherwise delete.
+                try:
+                    relationship.save()
+                except IntegrityError:
+                    relationship.delete()
+
+        # save current relation type with changes; delete merged relation types
+        self.save()
+        merged_types = ", ".join([str(rel_type) for rel_type in merge_relation_types])
+        for rel_type in merge_relation_types:
+            rel_type.delete()
+        # create log entry documenting the merge; include rationale
+        pdrtype_contenttype = ContentType.objects.get_for_model(
+            PersonDocumentRelationType
+        )
+        LogEntry.objects.log_action(
+            user_id=user.id,
+            content_type_id=pdrtype_contenttype.pk,
+            object_id=self.pk,
+            object_repr=str(self),
+            change_message="merged with %s" % (merged_types,),
+            action_flag=CHANGE,
+        )
 
 
 class PersonDocumentRelation(models.Model):

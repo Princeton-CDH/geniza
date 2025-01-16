@@ -7,7 +7,6 @@ from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.forms import ValidationError
 from django.utils import timezone
-from modeltranslation.manager import MultilingualQuerySet
 from parasolr.django.indexing import ModelIndexable
 from slugify import slugify
 from unidecode import unidecode
@@ -704,6 +703,82 @@ class TestPersonDocumentRelation:
             type=recipient,
         )
         assert str(relation) == f"{recipient} relation: {goitein} and {doc}"
+
+
+@pytest.mark.django_db(transaction=True)
+class TestPersonDocumentRelationType:
+    def test_merge_with(self, person, person_multiname, document, join):
+        # create two PersonDocumentRelationTypes and some associations
+        rel_type = PersonDocumentRelationType.objects.create(name="test")
+        type_2 = PersonDocumentRelationType.objects.create(name="to be merged")
+        type_3 = PersonDocumentRelationType.objects.create(name="also merge me")
+        PersonDocumentRelation.objects.create(
+            type=rel_type, person=person, document=document
+        )
+        PersonDocumentRelation.objects.create(
+            type=type_2, person=person, document=document
+        )
+        PersonDocumentRelation.objects.create(
+            type=type_2, person=person_multiname, document=document
+        )
+        PersonDocumentRelation.objects.create(type=type_3, person=person, document=join)
+
+        # create some log entries
+        pdrtype_contenttype = ContentType.objects.get_for_model(
+            PersonDocumentRelationType
+        )
+        creation_date = timezone.make_aware(datetime(2023, 10, 12))
+        creator = User.objects.get_or_create(username="editor")[0]
+        type_2_str = str(type_2)
+        type_2_pk = type_2.pk
+        LogEntry.objects.bulk_create(
+            [
+                LogEntry(
+                    user_id=creator.id,
+                    content_type_id=pdrtype_contenttype.pk,
+                    object_id=type_2_pk,
+                    object_repr=type_2_str,
+                    change_message="first input",
+                    action_flag=ADDITION,
+                    action_time=creation_date,
+                ),
+                LogEntry(
+                    user_id=creator.id,
+                    content_type_id=pdrtype_contenttype.pk,
+                    object_id=type_2_pk,
+                    object_repr=type_2_str,
+                    change_message="major revision",
+                    action_flag=CHANGE,
+                    action_time=timezone.now(),
+                ),
+            ]
+        )
+        assert rel_type.persondocumentrelation_set.count() == 1
+        rel_type.merge_with([type_2, type_3])
+        # should skip the duplicate and add the others
+        assert rel_type.persondocumentrelation_set.count() == 3
+        # should delete other types and create merge log entry
+        assert not type_2.pk
+        assert not type_3.pk
+        assert LogEntry.objects.filter(
+            object_id=rel_type.pk,
+            change_message__contains=f"merged with {type_2}, {type_3}",
+        ).exists()
+        assert rel_type.log_entries.count() == 3
+        # based on default sorting, most recent log entry will be first
+        # - should document the merge event
+        merge_log = rel_type.log_entries.first()
+        assert merge_log.action_flag == CHANGE
+
+        # reassociated log entries should include merged type's name, id
+        assert (
+            " [merged type %s (id = %s)]" % (type_2_str, type_2_pk)
+            in rel_type.log_entries.all()[1].change_message
+        )
+        assert (
+            " [merged type %s (id = %s)]" % (type_2_str, type_2_pk)
+            in rel_type.log_entries.all()[2].change_message
+        )
 
 
 @pytest.mark.django_db

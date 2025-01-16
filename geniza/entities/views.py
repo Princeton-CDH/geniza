@@ -19,11 +19,17 @@ from django.views.generic.edit import FormMixin
 
 from geniza.corpus.dates import PartialDate
 from geniza.corpus.views import SolrDateRangeMixin
-from geniza.entities.forms import PersonListForm, PersonMergeForm, PlaceListForm
+from geniza.entities.forms import (
+    PersonDocumentRelationTypeMergeForm,
+    PersonListForm,
+    PersonMergeForm,
+    PlaceListForm,
+)
 from geniza.entities.models import (
     PastPersonSlug,
     PastPlaceSlug,
     Person,
+    PersonDocumentRelationType,
     PersonPersonRelationType,
     PersonSolrQuerySet,
     Place,
@@ -89,6 +95,81 @@ class PersonMerge(PermissionRequiredMixin, FormView):
             self.request,
             mark_safe(
                 f"Successfully merged {secondary_people_str} with {primary_person_str}."
+            ),
+        )
+
+        return super().form_valid(form)
+
+
+class PersonDocumentRelationTypeMerge(PermissionRequiredMixin, FormView):
+    permission_required = (
+        "entities.change_persondocumentrelationtype",
+        "entities.delete_persondocumentrelationtype",
+    )
+    form_class = PersonDocumentRelationTypeMergeForm
+    template_name = "admin/entities/persondocumentrelationtype/merge.html"
+
+    def get_success_url(self):
+        return reverse(
+            "admin:entities_persondocumentrelationtype_change",
+            args=[self.primary_relation_type.pk],
+        )
+
+    def get_form_kwargs(self):
+        form_kwargs = super().get_form_kwargs()
+        form_kwargs["ids"] = self.ids
+        return form_kwargs
+
+    def get_initial(self):
+        # Default to first relation type selected
+        ids = self.request.GET.get("ids", None)
+        if ids:
+            self.ids = [int(id) for id in ids.split(",")]
+            # by default, prefer the first record created
+            return {"primary_relation_type": sorted(self.ids)[0]}
+        else:
+            self.ids = []
+
+    def form_valid(self, form):
+        """Merge the selected person-document relation types into the primary one."""
+        primary_relation_type = form.cleaned_data["primary_relation_type"]
+        self.primary_relation_type = primary_relation_type
+
+        secondary_ids = [id for id in self.ids if id != primary_relation_type.pk]
+        secondary_relation_types = PersonDocumentRelationType.objects.filter(
+            pk__in=secondary_ids
+        )
+
+        # Get string representations before they are merged
+        primary_relation_str = (
+            f"{str(primary_relation_type)} (id = {primary_relation_type.pk})"
+        )
+        secondary_relation_str = ", ".join(
+            [f"{str(rel)} (id = {rel.pk})" for rel in secondary_relation_types]
+        )
+
+        # Merge secondary relation types into the selected primary relation type
+        user = getattr(self.request, "user", None)
+
+        try:
+            primary_relation_type.merge_with(secondary_relation_types, user=user)
+        except ValidationError as err:
+            # in case the merge resulted in an error, display error to user
+            messages.error(self.request, err.message)
+            # redirect to this form page instead of one of the items
+            return HttpResponseRedirect(
+                "%s?ids=%s"
+                % (
+                    reverse("admin:person-document-relation-type-merge"),
+                    self.request.GET.get("ids", ""),
+                ),
+            )
+
+        # Display info about the merge to the user
+        messages.success(
+            self.request,
+            mark_safe(
+                f"Successfully merged {secondary_relation_str} with {primary_relation_str}."
             ),
         )
 
