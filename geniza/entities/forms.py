@@ -54,6 +54,45 @@ class PersonMergeForm(forms.Form):
         )
 
 
+class PersonDocumentRelationTypeChoiceField(forms.ModelChoiceField):
+    """Add a summary of each PersonDocumentRelationType to a form (used for merging)"""
+
+    label_template = get_template(
+        "entities/snippets/persondocumentrelationtype_option_label.html"
+    )
+
+    def label_from_instance(self, relation_type):
+        return self.label_template.render({"relation_type": relation_type})
+
+
+class PersonDocumentRelationTypeMergeForm(forms.Form):
+    primary_relation_type = PersonDocumentRelationTypeChoiceField(
+        label="Select primary person-document relationship",
+        queryset=None,
+        help_text=(
+            "Select the primary person-document relationship, which will be "
+            "used as the canonical entry. All associated relations and log "
+            "entries will be combined on the primary relationship."
+        ),
+        empty_label=None,
+        widget=forms.RadioSelect,
+    )
+
+    def __init__(self, *args, **kwargs):
+        ids = kwargs.get("ids", [])
+
+        # Remove the added kwarg so that the super method doesn't error
+        try:
+            del kwargs["ids"]
+        except KeyError:
+            pass
+
+        super().__init__(*args, **kwargs)
+        self.fields[
+            "primary_relation_type"
+        ].queryset = PersonDocumentRelationType.objects.filter(id__in=ids)
+
+
 class PersonPersonForm(forms.ModelForm):
     class Meta:
         model = PersonPersonRelation

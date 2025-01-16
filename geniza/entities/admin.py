@@ -50,7 +50,7 @@ from geniza.entities.models import (
     PlacePlaceRelation,
     PlacePlaceRelationType,
 )
-from geniza.entities.views import PersonMerge
+from geniza.entities.views import PersonDocumentRelationTypeMerge, PersonMerge
 from geniza.footnotes.models import Footnote
 
 
@@ -416,6 +416,43 @@ class PersonDocumentRelationTypeAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
     fields = ("name",)
     search_fields = ("name",)
     ordering = ("name",)
+
+    @admin.display(description="Merge selected Person-Document relationships")
+    def merge_person_document_relation_types(self, request, queryset=None):
+        """Admin action to merge selected person-document relation types. This
+        action redirects to an intermediate page, which displays a form to
+        review for confirmation and choose the primary type before merging.
+        """
+        selected = request.POST.getlist("_selected_action")
+        if len(selected) < 2:
+            messages.error(
+                request,
+                "You must select at least two person-document relationships to merge",
+            )
+            return HttpResponseRedirect(
+                reverse("admin:entities_persondocumentrelationtype_changelist")
+            )
+        return HttpResponseRedirect(
+            "%s?ids=%s"
+            % (
+                reverse("admin:person-document-relation-type-merge"),
+                ",".join(selected),
+            ),
+            status=303,
+        )  # status code 303 means "See Other"
+
+    def get_urls(self):
+        """Return admin urls; adds custom URL for merging"""
+        urls = [
+            path(
+                "merge/",
+                PersonDocumentRelationTypeMerge.as_view(),
+                name="person-document-relation-type-merge",
+            ),
+        ]
+        return urls + super().get_urls()
+
+    actions = (merge_person_document_relation_types,)
 
 
 @admin.register(PersonPersonRelationType)
