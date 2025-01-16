@@ -705,7 +705,7 @@ class TestPersonDocumentRelation:
         assert str(relation) == f"{recipient} relation: {goitein} and {doc}"
 
 
-@pytest.mark.django_db(transaction=True)
+@pytest.mark.django_db
 class TestPersonDocumentRelationType:
     def test_merge_with(self, person, person_multiname, document, join):
         # create two PersonDocumentRelationTypes and some associations

@@ -11,7 +11,7 @@ from django.contrib.auth.models import User
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
 from django.core.validators import RegexValidator
-from django.db import IntegrityError, models
+from django.db import IntegrityError, models, transaction
 from django.db.models import F, Q, Value
 from django.db.models.query import Prefetch
 from django.forms import ValidationError
@@ -1075,12 +1075,15 @@ class PersonDocumentRelationType(models.Model):
 
             # combine person-document relationships
             for relationship in rel_type.persondocumentrelation_set.all():
+                # set type of each relationship to primary relation type
                 relationship.type = self
                 # handle unique constraint violation (one relationship per type
                 # between doc and person): only reassign type if it doesn't
                 # create a duplicate, otherwise delete.
+                # see https://docs.djangoproject.com/en/3.2/topics/db/transactions/#django.db.transaction.atomic
                 try:
-                    relationship.save()
+                    with transaction.atomic():
+                        relationship.save()
                 except IntegrityError:
                     relationship.delete()
 
