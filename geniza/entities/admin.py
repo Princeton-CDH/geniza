@@ -421,7 +421,7 @@ class PersonDocumentRelationTypeAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
     def merge_person_document_relation_types(self, request, queryset=None):
         """Admin action to merge selected person-document relation types. This
         action redirects to an intermediate page, which displays a form to
-        review for confirmation and choose the primary person before merging.
+        review for confirmation and choose the primary type before merging.
         """
         selected = request.POST.getlist("_selected_action")
         if len(selected) < 2:

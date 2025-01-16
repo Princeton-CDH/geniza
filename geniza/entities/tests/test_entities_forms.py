@@ -6,11 +6,12 @@ from django.utils.translation import activate, get_language
 from geniza.corpus.forms import FacetChoiceField
 from geniza.entities.forms import (
     PersonChoiceField,
+    PersonDocumentRelationTypeMergeForm,
     PersonListForm,
     PersonMergeForm,
     PlaceListForm,
 )
-from geniza.entities.models import Name, Person, PersonRole
+from geniza.entities.models import Name, Person, PersonDocumentRelationType, PersonRole
 
 
 class TestPersonChoiceField:
@@ -49,6 +50,31 @@ class TestPersonMergeForm:
         assert mergeform.fields["primary_person"].queryset.count() == people.count() - 1
         # last person should not be an available choice
         assert people.last() not in mergeform.fields["primary_person"].queryset
+
+
+class TestPersonDocumentRelationTypeMergeForm:
+    @pytest.mark.django_db
+    def test_init(self):
+        # adapted from TestPersonMergeForm
+
+        # no error if ids not specified
+        PersonDocumentRelationTypeMergeForm()
+
+        # create test records
+        PersonDocumentRelationType.objects.bulk_create(
+            [PersonDocumentRelationType(name=f"test{i}") for i in range(4)]
+        )
+        # initialize with ids for all but the last
+        types = PersonDocumentRelationType.objects.all().order_by("pk")
+        ids = list(types.values_list("id", flat=True))
+        mergeform = PersonDocumentRelationTypeMergeForm(ids=ids[:-1])
+        # total should have all but one type
+        assert (
+            mergeform.fields["primary_relation_type"].queryset.count()
+            == types.count() - 1
+        )
+        # last type should not be an available choice
+        assert types.last() not in mergeform.fields["primary_relation_type"].queryset
 
 
 @pytest.mark.django_db

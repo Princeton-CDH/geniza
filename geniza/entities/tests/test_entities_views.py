@@ -25,6 +25,7 @@ from geniza.entities.models import (
 )
 from geniza.entities.views import (
     PersonAutocompleteView,
+    PersonDocumentRelationTypeMerge,
     PersonListView,
     PersonMerge,
     PlaceAutocompleteView,
@@ -104,6 +105,91 @@ class TestPersonMergeView:
             mock_merge_with.side_effect = ValidationError("test message")
             response = admin_client.post(
                 merge_url, {"primary_person": person.id}, follow=True
+            )
+            TestCase().assertRedirects(response, merge_url)
+            messages = [str(msg) for msg in list(response.context["messages"])]
+            assert "test message" in messages
+
+
+class TestPersonDocumentRelationTypeMergeView:
+    # adapted from TestPersonMergeView
+    @pytest.mark.django_db
+    def test_get_success_url(self):
+        rel_type = PersonDocumentRelationType.objects.create(name="test")
+        merge_view = PersonDocumentRelationTypeMerge()
+        merge_view.primary_relation_type = rel_type
+
+        resolved_url = resolve(merge_view.get_success_url())
+        assert "admin" in resolved_url.app_names
+        assert resolved_url.url_name == "entities_persondocumentrelationtype_change"
+        assert resolved_url.kwargs["object_id"] == str(rel_type.pk)
+
+    def test_get_initial(self):
+        merge_view = PersonDocumentRelationTypeMerge()
+        merge_view.request = Mock(GET={"ids": "12,23,456,7"})
+
+        initial = merge_view.get_initial()
+        assert merge_view.ids == [12, 23, 456, 7]
+        # lowest id selected as default primary type
+        assert initial["primary_relation_type"] == 7
+
+        # Test when no ids are provided (a user shouldn't get here,
+        #  but shouldn't raise an error.)
+        merge_view.request = Mock(GET={"ids": ""})
+        initial = merge_view.get_initial()
+        assert merge_view.ids == []
+        merge_view.request = Mock(GET={})
+        initial = merge_view.get_initial()
+        assert merge_view.ids == []
+
+    def test_get_form_kwargs(self):
+        merge_view = PersonDocumentRelationTypeMerge()
+        merge_view.request = Mock(GET={"ids": "12,23,456,7"})
+        form_kwargs = merge_view.get_form_kwargs()
+        assert form_kwargs["ids"] == merge_view.ids
+
+    def test_person_merge(self, admin_client, client):
+        # Ensure that the merge view is not visible to public
+        response = client.get(reverse("admin:person-document-relation-type-merge"))
+        assert response.status_code == 302
+        assert response.url.startswith("/accounts/login/")
+
+        # create test records to merge
+        rel_type = PersonDocumentRelationType.objects.create(name="test")
+        dupe_rel_type = PersonDocumentRelationType.objects.create(name="test2")
+
+        idstring = ",".join(str(id) for id in [rel_type.id, dupe_rel_type.id])
+
+        # GET should display choices
+        response = admin_client.get(
+            reverse("admin:person-document-relation-type-merge"), {"ids": idstring}
+        )
+        assert response.status_code == 200
+
+        # POST should merge
+        merge_url = "%s?ids=%s" % (
+            reverse("admin:person-document-relation-type-merge"),
+            idstring,
+        )
+        response = admin_client.post(
+            merge_url, {"primary_relation_type": rel_type.id}, follow=True
+        )
+        TestCase().assertRedirects(
+            response,
+            reverse(
+                "admin:entities_persondocumentrelationtype_change", args=[rel_type.id]
+            ),
+        )
+        message = list(response.context.get("messages"))[0]
+        assert message.tags == "success"
+        assert "Successfully merged" in message.message
+        assert f"with {str(rel_type)} (id = {rel_type.pk})" in message.message
+
+        with patch.object(PersonDocumentRelationType, "merge_with") as mock_merge_with:
+            # should catch ValidationError and send back to form with error msg
+            mock_merge_with.side_effect = ValidationError("test message")
+            response = admin_client.post(
+                merge_url, {"primary_relation_type": rel_type.id}, follow=True
             )
             TestCase().assertRedirects(response, merge_url)
             messages = [str(msg) for msg in list(response.context["messages"])]
