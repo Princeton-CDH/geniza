@@ -12,6 +12,7 @@ from geniza.entities.admin import (
     NameInlineFormSet,
     PersonAdmin,
     PersonDocumentInline,
+    PersonDocumentRelationTypeAdmin,
     PersonPersonInline,
     PersonPersonRelationTypeChoiceField,
     PersonPersonReverseInline,
@@ -21,6 +22,7 @@ from geniza.entities.models import (
     Name,
     Person,
     PersonDocumentRelation,
+    PersonDocumentRelationType,
     PersonPersonRelation,
     PersonPersonRelationType,
     PersonPlaceRelation,
@@ -415,3 +417,29 @@ class TestPlaceAdmin:
         # - some content
         assert str(person) in content
         assert "Home base" in content
+
+
+class TestPersonDocumentRelationTypeAdmin:
+    def test_merge_person_document_relation_types(self):
+        pdr_admin = PersonDocumentRelationTypeAdmin(
+            model=PersonDocumentRelationType, admin_site=admin.site
+        )
+        mockrequest = Mock()
+        test_ids = ["1", "2", "3"]
+        mockrequest.POST.getlist.return_value = test_ids
+        resp = pdr_admin.merge_person_document_relation_types(mockrequest, Mock())
+        assert isinstance(resp, HttpResponseRedirect)
+        assert resp.status_code == 303
+        assert resp["location"].startswith(
+            reverse("admin:person-document-relation-type-merge")
+        )
+        assert resp["location"].endswith("?ids=%s" % ",".join(test_ids))
+
+        test_ids = ["1"]
+        mockrequest.POST.getlist.return_value = test_ids
+        resp = pdr_admin.merge_person_document_relation_types(mockrequest, Mock())
+        assert isinstance(resp, HttpResponseRedirect)
+        assert resp.status_code == 302
+        assert resp["location"] == reverse(
+            "admin:entities_persondocumentrelationtype_changelist"
+        )

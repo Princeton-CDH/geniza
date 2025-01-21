@@ -148,7 +148,7 @@ class TestPersonDocumentRelationTypeMergeView:
         form_kwargs = merge_view.get_form_kwargs()
         assert form_kwargs["ids"] == merge_view.ids
 
-    def test_person_merge(self, admin_client, client):
+    def test_person_document_relation_type_merge(self, admin_client, client):
         # Ensure that the merge view is not visible to public
         response = client.get(reverse("admin:person-document-relation-type-merge"))
         assert response.status_code == 302
