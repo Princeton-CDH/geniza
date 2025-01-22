@@ -780,6 +780,36 @@ class TestPersonDocumentRelationType:
             in rel_type.log_entries.all()[2].change_message
         )
 
+    @pytest.mark.django_db
+    def test_objects_by_label(self):
+        """Should return dict of PersonDocumentRelationType objects keyed on English label"""
+        # invalidate cached property (it is computed in other tests in the suite)
+        if "objects_by_label" in PersonDocumentRelationType.__dict__:
+            # __dict__["objects_by_label"] returns a classmethod
+            # __func__ returns a property
+            # fget returns the actual cached function
+            PersonDocumentRelationType.__dict__[
+                "objects_by_label"
+            ].__func__.fget.cache_clear()
+        # add some new relation types
+        rel_type = PersonDocumentRelationType(name="Some kind of official")
+        rel_type.save()
+        rel_type_2 = PersonDocumentRelationType(name="Example")
+        rel_type_2.save()
+        # should be able to get a relation type by label
+        assert isinstance(
+            PersonDocumentRelationType.objects_by_label.get("Some kind of official"),
+            PersonDocumentRelationType,
+        )
+        assert (
+            PersonDocumentRelationType.objects_by_label.get("Some kind of official").pk
+            == rel_type.pk
+        )
+        assert (
+            PersonDocumentRelationType.objects_by_label.get("Example").pk
+            == rel_type_2.pk
+        )
+
 
 @pytest.mark.django_db
 class TestPersonPersonRelationType:
