@@ -1020,29 +1020,10 @@ class PersonDocumentRelationTypeManager(models.Manager):
         return self.get(name_en=name)
 
 
-class PersonDocumentRelationType(models.Model):
-    """Controlled vocabulary of people's relationships to documents."""
-
-    name = models.CharField(max_length=255, unique=True)
-    objects = PersonDocumentRelationTypeManager()
-    log_entries = GenericRelation(
-        LogEntry, related_query_name="persondocumentrelationtype"
-    )
-
-    class Meta:
-        verbose_name = "Person-Document relationship"
-        verbose_name_plural = "Person-Document relationships"
-
-    def __str__(self):
-        return self.name
-
-    @cached_class_property
-    def objects_by_label(cls):
-        return {
-            # lookup on name_en since solr should always index in English
-            obj.name_en: obj
-            for obj in cls.objects.all()
-        }
+class MergeRelationTypesMixin:
+    """Mixin to include shared merge logic for relation types.
+    Requires inheriting relation type model to make its relationships
+    queryset available generically by the method name :meth:`relation_set`"""
 
     def merge_with(self, merge_relation_types, user=None):
         """Merge the specified relation types into this one. Combines all
@@ -1069,12 +1050,12 @@ class PersonDocumentRelationType(models.Model):
                 # - associate with the primary relation type
                 log_entry.object_id = self.id
                 log_entry.content_type_id = ContentType.objects.get_for_model(
-                    PersonDocumentRelationType
+                    self.__class__
                 )
                 log_entry.save()
 
-            # combine person-document relationships
-            for relationship in rel_type.persondocumentrelation_set.all():
+            # combine relationships
+            for relationship in rel_type.relation_set():
                 # set type of each relationship to primary relation type
                 relationship.type = self
                 # handle unique constraint violation (one relationship per type
@@ -1093,17 +1074,44 @@ class PersonDocumentRelationType(models.Model):
         for rel_type in merge_relation_types:
             rel_type.delete()
         # create log entry documenting the merge; include rationale
-        pdrtype_contenttype = ContentType.objects.get_for_model(
-            PersonDocumentRelationType
-        )
+        rtype_contenttype = ContentType.objects.get_for_model(self.__class__)
         LogEntry.objects.log_action(
             user_id=user.id,
-            content_type_id=pdrtype_contenttype.pk,
+            content_type_id=rtype_contenttype.pk,
             object_id=self.pk,
             object_repr=str(self),
             change_message="merged with %s" % (merged_types,),
             action_flag=CHANGE,
         )
+
+
+class PersonDocumentRelationType(MergeRelationTypesMixin, models.Model):
+    """Controlled vocabulary of people's relationships to documents."""
+
+    name = models.CharField(max_length=255, unique=True)
+    objects = PersonDocumentRelationTypeManager()
+    log_entries = GenericRelation(
+        LogEntry, related_query_name="persondocumentrelationtype"
+    )
+
+    class Meta:
+        verbose_name = "Person-Document relationship"
+        verbose_name_plural = "Person-Document relationships"
+
+    def __str__(self):
+        return self.name
+
+    @cached_class_property
+    def objects_by_label(cls):
+        return {
+            # lookup on name_en since solr should always index in English
+            obj.name_en: obj
+            for obj in cls.objects.all()
+        }
+
+    def relation_set(self):
+        # own relationships QuerySet as required by MergeRelationTypesMixin
+        return self.persondocumentrelation_set.all()
 
 
 class PersonDocumentRelation(models.Model):
@@ -1140,7 +1148,7 @@ class PersonPersonRelationTypeManager(models.Manager):
         return self.get(name_en=name)
 
 
-class PersonPersonRelationType(models.Model):
+class PersonPersonRelationType(MergeRelationTypesMixin, models.Model):
     """Controlled vocabulary of people's relationships to other people."""
 
     # name of the relationship
@@ -1171,6 +1179,9 @@ class PersonPersonRelationType(models.Model):
         choices=CATEGORY_CHOICES,
     )
     objects = PersonPersonRelationTypeManager()
+    log_entries = GenericRelation(
+        LogEntry, related_query_name="personpersonrelationtype"
+    )
 
     class Meta:
         verbose_name = "Person-Person relationship"
@@ -1178,6 +1189,10 @@ class PersonPersonRelationType(models.Model):
 
     def __str__(self):
         return self.name
+
+    def relation_set(self):
+        # own relationships QuerySet as required by MergeRelationTypesMixin
+        return self.personpersonrelation_set.all()
 
 
 class PersonPersonRelation(models.Model):

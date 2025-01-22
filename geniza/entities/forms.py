@@ -10,6 +10,7 @@ from geniza.entities.models import (
     PersonDocumentRelationType,
     PersonEventRelation,
     PersonPersonRelation,
+    PersonPersonRelationType,
     PersonPlaceRelation,
     PersonRole,
     PlaceEventRelation,
@@ -54,30 +55,7 @@ class PersonMergeForm(forms.Form):
         )
 
 
-class PersonDocumentRelationTypeChoiceField(forms.ModelChoiceField):
-    """Add a summary of each PersonDocumentRelationType to a form (used for merging)"""
-
-    label_template = get_template(
-        "entities/snippets/persondocumentrelationtype_option_label.html"
-    )
-
-    def label_from_instance(self, relation_type):
-        return self.label_template.render({"relation_type": relation_type})
-
-
-class PersonDocumentRelationTypeMergeForm(forms.Form):
-    primary_relation_type = PersonDocumentRelationTypeChoiceField(
-        label="Select primary person-document relationship",
-        queryset=None,
-        help_text=(
-            "Select the primary person-document relationship, which will be "
-            "used as the canonical entry. All associated relations and log "
-            "entries will be combined on the primary relationship."
-        ),
-        empty_label=None,
-        widget=forms.RadioSelect,
-    )
-
+class RelationTypeMergeFormMixin:
     def __init__(self, *args, **kwargs):
         ids = kwargs.get("ids", [])
 
@@ -90,7 +68,59 @@ class PersonDocumentRelationTypeMergeForm(forms.Form):
         super().__init__(*args, **kwargs)
         self.fields[
             "primary_relation_type"
-        ].queryset = PersonDocumentRelationType.objects.filter(id__in=ids)
+        ].queryset = self.reltype_model.objects.filter(id__in=ids)
+
+
+class PersonDocumentRelationTypeChoiceField(forms.ModelChoiceField):
+    """Add a summary of each PersonDocumentRelationType to a form (used for merging)"""
+
+    label_template = get_template(
+        "entities/snippets/persondocumentrelationtype_option_label.html"
+    )
+
+    def label_from_instance(self, relation_type):
+        return self.label_template.render({"relation_type": relation_type})
+
+
+class PersonDocumentRelationTypeMergeForm(RelationTypeMergeFormMixin, forms.Form):
+    primary_relation_type = PersonDocumentRelationTypeChoiceField(
+        label="Select primary person-document relationship",
+        queryset=None,
+        help_text=(
+            "Select the primary person-document relationship, which will be "
+            "used as the canonical entry. All associated relations and log "
+            "entries will be combined on the primary relationship."
+        ),
+        empty_label=None,
+        widget=forms.RadioSelect,
+    )
+    reltype_model = PersonDocumentRelationType
+
+
+class PersonPersonRelationTypeChoiceField(forms.ModelChoiceField):
+    """Add a summary of each PersonPersonRelationType to a form (used for merging)"""
+
+    label_template = get_template(
+        "entities/snippets/personpersonrelationtype_option_label.html"
+    )
+
+    def label_from_instance(self, relation_type):
+        return self.label_template.render({"relation_type": relation_type})
+
+
+class PersonPersonRelationTypeMergeForm(RelationTypeMergeFormMixin, forms.Form):
+    primary_relation_type = PersonPersonRelationTypeChoiceField(
+        label="Select primary person-person relationship",
+        queryset=None,
+        help_text=(
+            "Select the primary person-person relationship, which will be "
+            "used as the canonical entry. All associated relations and log "
+            "entries will be combined on the primary relationship."
+        ),
+        empty_label=None,
+        widget=forms.RadioSelect,
+    )
+    reltype_model = PersonPersonRelationType
 
 
 class PersonPersonForm(forms.ModelForm):

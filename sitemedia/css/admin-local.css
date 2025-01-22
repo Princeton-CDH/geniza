@@ -242,12 +242,12 @@ fieldset.transcriptions-field
     max-height: 350px;
     overflow-y: scroll;
 }
-.merge-document li > label {
+[class^="merge-"] li > label {
     display: flex;
     justify-content: flex-start;
 }
 
-.merge-document .submit-row {
+[class^="merge-"] .submit-row {
     clear: left;
     padding: 12px 14px;
     margin: 20px 0 0;
@@ -279,10 +279,10 @@ fieldset.transcriptions-field
     list-style: auto;
 }
 
-.merge-document input[type="radio"] {
+[class^="merge-"] input[type="radio"] {
     margin-right: 0.5rem;
 }
-.merge-document textarea {
+[class^="merge-"] textarea {
     margin: 0 0 20px 180px;
 }
 
