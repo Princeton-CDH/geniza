@@ -708,7 +708,7 @@ class TestPersonDocumentRelation:
 @pytest.mark.django_db
 class TestPersonDocumentRelationType:
     def test_merge_with(self, person, person_multiname, document, join):
-        # create two PersonDocumentRelationTypes and some associations
+        # create three PersonDocumentRelationTypes and some associations
         rel_type = PersonDocumentRelationType.objects.create(name="test")
         type_2 = PersonDocumentRelationType.objects.create(name="to be merged")
         type_3 = PersonDocumentRelationType.objects.create(name="also merge me")
@@ -763,6 +763,105 @@ class TestPersonDocumentRelationType:
         assert LogEntry.objects.filter(
             object_id=rel_type.pk,
             change_message__contains=f"merged with {type_2}, {type_3}",
+        ).exists()
+        assert rel_type.log_entries.count() == 3
+        # based on default sorting, most recent log entry will be first
+        # - should document the merge event
+        merge_log = rel_type.log_entries.first()
+        assert merge_log.action_flag == CHANGE
+
+        # reassociated log entries should include merged type's name, id
+        assert (
+            " [merged type %s (id = %s)]" % (type_2_str, type_2_pk)
+            in rel_type.log_entries.all()[1].change_message
+        )
+        assert (
+            " [merged type %s (id = %s)]" % (type_2_str, type_2_pk)
+            in rel_type.log_entries.all()[2].change_message
+        )
+
+    @pytest.mark.django_db
+    def test_objects_by_label(self):
+        """Should return dict of PersonDocumentRelationType objects keyed on English label"""
+        # invalidate cached property (it is computed in other tests in the suite)
+        if "objects_by_label" in PersonDocumentRelationType.__dict__:
+            # __dict__["objects_by_label"] returns a classmethod
+            # __func__ returns a property
+            # fget returns the actual cached function
+            PersonDocumentRelationType.__dict__[
+                "objects_by_label"
+            ].__func__.fget.cache_clear()
+        # add some new relation types
+        rel_type = PersonDocumentRelationType(name="Some kind of official")
+        rel_type.save()
+        rel_type_2 = PersonDocumentRelationType(name="Example")
+        rel_type_2.save()
+        # should be able to get a relation type by label
+        assert isinstance(
+            PersonDocumentRelationType.objects_by_label.get("Some kind of official"),
+            PersonDocumentRelationType,
+        )
+        assert (
+            PersonDocumentRelationType.objects_by_label.get("Some kind of official").pk
+            == rel_type.pk
+        )
+        assert (
+            PersonDocumentRelationType.objects_by_label.get("Example").pk
+            == rel_type_2.pk
+        )
+
+
+@pytest.mark.django_db
+class TestPersonPersonRelationType:
+    def test_merge_with(self, person, person_multiname, person_diacritic):
+        # create two PersonPersonRelationTypes and some associations
+        rel_type = PersonPersonRelationType.objects.create(name="test")
+        type_2 = PersonPersonRelationType.objects.create(name="to be merged")
+        PersonPersonRelation.objects.create(
+            type=rel_type, from_person=person, to_person=person_multiname
+        )
+        PersonPersonRelation.objects.create(
+            type=type_2, from_person=person, to_person=person_diacritic
+        )
+
+        # create some log entries
+        pprtype_contenttype = ContentType.objects.get_for_model(
+            PersonPersonRelationType
+        )
+        creation_date = timezone.make_aware(datetime(2025, 1, 22))
+        creator = User.objects.get_or_create(username="editor")[0]
+        type_2_str = str(type_2)
+        type_2_pk = type_2.pk
+        LogEntry.objects.bulk_create(
+            [
+                LogEntry(
+                    user_id=creator.id,
+                    content_type_id=pprtype_contenttype.pk,
+                    object_id=type_2_pk,
+                    object_repr=type_2_str,
+                    change_message="first input",
+                    action_flag=ADDITION,
+                    action_time=creation_date,
+                ),
+                LogEntry(
+                    user_id=creator.id,
+                    content_type_id=pprtype_contenttype.pk,
+                    object_id=type_2_pk,
+                    object_repr=type_2_str,
+                    change_message="major revision",
+                    action_flag=CHANGE,
+                    action_time=timezone.now(),
+                ),
+            ]
+        )
+        assert rel_type.personpersonrelation_set.count() == 1
+        rel_type.merge_with([type_2])
+        assert rel_type.personpersonrelation_set.count() == 2
+        # should delete other types and create merge log entry
+        assert not type_2.pk
+        assert LogEntry.objects.filter(
+            object_id=rel_type.pk,
+            change_message__contains=f"merged with {type_2}",
         ).exists()
         assert rel_type.log_entries.count() == 3
         # based on default sorting, most recent log entry will be first

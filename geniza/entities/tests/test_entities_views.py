@@ -28,6 +28,7 @@ from geniza.entities.views import (
     PersonDocumentRelationTypeMerge,
     PersonListView,
     PersonMerge,
+    PersonPersonRelationTypeMerge,
     PlaceAutocompleteView,
     PlaceListView,
 )
@@ -194,6 +195,20 @@ class TestPersonDocumentRelationTypeMergeView:
             TestCase().assertRedirects(response, merge_url)
             messages = [str(msg) for msg in list(response.context["messages"])]
             assert "test message" in messages
+
+
+class TestPersonPersonRelationTypeMergeView:
+    # adapted from TestPersonMergeView
+    @pytest.mark.django_db
+    def test_get_success_url(self):
+        rel_type = PersonPersonRelationType.objects.create(name="test")
+        merge_view = PersonPersonRelationTypeMerge()
+        merge_view.primary_relation_type = rel_type
+
+        resolved_url = resolve(merge_view.get_success_url())
+        assert "admin" in resolved_url.app_names
+        assert resolved_url.url_name == "entities_personpersonrelationtype_change"
+        assert resolved_url.kwargs["object_id"] == str(rel_type.pk)
 
 
 class TestPersonAutocompleteView:

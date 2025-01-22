@@ -50,7 +50,11 @@ from geniza.entities.models import (
     PlacePlaceRelation,
     PlacePlaceRelationType,
 )
-from geniza.entities.views import PersonDocumentRelationTypeMerge, PersonMerge
+from geniza.entities.views import (
+    PersonDocumentRelationTypeMerge,
+    PersonMerge,
+    PersonPersonRelationTypeMerge,
+)
 from geniza.footnotes.models import Footnote
 
 
@@ -409,17 +413,10 @@ class RoleAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
     ordering = ("display_label", "name")
 
 
-@admin.register(PersonDocumentRelationType)
-class PersonDocumentRelationTypeAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
-    """Admin for managing the controlled vocabulary of people's relationships to documents"""
-
-    fields = ("name",)
-    search_fields = ("name",)
-    ordering = ("name",)
-
-    @admin.display(description="Merge selected Person-Document relationships")
-    def merge_person_document_relation_types(self, request, queryset=None):
-        """Admin action to merge selected person-document relation types. This
+class RelationTypeMergeAdminMixin:
+    @admin.display(description="Merge selected %(verbose_name_plural)s")
+    def merge_relation_types(self, request, queryset=None):
+        """Admin action to merge selected entity-entity relation types. This
         action redirects to an intermediate page, which displays a form to
         review for confirmation and choose the primary type before merging.
         """
@@ -427,15 +424,15 @@ class PersonDocumentRelationTypeAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
         if len(selected) < 2:
             messages.error(
                 request,
-                "You must select at least two person-document relationships to merge",
+                "You must select at least two person-person relationships to merge",
             )
             return HttpResponseRedirect(
-                reverse("admin:entities_persondocumentrelationtype_changelist")
+                reverse("admin:entities_%s_changelist" % self.model._meta.model_name)
             )
         return HttpResponseRedirect(
             "%s?ids=%s"
             % (
-                reverse("admin:person-document-relation-type-merge"),
+                reverse(f"admin:{self.merge_path_name}"),
                 ",".join(selected),
             ),
             status=303,
@@ -446,22 +443,39 @@ class PersonDocumentRelationTypeAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
         urls = [
             path(
                 "merge/",
-                PersonDocumentRelationTypeMerge.as_view(),
-                name="person-document-relation-type-merge",
+                self.view_class.as_view(),
+                name=self.merge_path_name,
             ),
         ]
         return urls + super().get_urls()
 
-    actions = (merge_person_document_relation_types,)
+    actions = (merge_relation_types,)
+
+
+@admin.register(PersonDocumentRelationType)
+class PersonDocumentRelationTypeAdmin(
+    RelationTypeMergeAdminMixin, TabbedTranslationAdmin, admin.ModelAdmin
+):
+    """Admin for managing the controlled vocabulary of people's relationships to documents"""
+
+    fields = ("name",)
+    search_fields = ("name",)
+    ordering = ("name",)
+    merge_path_name = "person-document-relation-type-merge"
+    view_class = PersonDocumentRelationTypeMerge
 
 
 @admin.register(PersonPersonRelationType)
-class PersonPersonRelationTypeAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
+class PersonPersonRelationTypeAdmin(
+    RelationTypeMergeAdminMixin, TabbedTranslationAdmin, admin.ModelAdmin
+):
     """Admin for managing the controlled vocabulary of people's relationships to other people"""
 
     fields = ("name", "converse_name", "category")
     search_fields = ("name",)
     ordering = ("name",)
+    merge_path_name = "person-person-relation-type-merge"
+    view_class = PersonPersonRelationTypeMerge
 
 
 @admin.register(PersonPlaceRelationType)

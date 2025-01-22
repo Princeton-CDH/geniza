@@ -427,7 +427,7 @@ class TestPersonDocumentRelationTypeAdmin:
         mockrequest = Mock()
         test_ids = ["1", "2", "3"]
         mockrequest.POST.getlist.return_value = test_ids
-        resp = pdr_admin.merge_person_document_relation_types(mockrequest, Mock())
+        resp = pdr_admin.merge_relation_types(mockrequest, Mock())
         assert isinstance(resp, HttpResponseRedirect)
         assert resp.status_code == 303
         assert resp["location"].startswith(
@@ -437,7 +437,7 @@ class TestPersonDocumentRelationTypeAdmin:
 
         test_ids = ["1"]
         mockrequest.POST.getlist.return_value = test_ids
-        resp = pdr_admin.merge_person_document_relation_types(mockrequest, Mock())
+        resp = pdr_admin.merge_relation_types(mockrequest, Mock())
         assert isinstance(resp, HttpResponseRedirect)
         assert resp.status_code == 302
         assert resp["location"] == reverse(

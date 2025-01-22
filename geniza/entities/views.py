@@ -23,6 +23,7 @@ from geniza.entities.forms import (
     PersonDocumentRelationTypeMergeForm,
     PersonListForm,
     PersonMergeForm,
+    PersonPersonRelationTypeMergeForm,
     PlaceListForm,
 )
 from geniza.entities.models import (
@@ -101,20 +102,7 @@ class PersonMerge(PermissionRequiredMixin, FormView):
         return super().form_valid(form)
 
 
-class PersonDocumentRelationTypeMerge(PermissionRequiredMixin, FormView):
-    permission_required = (
-        "entities.change_persondocumentrelationtype",
-        "entities.delete_persondocumentrelationtype",
-    )
-    form_class = PersonDocumentRelationTypeMergeForm
-    template_name = "admin/entities/persondocumentrelationtype/merge.html"
-
-    def get_success_url(self):
-        return reverse(
-            "admin:entities_persondocumentrelationtype_change",
-            args=[self.primary_relation_type.pk],
-        )
-
+class RelationTypeMergeViewMixin:
     def get_form_kwargs(self):
         form_kwargs = super().get_form_kwargs()
         form_kwargs["ids"] = self.ids
@@ -131,12 +119,12 @@ class PersonDocumentRelationTypeMerge(PermissionRequiredMixin, FormView):
             self.ids = []
 
     def form_valid(self, form):
-        """Merge the selected person-document relation types into the primary one."""
+        """Merge the selected relation types into the primary one."""
         primary_relation_type = form.cleaned_data["primary_relation_type"]
         self.primary_relation_type = primary_relation_type
 
         secondary_ids = [id for id in self.ids if id != primary_relation_type.pk]
-        secondary_relation_types = PersonDocumentRelationType.objects.filter(
+        secondary_relation_types = self.relation_type_class.objects.filter(
             pk__in=secondary_ids
         )
 
@@ -160,7 +148,7 @@ class PersonDocumentRelationTypeMerge(PermissionRequiredMixin, FormView):
             return HttpResponseRedirect(
                 "%s?ids=%s"
                 % (
-                    reverse("admin:person-document-relation-type-merge"),
+                    reverse(f"admin:{self.merge_path_name}"),
                     self.request.GET.get("ids", ""),
                 ),
             )
@@ -174,6 +162,44 @@ class PersonDocumentRelationTypeMerge(PermissionRequiredMixin, FormView):
         )
 
         return super().form_valid(form)
+
+
+class PersonDocumentRelationTypeMerge(
+    RelationTypeMergeViewMixin, PermissionRequiredMixin, FormView
+):
+    permission_required = (
+        "entities.change_persondocumentrelationtype",
+        "entities.delete_persondocumentrelationtype",
+    )
+    form_class = PersonDocumentRelationTypeMergeForm
+    template_name = "admin/entities/persondocumentrelationtype/merge.html"
+    relation_type_class = PersonDocumentRelationType
+    merge_path_name = "person-document-relation-type-merge"
+
+    def get_success_url(self):
+        return reverse(
+            "admin:entities_persondocumentrelationtype_change",
+            args=[self.primary_relation_type.pk],
+        )
+
+
+class PersonPersonRelationTypeMerge(
+    RelationTypeMergeViewMixin, PermissionRequiredMixin, FormView
+):
+    permission_required = (
+        "entities.change_personpersonrelationtype",
+        "entities.delete_personpersonrelationtype",
+    )
+    form_class = PersonPersonRelationTypeMergeForm
+    template_name = "admin/entities/personpersonrelationtype/merge.html"
+    relation_type_class = PersonPersonRelationType
+    merge_path_name = "person-person-relation-type-merge"
+
+    def get_success_url(self):
+        return reverse(
+            "admin:entities_personpersonrelationtype_change",
+            args=[self.primary_relation_type.pk],
+        )
 
 
 class UnaccentedNameAutocompleteView(autocomplete.Select2QuerySetView):
