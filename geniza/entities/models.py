@@ -3,7 +3,6 @@ import re
 from datetime import datetime
 from math import modf
 from operator import itemgetter
-from time import sleep
 
 from django.conf import settings
 from django.contrib.admin.models import CHANGE, LogEntry
@@ -22,9 +21,10 @@ from gfklookupwidget.fields import GfkLookupField
 from parasolr.django import AliasedSolrQuerySet
 from parasolr.django.indexing import ModelIndexable
 from slugify import slugify
+from taggit_selectize.managers import TaggableManager
 from unidecode import unidecode
 
-from geniza.common.models import TrackChangesModel, cached_class_property
+from geniza.common.models import TaggableMixin, TrackChangesModel, cached_class_property
 from geniza.corpus.dates import DocumentDateMixin, PartialDate, standard_date_display
 from geniza.corpus.models import (
     DisplayLabelMixin,
@@ -313,7 +313,9 @@ class PersonSignalHandlers:
         PersonSignalHandlers.related_change(instance, raw, "delete")
 
 
-class Person(ModelIndexable, SlugMixin, DocumentDatableMixin, PermalinkMixin):
+class Person(
+    ModelIndexable, SlugMixin, DocumentDatableMixin, PermalinkMixin, TaggableMixin
+):
     """A person entity that appears within the PGP corpus."""
 
     names = GenericRelation(Name, related_query_name="person")
@@ -359,6 +361,8 @@ class Person(ModelIndexable, SlugMixin, DocumentDatableMixin, PermalinkMixin):
     footnotes = GenericRelation(Footnote, blank=True, related_name="people")
 
     log_entries = GenericRelation(LogEntry, related_query_name="document")
+
+    tags = TaggableManager(blank=True, related_name="tagged_person")
 
     # gender options
     MALE = "M"
