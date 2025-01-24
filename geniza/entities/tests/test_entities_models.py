@@ -462,6 +462,9 @@ class TestPerson:
         PersonDocumentRelation.objects.create(
             person=person, document=document, type=pdrtype
         )
+        tags = ["testtag", "tag2"]
+        for t in tags:
+            person.tags.add(t)
         index_data = person.index_data()
         assert index_data["slug_s"] == person.slug
         assert index_data["name_s"] == str(person)
@@ -478,6 +481,7 @@ class TestPerson:
         assert index_data["documents_i"] == 1
         assert index_data["people_i"] == index_data["places_i"] == 0
         assert index_data["document_relation_ss"] == [str(pdrtype)]
+        assert index_data["tags_ss_lower"] == tags
         assert index_data["date_dr"] == person.solr_date_range()
         assert index_data["date_str_s"] == person.date_str
         assert index_data["start_dating_i"] == PartialDate("1200").numeric_format()
@@ -501,6 +505,13 @@ class TestPersonSolrQuerySet:
             mocksearch.return_value.raw_query_parameters.assert_called_with(
                 **{
                     "keyword_query": "halfon",
+                    "q.op": "AND",
+                }
+            )
+            pqs.keyword_search("tag:community")
+            mocksearch.return_value.raw_query_parameters.assert_called_with(
+                **{
+                    "keyword_query": "tags_ss_lower:community",
                     "q.op": "AND",
                 }
             )

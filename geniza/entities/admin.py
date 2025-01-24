@@ -267,6 +267,14 @@ class PersonEventInline(admin.TabularInline):
 class PersonAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin):
     """Admin for Person entities in the PGP"""
 
+    list_display = (
+        "__str__",
+        "slug",
+        "gender",
+        "role",
+        "all_tags",
+        "has_page",
+    )
     search_fields = ("name_unaccented", "names__name")
     fields = (
         "slug",
@@ -276,6 +284,7 @@ class PersonAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin):
         "date",
         "automatic_date",
         "description",
+        "tags",
     )
     readonly_fields = ("automatic_date",)
     inlines = (

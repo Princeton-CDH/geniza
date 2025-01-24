@@ -3,7 +3,6 @@ import re
 from datetime import datetime
 from math import modf
 from operator import itemgetter
-from time import sleep
 
 from django.conf import settings
 from django.contrib.admin.models import CHANGE, LogEntry
@@ -22,9 +21,10 @@ from gfklookupwidget.fields import GfkLookupField
 from parasolr.django import AliasedSolrQuerySet
 from parasolr.django.indexing import ModelIndexable
 from slugify import slugify
+from taggit_selectize.managers import TaggableManager
 from unidecode import unidecode
 
-from geniza.common.models import TrackChangesModel, cached_class_property
+from geniza.common.models import TaggableMixin, TrackChangesModel, cached_class_property
 from geniza.corpus.dates import DocumentDateMixin, PartialDate, standard_date_display
 from geniza.corpus.models import (
     DisplayLabelMixin,
@@ -313,7 +313,9 @@ class PersonSignalHandlers:
         PersonSignalHandlers.related_change(instance, raw, "delete")
 
 
-class Person(ModelIndexable, SlugMixin, DocumentDatableMixin, PermalinkMixin):
+class Person(
+    ModelIndexable, SlugMixin, DocumentDatableMixin, PermalinkMixin, TaggableMixin
+):
     """A person entity that appears within the PGP corpus."""
 
     names = GenericRelation(Name, related_query_name="person")
@@ -359,6 +361,8 @@ class Person(ModelIndexable, SlugMixin, DocumentDatableMixin, PermalinkMixin):
     footnotes = GenericRelation(Footnote, blank=True, related_name="people")
 
     log_entries = GenericRelation(LogEntry, related_query_name="document")
+
+    tags = TaggableManager(blank=True, related_name="tagged_person")
 
     # gender options
     MALE = "M"
@@ -888,6 +892,7 @@ class Person(ModelIndexable, SlugMixin, DocumentDatableMixin, PermalinkMixin):
                         "type__name_en", flat=True
                     ).distinct()
                 ),
+                "tags_ss_lower": [t.name for t in self.tags.all()],
             }
         )
         solr_date_range = self.solr_date_range()
@@ -969,13 +974,31 @@ class PersonSolrQuerySet(AliasedSolrQuerySet):
         "document_relations": "document_relation_ss",
         "date_str": "date_str_s",
         "has_page": "has_page_b",
+        "tags": "tags_ss_lower",
     }
+
+    search_aliases = field_aliases.copy()
+    search_aliases.update(
+        {
+            # when searching, singular makes more sense for tags
+            "tag": field_aliases["tags"],
+        }
+    )
+    re_solr_fields = re.compile(
+        r"(%s):" % "|".join(key for key, val in search_aliases.items() if key != val),
+        flags=re.DOTALL,
+    )
 
     keyword_search_qf = "{!type=edismax qf=$people_qf pf=$people_pf v=$keyword_query}"
 
     def keyword_search(self, search_term):
         """Allow searching using keywords with the specified query and phrase match
         fields, and set the default operator to AND"""
+        if ":" in search_term:
+            # if any of the field aliases occur with a colon, replace with actual solr field
+            search_term = self.re_solr_fields.sub(
+                lambda x: "%s:" % self.search_aliases[x.group(1)], search_term
+            )
         query_params = {"keyword_query": search_term, "q.op": "AND"}
         return self.search(self.keyword_search_qf).raw_query_parameters(
             **query_params,
@@ -984,6 +1007,7 @@ class PersonSolrQuerySet(AliasedSolrQuerySet):
     def get_highlighting(self):
         """dedupe highlights across variant fields (e.g. for other_names)"""
         highlights = super().get_highlighting()
+        highlights = {k: v for k, v in highlights.items() if v}
         for person in highlights.keys():
             other_names = set()
             # iterate through other_names_* fields to get all matches
