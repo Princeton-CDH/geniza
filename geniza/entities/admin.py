@@ -537,13 +537,17 @@ class PlacePlaceReverseInline(admin.TabularInline):
     verbose_name_plural = "Related Places (automatically populated)"
     fields = (
         "place_a",
-        "type",
+        "relation",
         "notes",
     )
     fk_name = "place_b"
-    readonly_fields = ("place_a", "type", "notes")
+    readonly_fields = ("place_a", "relation", "notes")
     extra = 0
     max_num = 0
+
+    def relation(self, obj=None):
+        """Get the relationship type's converse name, if it exists, or else the type name"""
+        return (obj.type.converse_name or str(obj.type)) if obj else None
 
 
 class PlaceEventInline(admin.TabularInline):
@@ -655,7 +659,7 @@ class PlaceAdmin(SortableAdminBase, admin.ModelAdmin):
 class PlacePlaceRelationTypeAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
     """Admin for managing the controlled vocabulary of places' relationships to other places"""
 
-    fields = ("name",)
+    fields = ("name", "converse_name")
     search_fields = ("name",)
     ordering = ("name",)
 

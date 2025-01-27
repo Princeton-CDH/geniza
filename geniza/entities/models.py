@@ -1584,6 +1584,15 @@ class PlacePlaceRelationType(models.Model):
     """Controlled vocabulary of place's relationships to other places."""
 
     name = models.CharField(max_length=255, unique=True)
+    # converse_name is the relationship in the reverse direction (the semantic converse)
+    # (example: name = "Neighborhood", converse_name = "City")
+    converse_name = models.CharField(
+        max_length=255,
+        blank=True,
+        help_text="The converse of the relationship, for example, 'City' when Name is "
+        + "'Neighborhood'. May leave blank if the converse is identical (for example, "
+        + "'Possibly the same as').",
+    )
     objects = PlacePlaceRelationTypeManager()
 
     class Meta:
@@ -1632,7 +1641,12 @@ class PlacePlaceRelation(models.Model):
         ]
 
     def __str__(self):
-        return f"{self.type} relation: {self.place_a} and {self.place_b}"
+        relation_type = (
+            f"{self.type}-{self.type.converse_name}"
+            if self.type.converse_name
+            else self.type
+        )
+        return f"{relation_type} relation: {self.place_a} and {self.place_b}"
 
 
 class PlaceEventRelation(models.Model):
