@@ -97,6 +97,9 @@ def test_person_iter_dicts(person, person_diacritic, person_multiname, document,
     person.documents.add(document)
     person.documents.add(join)
     person_multiname.documents.add(document)
+    person.tags.add("test")
+    person.tags.add("example")
+    person_multiname.tags.add("test")
 
     (partner, _) = PersonPersonRelationType.objects.get_or_create(
         name_en="Partner", category=PersonPersonRelationType.BUSINESS
@@ -123,9 +126,12 @@ def test_person_iter_dicts(person, person_diacritic, person_multiname, document,
             assert export_data.get("related_people_count") == 1
             assert export_data.get("related_documents_count") == 2
             assert "Mosul" in export_data.get("home_base")
+            assert "test" in export_data.get("tags")
+            assert "example" in export_data.get("tags")
         elif str(pers) == str(person_multiname):
             assert export_data.get("related_people_count") == 0
             assert export_data.get("related_documents_count") == 1
+            assert "test" in export_data.get("tags")
         elif str(pers) == str(person_diacritic):
             assert export_data.get("related_people_count") == 1
             assert export_data.get("related_documents_count") == 0
