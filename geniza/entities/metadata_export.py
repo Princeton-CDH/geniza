@@ -45,6 +45,7 @@ class PublicPersonExporter(Exporter):
         "auto_date_range",
         "manual_date_range",
         "description",
+        "tags",
         "related_people_count",
         "related_documents_count",
         "url",
@@ -82,6 +83,7 @@ class PublicPersonExporter(Exporter):
                 "from_person",
                 "to_person",
                 "personplacerelation_set",
+                "tags",
                 Prefetch(
                     "persondocumentrelation_set",
                     queryset=PersonDocumentRelation.objects.select_related("type"),
@@ -117,6 +119,7 @@ class PublicPersonExporter(Exporter):
             "description": person.description,
             "related_people_count": person.related_people_count,
             "related_documents_count": person.documents.count(),
+            "tags": person.all_tags(),
         }
 
         # add url if present
