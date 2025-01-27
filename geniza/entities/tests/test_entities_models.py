@@ -1014,6 +1014,18 @@ class TestPlacePlaceRelation:
             type=possible_dupe,
         )
         assert str(relation) == f"{possible_dupe} relation: {fustat} and {other}"
+        (neighborhood, _) = PlacePlaceRelationType.objects.get_or_create(
+            name="Neighborhood", converse_name="City"
+        )
+        relation = PlacePlaceRelation.objects.create(
+            place_a=fustat,
+            place_b=other,
+            type=neighborhood,
+        )
+        assert (
+            str(relation)
+            == f"{neighborhood.name}-{neighborhood.converse_name} relation: {fustat} and {other}"
+        )
 
 
 @pytest.mark.django_db

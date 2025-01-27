@@ -17,6 +17,7 @@ from geniza.entities.admin import (
     PersonPersonRelationTypeChoiceField,
     PersonPersonReverseInline,
     PlaceAdmin,
+    PlacePlaceReverseInline,
 )
 from geniza.entities.models import (
     Name,
@@ -28,6 +29,8 @@ from geniza.entities.models import (
     PersonPlaceRelation,
     PersonPlaceRelationType,
     Place,
+    PlacePlaceRelation,
+    PlacePlaceRelationType,
 )
 
 
@@ -348,6 +351,37 @@ class TestEventDocumentInline:
         )
         content = str(response.content)
         assert 'name="documenteventrelation_set-MIN_NUM_FORMS" value="0"' in content
+
+
+@pytest.mark.django_db
+class TestPlacePlaceReverseInline:
+    def test_relation(self):
+        # should show converse relationship type when available
+        (neighborhood, _) = PlacePlaceRelationType.objects.get_or_create(
+            name="Neighborhood",
+            converse_name="City",
+        )
+        fustat = Place.objects.create()
+        qasr = Place.objects.create()
+        rel = PlacePlaceRelation.objects.create(
+            place_a=fustat,
+            place_b=qasr,
+            type=neighborhood,
+        )
+        reverse_inline = PlacePlaceReverseInline(Place, admin_site=admin.site)
+        assert reverse_inline.relation(rel) == neighborhood.converse_name
+
+        # otherwise should just show relationship type
+        (same, _) = PlacePlaceRelationType.objects.get_or_create(
+            name="Possibly the same as",
+        )
+        fust2 = Place.objects.create()
+        rel = PlacePlaceRelation.objects.create(
+            place_a=fustat,
+            place_b=fust2,
+            type=same,
+        )
+        assert reverse_inline.relation(rel) == same.name
 
 
 @pytest.mark.django_db

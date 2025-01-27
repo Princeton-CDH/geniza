@@ -293,6 +293,8 @@ def test_place_relations_csv(person, document, join):
     Name.objects.create(content_object=fustat, name="Fusṭāṭ", primary=True)
     aydhab = Place.objects.create(slug="aydhab")
     Name.objects.create(name="ʿAydhāb", content_object=aydhab, primary=True)
+    qasr = Place.objects.create(slug="qasr-al-sham")
+    Name.objects.create(name="Qaṣr al-Shamʿ", content_object=qasr, primary=True)
     (home_base, _) = PersonPlaceRelationType.objects.get_or_create(name_en="Home base")
     (roots, _) = PersonPlaceRelationType.objects.get_or_create(
         name_en="Family traces roots to"
@@ -317,6 +319,11 @@ def test_place_relations_csv(person, document, join):
     )
     PlacePlaceRelation.objects.create(place_a=fustat, place_b=mosul, type=not_same)
     PlacePlaceRelation.objects.create(place_a=aydhab, place_b=fustat, type=not_same)
+    (neighborhood, _) = PlacePlaceRelationType.objects.get_or_create(
+        name="Neighborhood",
+        converse_name="City",
+    )
+    PlacePlaceRelation.objects.create(place_a=qasr, place_b=fustat, type=neighborhood)
     evt = Event.objects.create(name="Test event")
     PlaceEventRelation.objects.create(place=fustat, event=evt, notes="test")
 
@@ -335,13 +342,16 @@ def test_place_relations_csv(person, document, join):
             assert ", " in reltype
             assert str(join) in obj["shared_documents"]
         elif objtype == "Place":
-            assert reltype == not_same.name
             if id == mosul.id:
+                assert reltype == not_same.name
                 assert str(document) in obj["shared_documents"]
                 assert str(join) in obj["shared_documents"]
                 assert ", " in obj["shared_documents"]
             elif id == aydhab.id:
+                assert reltype == not_same.name
                 assert not obj["shared_documents"]
+            elif id == qasr.id:
+                assert reltype == neighborhood.name
         elif objtype == "Document":
             assert reltype == dprtype.name
             assert obj["related_object_name"] in [str(document), str(join)]
