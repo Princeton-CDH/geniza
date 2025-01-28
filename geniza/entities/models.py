@@ -1420,6 +1420,92 @@ class Place(ModelIndexable, SlugMixin, PermalinkMixin):
             "names", "documentplacerelation_set", "personplacerelation_set"
         )
 
+    def related_places(self):
+        """Set of all places related to this place, with relationship type,
+        taking into account converse relations"""
+
+        # adapted from Person.related_people
+
+        # gather all relationships with places, both entered from this place and
+        # entered from the place on the other side of the relationship
+        place_relations = (
+            self.place_a.annotate(
+                # boolean to indicate if we should use converse or regular relation type name
+                use_converse_typename=Value(True),
+                related_slug=F("place_a__slug"),
+                related_id=F("place_a"),
+            ).union(  # union instead of joins for efficiency
+                self.place_b.annotate(
+                    use_converse_typename=Value(False),
+                    related_slug=F("place_b__slug"),
+                    related_id=F("place_b"),
+                )
+            )
+            # have to use values_list (NOT values) here with one argument, otherwise strange things
+            # happen, possibly due to union(). TODO: see if this is fixed in later django versions.
+            .values_list("related_id")
+        )
+        relation_list = [
+            {
+                # this is the order of fields returned by SQL after the annotated union
+                "id": r[-1],
+                "slug": r[-2],
+                "use_converse_typename": r[-3],
+                "notes": r[-4],
+                "type_id": r[-5],
+            }
+            for r in place_relations
+        ]
+
+        # folow GenericForeignKey to find primary name for each related place
+        place_contenttype = ContentType.objects.get_for_model(Place).pk
+        names = Name.objects.filter(
+            object_id__in=[r["id"] for r in relation_list],
+            primary=True,
+            content_type_id=place_contenttype,
+        ).values("name", "object_id")
+        # dict keyed on related place id
+        names_dict = {n["object_id"]: n["name"] for n in names}
+
+        # grab name and converse_name for each relation type since we may need either
+        # (name if the relation was entered from self, converse if entered from related place)
+        types = PlacePlaceRelationType.objects.filter(
+            pk__in=[r["type_id"] for r in relation_list],
+        ).values("pk", "name", "converse_name")
+        # dict keyed on related place id
+        types_dict = {t["pk"]: t for t in types}
+
+        # update with new data & dedupe
+        prev_relation = None
+        # sort by id (dedupe by matching against previous id), then type id for type dedupe
+        for relation in sorted(relation_list, key=itemgetter("id", "type_id")):
+            relation.update(
+                {
+                    # get name from cached queryset dict
+                    "name": names_dict[relation["id"]],
+                    # use type.converse_name if this relation is reverse (and if the type has one)
+                    "type": types_dict[relation["type_id"]][
+                        "converse_name" if relation["use_converse_typename"] else "name"
+                    ]
+                    # fallback to type.name if converse_name doesn't exist
+                    or types_dict[relation["type_id"]]["name"],
+                }
+            )
+            # dedupe and combine type and notes
+            if prev_relation and prev_relation["id"] == relation["id"]:
+                # dedupe type by string matching since we can't match reverse relations by id
+                if relation["type"].lower() not in prev_relation["type"].lower():
+                    prev_relation["type"] += f", {relation['type']}".lower()
+                # simply combine notes with html line break
+                prev_relation["notes"] += (
+                    f"<br />{relation['notes']}" if relation["notes"] else ""
+                )
+                relation_list.remove(relation)
+            else:
+                prev_relation = relation
+
+        return relation_list
+
     def index_data(self):
         """data for indexing in Solr"""
         index_data = super().index_data()

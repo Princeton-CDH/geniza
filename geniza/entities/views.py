@@ -613,6 +613,9 @@ class PlaceDetailView(SlugDetailMixin):
                 "page_description": self.page_description(),
                 "page_type": "place",
                 "maptiler_token": getattr(settings, "MAPTILER_API_TOKEN", ""),
+                "related_places": sorted(
+                    self.object.related_places(), key=lambda rp: rp["type"]
+                ),
             }
         )
         return context_data
