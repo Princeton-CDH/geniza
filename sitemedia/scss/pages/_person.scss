@@ -187,7 +187,8 @@ main.place {
         section.metadata dt,
         section.description h2,
         section.events h2,
-        section.notes h2 {
+        section.notes h2,
+        section.related h2 {
             margin-bottom: spacing.$spacing-xs;
             @include typography.meta-bold;
             font-size: typography.$text-size-lg;

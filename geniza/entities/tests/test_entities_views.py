@@ -21,6 +21,8 @@ from geniza.entities.models import (
     PersonPlaceRelationType,
     PersonSolrQuerySet,
     Place,
+    PlacePlaceRelation,
+    PlacePlaceRelationType,
     PlaceSolrQuerySet,
 )
 from geniza.entities.views import (
@@ -659,6 +661,45 @@ class TestPlaceDetailView:
         assert response.context["page_type"] == "place"
         # context should include the maptiler token if one exists in settings
         assert response.context["maptiler_token"] == "example"
+
+    def test_related_places(self, client):
+        tlebanon = Place.objects.create(slug="tripoli-lebanon")
+        Name.objects.create(
+            name="Tripoli (Lebanon)", content_object=tlebanon, primary=True
+        )
+
+        # create some place-place relationshipss
+        tgreece = Place.objects.create(slug="tripoli-greece")
+        Name.objects.create(
+            name="Tripoli (Greece)", content_object=tgreece, primary=True
+        )
+        (nbc, _) = PlacePlaceRelationType.objects.get_or_create(
+            name="Not to be confused with"
+        )
+        PlacePlaceRelation.objects.create(place_a=tlebanon, place_b=tgreece, type=nbc)
+
+        # add an asymmetrical one from another place, it should show up too, but with converse name
+        zahriyeh = Place.objects.create(slug="zahriyeh")
+        Name.objects.create(name="Zahriyeh", content_object=zahriyeh, primary=True)
+        (city_neighborhood, _) = PlacePlaceRelationType.objects.get_or_create(
+            name="City", converse_name="Neighborhood"
+        )
+        PlacePlaceRelation.objects.create(
+            place_a=zahriyeh, place_b=tlebanon, type=city_neighborhood
+        )
+
+        response = client.get(reverse("entities:place", args=(tlebanon.slug,)))
+        assert len(response.context["related_places"]) == 2
+        # should be ordered by type name
+        assert (
+            response.context["related_places"][0]["type"]
+            == city_neighborhood.converse_name
+        )
+        assert response.context["related_places"][0]["use_converse_typename"] == True
+        assert response.context["related_places"][0]["name"] == str(zahriyeh)
+        assert response.context["related_places"][1]["type"] == nbc.name
+        assert response.context["related_places"][1]["use_converse_typename"] == False
+        assert response.context["related_places"][1]["name"] == str(tgreece)
 
 
 @pytest.mark.django_db

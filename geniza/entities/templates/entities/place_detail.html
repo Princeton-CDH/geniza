@@ -86,5 +86,26 @@
                 <p>{{ place.notes }}</p>
             </section>
         {% endif %}
+        {# related places #}
+        {% if related_places %}
+            <section class="related">
+                {# Translators: heading label for document related places #}
+                <h2>{% translate "Related Places" %}</h2>
+                <dl>
+                    {% regroup related_places by type as place_relations %}
+                    {% for relation_type in place_relations %}
+                        <dt>{{ relation_type.grouper }}</dt>
+                        <dd>
+                            {% for relation in relation_type.list %}
+                                {% url "entities:place" relation.slug as place_url %}
+                                <a data-turbo="false" href="{{ place_url }}" title="{{ relation.name }}">
+                                    {{ relation.name }}
+                                </a>{% if not forloop.last %}, {% endif %}
+                            {% endfor %}
+                        </dd>
+                    {% endfor %}
+                </dl>
+            </section>
+        {% endif %}
     </div>
 {% endblock main %}
