@@ -702,14 +702,19 @@ class TestPlaceDetailView:
         assert response.context["related_places"][1]["name"] == str(tgreece)
 
         # create a duplicate of the asymmetric relation to test dedupe
-        (neighborhood_city, _) = PlacePlaceRelationType.objects.get_or_create(
-            name="Neighborhood", converse_name="City"
+        (subset_superset, _) = PlacePlaceRelationType.objects.get_or_create(
+            name="Subset", converse_name="Superset"
         )
         PlacePlaceRelation.objects.create(
-            place_a=tlebanon, place_b=zahriyeh, type=neighborhood_city
+            place_a=tlebanon, place_b=zahriyeh, type=subset_superset
         )
         response = client.get(reverse("entities:place", args=(tlebanon.slug,)))
         assert len(response.context["related_places"]) == 2
+        bothtypes = response.context["related_places"][0]["type"].lower()
+        assert (
+            city_neighborhood.converse_name.lower() in bothtypes
+            and subset_superset.name.lower() in bothtypes
+        )
 
 
 @pytest.mark.django_db
