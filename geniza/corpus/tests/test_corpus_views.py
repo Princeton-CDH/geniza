@@ -1339,6 +1339,20 @@ class TestDocumentSearchView:
             0
         ] == clean_html("<em>מרכב</em>")
 
+    def test_get_apd_link(self):
+        dsv = DocumentSearchView(kwargs={})
+
+        # no arabic or ja: bail out
+        assert not dsv.get_apd_link(None)
+        assert not dsv.get_apd_link("test")
+
+        # arabic: leave as is
+        arabic = "العبد"
+        assert dsv.get_apd_link(arabic) == f"{dsv.apd_base_url}{arabic}"
+
+        # JA: translate with regex
+        assert dsv.get_apd_link("ואגב") == f"{dsv.apd_base_url}وا[غج]ب"
+
 
 class TestDocumentScholarshipView:
     def test_page_title(self, document, client, source):

@@ -157,6 +157,12 @@
             {% if is_paginated %}
                 {% include "corpus/snippets/pagination.html" %}
             {% endif %}
+            {% if apd_link %}
+                <a id="apd" href="{{ apd_link }}">
+                    {# translators: Link to search a document query on the Arabic Papyrology Database #}
+                    {% translate 'View results in the Arabic Papyrology Database' %}
+                </a>
+            {% endif %}
         </section>
     </form>
 {% endblock main %}
