@@ -1,5 +1,10 @@
 # Deploy Notes
 
+## 4.20
+
+-   Indexing logic for people has changed. Reindex all people:
+    `python manage.py index -i person`.
+
 ## 4.19
 
 -   Indexing logic has changed. Reindex all content: `python manage.py index`.
