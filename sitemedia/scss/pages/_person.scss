@@ -96,17 +96,31 @@ main.place {
                 padding-right: 0;
                 margin: 0 0 0;
             }
-            dd {
+            & > dd {
                 margin-left: 20px;
             }
-            dd + dt {
+            & > dd + dt {
                 margin-top: spacing.$spacing-md;
                 @include breakpoints.for-tablet-landscape-up {
                     margin-top: spacing.$spacing-lg;
                 }
             }
-            dd + dd {
+            & > dd + dd {
                 margin-top: spacing.$spacing-xs;
+            }
+            dl.person-dates {
+                dt,
+                dd {
+                    display: inline;
+                }
+                dt:after {
+                    content: ":";
+                }
+                dd + dt:before {
+                    // wrap to newline
+                    content: "\a";
+                    white-space: pre;
+                }
             }
         }
         dl.metadata-list.primary + dl.metadata-list.secondary {
@@ -184,7 +198,7 @@ main.place {
             }
         }
 
-        section.metadata dt,
+        section.metadata > dl > dt,
         section.description h2,
         section.events h2,
         section.notes h2,
@@ -425,10 +439,14 @@ main.person {
 html[dir="rtl"] main.person,
 html[dir="rtl"] main.place,
 html[dir="rtl"] main.document {
-    .container dl.metadata-list dt::before,
+    .container dl.metadata-list > dt::before,
     .container section > h2::before {
         margin-right: 0;
         margin-left: 12px;
+    }
+    .container dl.metadata-list > dd {
+        margin-left: 0;
+        margin-right: 20px;
     }
     dl.metadata-list.tertiary dt#citation,
     dl.metadata-list.tertiary dt#permalink {

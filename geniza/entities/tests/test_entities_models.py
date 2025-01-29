@@ -439,7 +439,7 @@ class TestPerson:
         person.save()
         assert person.date_str == standard_date_display("1255")
 
-    def test_solr_date_range(self, person, document):
+    def test_solr_date_range(self, person, document, join):
         # no date: returns None
         assert not person.solr_date_range()
         # document dates: should use those
@@ -447,6 +447,18 @@ class TestPerson:
         document.save()
         PersonDocumentRelation.objects.create(person=person, document=document)
         assert person.solr_date_range() == "[1200 TO 1300]"
+
+        # should NOT include mentioned (deceased)
+        (deceased, _) = PersonDocumentRelationType.objects.get_or_create(
+            name="Mentioned (deceased)"
+        )
+        join.doc_date_standard = "1310/1312"
+        join.save()
+        PersonDocumentRelation.objects.create(
+            person=person, document=join, type=deceased
+        )
+        assert person.solr_date_range() == "[1200 TO 1300]"
+
         # person date override
         person.date = "1255"
         person.save()
@@ -455,13 +467,24 @@ class TestPerson:
     def test_total_to_index(self, person, person_multiname):
         assert Person.total_to_index() == 2
 
-    def test_index_data(self, person, person_multiname, document):
+    def test_index_data(self, person, person_multiname, document, join):
         document.doc_date_standard = "1200/1300"
         document.save()
         (pdrtype, _) = PersonDocumentRelationType.objects.get_or_create(name="test")
         PersonDocumentRelation.objects.create(
             person=person, document=document, type=pdrtype
         )
+
+        # these dates should be ignored (deceased)
+        (deceased, _) = PersonDocumentRelationType.objects.get_or_create(
+            name="Mentioned (deceased)"
+        )
+        join.doc_date_standard = "1310/1312"
+        join.save()
+        PersonDocumentRelation.objects.create(
+            person=person, document=join, type=deceased
+        )
+
         tags = ["testtag", "tag2"]
         for t in tags:
             person.tags.add(t)
@@ -478,9 +501,10 @@ class TestPerson:
         index_data = person.index_data()
         assert index_data["url_s"] == person.get_absolute_url()
         assert index_data["has_page_b"] == True
-        assert index_data["documents_i"] == 1
+        assert index_data["documents_i"] == 2
         assert index_data["people_i"] == index_data["places_i"] == 0
-        assert index_data["document_relation_ss"] == [str(pdrtype)]
+        assert str(pdrtype) in index_data["document_relation_ss"]
+        assert str(deceased) in index_data["document_relation_ss"]
         assert index_data["tags_ss_lower"] == tags
         assert index_data["date_dr"] == person.solr_date_range()
         assert index_data["date_str_s"] == person.date_str
@@ -494,6 +518,44 @@ class TestPerson:
             str(person_multiname.names.non_primary().first())
             in index_data["other_names_ss"]
         )
+
+    def test_active_date_range(self, person, document, join):
+        # these dates should be used (active)
+        document.doc_date_standard = "1200/1300"
+        document.save()
+        (pdrtype, _) = PersonDocumentRelationType.objects.get_or_create(name="test")
+        PersonDocumentRelation.objects.create(
+            person=person, document=document, type=pdrtype
+        )
+        # these dates should be ignored (deceased)
+        (deceased, _) = PersonDocumentRelationType.objects.get_or_create(
+            name="Mentioned (deceased)"
+        )
+        join.doc_date_standard = "1310/1312"
+        join.save()
+        PersonDocumentRelation.objects.create(
+            person=person, document=join, type=deceased
+        )
+        assert person.active_date_range == document.doc_date_standard
+
+    def test_deceased_date_range(self, person, document, join):
+        # these dates should be ignored (active)
+        document.doc_date_standard = "1200/1300"
+        document.save()
+        (pdrtype, _) = PersonDocumentRelationType.objects.get_or_create(name="test")
+        PersonDocumentRelation.objects.create(
+            person=person, document=document, type=pdrtype
+        )
+        # these dates should be used (deceased)
+        (deceased, _) = PersonDocumentRelationType.objects.get_or_create(
+            name="Mentioned (deceased)"
+        )
+        join.doc_date_standard = "1310/1312"
+        join.save()
+        PersonDocumentRelation.objects.create(
+            person=person, document=join, type=deceased
+        )
+        assert person.deceased_date_range == join.doc_date_standard
 
 
 class TestPersonSolrQuerySet:
