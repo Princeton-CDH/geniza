@@ -7,6 +7,7 @@ from django.test import RequestFactory
 from django.urls import reverse
 from pytest_django.asserts import assertContains, assertNotContains
 
+from geniza.corpus.dates import standard_date_display
 from geniza.corpus.models import Dating, Document, LanguageScript
 from geniza.entities.admin import (
     NameInlineFormSet,
@@ -229,6 +230,30 @@ class TestPersonAdmin:
         assert str(person) in content
         assert str(person_multiname) in content
         assert "Partner" in content
+
+    def test_date_ranges(self, person, document, join):
+        document.doc_date_standard = "1200/1300"
+        document.save()
+        (pdrtype, _) = PersonDocumentRelationType.objects.get_or_create(name="test")
+        PersonDocumentRelation.objects.create(
+            person=person, document=document, type=pdrtype
+        )
+        (deceased, _) = PersonDocumentRelationType.objects.get_or_create(
+            name="Mentioned (deceased)"
+        )
+        join.doc_date_standard = "1310/1312"
+        join.save()
+        PersonDocumentRelation.objects.create(
+            person=person, document=join, type=deceased
+        )
+
+        person_admin = PersonAdmin(model=Person, admin_site=admin.site)
+        assert person_admin.active_dates(person) == standard_date_display(
+            document.doc_date_standard
+        )
+        assert person_admin.deceased_mention_dates(person) == standard_date_display(
+            join.doc_date_standard
+        )
 
 
 @pytest.mark.django_db

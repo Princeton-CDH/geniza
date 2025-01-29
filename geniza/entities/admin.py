@@ -282,11 +282,12 @@ class PersonAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin):
         "role",
         "has_page",
         "date",
-        "automatic_date",
+        "active_dates",
+        "deceased_mention_dates",
         "description",
         "tags",
     )
-    readonly_fields = ("automatic_date",)
+    readonly_fields = ("active_dates", "deceased_mention_dates")
     inlines = (
         NameInline,
         FootnoteInline,
@@ -406,9 +407,13 @@ class PersonAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin):
         ]
         return urls + super().get_urls()
 
-    def automatic_date(self, obj):
-        """Display automatically generated date/date range for an event as a formatted string"""
-        return standard_date_display(obj.documents_date_range)
+    def active_dates(self, obj):
+        """Display automatically generated active date/date range for a person as a formatted string"""
+        return standard_date_display(obj.active_date_range)
+
+    def deceased_mention_dates(self, obj):
+        """Display automatically generated deceased date/date range for a person as a formatted string"""
+        return standard_date_display(obj.deceased_date_range)
 
     actions = (export_to_csv, merge_people)
 

@@ -94,9 +94,17 @@ def test_person_iter_dicts(person, person_diacritic, person_multiname, document,
         person=person_diacritic, place=fustat, type=roots
     )
 
-    person.documents.add(document)
-    person.documents.add(join)
-    person_multiname.documents.add(document)
+    document.doc_date_standard = "1200/1300"
+    document.save()
+    PersonDocumentRelation.objects.create(person=person, document=document)
+    PersonDocumentRelation.objects.create(person=person_multiname, document=document)
+    (deceased, _) = PersonDocumentRelationType.objects.get_or_create(
+        name="Mentioned (deceased)"
+    )
+    join.doc_date_standard = "1310/1312"
+    join.save()
+    PersonDocumentRelation.objects.create(person=person, document=join, type=deceased)
+
     person.tags.add("test")
     person.tags.add("example")
     person_multiname.tags.add("test")
@@ -128,6 +136,12 @@ def test_person_iter_dicts(person, person_diacritic, person_multiname, document,
             assert "Mosul" in export_data.get("home_base")
             assert "test" in export_data.get("tags")
             assert "example" in export_data.get("tags")
+            assert export_data.get("active_date_range") == standard_date_display(
+                "1200/1300"
+            )
+            assert export_data.get("deceased_date_range") == standard_date_display(
+                "1310/1312"
+            )
         elif str(pers) == str(person_multiname):
             assert export_data.get("related_people_count") == 0
             assert export_data.get("related_documents_count") == 1

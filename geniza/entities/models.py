@@ -107,9 +107,13 @@ class DocumentDatableMixin:
 
     @property
     def documents_date_range(self):
-        """Standardized range of dates across associated documents"""
+        """Compute the total range of dates across all associated documents"""
+        return self.get_date_range(self.documents.all())
+
+    def get_date_range(self, doc_set):
+        """Standardized range of dates across a set of documents"""
         full_range = [None, None]
-        for doc in self.documents.all():
+        for doc in doc_set:
             # get each doc's full range, including inferred and on-document
             doc_range = doc.dating_range()
             # if doc has a range, and the range is not [None, None], compare
@@ -121,7 +125,6 @@ class DocumentDatableMixin:
                 full_range = PartialDate.get_date_range(
                     old_range=full_range, new_range=[start, end]
                 )
-
         # prune Nones and use isoformat for standardized representation
         full_range = [d.isoformat() for d in full_range if d]
         if len(full_range) == 2 and full_range[0] == full_range[1]:
@@ -414,22 +417,27 @@ class Person(
 
     @property
     def date_str(self):
-        """Return a formatted string for the person's date range, for use in public site.
+        """Return a formatted string for the person's active date range, for use in public site.
         CE date override takes highest precedence, then fallback to computed date range from
         associated documents if override is unset.
         """
         return (
             standard_date_display(self.date)
-            or standard_date_display(self.documents_date_range)
+            or standard_date_display(self.active_date_range)
             or ""
         )
+
+    @property
+    def deceased_date_str(self):
+        """Return a formatted string for the person's mentioned as deceased date range."""
+        return standard_date_display(self.deceased_date_range) or ""
 
     def solr_date_range(self):
         """Return the person's date range as a Solr date range."""
         if self.date:
             solr_dating_range = self.date.split("/")
         else:
-            solr_dating_range = self.documents_date_range.split("/")
+            solr_dating_range = self.active_date_range.split("/")
         if solr_dating_range:
             # if a single date instead of a range, just return that date
             if (
@@ -646,6 +654,27 @@ class Person(
                 prev_relation = relation
 
         return relation_list
+
+    @property
+    def active_date_range(self):
+        """Standardized range of dates across documents where a person is (presumed) alive"""
+        relations = self.persondocumentrelation_set.exclude(
+            type__name__icontains="deceased"
+        )
+        doc_ids = relations.values_list("document__pk", flat=True)
+        docs = Document.objects.filter(pk__in=doc_ids)
+        return self.get_date_range(docs)
+
+    @property
+    def deceased_date_range(self):
+        """Standardized range of dates across associated documents where the relationship is
+        'Mentioned (deceased)'"""
+        relations = self.persondocumentrelation_set.filter(
+            type__name__icontains="deceased"
+        )
+        doc_ids = relations.values_list("document__pk", flat=True)
+        docs = Document.objects.filter(pk__in=doc_ids)
+        return self.get_date_range(docs)
 
     def merge_with(self, merge_people, user=None):
         """Merge the specified people into this one. Combines all metadata
@@ -903,7 +932,7 @@ class Person(
                 for date in (
                     self.date.split("/")
                     if self.date
-                    else self.documents_date_range.split("/")
+                    else self.active_date_range.split("/")
                 )
             ]
             index_data.update(
