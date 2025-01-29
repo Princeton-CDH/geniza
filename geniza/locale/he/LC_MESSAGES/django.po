@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: princeton-geniza-project\n"
 "Report-Msgid-Bugs-To: cdhdevteam@princeton.edu\n"
 "POT-Creation-Date: 2025-01-29 10:50-0500\n"
-"PO-Revision-Date: 2025-01-29 16:29\n"
+"PO-Revision-Date: 2025-01-29 17:57\n"
 "Last-Translator: \n"
 "Language-Team: Hebrew\n"
 "Language: he_IL\n"
@@ -104,7 +104,7 @@ msgstr "מיון לפי"
 #: entities/templates/entities/person_detail.html:38
 #: entities/templates/entities/person_list.html:126
 msgid "Dates"
-msgstr ""
+msgstr "מסמכים"
 
 #. Translators: label for "exclude inferred dates" search form filter
 #: corpus/forms.py:278
@@ -767,7 +767,7 @@ msgstr "הבא"
 #: corpus/views.py:82 templates/snippets/menu.html:11
 #| msgid "Input date"
 msgid "Documents"
-msgstr ""
+msgstr "מסמכים"
 
 #. Translators: description of document search page, for search engines
 #: corpus/views.py:84
@@ -1146,7 +1146,7 @@ msgstr[3] ""
 #. Translators: label for link to people browse page in main navigation
 #: entities/views.py:649 templates/snippets/menu.html:19
 msgid "People"
-msgstr ""
+msgstr "אנשים"
 
 #. Translators: description of people list/browse page
 #: entities/views.py:651
@@ -1157,7 +1157,7 @@ msgstr ""
 #. Translators: label for link to places browse page in main navigation
 #: entities/views.py:827 templates/snippets/menu.html:26
 msgid "Places"
-msgstr ""
+msgstr "מקומות"
 
 #. Translators: description of places list/browse page
 #: entities/views.py:829
