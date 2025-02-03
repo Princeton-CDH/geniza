@@ -2,8 +2,8 @@
 
 ## 4.20
 
--   Indexing logic for people has changed. Reindex all people:
-    `python manage.py index -i person`.
+-   Solr configuration has changed. Ensure Solr configset has been updated
+    and then reindex all content: `python manage.py index`
 
 ## 4.19
 
