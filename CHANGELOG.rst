@@ -1,6 +1,23 @@
 Change Log
 ==========
 
+4.20
+----
+
+- public site
+    - As a public user, I want a keyword search in the people module so that I can easily find people entries.
+    - As a public user, I want to see related places on a place page on the main individual place page (not in a separate tab) so that I can see associated neighborhoods and also places that have similar names but are distinct
+    - As a public site user, I want any JA or Arabic search to link to the equivalent search on the Arabic Papyrology Database website, so that I can find additional content not present in the PGP.
+    - As a public user and content admin, I want to see two separate automatic date fields for people: one of only documents where they are mentioned as deceased and one with all other dated person-doc relations, so that I have a better understanding of a person's active dates and their afterlives in the documentary record.
+    - bugfix: Translations in Hebrew script do not pick up correct Hebrew font
+
+- admin
+    - As a content admin, I want to be able to merge person-to-person relationship types, so that I can combine duplicates or revise categorization.
+    - As a content admin, I want to merge person-document relationship types, so that I can keep the website current as our thinking changes (but without losing data)
+    - As a content editor, I want to be able to tag people with various group names so that I can sort them in another way/portray more information on the public site.
+    - As a content admin, I want the ability to enter asymmetrical place-place relations, so that I can adapt to changes in the way we sort and represent data (e.g. representing a neighborhood within a place).
+    - As a content admin, when merging documents (for joins) I want to see image thumbnails of each document so I can be sure the join is correct.
+
 4.19
 ----
 
