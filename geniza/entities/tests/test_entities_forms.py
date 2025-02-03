@@ -6,11 +6,22 @@ from django.utils.translation import activate, get_language
 from geniza.corpus.forms import FacetChoiceField
 from geniza.entities.forms import (
     PersonChoiceField,
+    PersonDocumentRelationTypeChoiceField,
+    PersonDocumentRelationTypeMergeForm,
     PersonListForm,
     PersonMergeForm,
+    PersonPersonRelationTypeChoiceField,
     PlaceListForm,
 )
-from geniza.entities.models import Name, Person, PersonRole
+from geniza.entities.models import (
+    Name,
+    Person,
+    PersonDocumentRelation,
+    PersonDocumentRelationType,
+    PersonPersonRelation,
+    PersonPersonRelationType,
+    PersonRole,
+)
 
 
 class TestPersonChoiceField:
@@ -49,6 +60,78 @@ class TestPersonMergeForm:
         assert mergeform.fields["primary_person"].queryset.count() == people.count() - 1
         # last person should not be an available choice
         assert people.last() not in mergeform.fields["primary_person"].queryset
+
+
+class TestPersonDocumentRelationTypeChoiceField:
+    @pytest.mark.django_db
+    def test_label_from_instance(self, person, document):
+        # adapted from TestDocumentChoiceField
+        choicefield = PersonDocumentRelationTypeChoiceField(Mock())
+
+        # Should not error on a relation with the most minimal information
+        minimal = PersonDocumentRelationType.objects.create()
+        label = choicefield.label_from_instance(minimal)
+        assert str(minimal.id) in label
+
+        # Check that the necessary information is in the label
+        reltype = PersonDocumentRelationType.objects.create(name="test")
+        PersonDocumentRelation.objects.create(
+            person=person, document=document, type=reltype
+        )
+        label = choicefield.label_from_instance(reltype)
+        assert "test relation" in label
+        assert str(person) in label
+        assert str(document) in label
+
+
+class TestPersonDocumentRelationTypeMergeForm:
+    @pytest.mark.django_db
+    def test_init(self):
+        # adapted from TestPersonMergeForm
+
+        # no error if ids not specified
+        PersonDocumentRelationTypeMergeForm()
+
+        # create test records
+        PersonDocumentRelationType.objects.bulk_create(
+            [PersonDocumentRelationType(name=f"test{i}") for i in range(4)]
+        )
+        # initialize with ids for all but the last
+        types = PersonDocumentRelationType.objects.all().order_by("pk")
+        ids = list(types.values_list("id", flat=True))
+        mergeform = PersonDocumentRelationTypeMergeForm(ids=ids[:-1])
+        # total should have all but one type
+        assert (
+            mergeform.fields["primary_relation_type"].queryset.count()
+            == types.count() - 1
+        )
+        # last type should not be an available choice
+        assert types.last() not in mergeform.fields["primary_relation_type"].queryset
+
+
+class TestPersonPersonRelationTypeChoiceField:
+    @pytest.mark.django_db
+    def test_label_from_instance(self, person, person_multiname):
+        # adapted from TestDocumentChoiceField
+        choicefield = PersonPersonRelationTypeChoiceField(Mock())
+
+        # Should not error on a relation with the most minimal information
+        minimal = PersonPersonRelationType.objects.create()
+        label = choicefield.label_from_instance(minimal)
+        assert str(minimal.id) in label
+
+        # Check that the necessary information is in the label
+        reltype = PersonPersonRelationType.objects.create(
+            name="test", converse_name="converse"
+        )
+        label = choicefield.label_from_instance(reltype)
+        assert "test" in label
+        assert "converse" not in label
+        PersonPersonRelation.objects.create(
+            type=reltype, from_person=person, to_person=person_multiname
+        )
+        label = choicefield.label_from_instance(reltype)
+        assert "converse" in label
 
 
 @pytest.mark.django_db

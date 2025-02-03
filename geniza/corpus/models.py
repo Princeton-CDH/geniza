@@ -18,7 +18,6 @@ from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
 from django.db import models
 from django.db.models.functions import Concat
-from django.db.models.functions.text import Lower
 from django.db.models.query import Prefetch
 from django.db.models.signals import pre_delete
 from django.dispatch import receiver
@@ -41,6 +40,7 @@ from urllib3.exceptions import HTTPError, NewConnectionError
 from geniza.annotations.models import Annotation
 from geniza.common.models import (
     DisplayLabelMixin,
+    TaggableMixin,
     TrackChangesModel,
     cached_class_property,
 )
@@ -521,7 +521,7 @@ class PermalinkMixin:
         return absolutize_url(self.get_absolute_url().replace(f"/{lang}/", "/"))
 
 
-class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin):
+class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin, TaggableMixin):
     """A unified document such as a letter or legal document that
     appears on one or more fragments."""
 
@@ -748,16 +748,6 @@ class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin):
         return mark_safe(
             f"{long_name}. {available_at} {self.permalink}, accessed {today}."
         )
-
-    def all_tags(self):
-        """comma delimited string of all tags for this document"""
-        return ", ".join(t.name for t in self.tags.all())
-
-    all_tags.short_description = "tags"
-
-    def alphabetized_tags(self):
-        """tags in alphabetical order, case-insensitive sorting"""
-        return self.tags.order_by(Lower("name"))
 
     def is_public(self):
         """admin display field indicating if doc is public or suppressed"""

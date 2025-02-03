@@ -122,7 +122,9 @@ a#needsreview:target {
 }
 /* need to apply these manually for overriding purposes */
 .form-row .transcription p,
-.form-row .transcription li {
+.form-row .transcription li,
+.form-row .translation[lang="he"] p,
+.form-row .translation[lang="he"] li {
     font-family: "FrankRuhl 1924 MF Medium", "Amiri", "Times New Roman", serif;
     box-sizing: border-box;
 }
@@ -240,12 +242,12 @@ fieldset.transcriptions-field
     max-height: 350px;
     overflow-y: scroll;
 }
-.merge-document li > label {
+[class^="merge-"] li > label {
     display: flex;
     justify-content: flex-start;
 }
 
-.merge-document .submit-row {
+[class^="merge-"] .submit-row {
     clear: left;
     padding: 12px 14px;
     margin: 20px 0 0;
@@ -277,10 +279,10 @@ fieldset.transcriptions-field
     list-style: auto;
 }
 
-.merge-document input[type="radio"] {
+[class^="merge-"] input[type="radio"] {
     margin-right: 0.5rem;
 }
-.merge-document textarea {
+[class^="merge-"] textarea {
     margin: 0 0 20px 180px;
 }
 
@@ -377,4 +379,14 @@ div.form-row.field-doc_date_original .inline-group {
     div.form-row.field-doc_date_original {
         grid-template-columns: 1fr 1fr;
     }
+}
+
+.merge-relationtype input[type="radio"] {
+    margin-top: 0.5rem;
+    margin-bottom: auto;
+    vertical-align: top;
+}
+.merge-relationtype details summary {
+    cursor: pointer;
+    margin-top: 0.5rem;
 }

@@ -50,7 +50,11 @@ from geniza.entities.models import (
     PlacePlaceRelation,
     PlacePlaceRelationType,
 )
-from geniza.entities.views import PersonMerge
+from geniza.entities.views import (
+    PersonDocumentRelationTypeMerge,
+    PersonMerge,
+    PersonPersonRelationTypeMerge,
+)
 from geniza.footnotes.models import Footnote
 
 
@@ -263,6 +267,14 @@ class PersonEventInline(admin.TabularInline):
 class PersonAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin):
     """Admin for Person entities in the PGP"""
 
+    list_display = (
+        "__str__",
+        "slug",
+        "gender",
+        "role",
+        "all_tags",
+        "has_page",
+    )
     search_fields = ("name_unaccented", "names__name")
     fields = (
         "slug",
@@ -270,10 +282,12 @@ class PersonAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin):
         "role",
         "has_page",
         "date",
-        "automatic_date",
+        "active_dates",
+        "deceased_mention_dates",
         "description",
+        "tags",
     )
-    readonly_fields = ("automatic_date",)
+    readonly_fields = ("active_dates", "deceased_mention_dates")
     inlines = (
         NameInline,
         FootnoteInline,
@@ -393,9 +407,13 @@ class PersonAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin):
         ]
         return urls + super().get_urls()
 
-    def automatic_date(self, obj):
-        """Display automatically generated date/date range for an event as a formatted string"""
-        return standard_date_display(obj.documents_date_range)
+    def active_dates(self, obj):
+        """Display automatically generated active date/date range for a person as a formatted string"""
+        return standard_date_display(obj.active_date_range)
+
+    def deceased_mention_dates(self, obj):
+        """Display automatically generated deceased date/date range for a person as a formatted string"""
+        return standard_date_display(obj.deceased_date_range)
 
     actions = (export_to_csv, merge_people)
 
@@ -409,22 +427,69 @@ class RoleAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
     ordering = ("display_label", "name")
 
 
+class RelationTypeMergeAdminMixin:
+    @admin.display(description="Merge selected %(verbose_name_plural)s")
+    def merge_relation_types(self, request, queryset=None):
+        """Admin action to merge selected entity-entity relation types. This
+        action redirects to an intermediate page, which displays a form to
+        review for confirmation and choose the primary type before merging.
+        """
+        selected = request.POST.getlist("_selected_action")
+        if len(selected) < 2:
+            messages.error(
+                request,
+                "You must select at least two person-person relationships to merge",
+            )
+            return HttpResponseRedirect(
+                reverse("admin:entities_%s_changelist" % self.model._meta.model_name)
+            )
+        return HttpResponseRedirect(
+            "%s?ids=%s"
+            % (
+                reverse(f"admin:{self.merge_path_name}"),
+                ",".join(selected),
+            ),
+            status=303,
+        )  # status code 303 means "See Other"
+
+    def get_urls(self):
+        """Return admin urls; adds custom URL for merging"""
+        urls = [
+            path(
+                "merge/",
+                self.view_class.as_view(),
+                name=self.merge_path_name,
+            ),
+        ]
+        return urls + super().get_urls()
+
+    actions = (merge_relation_types,)
+
+
 @admin.register(PersonDocumentRelationType)
-class PersonDocumentRelationTypeAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
+class PersonDocumentRelationTypeAdmin(
+    RelationTypeMergeAdminMixin, TabbedTranslationAdmin, admin.ModelAdmin
+):
     """Admin for managing the controlled vocabulary of people's relationships to documents"""
 
     fields = ("name",)
     search_fields = ("name",)
     ordering = ("name",)
+    merge_path_name = "person-document-relation-type-merge"
+    view_class = PersonDocumentRelationTypeMerge
 
 
 @admin.register(PersonPersonRelationType)
-class PersonPersonRelationTypeAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
+class PersonPersonRelationTypeAdmin(
+    RelationTypeMergeAdminMixin, TabbedTranslationAdmin, admin.ModelAdmin
+):
     """Admin for managing the controlled vocabulary of people's relationships to other people"""
 
     fields = ("name", "converse_name", "category")
     search_fields = ("name",)
     ordering = ("name",)
+    merge_path_name = "person-person-relation-type-merge"
+    view_class = PersonPersonRelationTypeMerge
 
 
 @admin.register(PersonPlaceRelationType)
@@ -477,13 +542,17 @@ class PlacePlaceReverseInline(admin.TabularInline):
     verbose_name_plural = "Related Places (automatically populated)"
     fields = (
         "place_a",
-        "type",
+        "relation",
         "notes",
     )
     fk_name = "place_b"
-    readonly_fields = ("place_a", "type", "notes")
+    readonly_fields = ("place_a", "relation", "notes")
     extra = 0
     max_num = 0
+
+    def relation(self, obj=None):
+        """Get the relationship type's converse name, if it exists, or else the type name"""
+        return (obj.type.converse_name or str(obj.type)) if obj else None
 
 
 class PlaceEventInline(admin.TabularInline):
@@ -595,7 +664,7 @@ class PlaceAdmin(SortableAdminBase, admin.ModelAdmin):
 class PlacePlaceRelationTypeAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
     """Admin for managing the controlled vocabulary of places' relationships to other places"""
 
-    fields = ("name",)
+    fields = ("name", "converse_name")
     search_fields = ("name",)
     ordering = ("name",)
 

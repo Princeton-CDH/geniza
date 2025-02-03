@@ -34,6 +34,19 @@ section#document-list {
             margin-top: spacing.$spacing-md;
         }
     }
+    a#apd {
+        text-align: center;
+        margin: 1.5rem 0;
+        @include breakpoints.for-tablet-landscape-up {
+            margin: 2.25rem 0;
+        }
+    }
+    nav.pagination + a#apd {
+        margin: 0;
+        @include breakpoints.for-tablet-landscape-up {
+            margin: 0;
+        }
+    }
 }
 
 // single result
@@ -159,12 +172,20 @@ section#document-list {
 
         .transcription {
             @include typography.transcription-search;
-
+        }
+        .transcription,
+        .translation {
             // arabic script
             &[lang="ar"],
             &[data-lang-script="arabic"],
             span[lang="ar"] {
                 @include typography.arabic-transcription-search;
+            }
+            // hebrew script
+            &[lang="he"],
+            &[data-lang-script="hebrew"],
+            span[lang="he"] {
+                @include typography.transcription-search;
             }
         }
 

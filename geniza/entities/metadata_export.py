@@ -45,6 +45,7 @@ class PublicPersonExporter(Exporter):
         "auto_date_range",
         "manual_date_range",
         "description",
+        "tags",
         "related_people_count",
         "related_documents_count",
         "url",
@@ -82,6 +83,7 @@ class PublicPersonExporter(Exporter):
                 "from_person",
                 "to_person",
                 "personplacerelation_set",
+                "tags",
                 Prefetch(
                     "persondocumentrelation_set",
                     queryset=PersonDocumentRelation.objects.select_related("type"),
@@ -112,11 +114,13 @@ class PublicPersonExporter(Exporter):
             ),
             "gender": person.get_gender_display(),
             "social_role": str(person.role),
-            "auto_date_range": standard_date_display(person.documents_date_range),
+            "active_date_range": standard_date_display(person.active_date_range),
+            "deceased_date_range": standard_date_display(person.deceased_date_range),
             "manual_date_range": person.date,
             "description": person.description,
             "related_people_count": person.related_people_count,
             "related_documents_count": person.documents.count(),
+            "tags": person.all_tags(),
         }
 
         # add url if present
@@ -605,6 +609,7 @@ class PlaceRelationsExporter(RelationsExporter):
                 related_object_type=Value("Place"),
                 relationship_type_id=F("type"),
                 relationship_notes=F("notes"),
+                use_converse_typename=Value(True),
             )
             .union(
                 place.place_b.values(
@@ -612,6 +617,7 @@ class PlaceRelationsExporter(RelationsExporter):
                     related_object_type=Value("Place"),
                     relationship_type_id=F("type"),
                     relationship_notes=F("notes"),
+                    use_converse_typename=Value(False),
                 )
             )
             .union(
@@ -620,6 +626,7 @@ class PlaceRelationsExporter(RelationsExporter):
                     related_object_type=Value("Person"),
                     relationship_type_id=F("type"),
                     relationship_notes=F("notes"),
+                    use_converse_typename=Value(False),
                 )
             )
             .union(
@@ -628,6 +635,7 @@ class PlaceRelationsExporter(RelationsExporter):
                     related_object_type=Value("Document"),
                     relationship_type_id=F("type"),
                     relationship_notes=F("notes"),
+                    use_converse_typename=Value(False),
                 )
             )
             .union(
@@ -638,6 +646,7 @@ class PlaceRelationsExporter(RelationsExporter):
                     # type for event relations
                     relationship_type_id=Value(-1),
                     relationship_notes=F("notes"),
+                    use_converse_typename=Value(False),
                 )
             )
         )
@@ -678,7 +687,7 @@ class PlaceRelationsExporter(RelationsExporter):
         place_relation_types = PlacePlaceRelationType.objects.filter(
             id__in=[r[RTID] for r in relations if r[TYPE] == "Place"]
         ).values("id", "name")
-        place_relation_typedict = {t["id"]: t["name"] for t in place_relation_types}
+        place_relation_typedict = {t["id"]: t for t in place_relation_types}
         doc_relation_types = DocumentPlaceRelationType.objects.filter(
             id__in=[r[RTID] for r in relations if r[TYPE] == "Document"]
         ).values("id", "name")
@@ -784,10 +793,18 @@ class PlaceRelationsExporter(RelationsExporter):
                     and n.get("content_type") == place_contenttype_id,
                     names,
                 )
+                rel_type = place_relation_typedict.get(rel[RTID])
                 rel.update(
                     {
                         "related_object_name": next(filtered_names).get("name"),
-                        "relationship_type": place_relation_typedict.get(rel[RTID]),
+                        "relationship_type": (
+                            # handle converse type names for self-referential relationships
+                            rel_type.get("converse_name")
+                            if rel["use_converse_typename"]
+                            and rel_type.get("converse_name")
+                            # use name if should use name, or converse does not exist
+                            else rel_type.get("name")
+                        ),
                         "shared_documents": ", ".join(
                             [
                                 docs_dict.get(doc_id, {}).get("name")

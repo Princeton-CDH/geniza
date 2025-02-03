@@ -21,12 +21,16 @@ from geniza.entities.models import (
     PersonPlaceRelationType,
     PersonSolrQuerySet,
     Place,
+    PlacePlaceRelation,
+    PlacePlaceRelationType,
     PlaceSolrQuerySet,
 )
 from geniza.entities.views import (
     PersonAutocompleteView,
+    PersonDocumentRelationTypeMerge,
     PersonListView,
     PersonMerge,
+    PersonPersonRelationTypeMerge,
     PlaceAutocompleteView,
     PlaceListView,
 )
@@ -108,6 +112,105 @@ class TestPersonMergeView:
             TestCase().assertRedirects(response, merge_url)
             messages = [str(msg) for msg in list(response.context["messages"])]
             assert "test message" in messages
+
+
+class TestPersonDocumentRelationTypeMergeView:
+    # adapted from TestPersonMergeView
+    @pytest.mark.django_db
+    def test_get_success_url(self):
+        rel_type = PersonDocumentRelationType.objects.create(name="test")
+        merge_view = PersonDocumentRelationTypeMerge()
+        merge_view.primary_relation_type = rel_type
+
+        resolved_url = resolve(merge_view.get_success_url())
+        assert "admin" in resolved_url.app_names
+        assert resolved_url.url_name == "entities_persondocumentrelationtype_change"
+        assert resolved_url.kwargs["object_id"] == str(rel_type.pk)
+
+    def test_get_initial(self):
+        merge_view = PersonDocumentRelationTypeMerge()
+        merge_view.request = Mock(GET={"ids": "12,23,456,7"})
+
+        initial = merge_view.get_initial()
+        assert merge_view.ids == [12, 23, 456, 7]
+        # lowest id selected as default primary type
+        assert initial["primary_relation_type"] == 7
+
+        # Test when no ids are provided (a user shouldn't get here,
+        #  but shouldn't raise an error.)
+        merge_view.request = Mock(GET={"ids": ""})
+        initial = merge_view.get_initial()
+        assert merge_view.ids == []
+        merge_view.request = Mock(GET={})
+        initial = merge_view.get_initial()
+        assert merge_view.ids == []
+
+    def test_get_form_kwargs(self):
+        merge_view = PersonDocumentRelationTypeMerge()
+        merge_view.request = Mock(GET={"ids": "12,23,456,7"})
+        form_kwargs = merge_view.get_form_kwargs()
+        assert form_kwargs["ids"] == merge_view.ids
+
+    def test_person_document_relation_type_merge(self, admin_client, client):
+        # Ensure that the merge view is not visible to public
+        response = client.get(reverse("admin:person-document-relation-type-merge"))
+        assert response.status_code == 302
+        assert response.url.startswith("/accounts/login/")
+
+        # create test records to merge
+        rel_type = PersonDocumentRelationType.objects.create(name="test")
+        dupe_rel_type = PersonDocumentRelationType.objects.create(name="test2")
+
+        idstring = ",".join(str(id) for id in [rel_type.id, dupe_rel_type.id])
+
+        # GET should display choices
+        response = admin_client.get(
+            reverse("admin:person-document-relation-type-merge"), {"ids": idstring}
+        )
+        assert response.status_code == 200
+
+        # POST should merge
+        merge_url = "%s?ids=%s" % (
+            reverse("admin:person-document-relation-type-merge"),
+            idstring,
+        )
+        response = admin_client.post(
+            merge_url, {"primary_relation_type": rel_type.id}, follow=True
+        )
+        TestCase().assertRedirects(
+            response,
+            reverse(
+                "admin:entities_persondocumentrelationtype_change", args=[rel_type.id]
+            ),
+        )
+        message = list(response.context.get("messages"))[0]
+        assert message.tags == "success"
+        assert "Successfully merged" in message.message
+        assert f"with {str(rel_type)} (id = {rel_type.pk})" in message.message
+
+        with patch.object(PersonDocumentRelationType, "merge_with") as mock_merge_with:
+            # should catch ValidationError and send back to form with error msg
+            mock_merge_with.side_effect = ValidationError("test message")
+            response = admin_client.post(
+                merge_url, {"primary_relation_type": rel_type.id}, follow=True
+            )
+            TestCase().assertRedirects(response, merge_url)
+            messages = [str(msg) for msg in list(response.context["messages"])]
+            assert "test message" in messages
+
+
+class TestPersonPersonRelationTypeMergeView:
+    # adapted from TestPersonMergeView
+    @pytest.mark.django_db
+    def test_get_success_url(self):
+        rel_type = PersonPersonRelationType.objects.create(name="test")
+        merge_view = PersonPersonRelationTypeMerge()
+        merge_view.primary_relation_type = rel_type
+
+        resolved_url = resolve(merge_view.get_success_url())
+        assert "admin" in resolved_url.app_names
+        assert resolved_url.url_name == "entities_personpersonrelationtype_change"
+        assert resolved_url.kwargs["object_id"] == str(rel_type.pk)
 
 
 class TestPersonAutocompleteView:
@@ -420,6 +523,47 @@ class TestPersonListView:
                 personlist_view.get_queryset()
                 mock_order_by.assert_called_with("start_dating_i")
 
+    def test_get_queryset__keyword_query(
+        self, person, person_diacritic, person_multiname, empty_solr
+    ):
+        SolrClient().update.index(
+            [
+                person.index_data(),
+                person_diacritic.index_data(),
+                person_multiname.index_data(),
+            ],
+            commit=True,
+        )
+        personlist_view = PersonListView()
+        with patch.object(personlist_view, "get_form") as mock_get_form:
+            mock_get_form.return_value.cleaned_data = {"q": str(person)}
+            qs = personlist_view.get_queryset()
+            # should return the person
+            assert qs.count() == 1
+            resulting_ids = [result["id"] for result in qs]
+            assert f"person.{person.id}" in resulting_ids
+
+            Name.objects.create(name=str(person), content_object=person_multiname)
+            SolrClient().update.index([person_multiname.index_data()], commit=True)
+            mock_get_form.return_value.cleaned_data = {
+                "q": str(person),
+                "sort": "relevance",
+                "sort_dir": "desc",
+            }
+            qs = personlist_view.get_queryset()
+            # should return both people
+            assert qs.count() == 2
+            resulting_ids = [result["id"] for result in qs]
+            assert f"person.{person.id}" in resulting_ids
+            assert f"person.{person_multiname.id}" in resulting_ids
+            # primary name should be prioritized above other names in relevance
+            assert qs[0]["id"] == f"person.{person.id}"
+            assert qs[0]["score"] > qs[1]["score"]
+            # other names should be highlighted
+            highlights = qs.get_highlighting()
+            assert f"person.{person_multiname.id}" in highlights
+            assert "other_names" in highlights[f"person.{person_multiname.id}"]
+
     def test_get_context_data(self, client, person):
         with patch.object(PersonListForm, "set_choices_from_facets") as mock_setchoices:
             response = client.get(reverse("entities:person-list"))
@@ -517,6 +661,60 @@ class TestPlaceDetailView:
         assert response.context["page_type"] == "place"
         # context should include the maptiler token if one exists in settings
         assert response.context["maptiler_token"] == "example"
+
+    def test_related_places(self, client):
+        tlebanon = Place.objects.create(slug="tripoli-lebanon")
+        Name.objects.create(
+            name="Tripoli (Lebanon)", content_object=tlebanon, primary=True
+        )
+
+        # create some place-place relationshipss
+        tgreece = Place.objects.create(slug="tripoli-greece")
+        Name.objects.create(
+            name="Tripoli (Greece)", content_object=tgreece, primary=True
+        )
+        (nbc, _) = PlacePlaceRelationType.objects.get_or_create(
+            name="Not to be confused with"
+        )
+        PlacePlaceRelation.objects.create(place_a=tlebanon, place_b=tgreece, type=nbc)
+
+        # add an asymmetrical one from another place, it should show up too, but with converse name
+        zahriyeh = Place.objects.create(slug="zahriyeh")
+        Name.objects.create(name="Zahriyeh", content_object=zahriyeh, primary=True)
+        (city_neighborhood, _) = PlacePlaceRelationType.objects.get_or_create(
+            name="City", converse_name="Neighborhood"
+        )
+        PlacePlaceRelation.objects.create(
+            place_a=zahriyeh, place_b=tlebanon, type=city_neighborhood
+        )
+
+        response = client.get(reverse("entities:place", args=(tlebanon.slug,)))
+        assert len(response.context["related_places"]) == 2
+        # should be ordered by type name
+        assert (
+            response.context["related_places"][0]["type"]
+            == city_neighborhood.converse_name
+        )
+        assert response.context["related_places"][0]["use_converse_typename"] == True
+        assert response.context["related_places"][0]["name"] == str(zahriyeh)
+        assert response.context["related_places"][1]["type"] == nbc.name
+        assert response.context["related_places"][1]["use_converse_typename"] == False
+        assert response.context["related_places"][1]["name"] == str(tgreece)
+
+        # create a duplicate of the asymmetric relation to test dedupe
+        (subset_superset, _) = PlacePlaceRelationType.objects.get_or_create(
+            name="Subset", converse_name="Superset"
+        )
+        PlacePlaceRelation.objects.create(
+            place_a=tlebanon, place_b=zahriyeh, type=subset_superset
+        )
+        response = client.get(reverse("entities:place", args=(tlebanon.slug,)))
+        assert len(response.context["related_places"]) == 2
+        bothtypes = response.context["related_places"][0]["type"].lower()
+        assert (
+            city_neighborhood.converse_name.lower() in bothtypes
+            and subset_superset.name.lower() in bothtypes
+        )
 
 
 @pytest.mark.django_db

@@ -10,6 +10,7 @@ from geniza.entities.models import (
     PersonDocumentRelationType,
     PersonEventRelation,
     PersonPersonRelation,
+    PersonPersonRelationType,
     PersonPlaceRelation,
     PersonRole,
     PlaceEventRelation,
@@ -52,6 +53,74 @@ class PersonMergeForm(forms.Form):
         self.fields["primary_person"].queryset = Person.objects.filter(
             id__in=person_ids
         )
+
+
+class RelationTypeMergeFormMixin:
+    def __init__(self, *args, **kwargs):
+        ids = kwargs.get("ids", [])
+
+        # Remove the added kwarg so that the super method doesn't error
+        try:
+            del kwargs["ids"]
+        except KeyError:
+            pass
+
+        super().__init__(*args, **kwargs)
+        self.fields[
+            "primary_relation_type"
+        ].queryset = self.reltype_model.objects.filter(id__in=ids)
+
+
+class PersonDocumentRelationTypeChoiceField(forms.ModelChoiceField):
+    """Add a summary of each PersonDocumentRelationType to a form (used for merging)"""
+
+    label_template = get_template(
+        "entities/snippets/persondocumentrelationtype_option_label.html"
+    )
+
+    def label_from_instance(self, relation_type):
+        return self.label_template.render({"relation_type": relation_type})
+
+
+class PersonDocumentRelationTypeMergeForm(RelationTypeMergeFormMixin, forms.Form):
+    primary_relation_type = PersonDocumentRelationTypeChoiceField(
+        label="Select primary person-document relationship",
+        queryset=None,
+        help_text=(
+            "Select the primary person-document relationship, which will be "
+            "used as the canonical entry. All associated relations and log "
+            "entries will be combined on the primary relationship."
+        ),
+        empty_label=None,
+        widget=forms.RadioSelect,
+    )
+    reltype_model = PersonDocumentRelationType
+
+
+class PersonPersonRelationTypeChoiceField(forms.ModelChoiceField):
+    """Add a summary of each PersonPersonRelationType to a form (used for merging)"""
+
+    label_template = get_template(
+        "entities/snippets/personpersonrelationtype_option_label.html"
+    )
+
+    def label_from_instance(self, relation_type):
+        return self.label_template.render({"relation_type": relation_type})
+
+
+class PersonPersonRelationTypeMergeForm(RelationTypeMergeFormMixin, forms.Form):
+    primary_relation_type = PersonPersonRelationTypeChoiceField(
+        label="Select primary person-person relationship",
+        queryset=None,
+        help_text=(
+            "Select the primary person-person relationship, which will be "
+            "used as the canonical entry. All associated relations and log "
+            "entries will be combined on the primary relationship."
+        ),
+        empty_label=None,
+        widget=forms.RadioSelect,
+    )
+    reltype_model = PersonPersonRelationType
 
 
 class PersonPersonForm(forms.ModelForm):
@@ -117,6 +186,19 @@ class PlacePlaceForm(forms.ModelForm):
 
 
 class PersonListForm(RangeForm):
+    q = forms.CharField(
+        label="Keyword or Phrase",
+        required=False,
+        widget=forms.TextInput(
+            attrs={
+                # Translators: placeholder for people keyword search input
+                "placeholder": _("Search for people by name"),
+                # Translators: accessible label for people keyword search input
+                "aria-label": _("word or phrase"),
+                "type": "search",
+            }
+        ),
+    )
     gender = FacetChoiceField(label=_("Gender"))
     has_page = BooleanFacetField(label=_("Detail page available"))
     social_role = FacetChoiceField(label=_("Social role"))
@@ -125,6 +207,8 @@ class PersonListForm(RangeForm):
     date_range = RangeField(label=_("Dates"), required=False, widget=YearRangeWidget())
 
     SORT_CHOICES = [
+        # Translators: label for sort by relevance
+        ("relevance", _("Relevance")),
         # Translators: label for sort by name
         ("name", _("Name")),
         # Translators: label for sort by person activity dates

@@ -1,5 +1,6 @@
 @use "../base/breakpoints";
 @use "../base/spacing";
+@use "../base/typography";
 
 main.place {
     * {
@@ -53,6 +54,12 @@ main.place {
                 width: 42px;
                 height: 48px;
             }
+        }
+    }
+    section.related {
+        margin: spacing.$spacing-md 0 0;
+        @include breakpoints.for-tablet-landscape-up {
+            margin: 2rem 0 0;
         }
     }
 }

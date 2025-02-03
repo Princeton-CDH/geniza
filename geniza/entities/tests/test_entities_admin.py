@@ -7,25 +7,31 @@ from django.test import RequestFactory
 from django.urls import reverse
 from pytest_django.asserts import assertContains, assertNotContains
 
+from geniza.corpus.dates import standard_date_display
 from geniza.corpus.models import Dating, Document, LanguageScript
 from geniza.entities.admin import (
     NameInlineFormSet,
     PersonAdmin,
     PersonDocumentInline,
+    PersonDocumentRelationTypeAdmin,
     PersonPersonInline,
     PersonPersonRelationTypeChoiceField,
     PersonPersonReverseInline,
     PlaceAdmin,
+    PlacePlaceReverseInline,
 )
 from geniza.entities.models import (
     Name,
     Person,
     PersonDocumentRelation,
+    PersonDocumentRelationType,
     PersonPersonRelation,
     PersonPersonRelationType,
     PersonPlaceRelation,
     PersonPlaceRelationType,
     Place,
+    PlacePlaceRelation,
+    PlacePlaceRelationType,
 )
 
 
@@ -225,6 +231,30 @@ class TestPersonAdmin:
         assert str(person_multiname) in content
         assert "Partner" in content
 
+    def test_date_ranges(self, person, document, join):
+        document.doc_date_standard = "1200/1300"
+        document.save()
+        (pdrtype, _) = PersonDocumentRelationType.objects.get_or_create(name="test")
+        PersonDocumentRelation.objects.create(
+            person=person, document=document, type=pdrtype
+        )
+        (deceased, _) = PersonDocumentRelationType.objects.get_or_create(
+            name="Mentioned (deceased)"
+        )
+        join.doc_date_standard = "1310/1312"
+        join.save()
+        PersonDocumentRelation.objects.create(
+            person=person, document=join, type=deceased
+        )
+
+        person_admin = PersonAdmin(model=Person, admin_site=admin.site)
+        assert person_admin.active_dates(person) == standard_date_display(
+            document.doc_date_standard
+        )
+        assert person_admin.deceased_mention_dates(person) == standard_date_display(
+            join.doc_date_standard
+        )
+
 
 @pytest.mark.django_db
 class TestNameInlineFormSet:
@@ -349,6 +379,37 @@ class TestEventDocumentInline:
 
 
 @pytest.mark.django_db
+class TestPlacePlaceReverseInline:
+    def test_relation(self):
+        # should show converse relationship type when available
+        (neighborhood, _) = PlacePlaceRelationType.objects.get_or_create(
+            name="Neighborhood",
+            converse_name="City",
+        )
+        fustat = Place.objects.create()
+        qasr = Place.objects.create()
+        rel = PlacePlaceRelation.objects.create(
+            place_a=fustat,
+            place_b=qasr,
+            type=neighborhood,
+        )
+        reverse_inline = PlacePlaceReverseInline(Place, admin_site=admin.site)
+        assert reverse_inline.relation(rel) == neighborhood.converse_name
+
+        # otherwise should just show relationship type
+        (same, _) = PlacePlaceRelationType.objects.get_or_create(
+            name="Possibly the same as",
+        )
+        fust2 = Place.objects.create()
+        rel = PlacePlaceRelation.objects.create(
+            place_a=fustat,
+            place_b=fust2,
+            type=same,
+        )
+        assert reverse_inline.relation(rel) == same.name
+
+
+@pytest.mark.django_db
 class TestPlaceAdmin:
     def test_save_related(self):
         # if a place does not have a slug, the form should generate one after related_save
@@ -415,3 +476,29 @@ class TestPlaceAdmin:
         # - some content
         assert str(person) in content
         assert "Home base" in content
+
+
+class TestPersonDocumentRelationTypeAdmin:
+    def test_merge_person_document_relation_types(self):
+        pdr_admin = PersonDocumentRelationTypeAdmin(
+            model=PersonDocumentRelationType, admin_site=admin.site
+        )
+        mockrequest = Mock()
+        test_ids = ["1", "2", "3"]
+        mockrequest.POST.getlist.return_value = test_ids
+        resp = pdr_admin.merge_relation_types(mockrequest, Mock())
+        assert isinstance(resp, HttpResponseRedirect)
+        assert resp.status_code == 303
+        assert resp["location"].startswith(
+            reverse("admin:person-document-relation-type-merge")
+        )
+        assert resp["location"].endswith("?ids=%s" % ",".join(test_ids))
+
+        test_ids = ["1"]
+        mockrequest.POST.getlist.return_value = test_ids
+        resp = pdr_admin.merge_relation_types(mockrequest, Mock())
+        assert isinstance(resp, HttpResponseRedirect)
+        assert resp.status_code == 302
+        assert resp["location"] == reverse(
+            "admin:entities_persondocumentrelationtype_changelist"
+        )

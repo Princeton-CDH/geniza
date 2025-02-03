@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load static i18n humanize widget_tweaks %}
+{% load static i18n humanize corpus_extras widget_tweaks %}
 
 {% block meta_title %}{{ page_title }}{% endblock meta_title %}
 {% block meta_description %}{{ page_description }}{% endblock meta_description %}
@@ -8,6 +8,13 @@
     <form data-controller="search" data-turbo-frame="main" data-turbo-action="advance" data-page="person">
         <div class="topheader-row">
             <h1>{{ page_title }}</h1>
+            <fieldset id="query">
+                {% render_field form.q data-search-target="query" data-action="input->search#autoUpdateRadioSort change->search#update" %}
+
+                {# Translators: Search submit button #}
+                {% translate 'Submit search' as search_label %}
+                <button type="submit" aria-label="{{ search_label }}" />
+            </fieldset>
             <label id="people-view-switcher" for="switcher">
                 <input id="switcher" type="checkbox" data-search-target="peopleMode" data-action="click->search#togglePeopleViewMode" />
                 {# Translators: label for people browse page list view #}
@@ -99,7 +106,7 @@
                         <summary>
                             {{ form.get_sort_label|default:"Name" }}
                         </summary>
-                        <div id="sort-options">
+                        <div id="sort-options" data-search-target="radioSort" >
                             {% render_field form.sort data-action="search#update" %}
                             {% render_field form.sort_dir data-action="search#update" %}
                         </div>
@@ -111,6 +118,8 @@
                 <thead>
                     {# Translators: Person "name" column header on the browse page #}
                     <th>{% translate "Name" %}</th>
+                    {# Translators: Person "other names" column header on the browse page #}
+                    {% if highlighting %}<th>{% translate "Other names" %}</th>{% endif %}
                     {# Translators: Person "gender" column header on the browse page #}
                     <th>{% translate "Gender" %}</th>
                     {# Translators: Person "dates of activity" column header on the browse page #}
@@ -142,10 +151,37 @@
                                     <span>{{ person.name }}</span>
                                 {% endif %}
                             </td>
+                            {% with person_highlights=highlighting|dict_item:person.id %}
+                                {% if highlighting %}
+                                    {% spaceless %}
+                                        <td class="other-names">
+                                            {% if person_highlights.other_names %}
+                                                <span class="aka">{% translate "Also known as: " %}</span>
+                                                {% for match in person_highlights.other_names %}
+                                                    <span class="name">{{ match|safe }}</span>{% if not forloop.last %}, {% endif %}
+                                                {% endfor %}
+                                            {% endif %}
+                                        </td>
+                                    {% endspaceless %}
+                                {% endif %}
+                            {% endwith %}
                             <td class="gender">{{ person.gender }}</td>
                             <td class="dates">{{ person.date_str }}</td>
                             <td class="role">{{ person.role }}</td>
                             <td class="description">{{ person.description.0|truncatewords:15 }}</td>
+                            {# tags #}
+                            <td class="tags">{% if person.tags %}
+                                <ul class="tags">
+                                    {% spaceless %}
+                                        {% for tag in person.tags|alphabetize|slice:":5" %}
+                                            <li><a href='{% url "entities:person-list" %}?q=tag:"{{ tag }}"'>{{ tag }}</a></li>
+                                        {% endfor %}
+                                        {% if person.tags|length > 5 %}
+                                            <li class="more">(+ {{ person.tags|length|add:"-5" }} {% translate 'more' %})</li>
+                                        {% endif %}
+                                    {% endspaceless %}
+                                </ul>
+                            {% endif %}</td>
                             <td class="related documents">
                                 <span class="label">{% translate "Related Documents" %}</span>
                                 <span>{{ person.documents }}</span>

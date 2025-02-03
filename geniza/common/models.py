@@ -2,6 +2,7 @@ from functools import cache
 
 from django.contrib.auth.models import User
 from django.db import models
+from django.db.models.functions.text import Lower
 from django.utils.safestring import mark_safe
 from modeltranslation.utils import fallbacks
 
@@ -110,3 +111,17 @@ class DisplayLabelMixin:
             (obj.display_label_en or obj.name_en): obj
             for obj in cls.objects.all()
         }
+
+
+class TaggableMixin:
+    """Mixin for taggable models with convenience functions for generating lists of tags"""
+
+    def all_tags(self):
+        """comma delimited string of all tags for this instance"""
+        return ", ".join(t.name for t in self.tags.all())
+
+    all_tags.short_description = "tags"
+
+    def alphabetized_tags(self):
+        """tags in alphabetical order, case-insensitive sorting"""
+        return self.tags.order_by(Lower("name"))

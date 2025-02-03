@@ -7,7 +7,6 @@ from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.forms import ValidationError
 from django.utils import timezone
-from modeltranslation.manager import MultilingualQuerySet
 from parasolr.django.indexing import ModelIndexable
 from slugify import slugify
 from unidecode import unidecode
@@ -31,6 +30,7 @@ from geniza.entities.models import (
     PersonPlaceRelationType,
     PersonRole,
     PersonSignalHandlers,
+    PersonSolrQuerySet,
     Place,
     PlaceEventRelation,
     PlacePlaceRelation,
@@ -439,7 +439,7 @@ class TestPerson:
         person.save()
         assert person.date_str == standard_date_display("1255")
 
-    def test_solr_date_range(self, person, document):
+    def test_solr_date_range(self, person, document, join):
         # no date: returns None
         assert not person.solr_date_range()
         # document dates: should use those
@@ -447,6 +447,18 @@ class TestPerson:
         document.save()
         PersonDocumentRelation.objects.create(person=person, document=document)
         assert person.solr_date_range() == "[1200 TO 1300]"
+
+        # should NOT include mentioned (deceased)
+        (deceased, _) = PersonDocumentRelationType.objects.get_or_create(
+            name="Mentioned (deceased)"
+        )
+        join.doc_date_standard = "1310/1312"
+        join.save()
+        PersonDocumentRelation.objects.create(
+            person=person, document=join, type=deceased
+        )
+        assert person.solr_date_range() == "[1200 TO 1300]"
+
         # person date override
         person.date = "1255"
         person.save()
@@ -455,13 +467,27 @@ class TestPerson:
     def test_total_to_index(self, person, person_multiname):
         assert Person.total_to_index() == 2
 
-    def test_index_data(self, person, document):
+    def test_index_data(self, person, person_multiname, document, join):
         document.doc_date_standard = "1200/1300"
         document.save()
         (pdrtype, _) = PersonDocumentRelationType.objects.get_or_create(name="test")
         PersonDocumentRelation.objects.create(
             person=person, document=document, type=pdrtype
         )
+
+        # these dates should be ignored (deceased)
+        (deceased, _) = PersonDocumentRelationType.objects.get_or_create(
+            name="Mentioned (deceased)"
+        )
+        join.doc_date_standard = "1310/1312"
+        join.save()
+        PersonDocumentRelation.objects.create(
+            person=person, document=join, type=deceased
+        )
+
+        tags = ["testtag", "tag2"]
+        for t in tags:
+            person.tags.add(t)
         index_data = person.index_data()
         assert index_data["slug_s"] == person.slug
         assert index_data["name_s"] == str(person)
@@ -475,15 +501,119 @@ class TestPerson:
         index_data = person.index_data()
         assert index_data["url_s"] == person.get_absolute_url()
         assert index_data["has_page_b"] == True
-        assert index_data["documents_i"] == 1
+        assert index_data["documents_i"] == 2
         assert index_data["people_i"] == index_data["places_i"] == 0
-        assert index_data["document_relation_ss"] == [str(pdrtype)]
+        assert str(pdrtype) in index_data["document_relation_ss"]
+        assert str(deceased) in index_data["document_relation_ss"]
+        assert index_data["tags_ss_lower"] == tags
         assert index_data["date_dr"] == person.solr_date_range()
         assert index_data["date_str_s"] == person.date_str
         assert index_data["start_dating_i"] == PartialDate("1200").numeric_format()
         assert index_data["end_dating_i"] == PartialDate("1300").numeric_format(
             mode="max"
         )
+        index_data = person_multiname.index_data()
+        assert str(person_multiname) not in index_data["other_names_ss"]
+        assert (
+            str(person_multiname.names.non_primary().first())
+            in index_data["other_names_ss"]
+        )
+
+    def test_active_date_range(self, person, document, join):
+        # these dates should be used (active)
+        document.doc_date_standard = "1200/1300"
+        document.save()
+        (pdrtype, _) = PersonDocumentRelationType.objects.get_or_create(name="test")
+        PersonDocumentRelation.objects.create(
+            person=person, document=document, type=pdrtype
+        )
+        # these dates should be ignored (deceased)
+        (deceased, _) = PersonDocumentRelationType.objects.get_or_create(
+            name="Mentioned (deceased)"
+        )
+        join.doc_date_standard = "1310/1312"
+        join.save()
+        PersonDocumentRelation.objects.create(
+            person=person, document=join, type=deceased
+        )
+        assert person.active_date_range == document.doc_date_standard
+
+    def test_deceased_date_range(self, person, document, join):
+        # these dates should be ignored (active)
+        document.doc_date_standard = "1200/1300"
+        document.save()
+        (pdrtype, _) = PersonDocumentRelationType.objects.get_or_create(name="test")
+        PersonDocumentRelation.objects.create(
+            person=person, document=document, type=pdrtype
+        )
+        # these dates should be used (deceased)
+        (deceased, _) = PersonDocumentRelationType.objects.get_or_create(
+            name="Mentioned (deceased)"
+        )
+        join.doc_date_standard = "1310/1312"
+        join.save()
+        PersonDocumentRelation.objects.create(
+            person=person, document=join, type=deceased
+        )
+        assert person.deceased_date_range == join.doc_date_standard
+
+
+class TestPersonSolrQuerySet:
+    def test_keyword_search(self):
+        pqs = PersonSolrQuerySet()
+        with patch.object(pqs, "search") as mocksearch:
+            pqs.keyword_search("halfon")
+            mocksearch.assert_called_with(pqs.keyword_search_qf)
+            mocksearch.return_value.raw_query_parameters.assert_called_with(
+                **{
+                    "keyword_query": "halfon",
+                    "q.op": "AND",
+                }
+            )
+            pqs.keyword_search("tag:community")
+            mocksearch.return_value.raw_query_parameters.assert_called_with(
+                **{
+                    "keyword_query": "tags_ss_lower:community",
+                    "q.op": "AND",
+                }
+            )
+
+    def test_get_highlighting(self):
+        pqs = PersonSolrQuerySet()
+        with patch("geniza.entities.models.super") as mock_super:
+            # no highlighting
+            mock_get_highlighting = mock_super.return_value.get_highlighting
+            mock_get_highlighting.return_value = {}
+            assert pqs.get_highlighting() == {}
+
+            # highlighting but no other_names field
+            test_highlight = {"person.1": {"description": ["foo bar baz"]}}
+            mock_get_highlighting.return_value = test_highlight
+            # returned unchanged
+            assert pqs.get_highlighting() == test_highlight
+
+            # highlighting single other_names field
+            test_highlight = {
+                "person.1": {"other_names_bigram": ["<em>Yaʿaqov</em> b. Shemuʾel"]}
+            }
+            mock_get_highlighting.return_value = test_highlight
+            # should strip html tags
+            assert pqs.get_highlighting()["person.1"]["other_names"] == [
+                "Yaʿaqov b. Shemuʾel"
+            ]
+
+            # highlighting multiple other_names fields
+            test_highlight = {
+                "person.1": {
+                    "other_names_nostem": ["", "<em>Ibn</em> al-Qaṭāʾif"],
+                    "other_names_bigram": ["", "<em>Ibn</em> al-Qaṭāʾif"],
+                }
+            }
+            mock_get_highlighting.return_value = test_highlight
+            # should strip html tags, dedupe, and remove empty strings
+            assert pqs.get_highlighting()["person.1"]["other_names"] == [
+                "Ibn al-Qaṭāʾif"
+            ]
 
 
 @pytest.mark.django_db
@@ -649,6 +779,181 @@ class TestPersonDocumentRelation:
 
 
 @pytest.mark.django_db
+class TestPersonDocumentRelationType:
+    def test_merge_with(self, person, person_multiname, document, join):
+        # create three PersonDocumentRelationTypes and some associations
+        rel_type = PersonDocumentRelationType.objects.create(name="test")
+        type_2 = PersonDocumentRelationType.objects.create(name="to be merged")
+        type_3 = PersonDocumentRelationType.objects.create(name="also merge me")
+        PersonDocumentRelation.objects.create(
+            type=rel_type, person=person, document=document
+        )
+        PersonDocumentRelation.objects.create(
+            type=type_2, person=person, document=document
+        )
+        PersonDocumentRelation.objects.create(
+            type=type_2, person=person_multiname, document=document
+        )
+        PersonDocumentRelation.objects.create(type=type_3, person=person, document=join)
+
+        # create some log entries
+        pdrtype_contenttype = ContentType.objects.get_for_model(
+            PersonDocumentRelationType
+        )
+        creation_date = timezone.make_aware(datetime(2023, 10, 12))
+        creator = User.objects.get_or_create(username="editor")[0]
+        type_2_str = str(type_2)
+        type_2_pk = type_2.pk
+        LogEntry.objects.bulk_create(
+            [
+                LogEntry(
+                    user_id=creator.id,
+                    content_type_id=pdrtype_contenttype.pk,
+                    object_id=type_2_pk,
+                    object_repr=type_2_str,
+                    change_message="first input",
+                    action_flag=ADDITION,
+                    action_time=creation_date,
+                ),
+                LogEntry(
+                    user_id=creator.id,
+                    content_type_id=pdrtype_contenttype.pk,
+                    object_id=type_2_pk,
+                    object_repr=type_2_str,
+                    change_message="major revision",
+                    action_flag=CHANGE,
+                    action_time=timezone.now(),
+                ),
+            ]
+        )
+        assert rel_type.persondocumentrelation_set.count() == 1
+        rel_type.merge_with([type_2, type_3])
+        # should skip the duplicate and add the others
+        assert rel_type.persondocumentrelation_set.count() == 3
+        # should delete other types and create merge log entry
+        assert not type_2.pk
+        assert not type_3.pk
+        assert LogEntry.objects.filter(
+            object_id=rel_type.pk,
+            change_message__contains=f"merged with {type_2}, {type_3}",
+        ).exists()
+        assert rel_type.log_entries.count() == 3
+        # based on default sorting, most recent log entry will be first
+        # - should document the merge event
+        merge_log = rel_type.log_entries.first()
+        assert merge_log.action_flag == CHANGE
+
+        # reassociated log entries should include merged type's name, id
+        assert (
+            " [merged type %s (id = %s)]" % (type_2_str, type_2_pk)
+            in rel_type.log_entries.all()[1].change_message
+        )
+        assert (
+            " [merged type %s (id = %s)]" % (type_2_str, type_2_pk)
+            in rel_type.log_entries.all()[2].change_message
+        )
+
+    @pytest.mark.django_db
+    def test_objects_by_label(self):
+        """Should return dict of PersonDocumentRelationType objects keyed on English label"""
+        # invalidate cached property (it is computed in other tests in the suite)
+        if "objects_by_label" in PersonDocumentRelationType.__dict__:
+            # __dict__["objects_by_label"] returns a classmethod
+            # __func__ returns a property
+            # fget returns the actual cached function
+            PersonDocumentRelationType.__dict__[
+                "objects_by_label"
+            ].__func__.fget.cache_clear()
+        # add some new relation types
+        rel_type = PersonDocumentRelationType(name="Some kind of official")
+        rel_type.save()
+        rel_type_2 = PersonDocumentRelationType(name="Example")
+        rel_type_2.save()
+        # should be able to get a relation type by label
+        assert isinstance(
+            PersonDocumentRelationType.objects_by_label.get("Some kind of official"),
+            PersonDocumentRelationType,
+        )
+        assert (
+            PersonDocumentRelationType.objects_by_label.get("Some kind of official").pk
+            == rel_type.pk
+        )
+        assert (
+            PersonDocumentRelationType.objects_by_label.get("Example").pk
+            == rel_type_2.pk
+        )
+
+
+@pytest.mark.django_db
+class TestPersonPersonRelationType:
+    def test_merge_with(self, person, person_multiname, person_diacritic):
+        # create two PersonPersonRelationTypes and some associations
+        rel_type = PersonPersonRelationType.objects.create(name="test")
+        type_2 = PersonPersonRelationType.objects.create(name="to be merged")
+        PersonPersonRelation.objects.create(
+            type=rel_type, from_person=person, to_person=person_multiname
+        )
+        PersonPersonRelation.objects.create(
+            type=type_2, from_person=person, to_person=person_diacritic
+        )
+
+        # create some log entries
+        pprtype_contenttype = ContentType.objects.get_for_model(
+            PersonPersonRelationType
+        )
+        creation_date = timezone.make_aware(datetime(2025, 1, 22))
+        creator = User.objects.get_or_create(username="editor")[0]
+        type_2_str = str(type_2)
+        type_2_pk = type_2.pk
+        LogEntry.objects.bulk_create(
+            [
+                LogEntry(
+                    user_id=creator.id,
+                    content_type_id=pprtype_contenttype.pk,
+                    object_id=type_2_pk,
+                    object_repr=type_2_str,
+                    change_message="first input",
+                    action_flag=ADDITION,
+                    action_time=creation_date,
+                ),
+                LogEntry(
+                    user_id=creator.id,
+                    content_type_id=pprtype_contenttype.pk,
+                    object_id=type_2_pk,
+                    object_repr=type_2_str,
+                    change_message="major revision",
+                    action_flag=CHANGE,
+                    action_time=timezone.now(),
+                ),
+            ]
+        )
+        assert rel_type.personpersonrelation_set.count() == 1
+        rel_type.merge_with([type_2])
+        assert rel_type.personpersonrelation_set.count() == 2
+        # should delete other types and create merge log entry
+        assert not type_2.pk
+        assert LogEntry.objects.filter(
+            object_id=rel_type.pk,
+            change_message__contains=f"merged with {type_2}",
+        ).exists()
+        assert rel_type.log_entries.count() == 3
+        # based on default sorting, most recent log entry will be first
+        # - should document the merge event
+        merge_log = rel_type.log_entries.first()
+        assert merge_log.action_flag == CHANGE
+
+        # reassociated log entries should include merged type's name, id
+        assert (
+            " [merged type %s (id = %s)]" % (type_2_str, type_2_pk)
+            in rel_type.log_entries.all()[1].change_message
+        )
+        assert (
+            " [merged type %s (id = %s)]" % (type_2_str, type_2_pk)
+            in rel_type.log_entries.all()[2].change_message
+        )
+
+
+@pytest.mark.django_db
 class TestPlace:
     def test_str(self):
         place = Place.objects.create()
@@ -771,6 +1076,18 @@ class TestPlacePlaceRelation:
             type=possible_dupe,
         )
         assert str(relation) == f"{possible_dupe} relation: {fustat} and {other}"
+        (neighborhood, _) = PlacePlaceRelationType.objects.get_or_create(
+            name="Neighborhood", converse_name="City"
+        )
+        relation = PlacePlaceRelation.objects.create(
+            place_a=fustat,
+            place_b=other,
+            type=neighborhood,
+        )
+        assert (
+            str(relation)
+            == f"{neighborhood.name}-{neighborhood.converse_name} relation: {fustat} and {other}"
+        )
 
 
 @pytest.mark.django_db

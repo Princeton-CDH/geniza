@@ -33,10 +33,23 @@
                 {# Translators: label for a person's gender #}
                 <dt>{% translate 'Gender' %}</dt>
                 <dd>{{ person.get_gender_display }}</dd>
-                {% if person.date_str %}
-                    {# Translators: label for a person's active dates in the PGP #}
-                    <dt>{% translate 'Active dates' %}</dt>
-                    <dd>{{ person.date_str }}</dd>
+                {% if person.date_str or person.deceased_date_str %}
+                    {# Translators: label for the dates of a person's appearances in PGP documents #}
+                    <dt>{% translate 'Dates' %}</dt>
+                    <dd>
+                        <dl class="person-dates">
+                            {% if person.date_str %}
+                                {# Translators: label for a person's active dates in the PGP #}
+                                <dt>{% translate 'Active dates' %}</dt>
+                                <dd>{{ person.date_str }}</dd>
+                            {% endif %}
+                            {% if person.deceased_date_str %}
+                                {# Translators: label for a person's date range when mentioned after death in PGP documents #}
+                                <dt>{% translate 'Posthumous mentions' %}</dt>
+                                <dd>{{ person.deceased_date_str }}</dd>
+                            {% endif %}
+                        </dl>
+                    </dd>
                 {% endif %}
                 {% if person.role %}
                     <dt>

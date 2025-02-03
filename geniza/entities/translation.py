@@ -51,7 +51,7 @@ class DocumentPlaceRelationTypeOption(TranslationOptions):
 
 @register(PlacePlaceRelationType)
 class PlacePlaceRelationTypeOption(TranslationOptions):
-    fields = ("name",)
+    fields = ("name", "converse_name")
     required_languages = ()
 
 

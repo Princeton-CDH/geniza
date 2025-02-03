@@ -94,9 +94,20 @@ def test_person_iter_dicts(person, person_diacritic, person_multiname, document,
         person=person_diacritic, place=fustat, type=roots
     )
 
-    person.documents.add(document)
-    person.documents.add(join)
-    person_multiname.documents.add(document)
+    document.doc_date_standard = "1200/1300"
+    document.save()
+    PersonDocumentRelation.objects.create(person=person, document=document)
+    PersonDocumentRelation.objects.create(person=person_multiname, document=document)
+    (deceased, _) = PersonDocumentRelationType.objects.get_or_create(
+        name="Mentioned (deceased)"
+    )
+    join.doc_date_standard = "1310/1312"
+    join.save()
+    PersonDocumentRelation.objects.create(person=person, document=join, type=deceased)
+
+    person.tags.add("test")
+    person.tags.add("example")
+    person_multiname.tags.add("test")
 
     (partner, _) = PersonPersonRelationType.objects.get_or_create(
         name_en="Partner", category=PersonPersonRelationType.BUSINESS
@@ -123,9 +134,18 @@ def test_person_iter_dicts(person, person_diacritic, person_multiname, document,
             assert export_data.get("related_people_count") == 1
             assert export_data.get("related_documents_count") == 2
             assert "Mosul" in export_data.get("home_base")
+            assert "test" in export_data.get("tags")
+            assert "example" in export_data.get("tags")
+            assert export_data.get("active_date_range") == standard_date_display(
+                "1200/1300"
+            )
+            assert export_data.get("deceased_date_range") == standard_date_display(
+                "1310/1312"
+            )
         elif str(pers) == str(person_multiname):
             assert export_data.get("related_people_count") == 0
             assert export_data.get("related_documents_count") == 1
+            assert "test" in export_data.get("tags")
         elif str(pers) == str(person_diacritic):
             assert export_data.get("related_people_count") == 1
             assert export_data.get("related_documents_count") == 0
@@ -293,6 +313,8 @@ def test_place_relations_csv(person, document, join):
     Name.objects.create(content_object=fustat, name="Fusṭāṭ", primary=True)
     aydhab = Place.objects.create(slug="aydhab")
     Name.objects.create(name="ʿAydhāb", content_object=aydhab, primary=True)
+    qasr = Place.objects.create(slug="qasr-al-sham")
+    Name.objects.create(name="Qaṣr al-Shamʿ", content_object=qasr, primary=True)
     (home_base, _) = PersonPlaceRelationType.objects.get_or_create(name_en="Home base")
     (roots, _) = PersonPlaceRelationType.objects.get_or_create(
         name_en="Family traces roots to"
@@ -317,6 +339,11 @@ def test_place_relations_csv(person, document, join):
     )
     PlacePlaceRelation.objects.create(place_a=fustat, place_b=mosul, type=not_same)
     PlacePlaceRelation.objects.create(place_a=aydhab, place_b=fustat, type=not_same)
+    (neighborhood, _) = PlacePlaceRelationType.objects.get_or_create(
+        name="Neighborhood",
+        converse_name="City",
+    )
+    PlacePlaceRelation.objects.create(place_a=qasr, place_b=fustat, type=neighborhood)
     evt = Event.objects.create(name="Test event")
     PlaceEventRelation.objects.create(place=fustat, event=evt, notes="test")
 
@@ -335,13 +362,16 @@ def test_place_relations_csv(person, document, join):
             assert ", " in reltype
             assert str(join) in obj["shared_documents"]
         elif objtype == "Place":
-            assert reltype == not_same.name
             if id == mosul.id:
+                assert reltype == not_same.name
                 assert str(document) in obj["shared_documents"]
                 assert str(join) in obj["shared_documents"]
                 assert ", " in obj["shared_documents"]
             elif id == aydhab.id:
+                assert reltype == not_same.name
                 assert not obj["shared_documents"]
+            elif id == qasr.id:
+                assert reltype == neighborhood.name
         elif objtype == "Document":
             assert reltype == dprtype.name
             assert obj["related_object_name"] in [str(document), str(join)]

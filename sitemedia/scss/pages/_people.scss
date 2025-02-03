@@ -19,6 +19,18 @@ main.people {
         align-items: center;
         justify-content: space-between;
         width: 100%;
+        gap: 0.75rem;
+        @include breakpoints.for-tablet-landscape-up {
+            gap: 2rem;
+        }
+        fieldset#query {
+            flex-grow: 1;
+            margin-right: 5.75rem;
+            @include breakpoints.for-tablet-landscape-up {
+                margin-left: 8rem;
+                margin-right: 0;
+            }
+        }
         label#people-view-switcher {
             display: none;
             @include breakpoints.for-tablet-landscape-up {
@@ -124,6 +136,7 @@ main.people {
                     "date date date"
                     "role role role"
                     "desc desc desc"
+                    "tags tags tags"
                     "reldocs relpeople relplaces";
                 @include breakpoints.for-tablet-landscape-up {
                     display: flex;
@@ -164,6 +177,12 @@ main.people {
                         flex: 1 0 auto;
                         margin-top: 0.375rem;
                     }
+                }
+                td.tags:not(:empty) {
+                    grid-area: tags;
+                    border-bottom: 1px solid var(--disabled);
+                    padding-bottom: 0.625rem;
+                    margin-bottom: 0.625rem;
                 }
                 td.related.documents {
                     grid-area: reldocs;
@@ -231,6 +250,31 @@ main.people {
             }
         }
     }
+    .topheader-row:has(input#switcher:not(:checked))
+        ~ section#person-list
+        table {
+        td.other-names {
+            font-size: typography.$text-size-md;
+            color: var(--date-placeholder);
+            span.name {
+                font-weight: 700;
+            }
+            margin-bottom: 0.25rem;
+            &:empty {
+                display: none;
+            }
+        }
+        td.tags:not(:empty) {
+            border-bottom: 1px solid var(--disabled);
+            padding-bottom: 0.625rem;
+            margin-bottom: 0.625rem;
+            @include breakpoints.for-tablet-landscape-up {
+                ul {
+                    margin-top: -0.25rem;
+                }
+            }
+        }
+    }
     @include breakpoints.for-tablet-landscape-up {
         .topheader-row:has(input#switcher:checked) ~ section#person-list table {
             display: table;
@@ -262,6 +306,9 @@ main.people {
                         border-top-left-radius: 5px;
                         border-bottom-left-radius: 5px;
                     }
+                    &.other-names span.aka {
+                        display: none;
+                    }
                     &:last-of-type {
                         padding-right: spacing.$spacing-md;
                         min-width: 3rem;
@@ -284,6 +331,9 @@ main.people {
                         .label {
                             display: none;
                         }
+                    }
+                    &.tags:not(:empty) {
+                        padding: 0;
                     }
                 }
                 & + tr {

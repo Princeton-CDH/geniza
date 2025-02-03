@@ -1498,12 +1498,20 @@
 }
 .transcription {
     @include typography.transcription;
-
+}
+.transcription,
+.translation {
     // arabic script
     &[lang="ar"],
     &[data-lang-script="arabic"],
     span[lang="ar"] {
         @include typography.arabic-transcription;
+    }
+    // hebrew script
+    &[lang="he"],
+    &[data-lang-script="hebrew"],
+    span[lang="he"] {
+        @include typography.transcription;
     }
 }
 

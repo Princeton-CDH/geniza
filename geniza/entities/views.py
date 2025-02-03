@@ -19,11 +19,18 @@ from django.views.generic.edit import FormMixin
 
 from geniza.corpus.dates import PartialDate
 from geniza.corpus.views import SolrDateRangeMixin
-from geniza.entities.forms import PersonListForm, PersonMergeForm, PlaceListForm
+from geniza.entities.forms import (
+    PersonDocumentRelationTypeMergeForm,
+    PersonListForm,
+    PersonMergeForm,
+    PersonPersonRelationTypeMergeForm,
+    PlaceListForm,
+)
 from geniza.entities.models import (
     PastPersonSlug,
     PastPlaceSlug,
     Person,
+    PersonDocumentRelationType,
     PersonPersonRelationType,
     PersonSolrQuerySet,
     Place,
@@ -93,6 +100,106 @@ class PersonMerge(PermissionRequiredMixin, FormView):
         )
 
         return super().form_valid(form)
+
+
+class RelationTypeMergeViewMixin:
+    def get_form_kwargs(self):
+        form_kwargs = super().get_form_kwargs()
+        form_kwargs["ids"] = self.ids
+        return form_kwargs
+
+    def get_initial(self):
+        # Default to first relation type selected
+        ids = self.request.GET.get("ids", None)
+        if ids:
+            self.ids = [int(id) for id in ids.split(",")]
+            # by default, prefer the first record created
+            return {"primary_relation_type": sorted(self.ids)[0]}
+        else:
+            self.ids = []
+
+    def form_valid(self, form):
+        """Merge the selected relation types into the primary one."""
+        primary_relation_type = form.cleaned_data["primary_relation_type"]
+        self.primary_relation_type = primary_relation_type
+
+        secondary_ids = [id for id in self.ids if id != primary_relation_type.pk]
+        secondary_relation_types = self.relation_type_class.objects.filter(
+            pk__in=secondary_ids
+        )
+
+        # Get string representations before they are merged
+        primary_relation_str = (
+            f"{str(primary_relation_type)} (id = {primary_relation_type.pk})"
+        )
+        secondary_relation_str = ", ".join(
+            [f"{str(rel)} (id = {rel.pk})" for rel in secondary_relation_types]
+        )
+
+        # Merge secondary relation types into the selected primary relation type
+        user = getattr(self.request, "user", None)
+
+        try:
+            primary_relation_type.merge_with(secondary_relation_types, user=user)
+        except ValidationError as err:
+            # in case the merge resulted in an error, display error to user
+            messages.error(self.request, err.message)
+            # redirect to this form page instead of one of the items
+            return HttpResponseRedirect(
+                "%s?ids=%s"
+                % (
+                    reverse(f"admin:{self.merge_path_name}"),
+                    self.request.GET.get("ids", ""),
+                ),
+            )
+
+        # Display info about the merge to the user
+        messages.success(
+            self.request,
+            mark_safe(
+                f"Successfully merged {secondary_relation_str} with {primary_relation_str}."
+            ),
+        )
+
+        return super().form_valid(form)
+
+
+class PersonDocumentRelationTypeMerge(
+    RelationTypeMergeViewMixin, PermissionRequiredMixin, FormView
+):
+    permission_required = (
+        "entities.change_persondocumentrelationtype",
+        "entities.delete_persondocumentrelationtype",
+    )
+    form_class = PersonDocumentRelationTypeMergeForm
+    template_name = "admin/entities/persondocumentrelationtype/merge.html"
+    relation_type_class = PersonDocumentRelationType
+    merge_path_name = "person-document-relation-type-merge"
+
+    def get_success_url(self):
+        return reverse(
+            "admin:entities_persondocumentrelationtype_change",
+            args=[self.primary_relation_type.pk],
+        )
+
+
+class PersonPersonRelationTypeMerge(
+    RelationTypeMergeViewMixin, PermissionRequiredMixin, FormView
+):
+    permission_required = (
+        "entities.change_personpersonrelationtype",
+        "entities.delete_personpersonrelationtype",
+    )
+    form_class = PersonPersonRelationTypeMergeForm
+    template_name = "admin/entities/personpersonrelationtype/merge.html"
+    relation_type_class = PersonPersonRelationType
+    merge_path_name = "person-person-relation-type-merge"
+
+    def get_success_url(self):
+        return reverse(
+            "admin:entities_personpersonrelationtype_change",
+            args=[self.primary_relation_type.pk],
+        )
 
 
 class UnaccentedNameAutocompleteView(autocomplete.Select2QuerySetView):
@@ -506,6 +613,9 @@ class PlaceDetailView(SlugDetailMixin):
                 "page_description": self.page_description(),
                 "page_type": "place",
                 "maptiler_token": getattr(settings, "MAPTILER_API_TOKEN", ""),
+                "related_places": sorted(
+                    self.object.related_places(), key=lambda rp: rp["type"]
+                ),
             }
         )
         return context_data
@@ -545,6 +655,7 @@ class PersonListView(ListView, FormMixin, SolrDateRangeMixin):
 
     # sort options mapped to solr fields
     sort_fields = {
+        "relevance": "score",
         "name": "slug_s",
         "role": "role_s",
         "documents": "documents_i",
@@ -582,8 +693,18 @@ class PersonListView(ListView, FormMixin, SolrDateRangeMixin):
         if not form.is_valid():
             return people.none()
 
-        # filter by database fields using the Django ORM
         search_opts = form.cleaned_data
+        if search_opts.get("q"):
+            # keyword search query, highlighting, and relevance scoring.
+            # highlight non-primary names so that we know to show them in the
+            # result list if they match the query; by default they are hidden
+            people = (
+                people.keyword_search(search_opts["q"].replace("'", ""))
+                .highlight("other_names_nostem", snippets=3, method="unified")
+                .highlight("other_names_bigram", snippets=3, method="unified")
+                .also("score")
+            )
+
         self.applied_filter_labels = []
         if search_opts.get("gender"):
             genders = literal_eval(search_opts["gender"])
@@ -680,6 +801,9 @@ class PersonListView(ListView, FormMixin, SolrDateRangeMixin):
         facet_dict = self.queryset.get_facets()
         # populate choices for facet filter fields on the form
         context_data["form"].set_choices_from_facets(facet_dict.facet_fields)
+        # get highlighting
+        paged_result = context_data["page_obj"].object_list
+        highlights = paged_result.get_highlighting() if paged_result.count() else {}
 
         context_data.update(
             {
@@ -687,6 +811,7 @@ class PersonListView(ListView, FormMixin, SolrDateRangeMixin):
                 "page_description": self.page_description,
                 "page_type": "people",
                 "applied_filters": self.applied_filter_labels,
+                "highlighting": highlights,
             }
         )
         return context_data

@@ -3,7 +3,6 @@ import re
 from datetime import datetime
 from math import modf
 from operator import itemgetter
-from time import sleep
 
 from django.conf import settings
 from django.contrib.admin.models import CHANGE, LogEntry
@@ -11,19 +10,21 @@ from django.contrib.auth.models import User
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
 from django.core.validators import RegexValidator
-from django.db import models
+from django.db import IntegrityError, models, transaction
 from django.db.models import F, Q, Value
 from django.db.models.query import Prefetch
 from django.forms import ValidationError
 from django.urls import reverse
+from django.utils.html import strip_tags
 from django.utils.translation import gettext as _
 from gfklookupwidget.fields import GfkLookupField
 from parasolr.django import AliasedSolrQuerySet
 from parasolr.django.indexing import ModelIndexable
 from slugify import slugify
+from taggit_selectize.managers import TaggableManager
 from unidecode import unidecode
 
-from geniza.common.models import TrackChangesModel, cached_class_property
+from geniza.common.models import TaggableMixin, TrackChangesModel, cached_class_property
 from geniza.corpus.dates import DocumentDateMixin, PartialDate, standard_date_display
 from geniza.corpus.models import (
     DisplayLabelMixin,
@@ -106,9 +107,13 @@ class DocumentDatableMixin:
 
     @property
     def documents_date_range(self):
-        """Standardized range of dates across associated documents"""
+        """Compute the total range of dates across all associated documents"""
+        return self.get_date_range(self.documents.all())
+
+    def get_date_range(self, doc_set):
+        """Standardized range of dates across a set of documents"""
         full_range = [None, None]
-        for doc in self.documents.all():
+        for doc in doc_set:
             # get each doc's full range, including inferred and on-document
             doc_range = doc.dating_range()
             # if doc has a range, and the range is not [None, None], compare
@@ -120,7 +125,6 @@ class DocumentDatableMixin:
                 full_range = PartialDate.get_date_range(
                     old_range=full_range, new_range=[start, end]
                 )
-
         # prune Nones and use isoformat for standardized representation
         full_range = [d.isoformat() for d in full_range if d]
         if len(full_range) == 2 and full_range[0] == full_range[1]:
@@ -312,7 +316,9 @@ class PersonSignalHandlers:
         PersonSignalHandlers.related_change(instance, raw, "delete")
 
 
-class Person(ModelIndexable, SlugMixin, DocumentDatableMixin, PermalinkMixin):
+class Person(
+    ModelIndexable, SlugMixin, DocumentDatableMixin, PermalinkMixin, TaggableMixin
+):
     """A person entity that appears within the PGP corpus."""
 
     names = GenericRelation(Name, related_query_name="person")
@@ -358,6 +364,8 @@ class Person(ModelIndexable, SlugMixin, DocumentDatableMixin, PermalinkMixin):
     footnotes = GenericRelation(Footnote, blank=True, related_name="people")
 
     log_entries = GenericRelation(LogEntry, related_query_name="document")
+
+    tags = TaggableManager(blank=True, related_name="tagged_person")
 
     # gender options
     MALE = "M"
@@ -409,22 +417,27 @@ class Person(ModelIndexable, SlugMixin, DocumentDatableMixin, PermalinkMixin):
 
     @property
     def date_str(self):
-        """Return a formatted string for the person's date range, for use in public site.
+        """Return a formatted string for the person's active date range, for use in public site.
         CE date override takes highest precedence, then fallback to computed date range from
         associated documents if override is unset.
         """
         return (
             standard_date_display(self.date)
-            or standard_date_display(self.documents_date_range)
+            or standard_date_display(self.active_date_range)
             or ""
         )
+
+    @property
+    def deceased_date_str(self):
+        """Return a formatted string for the person's mentioned as deceased date range."""
+        return standard_date_display(self.deceased_date_range) or ""
 
     def solr_date_range(self):
         """Return the person's date range as a Solr date range."""
         if self.date:
             solr_dating_range = self.date.split("/")
         else:
-            solr_dating_range = self.documents_date_range.split("/")
+            solr_dating_range = self.active_date_range.split("/")
         if solr_dating_range:
             # if a single date instead of a range, just return that date
             if (
@@ -641,6 +654,27 @@ class Person(ModelIndexable, SlugMixin, DocumentDatableMixin, PermalinkMixin):
                 prev_relation = relation
 
         return relation_list
+
+    @property
+    def active_date_range(self):
+        """Standardized range of dates across documents where a person is (presumed) alive"""
+        relations = self.persondocumentrelation_set.exclude(
+            type__name__icontains="deceased"
+        )
+        doc_ids = relations.values_list("document__pk", flat=True)
+        docs = Document.objects.filter(pk__in=doc_ids)
+        return self.get_date_range(docs)
+
+    @property
+    def deceased_date_range(self):
+        """Standardized range of dates across associated documents where the relationship is
+        'Mentioned (deceased)'"""
+        relations = self.persondocumentrelation_set.filter(
+            type__name__icontains="deceased"
+        )
+        doc_ids = relations.values_list("document__pk", flat=True)
+        docs = Document.objects.filter(pk__in=doc_ids)
+        return self.get_date_range(docs)
 
     def merge_with(self, merge_people, user=None):
         """Merge the specified people into this one. Combines all metadata
@@ -871,6 +905,7 @@ class Person(ModelIndexable, SlugMixin, DocumentDatableMixin, PermalinkMixin):
                 # basic metadata
                 "slug_s": self.slug,
                 "name_s": str(self),
+                "other_names_ss": [n.name for n in self.names.non_primary()],
                 "description_txt": self.description_en,
                 "gender_s": self.get_gender_display(),
                 "role_s": self.role.name_en if self.role else None,
@@ -886,6 +921,7 @@ class Person(ModelIndexable, SlugMixin, DocumentDatableMixin, PermalinkMixin):
                         "type__name_en", flat=True
                     ).distinct()
                 ),
+                "tags_ss_lower": [t.name for t in self.tags.all()],
             }
         )
         solr_date_range = self.solr_date_range()
@@ -896,7 +932,7 @@ class Person(ModelIndexable, SlugMixin, DocumentDatableMixin, PermalinkMixin):
                 for date in (
                     self.date.split("/")
                     if self.date
-                    else self.documents_date_range.split("/")
+                    else self.active_date_range.split("/")
                 )
             ]
             index_data.update(
@@ -951,8 +987,12 @@ class PersonSolrQuerySet(AliasedSolrQuerySet):
 
     #: map readable field names to actual solr fields
     field_aliases = {
+        "id": "id",  # needed to match results with highlighting
         "slug": "slug_s",
         "name": "name_s",
+        # need access to these other_names fields for highlighting
+        "other_names_nostem": "other_names_nostem",
+        "other_names_bigram": "other_names_bigram",
         "description": "description_txt",
         "gender": "gender_s",
         "role": "role_s",
@@ -963,7 +1003,53 @@ class PersonSolrQuerySet(AliasedSolrQuerySet):
         "document_relations": "document_relation_ss",
         "date_str": "date_str_s",
         "has_page": "has_page_b",
+        "tags": "tags_ss_lower",
     }
+
+    search_aliases = field_aliases.copy()
+    search_aliases.update(
+        {
+            # when searching, singular makes more sense for tags
+            "tag": field_aliases["tags"],
+        }
+    )
+    re_solr_fields = re.compile(
+        r"(%s):" % "|".join(key for key, val in search_aliases.items() if key != val),
+        flags=re.DOTALL,
+    )
+
+    keyword_search_qf = "{!type=edismax qf=$people_qf pf=$people_pf v=$keyword_query}"
+
+    def keyword_search(self, search_term):
+        """Allow searching using keywords with the specified query and phrase match
+        fields, and set the default operator to AND"""
+        if ":" in search_term:
+            # if any of the field aliases occur with a colon, replace with actual solr field
+            search_term = self.re_solr_fields.sub(
+                lambda x: "%s:" % self.search_aliases[x.group(1)], search_term
+            )
+        query_params = {"keyword_query": search_term, "q.op": "AND"}
+        return self.search(self.keyword_search_qf).raw_query_parameters(
+            **query_params,
+        )
+
+    def get_highlighting(self):
+        """dedupe highlights across variant fields (e.g. for other_names)"""
+        highlights = super().get_highlighting()
+        highlights = {k: v for k, v in highlights.items() if v}
+        for person in highlights.keys():
+            other_names = set()
+            # iterate through other_names_* fields to get all matches
+            for hls in [
+                highlights[person][field]
+                for field in highlights[person].keys()
+                if field.startswith("other_names_")
+            ]:
+                # strip highglight tags and whitespace, then add to set
+                cleaned_names = [strip_tags(hl.strip()) for hl in hls]
+                other_names.update(set(cleaned_names))
+            highlights[person]["other_names"] = [n for n in other_names if n]
+        return highlights
 
 
 class PastPersonSlug(models.Model):
@@ -987,11 +1073,79 @@ class PersonDocumentRelationTypeManager(models.Manager):
         return self.get(name_en=name)
 
 
-class PersonDocumentRelationType(models.Model):
+class MergeRelationTypesMixin:
+    """Mixin to include shared merge logic for relation types.
+    Requires inheriting relation type model to make its relationships
+    queryset available generically by the method name :meth:`relation_set`"""
+
+    def merge_with(self, merge_relation_types, user=None):
+        """Merge the specified relation types into this one. Combines all
+        relationships into this relation type and creates a log entry
+        documenting the merge.
+
+        Closely adapted from :class:`Person` merge."""
+
+        # if user is not specified, log entry will be associated with script
+        if user is None:
+            user = User.objects.get(username=settings.SCRIPT_USERNAME)
+
+        for rel_type in merge_relation_types:
+            # combine log entries
+            for log_entry in rel_type.log_entries.all():
+                # annotate and reassociate
+                # - modify change message to type which object this event applied to
+                log_entry.change_message = "%s [merged type %s (id = %d)]" % (
+                    log_entry.get_change_message(),
+                    str(rel_type),
+                    rel_type.pk,
+                )
+
+                # - associate with the primary relation type
+                log_entry.object_id = self.id
+                log_entry.content_type_id = ContentType.objects.get_for_model(
+                    self.__class__
+                )
+                log_entry.save()
+
+            # combine relationships
+            for relationship in rel_type.relation_set():
+                # set type of each relationship to primary relation type
+                relationship.type = self
+                # handle unique constraint violation (one relationship per type
+                # between doc and person): only reassign type if it doesn't
+                # create a duplicate, otherwise delete.
+                # see https://docs.djangoproject.com/en/3.2/topics/db/transactions/#django.db.transaction.atomic
+                try:
+                    with transaction.atomic():
+                        relationship.save()
+                except IntegrityError:
+                    relationship.delete()
+
+        # save current relation type with changes; delete merged relation types
+        self.save()
+        merged_types = ", ".join([str(rel_type) for rel_type in merge_relation_types])
+        for rel_type in merge_relation_types:
+            rel_type.delete()
+        # create log entry documenting the merge; include rationale
+        rtype_contenttype = ContentType.objects.get_for_model(self.__class__)
+        LogEntry.objects.log_action(
+            user_id=user.id,
+            content_type_id=rtype_contenttype.pk,
+            object_id=self.pk,
+            object_repr=str(self),
+            change_message="merged with %s" % (merged_types,),
+            action_flag=CHANGE,
+        )
+
+
+class PersonDocumentRelationType(MergeRelationTypesMixin, models.Model):
     """Controlled vocabulary of people's relationships to documents."""
 
     name = models.CharField(max_length=255, unique=True)
     objects = PersonDocumentRelationTypeManager()
+    log_entries = GenericRelation(
+        LogEntry, related_query_name="persondocumentrelationtype"
+    )
 
     class Meta:
         verbose_name = "Person-Document relationship"
@@ -1007,6 +1161,10 @@ class PersonDocumentRelationType(models.Model):
             obj.name_en: obj
             for obj in cls.objects.all()
         }
+
+    def relation_set(self):
+        # own relationships QuerySet as required by MergeRelationTypesMixin
+        return self.persondocumentrelation_set.all()
 
 
 class PersonDocumentRelation(models.Model):
@@ -1043,7 +1201,7 @@ class PersonPersonRelationTypeManager(models.Manager):
         return self.get(name_en=name)
 
 
-class PersonPersonRelationType(models.Model):
+class PersonPersonRelationType(MergeRelationTypesMixin, models.Model):
     """Controlled vocabulary of people's relationships to other people."""
 
     # name of the relationship
@@ -1074,6 +1232,9 @@ class PersonPersonRelationType(models.Model):
         choices=CATEGORY_CHOICES,
     )
     objects = PersonPersonRelationTypeManager()
+    log_entries = GenericRelation(
+        LogEntry, related_query_name="personpersonrelationtype"
+    )
 
     class Meta:
         verbose_name = "Person-Person relationship"
@@ -1081,6 +1242,10 @@ class PersonPersonRelationType(models.Model):
 
     def __str__(self):
         return self.name
+
+    def relation_set(self):
+        # own relationships QuerySet as required by MergeRelationTypesMixin
+        return self.personpersonrelation_set.all()
 
 
 class PersonPersonRelation(models.Model):
@@ -1284,6 +1449,92 @@ class Place(ModelIndexable, SlugMixin, PermalinkMixin):
             "names", "documentplacerelation_set", "personplacerelation_set"
         )
 
+    def related_places(self):
+        """Set of all places related to this place, with relationship type,
+        taking into account converse relations"""
+
+        # adapted from Person.related_people
+
+        # gather all relationships with places, both entered from this place and
+        # entered from the place on the other side of the relationship
+        place_relations = (
+            self.place_a.annotate(
+                # boolean to indicate if we should use converse or regular relation type name
+                use_converse_typename=Value(True),
+                related_slug=F("place_a__slug"),
+                related_id=F("place_a"),
+            ).union(  # union instead of joins for efficiency
+                self.place_b.annotate(
+                    use_converse_typename=Value(False),
+                    related_slug=F("place_b__slug"),
+                    related_id=F("place_b"),
+                )
+            )
+            # have to use values_list (NOT values) here with one argument, otherwise strange things
+            # happen, possibly due to union(). TODO: see if this is fixed in later django versions.
+            .values_list("related_id")
+        )
+        relation_list = [
+            {
+                # this is the order of fields returned by SQL after the annotated union
+                "id": r[-1],
+                "slug": r[-2],
+                "use_converse_typename": r[-3],
+                "notes": r[-4],
+                "type_id": r[-5],
+            }
+            for r in place_relations
+        ]
+
+        # folow GenericForeignKey to find primary name for each related place
+        place_contenttype = ContentType.objects.get_for_model(Place).pk
+        names = Name.objects.filter(
+            object_id__in=[r["id"] for r in relation_list],
+            primary=True,
+            content_type_id=place_contenttype,
+        ).values("name", "object_id")
+        # dict keyed on related place id
+        names_dict = {n["object_id"]: n["name"] for n in names}
+
+        # grab name and converse_name for each relation type since we may need either
+        # (name if the relation was entered from self, converse if entered from related place)
+        types = PlacePlaceRelationType.objects.filter(
+            pk__in=[r["type_id"] for r in relation_list],
+        ).values("pk", "name", "converse_name")
+        # dict keyed on related place id
+        types_dict = {t["pk"]: t for t in types}
+
+        # update with new data & dedupe
+        prev_relation = None
+        # sort by id (dedupe by matching against previous id), then type id for type dedupe
+        for relation in sorted(relation_list, key=itemgetter("id", "type_id")):
+            relation.update(
+                {
+                    # get name from cached queryset dict
+                    "name": names_dict[relation["id"]],
+                    # use type.converse_name if this relation is reverse (and if the type has one)
+                    "type": types_dict[relation["type_id"]][
+                        "converse_name" if relation["use_converse_typename"] else "name"
+                    ]
+                    # fallback to type.name if converse_name doesn't exist
+                    or types_dict[relation["type_id"]]["name"],
+                }
+            )
+            # dedupe and combine type and notes
+            if prev_relation and prev_relation["id"] == relation["id"]:
+                # dedupe type by string matching since we can't match reverse relations by id
+                if relation["type"].lower() not in prev_relation["type"].lower():
+                    prev_relation["type"] += f", {relation['type']}".lower()
+                # simply combine notes with html line break
+                prev_relation["notes"] += (
+                    f"<br />{relation['notes']}" if relation["notes"] else ""
+                )
+                relation_list.remove(relation)
+            else:
+                prev_relation = relation
+
+        return relation_list
+
     def index_data(self):
         """data for indexing in Solr"""
         index_data = super().index_data()
@@ -1448,6 +1699,15 @@ class PlacePlaceRelationType(models.Model):
     """Controlled vocabulary of place's relationships to other places."""
 
     name = models.CharField(max_length=255, unique=True)
+    # converse_name is the relationship in the reverse direction (the semantic converse)
+    # (example: name = "Neighborhood", converse_name = "City")
+    converse_name = models.CharField(
+        max_length=255,
+        blank=True,
+        help_text="The converse of the relationship, for example, 'City' when Name is "
+        + "'Neighborhood'. May leave blank if the converse is identical (for example, "
+        + "'Possibly the same as').",
+    )
     objects = PlacePlaceRelationTypeManager()
 
     class Meta:
@@ -1496,7 +1756,12 @@ class PlacePlaceRelation(models.Model):
         ]
 
     def __str__(self):
-        return f"{self.type} relation: {self.place_a} and {self.place_b}"
+        relation_type = (
+            f"{self.type}-{self.type.converse_name}"
+            if self.type.converse_name
+            else self.type
+        )
+        return f"{relation_type} relation: {self.place_a} and {self.place_b}"
 
 
 class PlaceEventRelation(models.Model):

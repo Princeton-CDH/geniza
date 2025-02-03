@@ -34,6 +34,7 @@ from taggit.models import Tag
 from geniza.common.utils import absolutize_url
 from geniza.corpus import iiif_utils
 from geniza.corpus.forms import DocumentMergeForm, DocumentSearchForm, TagMergeForm
+from geniza.corpus.ja import contains_arabic, contains_hebrew, ja_arabic_chars
 from geniza.corpus.models import Document, TextBlock
 from geniza.corpus.solr_queryset import DocumentSolrQuerySet
 from geniza.corpus.templatetags import corpus_extras
@@ -353,6 +354,26 @@ class DocumentSearchView(
                 pass
         return paginate_by
 
+    # base url for APD searches
+    apd_base_url = "https://www.apd.gwi.uni-muenchen.de/apd/asearch.jsp?searchtable1=601&showdwords=true&searchwordstring1="
+
+    def get_apd_link(self, query):
+        """Generate a link to the Arabic Papyrology Database (APD) search page
+        using the entered query, converting any Hebrew script to Arabic with Regex"""
+        if not query or not (contains_arabic(query) or contains_hebrew(query)):
+            # if no arabic OR hebrew in query, bail out
+            return None
+        # simplified version of ja_to_arabic that uses regex instead of solr OR
+        for k, v in ja_arabic_chars.items():
+            if type(v) == list:
+                # list means there is more than one option, so join options with regex
+                query = re.sub(k, f"[{''.join(v)}]", query)
+            elif type(v) == str:
+                # only one possible translation
+                query = re.sub(k, v, query)
+        query = query.strip()
+        return f"{self.apd_base_url}{query}"
+
     def get_context_data(self, **kwargs):
         """extend context data to add page metadata, highlighting,
         and update form with facets"""
@@ -387,6 +408,7 @@ class DocumentSearchView(
                 "page_includes_transcriptions": True,  # preload transcription font
                 "highlighting": highlights,
                 "applied_filters": self.applied_filter_labels,
+                "apd_link": self.get_apd_link(context_data["form"].data.get("q", None)),
             }
         )
 

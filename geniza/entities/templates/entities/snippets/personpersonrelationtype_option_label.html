@@ -1,0 +1,33 @@
+{# template snippet for displaying person-person relationship label on a form #}
+{# used on merge form to provide enough information to merge accurately #}
+
+<div class="merge-document-label">
+    <h2>{{ relation_type }}
+        <a target="_blank" href="{% url 'admin:entities_personpersonrelationtype_change' relation_type.pk %}"
+           title="Go to this relationship's admin edit page">
+            <img src="/static/admin/img/icon-changelink.svg" alt="Change"></a>
+    </h2>
+    <details>
+        <summary>View all {{ relation_type.personpersonrelation_set.count }} {{ relation_type }} relations</summary>
+        <ol>
+            {% for rel in relation_type.personpersonrelation_set.all %}
+                <li>
+                    <div class="form-row">
+                        <label>{{ rel.type }}-{{ rel.type.converse_name|default:rel.type }} relation:</label>
+                        <div>
+                            <a target="_blank" href="{% url 'admin:entities_person_change' rel.from_person.pk %}">{{ rel.from_person }}</a>
+                            and
+                            <a target="_blank" href="{% url 'admin:entities_person_change' rel.to_person.pk %}">{{ rel.to_person }}</a>
+                        </div>
+                    </div>
+                </li>
+            {% empty %}
+                <li>
+                    <div class="form-row">
+                        <label>No relations</label><div></div>
+                    </div>
+                </li>
+            {% endfor %}
+        </ol>
+    </details>
+</div>
