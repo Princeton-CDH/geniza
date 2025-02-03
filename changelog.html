@@ -5,10 +5,10 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Change Log &#8212; Princeton Geniza Project 4.19.0 documentation</title>
+    <title>Change Log &#8212; Princeton Geniza Project 4.20.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=5ecbeea2" />
     <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=12dfc556" />
-    <script src="_static/documentation_options.js?v=db6269fb"></script>
+    <script src="_static/documentation_options.js?v=a5b539c6"></script>
     <script src="_static/doctools.js?v=9a2dae69"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="genindex.html" />
@@ -34,7 +34,34 @@
   <section id="change-log">
 <h1>Change Log<a class="headerlink" href="#change-log" title="Link to this heading">¶</a></h1>
 <section id="id1">
-<h2>4.19<a class="headerlink" href="#id1" title="Link to this heading">¶</a></h2>
+<h2>4.20<a class="headerlink" href="#id1" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><dl class="simple">
+<dt>public site</dt><dd><ul>
+<li><p>As a public user, I want a keyword search in the people module so that I can easily find people entries.</p></li>
+<li><p>As a public user, I want to see related places on a place page on the main individual place page (not in a separate tab) so that I can see associated neighborhoods and also places that have similar names but are distinct</p></li>
+<li><p>As a public site user, I want any JA or Arabic search to link to the equivalent search on the Arabic Papyrology Database website, so that I can find additional content not present in the PGP.</p></li>
+<li><p>As a public user and content admin, I want to see two separate automatic date fields for people: one of only documents where they are mentioned as deceased and one with all other dated person-doc relations, so that I have a better understanding of a person’s active dates and their afterlives in the documentary record.</p></li>
+<li><p>bugfix: Translations in Hebrew script do not pick up correct Hebrew font</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>admin</dt><dd><ul>
+<li><p>As a content admin, I want to be able to merge person-to-person relationship types, so that I can combine duplicates or revise categorization.</p></li>
+<li><p>As a content admin, I want to merge person-document relationship types, so that I can keep the website current as our thinking changes (but without losing data)</p></li>
+<li><p>As a content editor, I want to be able to tag people with various group names so that I can sort them in another way/portray more information on the public site.</p></li>
+<li><p>As a content admin, I want the ability to enter asymmetrical place-place relations, so that I can adapt to changes in the way we sort and represent data (e.g. representing a neighborhood within a place).</p></li>
+<li><p>As a content admin, when merging documents (for joins) I want to see image thumbnails of each document so I can be sure the join is correct.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</section>
+<section id="id2">
+<h2>4.19<a class="headerlink" href="#id2" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><dl class="simple">
 <dt>public site</dt><dd><ul>
@@ -66,20 +93,20 @@
 </li>
 </ul>
 </section>
-<section id="id2">
-<h2>4.18.2<a class="headerlink" href="#id2" title="Link to this heading">¶</a></h2>
+<section id="id3">
+<h2>4.18.2<a class="headerlink" href="#id3" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>bugfix: Ensure slugs are generated for new Place records</p></li>
 </ul>
 </section>
-<section id="id3">
-<h2>4.18.1<a class="headerlink" href="#id3" title="Link to this heading">¶</a></h2>
+<section id="id4">
+<h2>4.18.1<a class="headerlink" href="#id4" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>bugfix: Correct content type labels for public csv exports</p></li>
 </ul>
 </section>
-<section id="id4">
-<h2>4.18<a class="headerlink" href="#id4" title="Link to this heading">¶</a></h2>
+<section id="id5">
+<h2>4.18<a class="headerlink" href="#id5" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><dl class="simple">
 <dt>public site</dt><dd><ul>
@@ -135,26 +162,26 @@
 </li>
 </ul>
 </section>
-<section id="id5">
-<h2>4.17.3<a class="headerlink" href="#id5" title="Link to this heading">¶</a></h2>
+<section id="id6">
+<h2>4.17.3<a class="headerlink" href="#id6" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>chore: Use self-hosted tinyMCE</p></li>
 </ul>
 </section>
-<section id="id6">
-<h2>4.17.2<a class="headerlink" href="#id6" title="Link to this heading">¶</a></h2>
+<section id="id7">
+<h2>4.17.2<a class="headerlink" href="#id7" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>bugfix: Unable to rotate or reorder images in admin due to undefined rotation controls</p></li>
 </ul>
 </section>
-<section id="id7">
-<h2>4.17.1<a class="headerlink" href="#id7" title="Link to this heading">¶</a></h2>
+<section id="id8">
+<h2>4.17.1<a class="headerlink" href="#id8" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>bugfix: Pin django-dbml to 0.7 and dbdocs to 0.8, until django-dbml supports dbdocs 0.9+</p></li>
 </ul>
 </section>
-<section id="id8">
-<h2>4.17<a class="headerlink" href="#id8" title="Link to this heading">¶</a></h2>
+<section id="id9">
+<h2>4.17<a class="headerlink" href="#id9" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><dl class="simple">
 <dt>public site</dt><dd><ul>
@@ -198,14 +225,14 @@
 </li>
 </ul>
 </section>
-<section id="id9">
-<h2>4.16.1<a class="headerlink" href="#id9" title="Link to this heading">¶</a></h2>
+<section id="id10">
+<h2>4.16.1<a class="headerlink" href="#id10" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>bugfix: Add undefined check for OSD navigator</p></li>
 </ul>
 </section>
-<section id="id10">
-<h2>4.16<a class="headerlink" href="#id10" title="Link to this heading">¶</a></h2>
+<section id="id11">
+<h2>4.16<a class="headerlink" href="#id11" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><dl class="simple">
 <dt>public site</dt><dd><ul>
@@ -241,26 +268,26 @@
 </li>
 </ul>
 </section>
-<section id="id11">
-<h2>4.15.3<a class="headerlink" href="#id11" title="Link to this heading">¶</a></h2>
+<section id="id12">
+<h2>4.15.3<a class="headerlink" href="#id12" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>bugfix: Last chosen person not populating in person-document relations dropdown</p></li>
 </ul>
 </section>
-<section id="id12">
-<h2>4.15.2<a class="headerlink" href="#id12" title="Link to this heading">¶</a></h2>
+<section id="id13">
+<h2>4.15.2<a class="headerlink" href="#id13" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>bugfix: do not require browser in Google Docs ingest script</p></li>
 </ul>
 </section>
-<section id="id13">
-<h2>4.15.1<a class="headerlink" href="#id13" title="Link to this heading">¶</a></h2>
+<section id="id14">
+<h2>4.15.1<a class="headerlink" href="#id14" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>bugfix: pin python dependency piffle==0.4 due to breaking change</p></li>
 </ul>
 </section>
-<section id="id14">
-<h2>4.15<a class="headerlink" href="#id14" title="Link to this heading">¶</a></h2>
+<section id="id15">
+<h2>4.15<a class="headerlink" href="#id15" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><dl class="simple">
 <dt>public site</dt><dd><ul>
@@ -315,20 +342,20 @@
 </li>
 </ul>
 </section>
-<section id="id15">
-<h2>4.14.2<a class="headerlink" href="#id15" title="Link to this heading">¶</a></h2>
+<section id="id16">
+<h2>4.14.2<a class="headerlink" href="#id16" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>bugfix: fix tinyMCE text direction and API key instantiation</p></li>
 </ul>
 </section>
-<section id="id16">
-<h2>4.14.1<a class="headerlink" href="#id16" title="Link to this heading">¶</a></h2>
+<section id="id17">
+<h2>4.14.1<a class="headerlink" href="#id17" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>bugfix: fix typo in permissions for tag merge</p></li>
 </ul>
 </section>
-<section id="id17">
-<h2>4.14<a class="headerlink" href="#id17" title="Link to this heading">¶</a></h2>
+<section id="id18">
+<h2>4.14<a class="headerlink" href="#id18" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><dl class="simple">
 <dt>public site</dt><dd><ul>
@@ -364,8 +391,8 @@ content.</p></li>
 </li>
 </ul>
 </section>
-<section id="id18">
-<h2>4.13<a class="headerlink" href="#id18" title="Link to this heading">¶</a></h2>
+<section id="id19">
+<h2>4.13<a class="headerlink" href="#id19" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><dl class="simple">
 <dt>public site</dt><dd><ul>
@@ -421,16 +448,16 @@ transcription editor cancels unsaved changes without warning</p></li>
 </li>
 </ul>
 </section>
-<section id="id19">
-<h2>4.12<a class="headerlink" href="#id19" title="Link to this heading">¶</a></h2>
+<section id="id20">
+<h2>4.12<a class="headerlink" href="#id20" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>Revise annotation model to link footnotes using foreign keys instead of URIs</p></li>
 <li><p>As a content editor working on transcriptions, I want to be able to move transcriptions from one document to another, so that I can fix a mistake if a transcription was associated incorrectly.</p></li>
 <li><p>bugfix: transcriptions can be orphaned or lost when merging records</p></li>
 </ul>
 </section>
-<section id="id20">
-<h2>4.11.1<a class="headerlink" href="#id20" title="Link to this heading">¶</a></h2>
+<section id="id21">
+<h2>4.11.1<a class="headerlink" href="#id21" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>bugfix: Admin shelfmark search on “BL OR …” gives too many and irrelevant results</p></li>
 <li><p>bugfix: Partial search in descriptions sorted by relevance not working well</p></li>
@@ -441,8 +468,8 @@ transcription editor cancels unsaved changes without warning</p></li>
 <li><p>bugfix: 500 error on wagtail pages for a deleted page model</p></li>
 </ul>
 </section>
-<section id="id21">
-<h2>4.11<a class="headerlink" href="#id21" title="Link to this heading">¶</a></h2>
+<section id="id22">
+<h2>4.11<a class="headerlink" href="#id22" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>As a frontend user, I want search results to include partial matches of phrases in descriptions sorted by relevance, so that I can search by incomplete phrases and view the closest matches first.</p></li>
 <li><p>As a content admin, I want document data exports synchronized to github so that there is a publicly accessible, versioned copy of project data available for researchers.</p></li>
@@ -455,16 +482,16 @@ transcription editor cancels unsaved changes without warning</p></li>
 <li><p>bugfix: search results don’t always highlight matches in description text</p></li>
 </ul>
 </section>
-<section id="id22">
-<h2>4.10.1<a class="headerlink" href="#id22" title="Link to this heading">¶</a></h2>
+<section id="id23">
+<h2>4.10.1<a class="headerlink" href="#id23" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>bugfix: annotation export script errors if manifest uri doesn’t resolve
 to a valid document (handle deleted annotations on deleted documents)</p></li>
 <li><p>bugfix: documents in admin should be sorted by shelfmark by default</p></li>
 </ul>
 </section>
-<section id="id23">
-<h2>4.10<a class="headerlink" href="#id23" title="Link to this heading">¶</a></h2>
+<section id="id24">
+<h2>4.10<a class="headerlink" href="#id24" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><dl class="simple">
 <dt>public site</dt><dd><ul>
@@ -509,8 +536,8 @@ to a valid document (handle deleted annotations on deleted documents)</p></li>
 </li>
 </ul>
 </section>
-<section id="id24">
-<h2>4.9<a class="headerlink" href="#id24" title="Link to this heading">¶</a></h2>
+<section id="id25">
+<h2>4.9<a class="headerlink" href="#id25" title="Link to this heading">¶</a></h2>
 <p><em>transcription migration and new transcription editor</em></p>
 <section id="public-site">
 <h3>public site<a class="headerlink" href="#public-site" title="Link to this heading">¶</a></h3>
@@ -587,14 +614,14 @@ support for importing and displaying those manifests.</p>
 </ul>
 </section>
 </section>
-<section id="id25">
-<h2>4.8.1<a class="headerlink" href="#id25" title="Link to this heading">¶</a></h2>
+<section id="id26">
+<h2>4.8.1<a class="headerlink" href="#id26" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>bugfix: documents without images can’t be edited in django admin (makes image order override optional in django admin)</p></li>
 </ul>
 </section>
-<section id="id26">
-<h2>4.8<a class="headerlink" href="#id26" title="Link to this heading">¶</a></h2>
+<section id="id27">
+<h2>4.8<a class="headerlink" href="#id27" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><dl class="simple">
 <dt>public site</dt><dd><ul>
@@ -625,8 +652,8 @@ support for importing and displaying those manifests.</p>
 - scripts for generating and working with static iiif content</p></li>
 </ul>
 </section>
-<section id="id27">
-<h2>4.7<a class="headerlink" href="#id27" title="Link to this heading">¶</a></h2>
+<section id="id28">
+<h2>4.7<a class="headerlink" href="#id28" title="Link to this heading">¶</a></h2>
 <p>Includes new document “excluded images” display, as well as tagging improvements for content editors.</p>
 <ul class="simple">
 <li><dl class="simple">
@@ -656,8 +683,8 @@ support for importing and displaying those manifests.</p>
 </li>
 </ul>
 </section>
-<section id="id28">
-<h2>4.6<a class="headerlink" href="#id28" title="Link to this heading">¶</a></h2>
+<section id="id29">
+<h2>4.6<a class="headerlink" href="#id29" title="Link to this heading">¶</a></h2>
 <p>Includes new image+transcription panel display.</p>
 <ul class="simple">
 <li><dl class="simple">
@@ -698,8 +725,8 @@ support for importing and displaying those manifests.</p>
 </li>
 </ul>
 </section>
-<section id="id29">
-<h2>4.5<a class="headerlink" href="#id29" title="Link to this heading">¶</a></h2>
+<section id="id30">
+<h2>4.5<a class="headerlink" href="#id30" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>public site</p>
 <ul>
@@ -737,14 +764,14 @@ support for importing and displaying those manifests.</p>
 </li>
 </ul>
 </section>
-<section id="id30">
-<h2>4.4.1<a class="headerlink" href="#id30" title="Link to this heading">¶</a></h2>
+<section id="id31">
+<h2>4.4.1<a class="headerlink" href="#id31" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>bugfix: nav menu button light/dark toggle overlapping on tablet/mobile</p></li>
 </ul>
 </section>
-<section id="id31">
-<h2>4.4<a class="headerlink" href="#id31" title="Link to this heading">¶</a></h2>
+<section id="id32">
+<h2>4.4<a class="headerlink" href="#id32" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>public site</p>
 <ul>
@@ -789,14 +816,14 @@ support for importing and displaying those manifests.</p>
 </li>
 </ul>
 </section>
-<section id="id32">
-<h2>4.3.1<a class="headerlink" href="#id32" title="Link to this heading">¶</a></h2>
+<section id="id33">
+<h2>4.3.1<a class="headerlink" href="#id33" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>bugfix: edit link on public document detail page wasn’t loading correctly due to Turbo</p></li>
 </ul>
 </section>
-<section id="id33">
-<h2>4.3<a class="headerlink" href="#id33" title="Link to this heading">¶</a></h2>
+<section id="id34">
+<h2>4.3<a class="headerlink" href="#id34" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>public site
 -   As a front-end user, I want the document search to automatically reload when I change my search terms, filters, or other options so that I can see the changed results more quickly.
@@ -823,8 +850,8 @@ support for importing and displaying those manifests.</p>
 <li><p>fix twitter/open graph title and description previews for wagtail pages</p></li>
 </ul>
 </section>
-<section id="id34">
-<h2>4.2<a class="headerlink" href="#id34" title="Link to this heading">¶</a></h2>
+<section id="id35">
+<h2>4.2<a class="headerlink" href="#id35" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>public site
 -   As a front-end user, I want keyword searches automatically sorted by relevance, so that I see the most useful results first.
@@ -852,8 +879,8 @@ support for importing and displaying those manifests.</p>
 -   bugfix: image viewer breaks on mobile for documents with images but no transcriptions</p></li>
 </ul>
 </section>
-<section id="id35">
-<h2>4.1<a class="headerlink" href="#id35" title="Link to this heading">¶</a></h2>
+<section id="id36">
+<h2>4.1<a class="headerlink" href="#id36" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>public site
 -   As a user, I want to see image thumbnails with search results when available, so that I can quickly see which records have images and what they look like.
@@ -876,8 +903,8 @@ support for importing and displaying those manifests.</p>
 -   include software version in site footer</p></li>
 </ul>
 </section>
-<section id="id36">
-<h2>4.0<a class="headerlink" href="#id36" title="Link to this heading">¶</a></h2>
+<section id="id37">
+<h2>4.0<a class="headerlink" href="#id37" title="Link to this heading">¶</a></h2>
 <p><strong>Initial public version of Princeton Geniza Project v4.0</strong></p>
 <ul class="simple">
 <li><p>public site
@@ -914,8 +941,8 @@ support for importing and displaying those manifests.</p>
 -   Improve handling for IIIF content to work better with PUL/JTS materials</p></li>
 </ul>
 </section>
-<section id="id37">
-<h2>0.8<a class="headerlink" href="#id37" title="Link to this heading">¶</a></h2>
+<section id="id38">
+<h2>0.8<a class="headerlink" href="#id38" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>public site search and document display
 -   As a front-end user, I want to use fields in my keyword searches so I can make my searches more specific and targeted.
@@ -941,8 +968,8 @@ support for importing and displaying those manifests.</p>
 -   image files used in site design organized in site media, and organization documented</p></li>
 </ul>
 </section>
-<section id="id38">
-<h2>0.7<a class="headerlink" href="#id38" title="Link to this heading">¶</a></h2>
+<section id="id39">
+<h2>0.7<a class="headerlink" href="#id39" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>document search
 -   As a user I would like to know explicitly when a search result does not have any scholarship records so that I don’t have to compare with results that do.
@@ -979,16 +1006,16 @@ support for importing and displaying those manifests.</p>
 <li><p>Configured and applied <cite>djhtml</cite> commmit hook for consistent formatting in django templates</p></li>
 </ul>
 </section>
-<section id="id39">
-<h2>0.6<a class="headerlink" href="#id39" title="Link to this heading">¶</a></h2>
+<section id="id40">
+<h2>0.6<a class="headerlink" href="#id40" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>As a content editor, I want duplicate joined documents to be automatically merged without losing their unique metadata, so that I don’t have to merge them manually.</p></li>
 <li><p>Setup for webpack build for frontend scss/js assets and static files</p></li>
 <li><p>bugfix: 500 error saving documents with footnotes (bad footnote equality check)</p></li>
 </ul>
 </section>
-<section id="id40">
-<h2>0.5<a class="headerlink" href="#id40" title="Link to this heading">¶</a></h2>
+<section id="id41">
+<h2>0.5<a class="headerlink" href="#id41" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>As a Content Editor, I want to see help text for Document Type so that I can make an informed decision while editing documents.</p></li>
 <li><p>As a content editor, I want a one time consolidation of India Book sources so that the source list correctly represents the book volumes.</p></li>
@@ -999,8 +1026,8 @@ support for importing and displaying those manifests.</p>
 <li><p>Adopted isort python style and configured pre-commit hook</p></li>
 </ul>
 </section>
-<section id="id41">
-<h2>0.4<a class="headerlink" href="#id41" title="Link to this heading">¶</a></h2>
+<section id="id42">
+<h2>0.4<a class="headerlink" href="#id42" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>As a content editor, I would like to input dates in a separate field, so that both content editors and site users can sort and filter documents by date.</p></li>
 <li><p>As a content editor, I want to import fragment view and IIIF urls from a csv file into the database so that I can provide access to images for fragments.</p></li>
@@ -1016,8 +1043,8 @@ support for importing and displaying those manifests.</p>
 <li><p>Adopted black code style and configured pre-commit hook</p></li>
 </ul>
 </section>
-<section id="id42">
-<h2>0.3<a class="headerlink" href="#id42" title="Link to this heading">¶</a></h2>
+<section id="id43">
+<h2>0.3<a class="headerlink" href="#id43" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>As a Global Admin, I want new documents created in the database after data import to receive PGPIDs higher than the highest imported PGPID, so that identifiers will be unique and semi-sequential.</p></li>
 <li><p>As a Global Admin, I want documents associated with language+script based on display name when importing documents from metadata spreadsheet.</p></li>
@@ -1096,30 +1123,31 @@ support for importing and displaying those manifests.</p>
     <h3><a href="index.html">Table of Contents</a></h3>
     <ul>
 <li><a class="reference internal" href="#">Change Log</a><ul>
-<li><a class="reference internal" href="#id1">4.19</a></li>
-<li><a class="reference internal" href="#id2">4.18.2</a></li>
-<li><a class="reference internal" href="#id3">4.18.1</a></li>
-<li><a class="reference internal" href="#id4">4.18</a></li>
-<li><a class="reference internal" href="#id5">4.17.3</a></li>
-<li><a class="reference internal" href="#id6">4.17.2</a></li>
-<li><a class="reference internal" href="#id7">4.17.1</a></li>
-<li><a class="reference internal" href="#id8">4.17</a></li>
-<li><a class="reference internal" href="#id9">4.16.1</a></li>
-<li><a class="reference internal" href="#id10">4.16</a></li>
-<li><a class="reference internal" href="#id11">4.15.3</a></li>
-<li><a class="reference internal" href="#id12">4.15.2</a></li>
-<li><a class="reference internal" href="#id13">4.15.1</a></li>
-<li><a class="reference internal" href="#id14">4.15</a></li>
-<li><a class="reference internal" href="#id15">4.14.2</a></li>
-<li><a class="reference internal" href="#id16">4.14.1</a></li>
-<li><a class="reference internal" href="#id17">4.14</a></li>
-<li><a class="reference internal" href="#id18">4.13</a></li>
-<li><a class="reference internal" href="#id19">4.12</a></li>
-<li><a class="reference internal" href="#id20">4.11.1</a></li>
-<li><a class="reference internal" href="#id21">4.11</a></li>
-<li><a class="reference internal" href="#id22">4.10.1</a></li>
-<li><a class="reference internal" href="#id23">4.10</a></li>
-<li><a class="reference internal" href="#id24">4.9</a><ul>
+<li><a class="reference internal" href="#id1">4.20</a></li>
+<li><a class="reference internal" href="#id2">4.19</a></li>
+<li><a class="reference internal" href="#id3">4.18.2</a></li>
+<li><a class="reference internal" href="#id4">4.18.1</a></li>
+<li><a class="reference internal" href="#id5">4.18</a></li>
+<li><a class="reference internal" href="#id6">4.17.3</a></li>
+<li><a class="reference internal" href="#id7">4.17.2</a></li>
+<li><a class="reference internal" href="#id8">4.17.1</a></li>
+<li><a class="reference internal" href="#id9">4.17</a></li>
+<li><a class="reference internal" href="#id10">4.16.1</a></li>
+<li><a class="reference internal" href="#id11">4.16</a></li>
+<li><a class="reference internal" href="#id12">4.15.3</a></li>
+<li><a class="reference internal" href="#id13">4.15.2</a></li>
+<li><a class="reference internal" href="#id14">4.15.1</a></li>
+<li><a class="reference internal" href="#id15">4.15</a></li>
+<li><a class="reference internal" href="#id16">4.14.2</a></li>
+<li><a class="reference internal" href="#id17">4.14.1</a></li>
+<li><a class="reference internal" href="#id18">4.14</a></li>
+<li><a class="reference internal" href="#id19">4.13</a></li>
+<li><a class="reference internal" href="#id20">4.12</a></li>
+<li><a class="reference internal" href="#id21">4.11.1</a></li>
+<li><a class="reference internal" href="#id22">4.11</a></li>
+<li><a class="reference internal" href="#id23">4.10.1</a></li>
+<li><a class="reference internal" href="#id24">4.10</a></li>
+<li><a class="reference internal" href="#id25">4.9</a><ul>
 <li><a class="reference internal" href="#public-site">public site</a></li>
 <li><a class="reference internal" href="#transcription-editing">transcription editing</a></li>
 <li><a class="reference internal" href="#transcription-migration-and-backup">transcription migration and backup</a></li>
@@ -1129,25 +1157,25 @@ support for importing and displaying those manifests.</p>
 <li><a class="reference internal" href="#accessibility">accessibility</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#id25">4.8.1</a></li>
-<li><a class="reference internal" href="#id26">4.8</a></li>
-<li><a class="reference internal" href="#id27">4.7</a></li>
-<li><a class="reference internal" href="#id28">4.6</a></li>
-<li><a class="reference internal" href="#id29">4.5</a></li>
-<li><a class="reference internal" href="#id30">4.4.1</a></li>
-<li><a class="reference internal" href="#id31">4.4</a></li>
-<li><a class="reference internal" href="#id32">4.3.1</a></li>
-<li><a class="reference internal" href="#id33">4.3</a></li>
+<li><a class="reference internal" href="#id26">4.8.1</a></li>
+<li><a class="reference internal" href="#id27">4.8</a></li>
+<li><a class="reference internal" href="#id28">4.7</a></li>
+<li><a class="reference internal" href="#id29">4.6</a></li>
+<li><a class="reference internal" href="#id30">4.5</a></li>
+<li><a class="reference internal" href="#id31">4.4.1</a></li>
+<li><a class="reference internal" href="#id32">4.4</a></li>
+<li><a class="reference internal" href="#id33">4.3.1</a></li>
+<li><a class="reference internal" href="#id34">4.3</a></li>
 <li><a class="reference internal" href="#bugfix-release">4.2.1 — bugfix release</a></li>
-<li><a class="reference internal" href="#id34">4.2</a></li>
-<li><a class="reference internal" href="#id35">4.1</a></li>
-<li><a class="reference internal" href="#id36">4.0</a></li>
-<li><a class="reference internal" href="#id37">0.8</a></li>
-<li><a class="reference internal" href="#id38">0.7</a></li>
-<li><a class="reference internal" href="#id39">0.6</a></li>
-<li><a class="reference internal" href="#id40">0.5</a></li>
-<li><a class="reference internal" href="#id41">0.4</a></li>
-<li><a class="reference internal" href="#id42">0.3</a></li>
+<li><a class="reference internal" href="#id35">4.2</a></li>
+<li><a class="reference internal" href="#id36">4.1</a></li>
+<li><a class="reference internal" href="#id37">4.0</a></li>
+<li><a class="reference internal" href="#id38">0.8</a></li>
+<li><a class="reference internal" href="#id39">0.7</a></li>
+<li><a class="reference internal" href="#id40">0.6</a></li>
+<li><a class="reference internal" href="#id41">0.5</a></li>
+<li><a class="reference internal" href="#id42">0.4</a></li>
+<li><a class="reference internal" href="#id43">0.3</a></li>
 </ul>
 </li>
 </ul>

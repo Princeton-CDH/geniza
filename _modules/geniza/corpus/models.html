@@ -4,10 +4,10 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>geniza.corpus.models &#8212; Princeton Geniza Project 4.19.0 documentation</title>
+    <title>geniza.corpus.models &#8212; Princeton Geniza Project 4.20.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=5ecbeea2" />
     <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=12dfc556" />
-    <script src="../../../_static/documentation_options.js?v=db6269fb"></script>
+    <script src="../../../_static/documentation_options.js?v=a5b539c6"></script>
     <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
@@ -50,7 +50,6 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">django.core.validators</span><span class="w"> </span><span class="kn">import</span> <span class="n">RegexValidator</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">django.db</span><span class="w"> </span><span class="kn">import</span> <span class="n">models</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">django.db.models.functions</span><span class="w"> </span><span class="kn">import</span> <span class="n">Concat</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">django.db.models.functions.text</span><span class="w"> </span><span class="kn">import</span> <span class="n">Lower</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">django.db.models.query</span><span class="w"> </span><span class="kn">import</span> <span class="n">Prefetch</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">django.db.models.signals</span><span class="w"> </span><span class="kn">import</span> <span class="n">pre_delete</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">django.dispatch</span><span class="w"> </span><span class="kn">import</span> <span class="n">receiver</span>
@@ -73,6 +72,7 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">geniza.annotations.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">Annotation</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">geniza.common.models</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">DisplayLabelMixin</span><span class="p">,</span>
+    <span class="n">TaggableMixin</span><span class="p">,</span>
     <span class="n">TrackChangesModel</span><span class="p">,</span>
     <span class="n">cached_class_property</span><span class="p">,</span>
 <span class="p">)</span>
@@ -651,7 +651,7 @@
 
 <div class="viewcode-block" id="Document">
 <a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.models.Document">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">Document</span><span class="p">(</span><span class="n">ModelIndexable</span><span class="p">,</span> <span class="n">DocumentDateMixin</span><span class="p">,</span> <span class="n">PermalinkMixin</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Document</span><span class="p">(</span><span class="n">ModelIndexable</span><span class="p">,</span> <span class="n">DocumentDateMixin</span><span class="p">,</span> <span class="n">PermalinkMixin</span><span class="p">,</span> <span class="n">TaggableMixin</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;A unified document such as a letter or legal document that</span>
 <span class="sd">    appears on one or more fragments.&quot;&quot;&quot;</span>
 
@@ -890,22 +890,6 @@
         <span class="k">return</span> <span class="n">mark_safe</span><span class="p">(</span>
             <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">long_name</span><span class="si">}</span><span class="s2">. </span><span class="si">{</span><span class="n">available_at</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">permalink</span><span class="si">}</span><span class="s2">, accessed </span><span class="si">{</span><span class="n">today</span><span class="si">}</span><span class="s2">.&quot;</span>
         <span class="p">)</span>
-
-<div class="viewcode-block" id="Document.all_tags">
-<a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.models.Document.all_tags">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">all_tags</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;comma delimited string of all tags for this document&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">tags</span><span class="o">.</span><span class="n">all</span><span class="p">())</span></div>
-
-
-    <span class="n">all_tags</span><span class="o">.</span><span class="n">short_description</span> <span class="o">=</span> <span class="s2">&quot;tags&quot;</span>
-
-<div class="viewcode-block" id="Document.alphabetized_tags">
-<a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.models.Document.alphabetized_tags">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">alphabetized_tags</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;tags in alphabetical order, case-insensitive sorting&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">tags</span><span class="o">.</span><span class="n">order_by</span><span class="p">(</span><span class="n">Lower</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">))</span></div>
-
 
 <div class="viewcode-block" id="Document.is_public">
 <a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.models.Document.is_public">[docs]</a>

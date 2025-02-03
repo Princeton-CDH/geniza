@@ -5,10 +5,10 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Documents and Fragments &#8212; Princeton Geniza Project 4.19.0 documentation</title>
+    <title>Documents and Fragments &#8212; Princeton Geniza Project 4.20.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=5ecbeea2" />
     <link rel="stylesheet" type="text/css" href="../_static/alabaster.css?v=12dfc556" />
-    <script src="../_static/documentation_options.js?v=db6269fb"></script>
+    <script src="../_static/documentation_options.js?v=a5b539c6"></script>
     <script src="../_static/doctools.js?v=9a2dae69"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="../genindex.html" />
@@ -135,18 +135,6 @@ appears on one or more fragments.</p>
 <dt class="sig sig-object py" id="geniza.corpus.models.Document.all_secondary_languages">
 <span class="sig-name descname"><span class="pre">all_secondary_languages</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/corpus/models.html#Document.all_secondary_languages"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.corpus.models.Document.all_secondary_languages" title="Link to this definition">¶</a></dt>
 <dd><p>comma delimited string of all secondary languages for this document</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="geniza.corpus.models.Document.all_tags">
-<span class="sig-name descname"><span class="pre">all_tags</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/corpus/models.html#Document.all_tags"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.corpus.models.Document.all_tags" title="Link to this definition">¶</a></dt>
-<dd><p>comma delimited string of all tags for this document</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="geniza.corpus.models.Document.alphabetized_tags">
-<span class="sig-name descname"><span class="pre">alphabetized_tags</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/corpus/models.html#Document.alphabetized_tags"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.corpus.models.Document.alphabetized_tags" title="Link to this definition">¶</a></dt>
-<dd><p>tags in alphabetical order, case-insensitive sorting</p>
 </dd></dl>
 
 <dl class="py method">
@@ -1403,6 +1391,13 @@ one is available, then return a conditional response.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="geniza.corpus.views.DocumentSearchView.get_apd_link">
+<span class="sig-name descname"><span class="pre">get_apd_link</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">query</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/corpus/views.html#DocumentSearchView.get_apd_link"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.corpus.views.DocumentSearchView.get_apd_link" title="Link to this definition">¶</a></dt>
+<dd><p>Generate a link to the Arabic Papyrology Database (APD) search page
+using the entered query, converting any Hebrew script to Arabic with Regex</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="geniza.corpus.views.DocumentSearchView.get_applied_filter_labels">
 <span class="sig-name descname"><span class="pre">get_applied_filter_labels</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">form</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">field</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filters</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/corpus/views.html#DocumentSearchView.get_applied_filter_labels"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.corpus.views.DocumentSearchView.get_applied_filter_labels" title="Link to this definition">¶</a></dt>
 <dd><p>return a list of objects with field/value pairs, and translated labels,
@@ -2132,8 +2127,6 @@ for the set of users who associated with any of the log entries.</p>
 <li><a class="reference internal" href="#geniza.corpus.models.Document.admin_thumbnails"><code class="docutils literal notranslate"><span class="pre">Document.admin_thumbnails()</span></code></a></li>
 <li><a class="reference internal" href="#geniza.corpus.models.Document.all_languages"><code class="docutils literal notranslate"><span class="pre">Document.all_languages()</span></code></a></li>
 <li><a class="reference internal" href="#geniza.corpus.models.Document.all_secondary_languages"><code class="docutils literal notranslate"><span class="pre">Document.all_secondary_languages()</span></code></a></li>
-<li><a class="reference internal" href="#geniza.corpus.models.Document.all_tags"><code class="docutils literal notranslate"><span class="pre">Document.all_tags()</span></code></a></li>
-<li><a class="reference internal" href="#geniza.corpus.models.Document.alphabetized_tags"><code class="docutils literal notranslate"><span class="pre">Document.alphabetized_tags()</span></code></a></li>
 <li><a class="reference internal" href="#geniza.corpus.models.Document.attribution"><code class="docutils literal notranslate"><span class="pre">Document.attribution()</span></code></a></li>
 <li><a class="reference internal" href="#geniza.corpus.models.Document.available_digital_content"><code class="docutils literal notranslate"><span class="pre">Document.available_digital_content</span></code></a></li>
 <li><a class="reference internal" href="#geniza.corpus.models.Document.clean_fields"><code class="docutils literal notranslate"><span class="pre">Document.clean_fields()</span></code></a></li>
@@ -2379,6 +2372,7 @@ for the set of users who associated with any of the log entries.</p>
 <li><a class="reference internal" href="#geniza.corpus.views.DocumentSearchView"><code class="docutils literal notranslate"><span class="pre">DocumentSearchView</span></code></a><ul>
 <li><a class="reference internal" href="#geniza.corpus.views.DocumentSearchView.dispatch"><code class="docutils literal notranslate"><span class="pre">DocumentSearchView.dispatch()</span></code></a></li>
 <li><a class="reference internal" href="#geniza.corpus.views.DocumentSearchView.form_class"><code class="docutils literal notranslate"><span class="pre">DocumentSearchView.form_class</span></code></a></li>
+<li><a class="reference internal" href="#geniza.corpus.views.DocumentSearchView.get_apd_link"><code class="docutils literal notranslate"><span class="pre">DocumentSearchView.get_apd_link()</span></code></a></li>
 <li><a class="reference internal" href="#geniza.corpus.views.DocumentSearchView.get_applied_filter_labels"><code class="docutils literal notranslate"><span class="pre">DocumentSearchView.get_applied_filter_labels()</span></code></a></li>
 <li><a class="reference internal" href="#geniza.corpus.views.DocumentSearchView.get_boolfield_label"><code class="docutils literal notranslate"><span class="pre">DocumentSearchView.get_boolfield_label()</span></code></a></li>
 <li><a class="reference internal" href="#geniza.corpus.views.DocumentSearchView.get_context_data"><code class="docutils literal notranslate"><span class="pre">DocumentSearchView.get_context_data()</span></code></a></li>

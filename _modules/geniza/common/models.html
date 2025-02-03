@@ -4,10 +4,10 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>geniza.common.models &#8212; Princeton Geniza Project 4.19.0 documentation</title>
+    <title>geniza.common.models &#8212; Princeton Geniza Project 4.20.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=5ecbeea2" />
     <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=12dfc556" />
-    <script src="../../../_static/documentation_options.js?v=db6269fb"></script>
+    <script src="../../../_static/documentation_options.js?v=a5b539c6"></script>
     <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
@@ -34,6 +34,7 @@
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">django.contrib.auth.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">User</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">django.db</span><span class="w"> </span><span class="kn">import</span> <span class="n">models</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">django.db.models.functions.text</span><span class="w"> </span><span class="kn">import</span> <span class="n">Lower</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">django.utils.safestring</span><span class="w"> </span><span class="kn">import</span> <span class="n">mark_safe</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">modeltranslation.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">fallbacks</span>
 
@@ -167,6 +168,29 @@
             <span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">display_label_en</span> <span class="ow">or</span> <span class="n">obj</span><span class="o">.</span><span class="n">name_en</span><span class="p">):</span> <span class="n">obj</span>
             <span class="k">for</span> <span class="n">obj</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
         <span class="p">}</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="TaggableMixin">
+<a class="viewcode-back" href="../../../codedocs/common.html#geniza.common.models.TaggableMixin">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">TaggableMixin</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Mixin for taggable models with convenience functions for generating lists of tags&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="TaggableMixin.all_tags">
+<a class="viewcode-back" href="../../../codedocs/common.html#geniza.common.models.TaggableMixin.all_tags">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">all_tags</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;comma delimited string of all tags for this instance&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">tags</span><span class="o">.</span><span class="n">all</span><span class="p">())</span></div>
+
+
+    <span class="n">all_tags</span><span class="o">.</span><span class="n">short_description</span> <span class="o">=</span> <span class="s2">&quot;tags&quot;</span>
+
+<div class="viewcode-block" id="TaggableMixin.alphabetized_tags">
+<a class="viewcode-back" href="../../../codedocs/common.html#geniza.common.models.TaggableMixin.alphabetized_tags">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">alphabetized_tags</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;tags in alphabetical order, case-insensitive sorting&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">tags</span><span class="o">.</span><span class="n">order_by</span><span class="p">(</span><span class="n">Lower</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">))</span></div>
 </div>
 
 </pre></div>
