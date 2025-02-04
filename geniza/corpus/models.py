@@ -1637,7 +1637,7 @@ class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin, TaggableMixin)
                         source_id=footnote.source.pk,
                     )
                     # copy over notes, location, url if missing from self_fn
-                    for attr in ["notes", "location", "url"]:
+                    for attr in ["notes", "location", "emendations", "url"]:
                         if not getattr(self_fn, attr) and getattr(footnote, attr):
                             setattr(self_fn, attr, getattr(footnote, attr))
                     self_fn.save()

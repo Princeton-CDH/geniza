@@ -449,7 +449,7 @@ class FootnoteQuerySet(models.QuerySet):
         location, document relation type, and notes.
         Returns the matching object if there was one, or False if not."""
 
-        compare_fields = ["source", "location", "notes"]
+        compare_fields = ["source", "location", "emendations", "notes"]
 
         for fn in self.all():
             if (
@@ -510,12 +510,19 @@ class Footnote(TrackChangesModel):
         null=True,
         blank=True,
     )
-    notes = models.TextField(
+    emendations = models.CharField(
+        "minor emendations by",
+        max_length=512,
         help_text="Displays publicly. For minor emendations to a "
-        + 'transcription, put "with minor emendations by Your Name, Date." '
-        + "Do not add a note for typo corrections. For significant "
-        + "alterations to a transcription, create a new source indicating "
-        + "co-authorship.",
+        + "transcription or translation (not including typo corrections), "
+        + "enter Your Name, Year. May include multiple names and dates. For "
+        + "significant alterations to a transcription or translation, create "
+        + "a new source indicating co-authorship.",
+        null=True,
+        blank=True,
+    )
+    notes = models.TextField(
+        help_text="Additional context. Only visible to admins/editors.",
         blank=True,
     )
     content = models.JSONField(

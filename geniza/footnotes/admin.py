@@ -8,7 +8,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.db.models.fields import CharField, TextField
 from django.db.models.functions import Concat
-from django.forms import ValidationError
+from django.forms import URLField, ValidationError
 from django.forms.models import BaseInlineFormSet
 from django.forms.widgets import Textarea, TextInput
 from django.urls import path, reverse
@@ -88,11 +88,11 @@ class SourceFootnoteInline(TabularInlinePaginated):
         "object_id",
         "doc_relation",
         "location",
+        "emendations",
         "url",
     )
     readonly_fields = ("object_link",)
     formfield_overrides = {
-        CharField: {"widget": TextInput(attrs={"size": "10"})},
         TextField: {"widget": Textarea(attrs={"rows": 4})},
     }
 
@@ -189,13 +189,13 @@ class DocumentFootnoteInline(GenericTabularInline):
         "source",
         "doc_relation",
         "location",
+        "emendations",
         "notes",
         "url",
     )
     extra = 1
     formfield_overrides = {
-        CharField: {"widget": TextInput(attrs={"size": "10"})},
-        TextField: {"widget": Textarea(attrs={"rows": 4})},
+        TextField: {"widget": Textarea(attrs={"rows": 3})},
     }
     # enable link from inline to edit footnote
     show_change_link = True
@@ -361,6 +361,7 @@ class FootnoteAdmin(admin.ModelAdmin):
         "__str__",
         "source",
         "location",
+        "emendations",
         "notes",
         "has_url",
     )
@@ -379,6 +380,7 @@ class FootnoteAdmin(admin.ModelAdmin):
         "source__authors__first_name",
         "source__authors__last_name",
         "content",
+        "emendations",
         "notes",
         "document__id",
         "document__fragments__shelfmark",
@@ -403,6 +405,7 @@ class FootnoteAdmin(admin.ModelAdmin):
                     "location",
                     "doc_relation",
                     "url",
+                    "emendations",
                     "notes",
                     "content",
                 )
