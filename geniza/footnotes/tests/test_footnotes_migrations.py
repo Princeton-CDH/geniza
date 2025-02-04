@@ -263,3 +263,85 @@ class TestDigitalFootnoteLocation(TestMigrations):
         # corresponding translation footnotes
         self.digital_translation.refresh_from_db()
         assert self.digital_translation.location == ""
+
+
+@pytest.mark.order("last")
+@pytest.mark.django_db
+class TestPopulateFootnoteEmendations(TestMigrations):
+    app = "footnotes"
+    migrate_from = "0033_footnote_emendations"
+    migrate_to = "0034_populate_footnote_emendations"
+    footnote_undated_emendations = None
+    footnote_emendations = None
+    footnote_2_emenders = None
+    footnote_2_emenders_alt = None
+    name_1 = "Alan Elbaum"
+    date_1 = "2020"
+    name_2 = "Marina Rustow"
+    date_2 = "2023"
+
+    def setUpBeforeMigration(self, apps):
+        Footnote = apps.get_model("footnotes", "Footnote")
+        Source = apps.get_model("footnotes", "Source")
+        SourceType = apps.get_model("footnotes", "SourceType")
+        ContentType = apps.get_model("contenttypes", "ContentType")
+        Document = apps.get_model("corpus", "Document")
+        document_contenttype = ContentType.objects.get_for_model(Document)
+
+        book = SourceType.objects.create(type="Book")
+        source = Source.objects.create(source_type=book)
+
+        # undated emendations
+        self.footnote_undated_emendations = Footnote.objects.create(
+            source=source,
+            doc_relation=["X"],
+            object_id=12345432,
+            content_type=document_contenttype,
+            notes=f"With emendations by {self.name_2}.",
+        )
+
+        # example where there is a person and date listed for emendations
+        self.footnote_emendations = Footnote.objects.create(
+            source=source,
+            doc_relation=["X"],
+            object_id=12345433,
+            content_type=document_contenttype,
+            notes=f"With emendations by {self.name_1} ({self.date_1}).",
+        )
+
+        # examples where there are 2 people listed for emendations
+        self.footnote_2_emenders = Footnote.objects.create(
+            source=source,
+            doc_relation=["X"],
+            object_id=12345434,
+            content_type=document_contenttype,
+            notes=f"with emendations by {self.name_1} ({self.date_1}), and {self.name_2} ({self.date_2}).",
+        )
+        self.footnote_2_emenders_alt = Footnote.objects.create(
+            source=source,
+            doc_relation=["X"],
+            object_id=12345435,
+            content_type=document_contenttype,
+            notes=f"With emendations by {self.name_1} ({self.date_1}) and {self.name_2} ({self.date_2}).",
+        )
+
+    def test_populate_footnote_emendations(self):
+        # no emendations in notes: no emendations field content
+        self.footnote_undated_emendations.refresh_from_db()
+        assert not self.footnote_undated_emendations.emendations
+
+        # dated emendations in notes: should format correctly
+        self.footnote_emendations.refresh_from_db()
+        assert self.footnote_emendations.emendations == f"{self.name_1}, {self.date_1}"
+
+        # dated emendations by two people in notes: should format correctly
+        self.footnote_2_emenders.refresh_from_db()
+        assert (
+            self.footnote_2_emenders.emendations
+            == f"{self.name_1}, {self.date_1} and {self.name_2}, {self.date_2}"
+        )
+        self.footnote_2_emenders_alt.refresh_from_db()
+        assert (
+            self.footnote_2_emenders_alt.emendations
+            == f"{self.name_1}, {self.date_1} and {self.name_2}, {self.date_2}"
+        )
