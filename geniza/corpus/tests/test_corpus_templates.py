@@ -217,9 +217,7 @@ class TestDocumentDetailTemplate:
             doc_relation=Footnote.DIGITAL_EDITION,
         )
         response = admin_client.get(document.get_absolute_url())
-        assertContains(
-            response, "Download Khan, el-Leithy, Rustow and Vanthieghem's edition"
-        )
+        assertContains(response, "Download Khan, Rustow and Vanthieghem's edition")
 
     def test_languages_none(self, client, document):
         response = client.get(document.get_absolute_url())

@@ -62,9 +62,7 @@ class TestSource:
         lastnames = [
             a.creator.last_name for a in multiauthor_untitledsource.authorship_set.all()
         ]
-        assert str(multiauthor_untitledsource) == "%s, %s, %s and %s." % tuple(
-            lastnames
-        )
+        assert str(multiauthor_untitledsource) == "%s, %s and %s." % tuple(lastnames)
 
     @pytest.mark.django_db
     def test_str_article(self, article):
@@ -206,7 +204,7 @@ class TestSource:
         ]
         assert (
             multiauthor_untitledsource.formatted_display()
-            == "%s, %s, %s and %s, %s."
+            == "%s, %s and %s, %s."
             % tuple([*lastnames, multiauthor_untitledsource.source_type.type.lower()])
         )
 
@@ -284,20 +282,15 @@ class TestFootnote:
 
         # test handling unpublished records
         footnote.source = multiauthor_untitledsource
-        assert footnote.display() == "Khan, Rustow, Vanthieghem and el-Leithy."
+        assert footnote.display() == "Khan, Rustow and Vanthieghem."
         footnote.doc_relation = Footnote.EDITION
-        assert (
-            footnote.display() == "Khan, Rustow, Vanthieghem and el-Leithy's edition."
-        )
+        assert footnote.display() == "Khan, Rustow and Vanthieghem's edition."
         multiauthor_untitledsource.year = "2025"
-        assert (
-            footnote.display()
-            == "Khan, Rustow, Vanthieghem and el-Leithy's edition (2025)."
-        )
+        assert footnote.display() == "Khan, Rustow and Vanthieghem's edition (2025)."
         footnote.emendations = "Alan Elbaum, 2025"
         assert (
             footnote.display()
-            == "Khan, Rustow, Vanthieghem and el-Leithy's edition (2025), with minor emendations by Alan Elbaum, 2025."
+            == "Khan, Rustow and Vanthieghem's edition (2025), with minor emendations by Alan Elbaum, 2025."
         )
 
         # test goitein unpublished
@@ -356,7 +349,7 @@ class TestFootnote:
             content_object=document,
         )
         assert Footnote.display_multiple([unpub_fn_1, unpub_fn_2]).startswith(
-            "Khan, Rustow, Vanthieghem and el-Leithy's digital edition and digital translation, with minor emendations by Alan Elbaum, 2025, available online through the Princeton Geniza Project at <a href="
+            "Khan, Rustow and Vanthieghem's digital edition and digital translation, with minor emendations by Alan Elbaum, 2025, available online through the Princeton Geniza Project at <a href="
         )
 
     @pytest.mark.django_db
