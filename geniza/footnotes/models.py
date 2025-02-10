@@ -597,8 +597,7 @@ class Footnote(TrackChangesModel):
         parts = [self.source.display() if old_pgp else self.source.formatted_display()]
         if self.source.source_type.type == "Unpublished":
             authors = [
-                c.creator.firstname_lastname()
-                for c in self.source.authorship_set.order_by("creator__last_name")
+                c.creator.firstname_lastname() for c in self.source.authorship_set.all()
             ]
             parts = [list_to_string(authors)]
             relation_display = self.get_doc_relation_display()
@@ -655,8 +654,7 @@ class Footnote(TrackChangesModel):
         elif source.source_type.type == "Unpublished":
             # handle other unpublished sources
             authors = [
-                c.creator.firstname_lastname()
-                for c in source.authorship_set.order_by("creator__last_name")
+                c.creator.firstname_lastname() for c in source.authorship_set.all()
             ]
             citation = list_to_string(authors)
             # get doc relations across all footnotes

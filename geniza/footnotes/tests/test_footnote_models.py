@@ -62,7 +62,9 @@ class TestSource:
         lastnames = [
             a.creator.last_name for a in multiauthor_untitledsource.authorship_set.all()
         ]
-        assert str(multiauthor_untitledsource) == "%s, %s and %s." % tuple(lastnames)
+        assert str(multiauthor_untitledsource) == "%s, %s, %s and %s." % tuple(
+            lastnames
+        )
 
     @pytest.mark.django_db
     def test_str_article(self, article):
@@ -204,7 +206,7 @@ class TestSource:
         ]
         assert (
             multiauthor_untitledsource.formatted_display()
-            == "%s, %s and %s, %s."
+            == "%s, %s, %s and %s, %s."
             % tuple([*lastnames, multiauthor_untitledsource.source_type.type.lower()])
         )
 
@@ -281,16 +283,22 @@ class TestFootnote:
         assert footnote.display() == "George Orwell, A Nice Cup of Tea (n.p., n.d.)."
 
         # test handling unpublished records
+        lastnames = [
+            a.creator.last_name for a in multiauthor_untitledsource.authorship_set.all()
+        ]
         footnote.source = multiauthor_untitledsource
-        assert footnote.display() == "Khan, Rustow and Vanthieghem."
+        assert footnote.display() == "%s, %s, %s and %s." % tuple(lastnames)
         footnote.doc_relation = Footnote.EDITION
-        assert footnote.display() == "Khan, Rustow and Vanthieghem's edition."
+        assert footnote.display() == "%s, %s, %s and %s's edition." % tuple(lastnames)
         multiauthor_untitledsource.year = "2025"
-        assert footnote.display() == "Khan, Rustow and Vanthieghem's edition (2025)."
+        assert footnote.display() == "%s, %s, %s and %s's edition (%s)." % tuple(
+            [*lastnames, multiauthor_untitledsource.year]
+        )
         footnote.emendations = "Alan Elbaum, 2025"
         assert (
             footnote.display()
-            == "Khan, Rustow and Vanthieghem's edition (2025), with minor emendations by Alan Elbaum, 2025."
+            == "%s, %s, %s and %s's edition (%s), with minor emendations by %s."
+            % tuple([*lastnames, multiauthor_untitledsource.year, footnote.emendations])
         )
 
         # test goitein unpublished
@@ -306,22 +314,27 @@ class TestFootnote:
         document,
     ):
         assert not Footnote.display_multiple([])
+        cardno_1 = "#1234"
         idx_footnote_1 = Footnote(
             source=index_cards,
-            location="Card #1234",
+            location="Card %s" % cardno_1,
             doc_relation=Footnote.DISCUSSION,
             content_object=document,
         )
+        cardno_2 = "#5678"
         idx_footnote_2 = Footnote(
             source=index_cards,
-            location="Card #5678",
+            location="Card %s" % cardno_2,
             url="http://localhost:8000",
             doc_relation=Footnote.DISCUSSION,
             content_object=document,
         )
-        assert (
-            Footnote.display_multiple([idx_footnote_1, idx_footnote_2])
-            == 'S. D. Goitein, unpublished index cards (1950–85), #1234 and <a href="http://localhost:8000">#5678</a>. Princeton Geniza Lab, Princeton University.'
+        assert Footnote.display_multiple(
+            [idx_footnote_1, idx_footnote_2]
+        ) == 'S. D. Goitein, unpublished index cards (1950–85), %s and <a href="%s">%s</a>. Princeton Geniza Lab, Princeton University.' % (
+            cardno_1,
+            idx_footnote_2.url,
+            cardno_2,
         )
         goitein_ed_fn_1 = Footnote(
             source=goitein_editions,
@@ -335,7 +348,8 @@ class TestFootnote:
             content_object=document,
         )
         assert Footnote.display_multiple([goitein_ed_fn_1, goitein_ed_fn_2]).startswith(
-            "S. D. Goitein's unpublished edition (1950–85), with minor emendations by Alan Elbaum, 2025, available online through the Princeton Geniza Project at <a href="
+            "S. D. Goitein's unpublished edition (1950–85), with minor emendations by %s, available online through the Princeton Geniza Project at <a href="
+            % (goitein_ed_fn_2.emendations)
         )
         unpub_fn_1 = Footnote(
             source=multiauthor_untitledsource,
@@ -348,9 +362,26 @@ class TestFootnote:
             emendations="Alan Elbaum, 2025",
             content_object=document,
         )
+        multiauthor_untitledsource.year = 2024
+        lastnames = [
+            a.creator.last_name for a in multiauthor_untitledsource.authorship_set.all()
+        ]
         assert Footnote.display_multiple([unpub_fn_1, unpub_fn_2]).startswith(
-            "Khan, Rustow and Vanthieghem's digital edition and digital translation, with minor emendations by Alan Elbaum, 2025, available online through the Princeton Geniza Project at <a href="
+            "%s, %s, %s and %s's %s and %s (%s), with minor emendations by %s, available online through the Princeton Geniza Project at <a href="
+            % tuple(
+                [
+                    *lastnames,
+                    unpub_fn_1.get_doc_relation_display().lower(),
+                    unpub_fn_2.get_doc_relation_display().lower(),
+                    multiauthor_untitledsource.year,
+                    unpub_fn_2.emendations,
+                ]
+            )
         )
+        multiauthor_untitledsource.languages.add(
+            SourceLanguage.objects.get(name="Hebrew")
+        )
+        assert "(in Hebrew)" in Footnote.display_multiple([unpub_fn_1])
 
     @pytest.mark.django_db
     def test_has_url(self, source):

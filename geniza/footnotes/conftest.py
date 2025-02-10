@@ -40,7 +40,7 @@ def multiauthor_untitledsource(db):
     # fixture to create and return a source with mutiple authors, no title
     unpub = SourceType.objects.get(type="Unpublished")
     source = Source.objects.create(source_type=unpub)
-    for i, name in enumerate(["Khan", "Rustow", "Vanthieghem"]):
+    for i, name in enumerate(["Khan", "el-Leithy", "Rustow", "Vanthieghem"]):
         author = Creator.objects.create(last_name_en=name)
         Authorship.objects.create(creator=author, source=source, sort_order=i)
     return source
