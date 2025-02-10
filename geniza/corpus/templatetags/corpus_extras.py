@@ -201,56 +201,8 @@ def is_index_cards(source):
     )
 
 
-def list_to_string(lst):
-    """Helper function to join a list with commas, and 'and' before the final
-    entry."""
-    return " and ".join([", ".join(lst[:-1]), lst[-1]] if len(lst) > 2 else lst)
-
-
 @register.filter
 def process_citation(source):
-    """For scholarship records list: handle Goitein index cards by including
-    URLs and index card numbers when available, and by adding the attribution
-    to the PGL."""
-    citation = source.grouper.formatted_display(format_index_cards=True)
-    if "unpublished index cards" in citation:
-        all_cards = []
-        # add card numbers
-        for fn in source.list:
-            # remove "Card" or "card" from the location field first, we just want #NNN
-            loc = re.sub("[Cc]ard ", "", fn.location)
-            card_str = ""
-            # add URL if present
-            if loc and fn.url:
-                card_str = f'<a href="{fn.url}">{loc}</a>'
-            elif loc:
-                card_str = str(loc)
-            if card_str:
-                all_cards.append(card_str)
-        if all_cards:
-            # if card #s are present, include them as a list in the citation
-            joined = list_to_string(all_cards)
-            citation = citation[0:-1] + f", {joined}."
-        # add PGL attribution
-        citation += " Princeton Geniza Lab, Princeton University."
-    elif source.grouper.source_type.type == "Unpublished":
-        relations = [r for rs in [fn.doc_relation for fn in source.list] for r in rs]
-        if (
-            Footnote.DIGITAL_EDITION in relations
-            or Footnote.DIGITAL_TRANSLATION in relations
-        ):
-            authors = [
-                c.creator.firstname_lastname()
-                for c in source.grouper.authorship_set.order_by("creator__last_name")
-            ]
-            citation = list_to_string(authors)
-            relation_display = list_to_string(
-                [fn.get_doc_relation_display() for fn in source.list]
-            )
-            citation += f"'s {relation_display.lower()}"
-            if source.grouper.year:
-                citation += f" ({source.grouper.year})"
-            citation += ", available online through the Princeton Geniza Project at "
-            permalink = source.list[0].content_object.permalink
-            citation += f'<a href="{permalink}">{permalink}</a>.'
-    return mark_safe(citation)
+    """For scholarship records list: handle grouped citations by passing to
+    Footnote.display_multiple class method."""
+    return mark_safe(Footnote.display_multiple(source.list))

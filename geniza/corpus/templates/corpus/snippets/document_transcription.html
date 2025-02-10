@@ -267,7 +267,7 @@
                     {% else %}
                         {% if forloop.first %}
                             <span data-transcription-target="transcriptionFullLabel" class="current-transcription{% if document.digital_editions.count > 1 %} multiple{% endif %}">
-                                {{ document.digital_editions.0.source.formatted_display|safe }}
+                                {{ document.digital_editions.0.display|safe }}
                             </span>
                         {% endif %}
                         {% if not image_info.excluded %}
@@ -276,7 +276,7 @@
                                 {% for edition in document.digital_editions.all %}
                                     <div class="transcription ed-{{ edition.pk }}"
                                          data-ittpanel-target="transcription"
-                                         data-label="{{ edition.source.formatted_display }}"
+                                         data-label="{{ edition.display }}"
                                          lang="{{ document.primary_lang_code|default:"" }}"
                                          dir="rtl"
                                          {% if document.primary_script %}
@@ -305,7 +305,7 @@
                     {% else %}
                         {% if forloop.first %}
                             <span data-transcription-target="translationFullLabel" class="current-translation{% if document.digital_editions.count > 1 %} multiple{% endif %}">
-                                {{ document.default_translation.source.formatted_display|safe }}
+                                {{ document.default_translation.display|safe }}
                             </span>
                         {% endif %}
                         {% if not image_info.excluded %}
@@ -314,7 +314,7 @@
                                 {% for translation in document.digital_translations.all %}
                                     <div class="translation tr-{{ translation.pk }}"
                                          data-ittpanel-target="translation"
-                                         data-label="{{ translation.source.formatted_display }}"
+                                         data-label="{{ translation.display }}"
                                          {% if translation.source.languages.exists %}lang="{{ translation.source.languages.all.0.code }}" dir="{{ translation.source.languages.all.0.direction }}"{% else %}dir="ltr"{% endif %}
                                     >
                                         {% for html_section in translation.content_html|dict_item:canvas_uri %}

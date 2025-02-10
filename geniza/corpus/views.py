@@ -1135,7 +1135,7 @@ def old_pgp_edition(editions):
             "%s%s%s"
             % (
                 "and trans. " if Footnote.TRANSLATION in fn.doc_relation else "",
-                fn.display().strip("."),
+                fn.display(old_pgp=True).strip("."),
                 " %s" % fn.url if fn.url else "",
             )
             for fn in editions

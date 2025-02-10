@@ -78,11 +78,27 @@ def unpublished_editions(db):
 @pytest.fixture
 def index_cards(db):
     # fixture for unpublished index cards
-    unpub = SourceType.objects.get(type="Unpublished")
+    (unpub, _) = SourceType.objects.get_or_create(type="Unpublished")
     source = Source.objects.create(
         source_type=unpub, title_en="index cards", volume="CUL"
     )
-    author = Creator.objects.create(last_name_en="Goitein", first_name_en="S. D.")
+    (author, _) = Creator.objects.get_or_create(
+        last_name_en="Goitein", first_name_en="S. D."
+    )
+    Authorship.objects.create(creator=author, source=source)
+    return source
+
+
+@pytest.fixture
+def goitein_editions(db):
+    # fixture for Goitein unpublished editions
+    (unpub, _) = SourceType.objects.get_or_create(type="Unpublished")
+    source = Source.objects.create(
+        source_type=unpub, title_en="unpublished editions", volume="CUL"
+    )
+    (author, _) = Creator.objects.get_or_create(
+        last_name_en="Goitein", first_name_en="S. D."
+    )
     Authorship.objects.create(creator=author, source=source)
     return source
 
