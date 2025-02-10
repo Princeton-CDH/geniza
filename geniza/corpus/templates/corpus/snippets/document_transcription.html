@@ -219,8 +219,7 @@
                                 {% with rotation="rotation:degrees="|add:deg %}
                                     <img class="iiif-image" data-iiif-target="image" data-annotation-target="image" src="{{ image_info.image|iiif_image:"size:width=500"|iiif_image:rotation }}" alt="{{ image_info.label }}" title="{{ image_info.label }}" loading="lazy"
                                          sizes="(max-width: 1440px) 50vw, 94vw"
-                                         srcset="{{ image_info.image|iiif_image:"size:width=300"|iiif_image:rotation }} 300w,
-                                                 {{ image_info.image|iiif_image:"size:width=500"|iiif_image:rotation }} 500w,
+                                         srcset="{{ image_info.image|iiif_image:"size:width=500"|iiif_image:rotation }} 500w,
                                                  {{ image_info.image|iiif_image:"size:width=640"|iiif_image:rotation }} 640w,
                                                  {{ image_info.image|iiif_image:"size:width=1440"|iiif_image:rotation }} 1440w">
                                 {% endwith %}
