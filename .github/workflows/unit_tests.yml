@@ -58,7 +58,7 @@ jobs:
       # We base the python cache on the hash of all requirements files, so that
       # if any change, the cache is invalidated.
       - name: Cache pip
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           path: ~/.cache/pip
           key: pip-${{ hashFiles('requirements/*.txt') }}
@@ -81,7 +81,7 @@ jobs:
           node-version: 16
 
       - name: Cache node modules
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           path: ~/.npm
           key: npm-${{ hashFiles('package-lock.json') }}
