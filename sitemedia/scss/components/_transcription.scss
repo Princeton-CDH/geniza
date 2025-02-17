@@ -623,30 +623,12 @@
                 margin: 0;
                 padding: 0;
             }
-            li[data-lines="1"] {
-                min-height: calc(1 * 34 / 22 * 1.375rem);
-                max-height: calc(1 * 34 / 22 * 1.375rem);
-            }
-            li[data-lines="2"] {
-                // li, height of two lines (line height = 34 / 22, font size = 1.375rem)
-                min-height: calc(2 * 34 / 22 * 1.375rem);
-                max-height: calc(2 * 34 / 22 * 1.375rem);
-            }
-            li[data-lines="3"] {
-                min-height: calc(3 * 34 / 22 * 1.375rem);
-                max-height: calc(3 * 34 / 22 * 1.375rem);
-            }
-            li[data-lines="4"] {
-                min-height: calc(4 * 34 / 22 * 1.375rem);
-                max-height: calc(4 * 34 / 22 * 1.375rem);
-            }
-            li[data-lines="5"] {
-                min-height: calc(5 * 34 / 22 * 1.375rem);
-                max-height: calc(5 * 34 / 22 * 1.375rem);
-            }
-            li[data-lines="6"] {
-                min-height: calc(6 * 34 / 22 * 1.375rem);
-                max-height: calc(6 * 34 / 22 * 1.375rem);
+            @for $n from 1 through 30 {
+                // li, height of $n lines (line height = 34 / 22, font size = 1.375rem)
+                li[data-lines="#{$n}"] {
+                    min-height: calc(#{$n} * 34 / 22 * 1.375rem);
+                    max-height: calc(#{$n} * 34 / 22 * 1.375rem);
+                }
             }
             span.current-transcription,
             span.current-translation {
