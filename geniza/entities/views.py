@@ -1,5 +1,6 @@
 import re
 from ast import literal_eval
+from urllib.parse import urlparse
 
 from dal import autocomplete
 from django.conf import settings
@@ -9,7 +10,7 @@ from django.contrib.postgres.aggregates import ArrayAgg
 from django.db.models import Count, Q
 from django.forms import ValidationError
 from django.http import Http404, HttpResponsePermanentRedirect, HttpResponseRedirect
-from django.urls import reverse
+from django.urls import resolve, reverse
 from django.utils.safestring import mark_safe
 from django.utils.text import Truncator
 from django.utils.translation import gettext as _
@@ -220,6 +221,22 @@ class UnaccentedNameAutocompleteView(autocomplete.Select2QuerySetView):
 class PersonAutocompleteView(PermissionRequiredMixin, UnaccentedNameAutocompleteView):
     permission_required = ("entities.change_person",)
     model = Person
+
+    def get_queryset(self):
+        """Exclude self from queryset if in person-person form."""
+        qs = super().get_queryset()
+        # use forwarded constant is_person_person_form to determine if we are in the
+        # person-person form, and therefore should exclude self
+        if hasattr(self, "forwarded") and self.forwarded.get(
+            "is_person_person_form", False
+        ):
+            ref_url = self.request.META.get("HTTP_REFERER", None)
+            if ref_url:
+                # parse HTTP_REFERER url, i.e. the current page url
+                resolver_match = resolve(urlparse(ref_url)[2])
+                # exclude self from inline Person queryset
+                qs = qs.exclude(pk=resolver_match.kwargs["object_id"])
+        return qs
 
 
 class PlaceAutocompleteView(PermissionRequiredMixin, UnaccentedNameAutocompleteView):
