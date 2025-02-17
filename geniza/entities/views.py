@@ -234,8 +234,9 @@ class PersonAutocompleteView(PermissionRequiredMixin, UnaccentedNameAutocomplete
             if ref_url:
                 # parse HTTP_REFERER url, i.e. the current page url
                 resolver_match = resolve(urlparse(ref_url)[2])
-                # exclude self from inline Person queryset
-                qs = qs.exclude(pk=resolver_match.kwargs["object_id"])
+                if resolver_match and "object_id" in resolver_match.kwargs:
+                    # exclude self from inline Person queryset
+                    qs = qs.exclude(pk=resolver_match.kwargs["object_id"])
         return qs
 
 
