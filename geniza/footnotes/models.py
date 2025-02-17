@@ -13,9 +13,7 @@ from django.db import models
 from django.db.models import Count, Q
 from django.db.models.functions import NullIf
 from django.db.models.query import Prefetch
-from django.urls import reverse
 from django.utils.html import strip_tags
-from django.utils.translation import gettext
 from django.utils.translation import gettext_lazy as _
 from gfklookupwidget.fields import GfkLookupField
 from modeltranslation.manager import MultilingualManager, MultilingualQuerySet
@@ -23,6 +21,7 @@ from multiselectfield import MultiSelectField
 
 from geniza.common.fields import NaturalSortField
 from geniza.common.models import TrackChangesModel
+from geniza.common.utils import list_to_string
 from geniza.footnotes.utils import HTMLLineNumberParser
 
 
@@ -200,12 +199,16 @@ class Source(models.Model):
     def all_languages(self):
         """comma-delimited list of languages, in parentheses, used for the translation selector"""
         if self.languages.exists():
-            return "(in %s)" % ", ".join(
-                [str(lang) for lang in self.languages.all().order_by("name")]
-            )
+            langs = [
+                str(lang)
+                for lang in self.languages.all().order_by("name")
+                if "Unspecified" not in str(lang)
+            ]
+            if langs:
+                return "(in %s)" % ", ".join(langs)
         return ""
 
-    def formatted_display(self, extra_fields=True):
+    def formatted_display(self, extra_fields=True, format_index_cards=False):
         """Format source for display; used on document scholarship page.
         To omit publisher, place_published, and page_range fields,
         specify `extra_fields=False`."""
@@ -248,6 +251,12 @@ class Source(models.Model):
             # if this is a machine learning model, format appropriately
             elif "model" in self.source_type.type:
                 work_title = "Machine-generated transcription (%s)" % self.title
+            elif (
+                format_index_cards
+                and "Goitein" in author
+                and "index card" in self.title.lower()
+            ):
+                work_title = "unpublished index cards (1950–85)"
             # otherwise, just leave unformatted
             else:
                 work_title = self.title + ltr_mark
@@ -256,7 +265,7 @@ class Source(models.Model):
             # only when extra_fields enabled, or there is no author
 
             # Translators: Placeholder for when a work has no title available
-            work_title = gettext("[digital geniza document edition]")
+            work_title = self.source_type.type.lower()
 
         # Wrap title in link to URL
         if self.url and work_title:
@@ -388,7 +397,6 @@ class Source(models.Model):
         #   L. B. Yarbrough (in Hebrew)             (no comma)
         #   Author (1964)                           (no comma)
         #   Author, Journal 6 (1964)                (comma)
-        #   Author, [digital geniza document edition]                      (comma)
         use_comma = (
             extra_fields
             or self.title
@@ -581,19 +589,120 @@ class Footnote(TrackChangesModel):
         )
         return f"{rel} of {self.content_object}"
 
-    def display(self):
-        """format footnote for display; used on document detail page
-        and metadata export for old pgp site"""
-        # source, location. notes.
-        # source. notes.
-        # source, location.
-        parts = [self.source.display()]
-        if self.notes:
-            # uppercase first letter of notes if not capitalized
-            notes = self.notes[0].upper() + self.notes[1:]
-            # append period to notes if not present
-            parts.extend([" ", notes.strip("."), "."])
+    def display(self, old_pgp=False):
+        """format footnote for display; used on document detail page"""
+        # normally, just use source display.
+        # for unpublished records:
+        # source author (year), with minor emendations by person.
+        parts = [self.source.display() if old_pgp else self.source.formatted_display()]
+        if self.source.source_type.type == "Unpublished":
+            authors = [
+                c.creator.firstname_lastname() for c in self.source.authorship_set.all()
+            ]
+            parts = [list_to_string(authors)]
+            relation_display = self.get_doc_relation_display()
+            if "Goitein" in parts[0]:
+                # handle goitein, "unpublished" not "digital"
+                relation_display = relation_display.replace("Digital", "unpublished")
+            if relation_display:
+                parts.append(f"'s {relation_display.lower()}")
+            if self.source.year:
+                parts.append(f" ({self.source.year})")
+            elif "Goitein" in parts[0]:
+                # handle goitein years
+                parts.append(f" (1950–85)")
+            # add emendations
+            if self.emendations:
+                parts.append(f", with minor emendations by {self.emendations}")
+            parts.append(".")
         return "".join(parts)
+
+    @classmethod
+    def display_multiple(cls, footnotes):
+        """Display method for multiple footnotes, grouped by source, on the scholarship
+        records/bibliography page. Normally uses source formatted display, but requires
+        special handling for unpublished source records with multiple footnotes.
+        Handles Goitein index cards by including URLs and index card numbers when
+        available, and by adding the attribution to the PGL."""
+        if not footnotes:
+            # bail out with empty string on no footnotes provided
+            return ""
+        source = footnotes[0].source
+        # start with source formatted display
+        citation = source.formatted_display(format_index_cards=True)
+        # handle Goitein index cards
+        if "unpublished index cards" in citation:
+            all_cards = []
+            # add card numbers
+            for fn in footnotes:
+                # remove "Card" or "card" from the location field first, we just want #NNN
+                loc = re.sub("[Cc]ard ", "", fn.location)
+                card_str = ""
+                # add URL if present
+                if loc and fn.url:
+                    card_str = f'<a href="{fn.url}">{loc}</a>'
+                elif loc:
+                    card_str = str(loc)
+                if card_str:
+                    all_cards.append(card_str)
+            if all_cards:
+                # if card #s are present, include them as a list in the citation
+                joined = list_to_string(all_cards)
+                citation = citation[0:-1] + f", {joined}."
+            # add PGL attribution
+            citation += " Princeton Geniza Lab, Princeton University."
+        elif source.source_type.type == "Unpublished":
+            # handle other unpublished sources
+            authors = [
+                c.creator.firstname_lastname() for c in source.authorship_set.all()
+            ]
+            citation = list_to_string(authors)
+            # get doc relations across all footnotes
+            if "Goitein" in citation:
+                # handle goitein unpublished work (non-index cards):
+                # should say "unpublished edition" or "unpublished translation"
+                relation_set = set(
+                    [
+                        re.sub(
+                            r"([dD]igital )?([Ee]dition|[Tt]ranslation)",
+                            r"unpublished \2",
+                            fn.get_doc_relation_display(),
+                        )
+                        for fn in footnotes
+                    ]
+                )
+            else:
+                relation_set = set([fn.get_doc_relation_display() for fn in footnotes])
+            relation_display = list_to_string(sorted(list(relation_set)))
+            if relation_display:
+                citation += f"'s {relation_display.lower()}"
+            # handle languages (some unpublished records have this)
+            if source.languages.exists():
+                for lang in source.languages.all():
+                    if "English" not in str(lang) and "Unspecified" not in str(lang):
+                        citation += " (in %s)" % lang
+            # year if specified, and special range for Goitein
+            if source.year:
+                citation += f" ({source.year})"
+            elif "Goitein" in citation:
+                citation += f" (1950–85)"
+            # handle minor emendations if specified
+            emendations = list_to_string(
+                [fn.emendations for fn in footnotes if fn.emendations]
+            )
+            if emendations:
+                citation += f", with minor emendations by {emendations}"
+            # include information about PGP for digital edition/translation
+            relations = [r for rs in [fn.doc_relation for fn in footnotes] for r in rs]
+            if cls.DIGITAL_EDITION in relations or cls.DIGITAL_TRANSLATION in relations:
+                citation += (
+                    ", available online through the Princeton Geniza Project at "
+                )
+                permalink = footnotes[0].content_object.permalink
+                citation += f'<a href="{permalink}">{permalink}</a>'
+            citation += "."
+
+        return citation
 
     def has_url(self):
         """Admin display field indicating if footnote has a url."""

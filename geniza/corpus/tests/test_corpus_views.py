@@ -305,7 +305,7 @@ def test_old_pgp_edition():
     doc.footnotes.add(fn)
 
     edition_str = old_pgp_edition(doc.editions())
-    assert edition_str == f"Ed. {fn.display()}"
+    assert edition_str == f"Ed. {fn.display(old_pgp=True)}"
 
     source2 = Source.objects.create(title_en="Arabic dictionary", source_type=book)
     fn2 = Footnote.objects.create(

@@ -200,14 +200,14 @@ class TestSource:
         )
 
     def test_formatted_no_title(self, multiauthor_untitledsource):
-        # should include [digital geniza document edition]
+        # should use source type for title
         lastnames = [
             a.creator.last_name for a in multiauthor_untitledsource.authorship_set.all()
         ]
         assert (
             multiauthor_untitledsource.formatted_display()
-            == "%s, %s, %s and %s, [digital geniza document edition]."
-            % tuple(lastnames)
+            == "%s, %s, %s and %s, %s."
+            % tuple([*lastnames, multiauthor_untitledsource.source_type.type.lower()])
         )
 
     @pytest.mark.django_db
@@ -220,6 +220,11 @@ class TestSource:
         assert (
             source.formatted_display()
             == "Machine-generated transcription (%s)." % source.title_en
+        )
+
+    def test_formatted_indexcard(self, index_cards):
+        assert "unpublished index cards (1950–85)" in index_cards.formatted_display(
+            format_index_cards=True
         )
 
     def test_get_volume_from_shelfmark(self):
@@ -269,17 +274,114 @@ class TestFootnote:
             footnote.doc_relation = [Footnote.EDITION, Footnote.TRANSLATION]
             assert str(footnote) == "Edition and Translation of foo"
 
-    def test_display(self, source):
+    def test_display(self, source, multiauthor_untitledsource, goitein_editions):
         footnote = Footnote(source=source)
-        assert footnote.display() == "George Orwell, A Nice Cup of Tea."
+        assert footnote.display() == "George Orwell, A Nice Cup of Tea (n.p., n.d.)."
 
         footnote.location = "p. 55"  # should not change display
-        assert footnote.display() == "George Orwell, A Nice Cup of Tea."
+        footnote.notes = "With minor edits."  # should not change display
+        assert footnote.display() == "George Orwell, A Nice Cup of Tea (n.p., n.d.)."
 
-        footnote.notes = "With minor edits."
-        assert (
-            footnote.display() == "George Orwell, A Nice Cup of Tea. With minor edits."
+        # test handling unpublished records
+        lastnames = [
+            a.creator.last_name for a in multiauthor_untitledsource.authorship_set.all()
+        ]
+        footnote.source = multiauthor_untitledsource
+        assert footnote.display() == "%s, %s, %s and %s." % tuple(lastnames)
+        footnote.doc_relation = Footnote.EDITION
+        assert footnote.display() == "%s, %s, %s and %s's edition." % tuple(lastnames)
+        multiauthor_untitledsource.year = "2025"
+        assert footnote.display() == "%s, %s, %s and %s's edition (%s)." % tuple(
+            [*lastnames, multiauthor_untitledsource.year]
         )
+        footnote.emendations = "Alan Elbaum, 2025"
+        assert (
+            footnote.display()
+            == "%s, %s, %s and %s's edition (%s), with minor emendations by %s."
+            % tuple([*lastnames, multiauthor_untitledsource.year, footnote.emendations])
+        )
+
+        # test goitein unpublished
+        footnote = Footnote(source=goitein_editions)
+        footnote.doc_relation = Footnote.DIGITAL_EDITION
+        assert footnote.display() == "S. D. Goitein's unpublished edition (1950–85)."
+
+    def test_display_multiple(
+        self,
+        index_cards,
+        goitein_editions,
+        multiauthor_untitledsource,
+        document,
+    ):
+        assert not Footnote.display_multiple([])
+        cardno_1 = "#1234"
+        idx_footnote_1 = Footnote(
+            source=index_cards,
+            location="Card %s" % cardno_1,
+            doc_relation=Footnote.DISCUSSION,
+            content_object=document,
+        )
+        cardno_2 = "#5678"
+        idx_footnote_2 = Footnote(
+            source=index_cards,
+            location="Card %s" % cardno_2,
+            url="http://localhost:8000",
+            doc_relation=Footnote.DISCUSSION,
+            content_object=document,
+        )
+        assert Footnote.display_multiple(
+            [idx_footnote_1, idx_footnote_2]
+        ) == 'S. D. Goitein, unpublished index cards (1950–85), %s and <a href="%s">%s</a>. Princeton Geniza Lab, Princeton University.' % (
+            cardno_1,
+            idx_footnote_2.url,
+            cardno_2,
+        )
+        goitein_ed_fn_1 = Footnote(
+            source=goitein_editions,
+            doc_relation=Footnote.EDITION,
+            content_object=document,
+        )
+        goitein_ed_fn_2 = Footnote(
+            source=goitein_editions,
+            doc_relation=Footnote.DIGITAL_EDITION,
+            emendations="Alan Elbaum, 2025",
+            content_object=document,
+        )
+        assert Footnote.display_multiple([goitein_ed_fn_1, goitein_ed_fn_2]).startswith(
+            "S. D. Goitein's unpublished edition (1950–85), with minor emendations by %s, available online through the Princeton Geniza Project at <a href="
+            % (goitein_ed_fn_2.emendations)
+        )
+        unpub_fn_1 = Footnote(
+            source=multiauthor_untitledsource,
+            doc_relation=Footnote.DIGITAL_EDITION,
+            content_object=document,
+        )
+        unpub_fn_2 = Footnote(
+            source=multiauthor_untitledsource,
+            doc_relation=Footnote.DIGITAL_TRANSLATION,
+            emendations="Alan Elbaum, 2025",
+            content_object=document,
+        )
+        multiauthor_untitledsource.year = 2024
+        lastnames = [
+            a.creator.last_name for a in multiauthor_untitledsource.authorship_set.all()
+        ]
+        assert Footnote.display_multiple([unpub_fn_1, unpub_fn_2]).startswith(
+            "%s, %s, %s and %s's %s and %s (%s), with minor emendations by %s, available online through the Princeton Geniza Project at <a href="
+            % tuple(
+                [
+                    *lastnames,
+                    unpub_fn_1.get_doc_relation_display().lower(),
+                    unpub_fn_2.get_doc_relation_display().lower(),
+                    multiauthor_untitledsource.year,
+                    unpub_fn_2.emendations,
+                ]
+            )
+        )
+        multiauthor_untitledsource.languages.add(
+            SourceLanguage.objects.get(name="Hebrew")
+        )
+        assert "(in Hebrew)" in Footnote.display_multiple([unpub_fn_1])
 
     @pytest.mark.django_db
     def test_has_url(self, source):

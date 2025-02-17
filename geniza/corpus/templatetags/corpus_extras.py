@@ -2,12 +2,14 @@ import json
 import re
 
 from django import template
+from django.template.defaultfilters import pluralize
 from django.urls import reverse
 from django.urls import translate_url as django_translate_url
 from django.utils.safestring import mark_safe
 from piffle.iiif import IIIFImageClientException
 
 from geniza.common.utils import absolutize_url
+from geniza.footnotes.models import Footnote
 
 register = template.Library()
 
@@ -188,3 +190,19 @@ def all_doc_relations(footnotes):
     for fn in footnotes:
         relations.update(set([n.strip() for n in str(fn.doc_relation).split(",")]))
     return sorted(relations)
+
+
+@register.filter
+def is_index_cards(source):
+    """For scholarship records list: indicate whether or not a source record
+    relates to Goitein index cards."""
+    return "unpublished index cards" in source.grouper.formatted_display(
+        format_index_cards=True
+    )
+
+
+@register.filter
+def process_citation(source):
+    """For scholarship records list: handle grouped citations by passing to
+    Footnote.display_multiple class method."""
+    return mark_safe(Footnote.display_multiple(source.list))

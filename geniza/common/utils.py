@@ -80,6 +80,12 @@ def simplify_quotes(text):
     return text.translate(smart_quote_conversion)
 
 
+def list_to_string(lst):
+    """Helper function to join a list with commas, and 'and' before the final
+    entry."""
+    return " and ".join([", ".join(lst[:-1]), lst[-1]] if len(lst) > 2 else lst)
+
+
 ## adapted from tabular_export.admin
 class Echo(object):
     # See https://docs.djangoproject.com/en/1.8/howto/outputting-csv/#streaming-csv-files
