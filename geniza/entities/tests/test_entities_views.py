@@ -213,8 +213,8 @@ class TestPersonPersonRelationTypeMergeView:
         assert resolved_url.kwargs["object_id"] == str(rel_type.pk)
 
 
+@pytest.mark.django_db
 class TestPersonAutocompleteView:
-    @pytest.mark.django_db
     def test_get_queryset(self):
         # create two people
         person = Person.objects.create()
@@ -229,6 +229,7 @@ class TestPersonAutocompleteView:
         person_autocomplete_view = PersonAutocompleteView()
         # mock request with empty search
         person_autocomplete_view.request = Mock()
+        person_autocomplete_view.request.META = {}
         person_autocomplete_view.request.GET = {"q": ""}
         qs = person_autocomplete_view.get_queryset()
         # should get exactly two results (all people) even though one has two names
@@ -251,6 +252,24 @@ class TestPersonAutocompleteView:
         qs = person_autocomplete_view.get_queryset()
         assert qs.count() == 1
         assert qs.first().pk == person_2.pk
+
+    def test_get_queryset__personperson_form(self, person, person_multiname):
+        person_autocomplete_view = PersonAutocompleteView()
+        # mock request
+        person_autocomplete_view.request = Mock()
+        person_autocomplete_view.request.META = {}
+        person_autocomplete_view.request.GET = {"q": ""}
+        qs = person_autocomplete_view.get_queryset()
+        # should get exactly two results (all people)
+        assert qs.count() == 2
+
+        # simulate person-person autocomplete: mock META and forwarded
+        change_url = reverse("admin:entities_person_change", args=[person.id])
+        person_autocomplete_view.request.META = {"HTTP_REFERER": change_url}
+        person_autocomplete_view.forwarded = {"is_person_person_form": True}
+        qs = person_autocomplete_view.get_queryset()
+        # should get one result, excluding the one whose id is in referrer
+        assert qs.count() == 1
 
 
 class TestPlaceAutocompleteView:

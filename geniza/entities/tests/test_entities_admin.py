@@ -1,7 +1,9 @@
+import time
 from unittest.mock import Mock, patch
 
 import pytest
 from django.contrib import admin
+from django.db.models.query import EmptyQuerySet
 from django.http import HttpResponseRedirect, StreamingHttpResponse
 from django.test import RequestFactory
 from django.urls import reverse
@@ -132,20 +134,6 @@ class TestPersonAdmin:
         # simulate get_form setting own_pk
         person_admin.own_pk = goitein.pk
 
-        # simulate person-person autocomplete request
-        request = request_factory.get(
-            "/admin/autocomplete/",
-            {
-                "app_label": "entities",
-                "model_name": "personpersonrelation",
-                "field_name": "to_person",
-            },
-        )
-        qs = person_admin.get_queryset(request)
-        # should exclude Person with pk=own_pk
-        assert qs.count() == 2
-        assert not qs.filter(pk=goitein.pk).exists()
-
         # simulate person-document autocomplete request
         request = request_factory.get(
             "/admin/autocomplete/",
@@ -254,6 +242,42 @@ class TestPersonAdmin:
         assert person_admin.deceased_mention_dates(person) == standard_date_display(
             join.doc_date_standard
         )
+
+    def test_get_search_results(self, person, person_multiname, empty_solr):
+        # adapted from TestDocumentAdmin.test_get_search_results
+        # index fixture data in solr
+        Person.index_items([person, person_multiname])
+        time.sleep(1)
+
+        pers_admin = PersonAdmin(model=Person, admin_site=admin.site)
+        queryset, needs_distinct = pers_admin.get_search_results(
+            Mock(), Person.objects.all(), "bogus"
+        )
+        assert not queryset.count()
+        assert not needs_distinct
+        assert isinstance(queryset, EmptyQuerySet)
+
+        queryset, needs_distinct = pers_admin.get_search_results(
+            Mock(), Person.objects.all(), "Yijū"
+        )
+        assert queryset.count() == 1
+        assert isinstance(queryset.first(), Person)
+        queryset, needs_distinct = pers_admin.get_search_results(
+            Mock(), Person.objects.all(), "yiju"
+        )
+        assert queryset.count() == 1
+
+        # should find by secondary name
+        queryset, needs_distinct = pers_admin.get_search_results(
+            Mock(), Person.objects.all(), "Apple"
+        )
+        assert queryset.count() == 1
+
+        # empty search term should return all records
+        queryset, needs_distinct = pers_admin.get_search_results(
+            Mock(), Person.objects.all(), ""
+        )
+        assert queryset.count() == Person.objects.all().count()
 
 
 @pytest.mark.django_db

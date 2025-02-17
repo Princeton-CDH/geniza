@@ -1,4 +1,4 @@
-from dal import autocomplete
+from dal import autocomplete, forward
 from django import forms
 from django.template.loader import get_template
 from django.utils.translation import gettext_lazy as _
@@ -133,7 +133,10 @@ class PersonPersonForm(forms.ModelForm):
         )
         widgets = {
             "notes": forms.Textarea(attrs={"rows": 4}),
-            "to_person": autocomplete.ModelSelect2(url="entities:person-autocomplete"),
+            "to_person": autocomplete.ModelSelect2(
+                url="entities:person-autocomplete",
+                forward=(forward.Const(True, "is_person_person_form"),),
+            ),
         }
         help_texts = {
             "to_person": "Please check auto-populated and manually-input people sections to ensure you are not entering the same relationship twice."
