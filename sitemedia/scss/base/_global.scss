@@ -124,7 +124,8 @@ blockquote {
     @include typography.quote;
 }
 
-em {
+em,
+i {
     font-style: italic;
 }
 
