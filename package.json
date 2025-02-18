@@ -24,7 +24,7 @@
     "@hotwired/turbo": "^7.1.0",
     "@recogito/annotorious": "^2.7.13",
     "@recogito/annotorious-openseadragon": "^2.7.17",
-    "annotorious-tahqiq": "^1.5.0",
+    "annotorious-tahqiq": "^1.5.1",
     "autoprefixer": "^10.3.2",
     "babel-loader": "^8.2.2",
     "core-js": "^3.16.3",
