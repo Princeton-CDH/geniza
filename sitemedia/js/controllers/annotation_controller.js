@@ -136,8 +136,9 @@ export default class extends Controller {
             storagePlugin,
             annotationContainer,
             this.element.querySelector(".tahqiq-toolbar"), // toolbar container fieldset
+            config.tiny_api_key,
             config.text_direction,
-            config.tiny_api_key
+            config.italic_enabled
         );
 
         if (window.tinyConfig) {

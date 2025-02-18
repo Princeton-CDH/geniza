@@ -108,7 +108,7 @@ class Annotation(TrackChangesModel):
     objects = AnnotationQuerySet.as_manager()
 
     # allowed tags and attributes for annotation body content HTML
-    ALLOWED_TAGS = ["del", "li", "ol", "p", "span", "sup"]
+    ALLOWED_TAGS = ["del", "li", "ol", "p", "span", "sup", "em"]
     ALLOWED_ATTRIBUTES = ["lang"]
 
     # error message for malformed annotations

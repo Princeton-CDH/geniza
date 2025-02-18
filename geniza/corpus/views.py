@@ -1025,6 +1025,7 @@ class DocumentTranscribeView(PermissionRequiredMixin, DocumentDetailView):
                     if self.doc_relation == "transcription"
                     else "translating",
                     "text_direction": text_direction,
+                    "italic_enabled": self.doc_relation == "translation",
                     # line-by-line mode for eScriptorium sourced transcriptions
                     "line_mode": "model" in source.source_type.type,
                 },
