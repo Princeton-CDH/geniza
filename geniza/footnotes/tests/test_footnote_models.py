@@ -102,7 +102,10 @@ class TestSource:
         # unspecified language should not show up in citation
         article.languages.add(SourceLanguage.objects.get(code="zxx"))
         assert "Unspecified" not in str(article)
-        # other non-english languages should
+        # other Latin languages should not show up in citation
+        article.languages.add(SourceLanguage.objects.get(name="German"))
+        assert "(in German)" not in str(article)
+        # non-Latin languages should
         article.languages.add(SourceLanguage.objects.get(name="Hebrew"))
         assert "(in Hebrew)" in str(article)
 

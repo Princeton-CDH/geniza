@@ -43,6 +43,11 @@ class SourceLanguage(models.Model):
     RTL = "rtl"
     DIRECTION_CHOICES = ((LTR, "Left to right"), (RTL, "Right to left"))
     direction = models.CharField(max_length=3, default=LTR, choices=DIRECTION_CHOICES)
+    non_latin = models.BooleanField(
+        default=False,
+        help_text="True if this language uses a non-Latin script, and therefore should be included in formatted citations for associated Source records.",
+        verbose_name="Uses non-Latin script",
+    )
 
     def __str__(self):
         return self.name
@@ -285,7 +290,7 @@ class Source(models.Model):
         if self.languages.exists():
             for lang in self.languages.all():
                 # Also prevent Unspecified from showing up in source citations
-                if "English" not in str(lang) and "Unspecified" not in str(lang):
+                if lang.non_latin and "Unspecified" not in str(lang):
                     included_langs += 1
                     parts.append("(in %s)" % lang)
 
@@ -679,7 +684,7 @@ class Footnote(TrackChangesModel):
             # handle languages (some unpublished records have this)
             if source.languages.exists():
                 for lang in source.languages.all():
-                    if "English" not in str(lang) and "Unspecified" not in str(lang):
+                    if lang.non_latin and "Unspecified" not in str(lang):
                         citation += " (in %s)" % lang
             # year if specified, and special range for Goitein
             if source.year:
