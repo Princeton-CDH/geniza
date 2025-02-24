@@ -81,6 +81,10 @@ main.places {
             fill: var(--map-pin-disabled);
             width: 22px;
             height: 28px;
+            &:has(.region) {
+                width: 37px;
+                height: 37px;
+            }
             cursor: pointer;
             .selected-pin {
                 display: none;
@@ -91,12 +95,20 @@ main.places {
                 fill: var(--tertiary);
                 width: 33px;
                 height: 42px;
+                &:has(.region) {
+                    width: 56px;
+                    height: 56px;
+                }
                 z-index: 2;
                 transition: width 0.3s ease-out, height 0.3s ease-out,
                     filter 0.3s ease-out;
                 @include breakpoints.for-tablet-landscape-up {
                     width: 42px;
                     height: 48px;
+                    &:has(.region) {
+                        width: 64px;
+                        height: 64px;
+                    }
                 }
                 .pin {
                     display: none;

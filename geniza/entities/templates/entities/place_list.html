@@ -25,8 +25,13 @@
                             data-lon="{{ place.location|split:","|last }}"
                             data-slug="{{ place.slug }}"
                         >
-                            <use class="pin" href="{% static 'img/ui/all/all/map-pin.svg' %}#pin" />
-                            <use class="selected-pin" href="{% static 'img/ui/all/all/map-pin-fill.svg' %}#pin" />
+                            {% if place.is_region %}
+                                <use class="pin region" href="{% static 'img/ui/all/all/map-pin-region.svg' %}#pin" />
+                                <use class="selected-pin region" href="{% static 'img/ui/all/all/map-pin-region-fill.svg' %}#pin" />
+                            {% else %}
+                                <use class="pin" href="{% static 'img/ui/all/all/map-pin.svg' %}#pin" />
+                                <use class="selected-pin" href="{% static 'img/ui/all/all/map-pin-fill.svg' %}#pin" />
+                            {% endif %}
                         </svg>
                     {% endif %}
                 {% endfor %}
