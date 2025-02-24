@@ -1387,6 +1387,11 @@ class Place(ModelIndexable, SlugMixin, PermalinkMixin):
     )
     # sources for the information gathered here
     footnotes = GenericRelation(Footnote, blank=True, related_name="places")
+    is_region = models.BooleanField(
+        "Region",
+        default=False,
+        help_text="Please restrict entries to regions explicitly mentioned in documents.",
+    )
 
     def __str__(self):
         """
