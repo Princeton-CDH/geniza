@@ -297,11 +297,13 @@ class TestFootnote:
         assert footnote.display() == "%s, %s, %s and %s's edition (%s)." % tuple(
             [*lastnames, multiauthor_untitledsource.year]
         )
-        footnote.emendations = "Alan Elbaum, 2025"
+        footnote.emendations = "Alan Elbaum, 2025."
         assert (
             footnote.display()
             == "%s, %s, %s and %s's edition (%s), with minor emendations by %s."
-            % tuple([*lastnames, multiauthor_untitledsource.year, footnote.emendations])
+            % tuple(
+                [*lastnames, multiauthor_untitledsource.year, footnote.emendations[:-1]]
+            )
         )
 
         # test goitein unpublished
@@ -347,12 +349,12 @@ class TestFootnote:
         goitein_ed_fn_2 = Footnote(
             source=goitein_editions,
             doc_relation=Footnote.DIGITAL_EDITION,
-            emendations="Alan Elbaum, 2025",
+            emendations="Alan Elbaum, 2025.",
             content_object=document,
         )
         assert Footnote.display_multiple([goitein_ed_fn_1, goitein_ed_fn_2]).startswith(
             "S. D. Goitein's unpublished edition (1950–85), with minor emendations by %s, available online through the Princeton Geniza Project at <a href="
-            % (goitein_ed_fn_2.emendations)
+            % (goitein_ed_fn_2.emendations[:-1])
         )
         unpub_fn_1 = Footnote(
             source=multiauthor_untitledsource,

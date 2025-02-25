@@ -528,7 +528,7 @@ class Footnote(TrackChangesModel):
         max_length=512,
         help_text="Displays publicly. For minor emendations to a "
         + "transcription or translation (not including typo corrections), "
-        + "enter Your Name, Year. May include multiple names and dates. For "
+        + "enter Your Name, Year (may include multiple names and dates). For "
         + "significant alterations to a transcription or translation, create "
         + "a new source indicating co-authorship.",
         null=True,
@@ -618,7 +618,12 @@ class Footnote(TrackChangesModel):
                 parts.append(f" (1950–85)")
             # add emendations
             if self.emendations:
-                parts.append(f", with minor emendations by {self.emendations}")
+                emd = (
+                    self.emendations[:-1]
+                    if self.emendations.endswith(".")
+                    else self.emendations
+                )
+                parts.append(f", with minor emendations by {emd}")
             parts.append(".")
         return "".join(parts)
 
@@ -693,7 +698,15 @@ class Footnote(TrackChangesModel):
                 citation += f" (1950–85)"
             # handle minor emendations if specified
             emendations = list_to_string(
-                [fn.emendations for fn in footnotes if fn.emendations]
+                [
+                    (
+                        fn.emendations[:-1]
+                        if fn.emendations.endswith(".")
+                        else fn.emendations
+                    )
+                    for fn in footnotes
+                    if fn.emendations
+                ]
             )
             if emendations:
                 citation += f", with minor emendations by {emendations}"
