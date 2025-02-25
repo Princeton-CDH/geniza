@@ -147,3 +147,48 @@ class TestPopulatePlaceSlugs(TestMigrations):
         # same name should get number
         place_samename = Place.objects.get(pk=self.place_samename.pk)
         assert place_samename.slug == f"{place.slug}-2"
+
+
+@pytest.mark.order(
+    before="geniza/annotations/tests/test_annotations_migrations.py::TestAssociateRelatedFootnotes::test_footnote_associated"
+)
+@pytest.mark.django_db
+class TestSetPlaceRegions(TestMigrations):
+    app = "entities"
+    migrate_from = "0027_placeplacerelation_converse_name"
+    migrate_to = "0028_place_is_region"
+    place = None
+    region = None
+
+    def setUpBeforeMigration(self, apps):
+        Place = apps.get_model("entities", "Place")
+        Name = apps.get_model("entities", "Name")
+        ContentType = apps.get_model("contenttypes", "ContentType")
+        place_contenttype = ContentType.objects.get(app_label="entities", model="place")
+
+        # place
+        self.place = Place.objects.create()
+        Name.objects.create(
+            name="Fustat",
+            content_type=place_contenttype,
+            object_id=self.place.pk,
+            primary=True,
+        )
+        # region
+        self.region = Place.objects.create()
+        Name.objects.create(
+            name="Abyssinia (region)",
+            content_type=place_contenttype,
+            object_id=self.region.pk,
+            primary=True,
+        )
+
+    def test_is_region(self):
+        Place = self.apps.get_model("entities", "Place")
+        # should be false
+        place = Place.objects.get(pk=self.place.pk)
+        assert not place.is_region
+
+        # should be true
+        region = Place.objects.get(pk=self.region.pk)
+        assert region.is_region
