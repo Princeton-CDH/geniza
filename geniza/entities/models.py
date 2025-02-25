@@ -1387,6 +1387,11 @@ class Place(ModelIndexable, SlugMixin, PermalinkMixin):
     )
     # sources for the information gathered here
     footnotes = GenericRelation(Footnote, blank=True, related_name="places")
+    is_region = models.BooleanField(
+        "Region",
+        default=False,
+        help_text="Please restrict entries to regions explicitly mentioned in documents.",
+    )
 
     def __str__(self):
         """
@@ -1556,6 +1561,7 @@ class Place(ModelIndexable, SlugMixin, PermalinkMixin):
                 # related object counts
                 "documents_i": self.documentplacerelation_set.count(),
                 "people_i": self.personplacerelation_set.count(),
+                "is_region_b": self.is_region,
             }
         )
         return index_data
@@ -1593,6 +1599,7 @@ class PlaceSolrQuerySet(AliasedSolrQuerySet):
         "documents": "documents_i",
         "people": "people_i",
         "location": "location_p",
+        "is_region": "is_region_b",
     }
 
 
