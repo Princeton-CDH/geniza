@@ -93,6 +93,7 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
         "related_places": "places_count_i",
         "related_documents": "documents_count_i",
         "transcription_regex": "transcription_regex",
+        "transcription_regex_names": "transcription_regex_names_ss",
     }
 
     # regex to convert field aliases used in search to actual solr fields
@@ -344,7 +345,7 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
             .rsplit(".*/", maxsplit=1)[0]
         )
         # get ~150 characters of context plus a word on either side of the matched portion
-        pattern = r"(\b\w+.{0,150})(%s)(.{0,150}\w+\b)" % regex_query
+        pattern = r"(\b\w*.{0,150})(%s)(.{0,150}\w*\b)" % regex_query
         # find all matches in the snippet
         matches = re.findall(pattern, text, flags=re.DOTALL)
         # separate multiple matches by HTML line breaks and ellipsis
@@ -368,17 +369,37 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
             for doc in self.get_results():
                 # highlight per document, keyed on id as expected in results
                 highlights[doc["id"]] = {
+                    # include labels in case of matches across multiple transcriptions
                     "transcription": [
-                        highlighted_block
+                        {
+                            "text": highlighted_block,
+                            "label": transcription_label,
+                        }
                         # this field is split by block-level annotation/group
-                        for highlighted_block in (
-                            self.get_regex_highlight(block)
-                            for block in doc["transcription_regex"]
+                        for (highlighted_block, transcription_label) in (
+                            (
+                                self.get_regex_highlight(block),
+                                # since the order of multivalued fields is stable in solr, we can
+                                # map each entry of the names field to each entry of the text field
+                                (
+                                    doc["transcription_regex_names"][i]
+                                    if "transcription_regex_names" in doc
+                                    else None
+                                ),
+                            )
+                            for i, block in enumerate(doc["transcription_regex"])
                         )
                         # only include a block if it actually has highlights
                         if highlighted_block
                     ]
                 }
+                # dedupe labels
+                last_label = None
+                for snippet in highlights[doc["id"]]["transcription"]:
+                    if snippet["label"] == last_label:
+                        del snippet["label"]
+                    else:
+                        last_label = snippet["label"]
         else:
             is_exact_search = "hl_query" in self.raw_params
             for doc in highlights.keys():
@@ -390,11 +411,17 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
                     ]
                 if is_exact_search and "transcription_nostem" in highlights[doc]:
                     highlights[doc]["transcription"] = [
-                        clean_html(s) for s in highlights[doc]["transcription_nostem"]
+                        {
+                            "text": clean_html(s)
+                            for s in highlights[doc]["transcription_nostem"]
+                        }
                     ]
                 elif "transcription" in highlights[doc]:
                     highlights[doc]["transcription"] = [
-                        clean_html(s) for s in highlights[doc]["transcription"]
+                        {
+                            "text": clean_html(s)
+                            for s in highlights[doc]["transcription"]
+                        }
                     ]
                 if "translation" in highlights[doc]:
                     highlights[doc]["translation"] = [

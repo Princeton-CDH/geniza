@@ -308,9 +308,9 @@ class TestDocumentSolrQuerySet:
             mock_get_highlighting.return_value = test_highlight
             # transcription html should be cleaned
             cleaned_highlight = dqs.get_highlighting()
-            assert cleaned_highlight["doc.1"]["transcription"] == [
-                clean_html("<li>foo")
-            ]
+            assert cleaned_highlight["doc.1"]["transcription"][0]["text"] == clean_html(
+                "<li>foo"
+            )
 
             # translation highlight
             test_highlight = {"doc.1": {"translation": ["<li>bar baz"]}}
@@ -341,9 +341,9 @@ class TestDocumentSolrQuerySet:
             # ("description" and "transcription" keys) should be replaced w/ the nostem matches
             dqs.raw_params["hl_query"] = "exact match"
             assert dqs.get_highlighting()["doc.1"]["description"] == ["exactly matched"]
-            assert dqs.get_highlighting()["doc.1"]["transcription"][0] == clean_html(
-                "exact match"
-            )
+            assert dqs.get_highlighting()["doc.1"]["transcription"][0][
+                "text"
+            ] == clean_html("exact match")
 
     def test_get_highlighting__old_shelfmark(self):
         dqs = DocumentSolrQuerySet()
@@ -377,7 +377,7 @@ class TestDocumentSolrQuerySet:
         # if regex_query in raw params, should overwrite any normal matches with regex matches
         with patch("geniza.corpus.solr_queryset.super") as mock_super:
             mock_get_highlighting = mock_super.return_value.get_highlighting
-            test_highlight = {"document.1": {"transcription": ["match"]}}
+            test_highlight = {"document.1": {"transcription": {"text": ["match"]}}}
             mock_get_highlighting.return_value = test_highlight
             with patch.object(dqs, "get_results") as mock_get_results:
                 mock_get_results.return_value = [
@@ -386,11 +386,14 @@ class TestDocumentSolrQuerySet:
                 with patch("geniza.corpus.solr_queryset.clean_html") as mock_clean_html:
                     highlighting = dqs.get_highlighting()
                     assert highlighting != test_highlight
-                    assert "match" not in highlighting["document.1"]["transcription"]
                     assert len(highlighting["document.1"]["transcription"]) == 1
                     assert (
+                        "match"
+                        not in highlighting["document.1"]["transcription"][0]["text"]
+                    )
+                    assert (
                         "<em>test</em>"
-                        in highlighting["document.1"]["transcription"][0]
+                        in highlighting["document.1"]["transcription"][0]["text"]
                     )
                     # in regex, clean_html should not be called
                     mock_clean_html.assert_not_called
@@ -399,6 +402,32 @@ class TestDocumentSolrQuerySet:
                         {"id": "document.1", "transcription_nostem": ["a test text"]}
                     ]
                     mock_clean_html.assert_called_once
+
+    def test_get_highlighting__regex__multitranscription(self):
+        dqs = DocumentSolrQuerySet()
+        dqs.search_qs = ["transcription_regex:/.*test.*/"]
+        with patch.object(dqs, "get_results") as mock_get_results:
+            mock_get_results.return_value = [
+                {
+                    "id": "document.1",
+                    "transcription_regex": ["a test text", "testing", "test", "other"],
+                    "transcription_regex_names": ["s 1", "s 1", "src2", "src2"],
+                }
+            ]
+            with patch("geniza.corpus.solr_queryset.clean_html") as mock_clean_html:
+                highlighting = dqs.get_highlighting()
+                # should have 3 matches
+                assert len(highlighting["document.1"]["transcription"]) == 3
+                # should highlight and place into "text"
+                assert (
+                    "<em>test</em>"
+                    in highlighting["document.1"]["transcription"][0]["text"]
+                )
+                # labels should be associated in order 1, 1, 2, (2) (though only three matches)
+                assert highlighting["document.1"]["transcription"][0]["label"] == "s 1"
+                # should dedupe identical label in the second result
+                assert "label" not in highlighting["document.1"]["transcription"][1]
+                assert highlighting["document.1"]["transcription"][2]["label"] == "src2"
 
     def test_regex_search(self):
         dqs = DocumentSolrQuerySet()

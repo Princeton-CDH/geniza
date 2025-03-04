@@ -73,9 +73,11 @@
                     <!-- indicate language when possible, or at least change of language (if unknown) for screen readers -->
                 {% if document_highlights.transcription or document.transcription %}
                     <div class="transcription" dir="rtl" lang="{{ lang }}" {% if lang_script %}data-lang-script="{{ lang_script|lower }}"{% endif %}>
-
                         {% if document_highlights.transcription %}
-                            {% for snippet in document_highlights.transcription %}{{ snippet.strip|safe }}{% if snippet.strip and not forloop.last %}...<br />{% endif %}{% endfor %}
+                            {% for snippet in document_highlights.transcription %}
+                                {% if snippet.label %}<span class="snippet-label">{{ snippet.label.strip|safe }}</span>{% endif %}
+                                {{ snippet.text.strip|safe }}{% if snippet.text.strip and not forloop.last %}<div class="separator">[…]</div>{% endif %}
+                            {% endfor %}
                         {% elif document.transcription %}
                                 {# otherwise, display truncated transcription #}
                                 {# NOTE: might be nice to display N lines instead of using truncatechars #}
