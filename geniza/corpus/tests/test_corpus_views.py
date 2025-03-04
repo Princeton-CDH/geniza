@@ -1186,7 +1186,7 @@ class TestDocumentSearchView:
         hl = context_data["highlighting"]["document.%d" % document.id]["transcription"]
         assert len(hl) == 1
         assert "<em>العـ[ـبد]</em>" in re.sub(
-            r"\s+", "", hl[0]
+            r"\s+", "", hl[0]["text"]
         )  # rm solr-added whitespace
 
         doc2 = Document.objects.create()
@@ -1215,7 +1215,7 @@ class TestDocumentSearchView:
         context_data = docsearch_view.get_context_data()
         hl = context_data["highlighting"]["document.%d" % doc2.id]["transcription"]
         assert len(hl) == 1
-        highlight = re.sub(r"\s+", "", hl[0])  # rm solr-added whitespace
+        highlight = re.sub(r"\s+", "", hl[0]["text"])  # rm solr-added whitespace
         # should match on all words
         assert all(
             h in highlight for h in ["<em>מ〛תל", "לל[ה]</em>", "<em>תע/א\לי", "<em>דלך"]
@@ -1294,8 +1294,8 @@ class TestDocumentSearchView:
         # no double quotes in search, should highlight entire phrase
         docsearch_view.request.GET = {"q": "אלממ"}
         dqs = docsearch_view.get_queryset()
-        assert dqs.get_highlighting()[f"document.{document.pk}"]["transcription"][
-            0
+        assert dqs.get_highlighting()[f"document.{document.pk}"]["transcription"][0][
+            "text"
         ] == clean_html("<em>אלממחה ... אלממ</em>")
 
         # double quotes in search, should highlight only the exact match
@@ -1304,7 +1304,9 @@ class TestDocumentSearchView:
         assert dqs.raw_params["hl_query"] == '"אלממ"'
         assert (
             clean_html("<em>אלממ</em>")
-            in dqs.get_highlighting()[f"document.{document.pk}"]["transcription"][0]
+            in dqs.get_highlighting()[f"document.{document.pk}"]["transcription"][0][
+                "text"
+            ]
         )
 
     @pytest.mark.django_db
@@ -1335,8 +1337,8 @@ class TestDocumentSearchView:
         # should match word without prefix, smaller than the entered query
         docsearch_view.request.GET = {"q": "אלמרכב"}
         dqs = docsearch_view.get_queryset()
-        assert dqs.get_highlighting()[f"document.{document.pk}"]["transcription"][
-            0
+        assert dqs.get_highlighting()[f"document.{document.pk}"]["transcription"][0][
+            "text"
         ] == clean_html("<em>מרכב</em>")
 
     def test_get_apd_link(self):
