@@ -344,7 +344,7 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
             .rsplit(".*/", maxsplit=1)[0]
         )
         # get ~150 characters of context plus a word on either side of the matched portion
-        pattern = r"(\b\w+.{0,150})(%s)(.{0,150}\w+\b)" % regex_query
+        pattern = r"(\b\w*.{0,150})(%s)(.{0,150}\w*\b)" % regex_query
         # find all matches in the snippet
         matches = re.findall(pattern, text, flags=re.DOTALL)
         # separate multiple matches by HTML line breaks and ellipsis
