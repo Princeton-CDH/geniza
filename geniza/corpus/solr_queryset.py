@@ -351,11 +351,14 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
         # separate multiple matches by HTML line breaks and ellipsis
         separator = "<br />[…]<br />"
         # surround matched portion in <em> so it is visible in search results; join all into string
-        return (
-            separator.join([f"{m[0]}<em>{m[1]}</em>{m[2]}" for m in matches if m])
-            if matches
-            else None
+        joined_string = separator.join(
+            [f"{m[0]}<em>{m[1]}</em>{m[2]}" for m in matches if m]
         )
+        if not matches:
+            return None
+        # highlight any matches in added context
+        additional_matches_query = r"(%s)(?!<\/em>)" % regex_query
+        return re.sub(additional_matches_query, r"<em>\1</em>", joined_string)
 
     def get_highlighting(self):
         """highlight snippets within transcription/translation html may result in
