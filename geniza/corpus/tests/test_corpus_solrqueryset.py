@@ -478,4 +478,14 @@ class TestDocumentSolrQuerySet:
         # multiple matches for the query should be separated by line breaks and ellipsis
         dqs.search_qs = ["transcription_regex:/.*מן.*/"]
         highlight = dqs.get_regex_highlight(text)
-        assert "<br />[…]<br />" in highlight
+        separator = "<br />[…]<br />"
+        assert separator in highlight
+
+        # multiple matches in the same ~300 chars context should all be highlighted
+        # check: there should be two snippets here, but three matches
+        hl_snippets = highlight.split(separator)
+        assert len(hl_snippets) == 2
+        # the first snippet should have one highlight in it
+        hl_snippets[0].count("<em>מן</em>") == 1
+        # the second snippet should have two highlights in it
+        hl_snippets[1].count("<em>מן</em>") == 2
