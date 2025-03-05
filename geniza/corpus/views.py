@@ -266,7 +266,9 @@ class DocumentSearchView(
             documents = documents.order_by(
                 self.get_solr_sort(
                     search_opts["sort"], search_opts.get("exclude_inferred", False)
-                )
+                ),
+                # use shelfmark as tiebreaker
+                self.solr_sort["shelfmark"],
             )
 
             # filter by type if specified
