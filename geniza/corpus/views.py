@@ -263,13 +263,16 @@ class DocumentSearchView(
                 )  # include relevance score in results
 
             # order by sort option
-            documents = documents.order_by(
+            order_by = (
                 self.get_solr_sort(
                     search_opts["sort"], search_opts.get("exclude_inferred", False)
                 ),
-                # use shelfmark as tiebreaker
-                self.solr_sort["shelfmark"],
             )
+            # in all sorts except random and shelfmark, order
+            # secondarily by shelfmark, in order to break ties
+            if "random" not in order_by[0] and "shelfmark" not in order_by[0]:
+                order_by += (self.solr_sort["shelfmark"],)
+            documents = documents.order_by(*order_by)
 
             # filter by type if specified
             if search_opts["doctype"]:
@@ -481,19 +484,22 @@ class DocumentDetailView(DocumentDetailBase, DetailView):
                 # preload transcription font when appropriate
                 "page_includes_transcriptions": self.object.has_transcription(),
                 # generate list of related documents that can be filtered by image url for links on excluded images
-                "related_documents": [
-                    {
-                        "document": doc,
-                        "images": [
-                            # TODO: can we use canvas uris here instead?
-                            str(image[0])
-                            for image in doc.get("iiif_images", [])
-                        ],
-                    }
-                    for doc in self.object.related_documents
-                ]
-                # skip solr query if none of the associated TextBlocks have side info
-                if any([tb.side for tb in self.object.textblock_set.all()]) else [],
+                "related_documents": (
+                    [
+                        {
+                            "document": doc,
+                            "images": [
+                                # TODO: can we use canvas uris here instead?
+                                str(image[0])
+                                for image in doc.get("iiif_images", [])
+                            ],
+                        }
+                        for doc in self.object.related_documents
+                    ]
+                    # skip solr query if none of the associated TextBlocks have side info
+                    if any([tb.side for tb in self.object.textblock_set.all()])
+                    else []
+                ),
                 "images": images,
                 # first image for twitter/opengraph meta tags
                 "meta_image": list(images.values())[0]["image"] if images else None,
@@ -921,9 +927,11 @@ class DocumentAddTranscriptionView(PermissionRequiredMixin, DetailView):
         """Create footnote linking source to document, then redirect to edit transcription/translation view"""
         return redirect(
             reverse(
-                "corpus:document-transcribe"
-                if self.doc_relation == "transcription"
-                else "corpus:document-translate",
+                (
+                    "corpus:document-transcribe"
+                    if self.doc_relation == "transcription"
+                    else "corpus:document-translate"
+                ),
                 args=(self.get_object().id, int(request.POST["source"])),
             )
         )
@@ -1023,18 +1031,20 @@ class DocumentTranscribeView(PermissionRequiredMixin, DocumentDetailView):
                     ),
                     "csrf_token": csrf_token(self.request),
                     "tiny_api_key": getattr(settings, "TINY_API_KEY", ""),
-                    "secondary_motivation": "transcribing"
-                    if self.doc_relation == "transcription"
-                    else "translating",
+                    "secondary_motivation": (
+                        "transcribing"
+                        if self.doc_relation == "transcription"
+                        else "translating"
+                    ),
                     "text_direction": text_direction,
                     "italic_enabled": self.doc_relation == "translation",
                     # line-by-line mode for eScriptorium sourced transcriptions
                     "line_mode": "model" in source.source_type.type,
                 },
                 # TODO: Add Footnote notes to the following display, if present
-                "source_detail": mark_safe(source.formatted_display())
-                if source
-                else "",
+                "source_detail": (
+                    mark_safe(source.formatted_display()) if source else ""
+                ),
                 "source_label": source_label if source_label else "",
                 "authors_count": source.authors.count() if source else 0,
                 "page_type": "document annotating",
