@@ -450,7 +450,9 @@ class TestDocumentSearchView:
                 "description", snippets=3, method="unified", requireFieldMatch=True
             )
             mock_sqs.also.assert_called_with("score")
-            mock_sqs.also.return_value.order_by.assert_called_with("-score")
+            mock_sqs.also.return_value.order_by.assert_called_with(
+                "-score", "shelfmark_natsort"
+            )
 
             # sort search param
             mock_sqs.reset_mock()
@@ -476,7 +478,7 @@ class TestDocumentSearchView:
                 status=Document.STATUS_PUBLIC
             )
             mock_sqs.keyword_search.return_value.also.return_value.order_by.assert_called_with(
-                "-score"
+                "-score", "shelfmark_natsort"
             )
 
             # keyword, sort, and filter search params
@@ -500,7 +502,7 @@ class TestDocumentSearchView:
             # also filters that result with next filter (has_transcription)
             mock_sqs.keyword_search.return_value.also.return_value.order_by.return_value.filter.return_value.filter.assert_called()
             mock_sqs.keyword_search.return_value.also.return_value.order_by.assert_called_with(
-                "-scholarship_count_i"
+                "-scholarship_count_i", "shelfmark_natsort"
             )
 
             # empty params
@@ -723,6 +725,35 @@ class TestDocumentSearchView:
         assert (
             qs[1]["pgpid"] == doc3.id
         ), "document with shelfmark T-S 16.4 returned before T-S 16.377"
+
+    def test_relevance_sort_shelfmark_tiebreaker(self, document, empty_solr):
+        """integration test for sorting by shelfmark when relevance score is tied"""
+        # create a document with shelfmark that should come after CUL Add.2586
+        doc2 = Document.objects.create()
+        frag3 = Fragment.objects.create(shelfmark="T-S 16.4")
+        TextBlock.objects.create(document=doc2, fragment=frag3)
+        # add document's tags to doc2 (they need to have the same tags to produce the
+        # same relevance score when matching one of the tags)
+        doc2.tags.add("bill of sale", "real estate")
+        SolrClient().update.index(
+            [
+                document.index_data(),  # shelfmark = CUL Add.2586
+                doc2.index_data(),  # shelfmark = T-S 16.4
+            ],
+            commit=True,
+        )
+        docsearch_view = DocumentSearchView()
+        docsearch_view.request = Mock()
+        # sort by score desc (relevance)
+        docsearch_view.request.GET = {"sort": "relevance", "q": 'tag:"real estate"'}
+        qs = docsearch_view.get_queryset()
+        # should return document with shelfmark starting with C first
+        assert (
+            qs[0]["pgpid"] == document.id
+        ), "document with shelfmark CUL Add.2586 returned first"
+        assert (
+            qs[1]["pgpid"] == doc2.id
+        ), "document with shelfmark T-S 16.4 returned second"
 
     def test_input_date_sort(self, document, join, empty_solr):
         """Tests for sorting by input date, ascending and descending"""
