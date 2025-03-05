@@ -163,12 +163,6 @@ section#document-list {
                 font-weight: bold;
                 font-style: normal;
             }
-            /* solr returns multiple matches in text without space between */
-            em + em {
-                &::before {
-                    content: " ";
-                }
-            }
         }
 
         .transcription {
@@ -524,6 +518,24 @@ a.view-link {
         @include breakpoints.for-tablet-landscape-up {
             margin-left: spacing.$spacing-sm;
             font-size: typography.$text-size-2xl;
+        }
+    }
+}
+
+//  solr returns multiple matches in text without space between, so ensure
+//  a space is added.
+//  this only applies to general (non-regex) search, where solr highlights.
+fieldset#query:not(:has(input[value="regex"]:checked))
+    ~ section#document-list
+    .search-result
+    section:first-of-type {
+    .description,
+    .transcription,
+    .translation {
+        em + em {
+            &::before {
+                content: " ";
+            }
         }
     }
 }
