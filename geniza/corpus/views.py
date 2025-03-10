@@ -1040,6 +1040,8 @@ class DocumentTranscribeView(PermissionRequiredMixin, DocumentDetailView):
                     "italic_enabled": self.doc_relation == "translation",
                     # line-by-line mode for eScriptorium sourced transcriptions
                     "line_mode": "model" in source.source_type.type,
+                    # placeholder url for annotating a broken image
+                    "placeholder_img": Document.PLACEHOLDER_CANVAS["image"]["info"],
                 },
                 # TODO: Add Footnote notes to the following display, if present
                 "source_detail": (
