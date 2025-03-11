@@ -175,6 +175,12 @@ export default class extends Controller {
         anno.on("createSelection", () => this.setNavigatorVisible(true));
         anno.on("cancelSelected", () => this.setNavigatorVisible(true));
 
+        // use a placeholder and show error if opening a tilesource fails
+        viewer.addHandler("open-failed", ({ eventSource, message, source }) => {
+            storagePlugin.alert(`${message}: ${source}`, "error");
+            eventSource.open({ type: "image", url: config.placeholder_img });
+        });
+
         return viewer;
     }
 }
