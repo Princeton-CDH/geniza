@@ -489,3 +489,18 @@ class TestDocumentSolrQuerySet:
         hl_snippets[0].count("<em>מן</em>") == 1
         # the second snippet should have two highlights in it
         hl_snippets[1].count("<em>מן</em>") == 2
+
+        # multiple adjacent matches separated by space should get the .adjacent-em class
+        dqs.search_qs = ["transcription_regex:/.*\w.*/"]
+        highlight = dqs.get_regex_highlight("test one two three")
+        assert '</em> <em class="adjacent-em">' in highlight
+
+        # matches like the "em" in <em> from the first round of highlighting should not match
+        assert "<<em>em</em>>" not in highlight
+
+        # same with the "br" in <br />
+        dqs.search_qs = ["transcription_regex:/.*(מן|\w).*/"]
+        highlight = dqs.get_regex_highlight(text)
+        assert separator in highlight
+        hl_snippets = highlight.split(separator)
+        assert all(["<em>br</em>" not in snippet for snippet in hl_snippets])
