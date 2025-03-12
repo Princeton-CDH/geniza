@@ -352,13 +352,17 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
         separator = "<br />[…]<br />"
         # surround matched portion in <em> so it is visible in search results; join all into string
         joined_string = separator.join(
-            [f"{m[0]}<em>{m[1]}</em>{m[2]}" for m in matches if m]
+            [f"{m[0]}<em>{m[1]}</em>{m[-1]}" for m in matches if m]
         )
         if not matches:
             return None
-        # highlight any matches in added context
-        additional_matches_query = r"(%s)(?!<\/em>)" % regex_query
-        return re.sub(additional_matches_query, r"<em>\1</em>", joined_string)
+        # highlight any matches in added context (excluding HTML elements <em> and <br />)
+        additional_matches_query = (
+            r"(?<!<em>)(?<!<)(?<!<\/)(%s)(?!>)(?!<\/em>)(?! \/>)" % regex_query
+        )
+        all_matches = re.sub(additional_matches_query, r"<em>\1</em>", joined_string)
+        # ensure adjacent <em> elements with space between them can display properly
+        return re.sub(r"<\/em> <em>", '</em> <em class="adjacent-em">', all_matches)
 
     def get_highlighting(self):
         """highlight snippets within transcription/translation html may result in

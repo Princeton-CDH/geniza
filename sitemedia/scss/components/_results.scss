@@ -539,6 +539,23 @@ fieldset#query:not(:has(input[value="regex"]:checked))
         }
     }
 }
+// on regex search, sometimes the "additional matches" logic will result in
+// two adjacent <em> elements that have a space between them, but the space is
+// clobbered in display. we add an 'adjacent-em' class to those, handled here.
+fieldset#query:has(input[value="regex"]:checked)
+    ~ section#document-list
+    .search-result
+    section:first-of-type {
+    .description,
+    .transcription,
+    .translation {
+        em + em.adjacent-em {
+            &::before {
+                content: " ";
+            }
+        }
+    }
+}
 
 // tweaks for RTL search results for hebrew, arabic
 html[dir="rtl"] .search-result {
