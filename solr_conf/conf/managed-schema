@@ -318,7 +318,6 @@
     <fieldType name="text_regex" class="solr.TextField">
       <analyzer>
         <tokenizer class="solr.KeywordTokenizerFactory"/>
-        <filter class="solr.LowerCaseFilterFactory" />
       </analyzer>
     </fieldType>
 
@@ -353,6 +352,9 @@
   <!-- copy description and transcription to nostem fields for exact matches -->
   <copyField source="description_en_bigram" dest="description_nostem" maxChars="30000" />
   <copyField source="text_transcription" dest="transcription_nostem" maxChars="30000" />
+
+  <!-- copy description and translation to regex fields -->
+  <copyField source="description_en_bigram" dest="description_regex" maxChars="30000" />
 
   <!-- copy people name fields to text fields -->
   <copyField source="name_s" dest="name_bigram" maxChars="30000" />

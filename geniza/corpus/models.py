@@ -1322,6 +1322,8 @@ class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin, TaggableMixin)
         transcription_texts_plaintext = []
         transcription_texts_plaintext_names = []
         translation_texts = []
+        translation_texts_plaintext = []
+        translation_texts_plaintext_names = []
         # keep track of translation language for RTL/LTR display
         translation_langcode = ""
         translation_langdir = "ltr"
@@ -1346,6 +1348,11 @@ class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin, TaggableMixin)
                 content = fn.content_html_str
                 if content:
                     translation_texts.append(Footnote.explicit_line_numbers(content))
+                    fn_name = str(fn.source)
+                    for canvas in fn.content_text_canvases:
+                        # index plaintext only, per-canvas, for regex
+                        translation_texts_plaintext.append(canvas)
+                        translation_texts_plaintext_names.append(fn_name)
                     # TODO: Index translations in different languages separately
                     if fn.source.languages.exists():
                         lang = fn.source.languages.first()
@@ -1394,6 +1401,8 @@ class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin, TaggableMixin)
                 "translation_language_direction_s": translation_langdir,
                 # translation content as html
                 "text_translation": translation_texts,
+                "translation_regex": translation_texts_plaintext,
+                "translation_regex_names_ss": translation_texts_plaintext_names,
                 "has_digital_edition_b": bool(counts[Footnote.DIGITAL_EDITION]),
                 "has_digital_translation_b": bool(counts[Footnote.DIGITAL_TRANSLATION]),
                 "has_discussion_b": bool(counts[Footnote.DISCUSSION]),

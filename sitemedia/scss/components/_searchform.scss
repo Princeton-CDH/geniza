@@ -152,13 +152,14 @@ main.search form {
             }
         }
     }
-    // dropdown in facet filters
-    #filters label:has(select) {
+    // dropdown in facet filters and regex search fields
+    #filters label:has(select),
+    fieldset#regex-search label:has(select) {
         position: relative;
         select {
             border-radius: 5px;
-            height: 40px;
-            width: 260px;
+            height: 2.5rem;
+            width: 16.25rem;
             cursor: pointer;
             background-color: var(--background-light);
             border: 1px solid var(--background-gray);
@@ -183,6 +184,67 @@ main.search form {
         }
         &:has(select:disabled)::after {
             color: var(--disabled);
+        }
+    }
+    // in regex mode, tweak styles for fields
+    fieldset#regex-search {
+        display: flex;
+        flex-flow: row;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        gap: 0.5rem;
+        @include breakpoints.for-tablet-landscape-up {
+            gap: 1.5rem;
+        }
+        input[type="search"] {
+            border-radius: 5px;
+            border: 1px solid var(--background-gray);
+        }
+        // "in" label
+        span {
+            @include typography.body;
+        }
+        // field dropdown
+        label:has(select) {
+            select {
+                margin: 0;
+                padding: 0 2rem 0 0.5rem;
+                width: auto;
+                height: 3rem;
+                overflow: hidden;
+                white-space: nowrap;
+                box-sizing: border-box;
+                text-overflow: ellipsis;
+                @include breakpoints.for-tablet-landscape-up {
+                    width: 16.25rem;
+                    height: 2.5rem;
+                    font-size: typography.$text-size-lg;
+                }
+            }
+            &::after {
+                top: 0.6rem;
+                right: 0.5rem;
+                @include breakpoints.for-tablet-landscape-up {
+                    top: 0.4rem;
+                    right: 1rem;
+                }
+            }
+        }
+        button[type="submit"] {
+            width: auto;
+            border-radius: 5px;
+            gap: 0.5rem;
+            @include typography.body-bold;
+            @include breakpoints.for-phone-only {
+                min-width: 3rem;
+                span {
+                    @include a11y.sr-only;
+                }
+            }
+            @include breakpoints.for-tablet-landscape-up {
+                min-width: auto;
+                padding: 1rem;
+            }
         }
     }
     // error messages
@@ -245,7 +307,7 @@ main.people {
             min-width: 2.5rem;
         }
         // Magnifying glass icon
-        &::after {
+        &::before {
             content: "\f5e6"; // phosphor magnifying glass bold icon
             @include typography.icon-button-md;
             @include breakpoints.for-tablet-landscape-up {

@@ -94,6 +94,9 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
         "related_documents": "documents_count_i",
         "transcription_regex": "transcription_regex",
         "transcription_regex_names": "transcription_regex_names_ss",
+        "description_regex": "description_regex",
+        "translation_regex": "translation_regex",
+        "translation_regex_names": "translation_regex_names_ss",
     }
 
     # regex to convert field aliases used in search to actual solr fields
@@ -283,7 +286,7 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
             )
         return search
 
-    def regex_search(self, search_term):
+    def regex_search(self, field, search_term):
         """Build a Lucene query for searching with regular expressions.
         NOTE: this function may cause Lucene errors if input is not validated beforehand.
         """
@@ -291,7 +294,7 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
         # and slashes so that it is interpreted as regex by Lucene
         search_term = f"/.*{search_term}.*/"
         # match in the non-analyzed transcription_regex field
-        search = self.search(f"transcription_regex:{search_term}")
+        search = self.search(f"{field}:{search_term}")
         return search
 
     def related_to(self, document):
@@ -335,14 +338,12 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
 
         return doc
 
-    def get_regex_highlight(self, text):
+    def get_regex_highlight(self, field, text):
         """Helper method to manually highlight and truncate a snippet for regex matches
         (automatic highlight unavailable due to solr regex search limitations)"""
         # remove solr field name and lucene-required "match all" logic to get original query
         regex_query = (
-            self.search_qs[0]
-            .replace("transcription_regex:/.*", "")
-            .rsplit(".*/", maxsplit=1)[0]
+            self.search_qs[0].replace(f"{field}:/.*", "").rsplit(".*/", maxsplit=1)[0]
         )
         # get ~150 characters of context plus a word on either side of the matched portion
         pattern = r"(\b\w*.{0,150})(%s)(.{0,150}\w*\b)" % regex_query
@@ -364,11 +365,50 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
         # ensure adjacent <em> elements with space between them can display properly
         return re.sub(r"<\/em> <em>", '</em> <em class="adjacent-em">', all_matches)
 
+    def get_highlights_and_labels(self, doc, regex_field):
+        """For transcription_regex and translation_regex, which are multi-valued
+        fields possibly pulling from multiple records, include citation label
+        for each set of highlights."""
+        return [
+            {
+                "text": highlight,
+                "label": label,
+            }
+            # these fields are split by block-level annotation/group
+            for (highlight, label) in (
+                (
+                    self.get_regex_highlight(regex_field, block),
+                    # since the order of multivalued fields is stable in solr, we can
+                    # map each entry of the names field to each entry of the text field
+                    (
+                        doc[f"{regex_field}_names"][i]
+                        if f"{regex_field}_names" in doc
+                        else None
+                    ),
+                )
+                for i, block in enumerate(doc[regex_field])
+            )
+            # only include a block if it actually has highlights
+            if highlight
+        ]
+
+    def dedupe_regex_labels(self, highlights):
+        """Helper function to dedupe labels for labeled transcription and
+        translation regex highlight results."""
+        for field in ["transcription", "translation"]:
+            last_label = None
+            for snippet in highlights[field]:
+                if snippet["label"] == last_label:
+                    del snippet["label"]
+                else:
+                    last_label = snippet["label"]
+        return highlights
+
     def get_highlighting(self):
         """highlight snippets within transcription/translation html may result in
         invalid tags that will render strangely; clean up the html before returning"""
         highlights = super().get_highlighting()
-        is_regex_search = any("transcription_regex" in q for q in self.search_qs)
+        is_regex_search = any("_regex" in q for q in self.search_qs)
         if is_regex_search:
             # highlight regex results manually due to solr limitation
             highlights = {}
@@ -377,36 +417,27 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
                 # highlight per document, keyed on id as expected in results
                 highlights[doc["id"]] = {
                     # include labels in case of matches across multiple transcriptions
-                    "transcription": [
-                        {
-                            "text": highlighted_block,
-                            "label": transcription_label,
-                        }
-                        # this field is split by block-level annotation/group
-                        for (highlighted_block, transcription_label) in (
-                            (
-                                self.get_regex_highlight(block),
-                                # since the order of multivalued fields is stable in solr, we can
-                                # map each entry of the names field to each entry of the text field
-                                (
-                                    doc["transcription_regex_names"][i]
-                                    if "transcription_regex_names" in doc
-                                    else None
-                                ),
-                            )
-                            for i, block in enumerate(doc["transcription_regex"])
+                    "transcription": (
+                        self.get_highlights_and_labels(doc, "transcription_regex")
+                        if "transcription_regex" in doc
+                        else []
+                    ),
+                    "translation": (
+                        self.get_highlights_and_labels(doc, "translation_regex")
+                        if "translation_regex" in doc
+                        else []
+                    ),
+                    "description": [
+                        hl
+                        for hl in (
+                            self.get_regex_highlight("description_regex", block)
+                            for block in doc.get("description_regex", [])
                         )
-                        # only include a block if it actually has highlights
-                        if highlighted_block
-                    ]
+                        if hl
+                    ],
                 }
                 # dedupe labels
-                last_label = None
-                for snippet in highlights[doc["id"]]["transcription"]:
-                    if snippet["label"] == last_label:
-                        del snippet["label"]
-                    else:
-                        last_label = snippet["label"]
+                highlights[doc["id"]] = self.dedupe_regex_labels(highlights[doc["id"]])
         else:
             is_exact_search = "hl_query" in self.raw_params
             for doc in highlights.keys():
@@ -432,7 +463,7 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
                     ]
                 if "translation" in highlights[doc]:
                     highlights[doc]["translation"] = [
-                        clean_html(s) for s in highlights[doc]["translation"]
+                        {"text": clean_html(s) for s in highlights[doc]["translation"]}
                     ]
 
                 # handle old shelfmark highlighting; sometimes it's on one or the other

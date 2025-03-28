@@ -83,7 +83,7 @@ class DocumentSearchView(
     # Translators: description of document search page, for search engines
     page_description = _("Search and browse Geniza documents.")
     paginate_by = 50
-    initial = {"sort": "random", "mode": "general"}
+    initial = {"sort": "random", "mode": "general", "regex_field": "transcription"}
     # NOTE: does not filter on status, since changing status could modify the page
     solr_lastmodified_filters = {"item_type_s": "document"}
     applied_filter_labels = []
@@ -212,8 +212,9 @@ class DocumentSearchView(
             search_opts = form.cleaned_data
 
             if search_opts["q"] and search_opts["mode"] == "regex":
+                regex_field = f"{search_opts['regex_field'] or 'transcription'}_regex"
                 # use regex search if "mode" is "regex"
-                documents = documents.regex_search(search_opts["q"])
+                documents = documents.regex_search(regex_field, search_opts["q"])
 
             elif search_opts["q"]:
                 # NOTE: using requireFieldMatch so that field-specific search

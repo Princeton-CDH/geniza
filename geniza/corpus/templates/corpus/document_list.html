@@ -25,12 +25,32 @@
                 <span class="sr-only">{% translate "Open search mode help" %}</span>
             </button>
             {% render_field form.mode data-action="change->search#update" %}
-            {% render_field form.q data-search-target="query" data-action="input->search#autoUpdateSort change->search#update" %}
 
             {# Translators: Search submit button #}
-            {% translate 'Submit search' as search_label %}
-            <button type="submit" aria-label="{{ search_label }}" />
+            {% translate 'Search' as search_label %}
+
+            {% if request.GET.mode != 'regex' %}
+                {% render_field form.q data-search-target="query" data-action="input->search#autoUpdateSort change->search#update" %}
+
+                <button type="submit" aria-label="{{ search_label }}" />
+            {% endif %}
         </fieldset>
+        {% if request.GET.mode == 'regex' %}
+            <fieldset id="regex-search">
+                {% render_field form.q data-search-target="query" data-action="input->search#autoUpdateSort change->search#update" %}
+
+                {# translators: "in" label between search query form and field dropdown #}
+                <span class="regex-label">{% translate 'in' %}</span>
+
+                <label for="{{ form.regex_field.auto_id }}">
+                    <span class="sr-only">{{ form.regex_field.label }}</span>
+                    {% render_field form.regex_field data-action="change->search#update" %}
+                </label>
+
+                {# Translators: Search submit button #}
+                <button type="submit" class="regex-submit"><span>{{ search_label }}</span></button>
+            </fieldset>
+        {% endif %}
         <div id="filters-header">
             <a href="#filters" role="button" id="filters-button" data-search-target="filtersButton" data-action="click->search#toggleFiltersOpen">
                 <svg><use xlink:href="{% static 'img/ui/all/all/search-filter-icon.svg' %}#filter-icon" /></svg>

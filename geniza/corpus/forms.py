@@ -253,6 +253,17 @@ class DocumentSearchForm(RangeForm):
         ("regex", _("RegEx")),
     ]
 
+    REGEX_FIELD_CHOICES = [
+        # Translators: label for transcription RegEx field
+        ("transcription", _("Transcription")),
+        # Translators: label for description RegEx field
+        ("description", _("Description")),
+        # # Translators: label for translation RegEx field
+        ("translation", _("Translation")),
+        # # Translators: label for shelfmark RegEx field
+        # ("shelfmark", _("Shelfmark")),
+    ]
+
     # NOTE these are not set by default!
     error_css_class = "error"
     required_css_class = "required"
@@ -314,6 +325,13 @@ class DocumentSearchForm(RangeForm):
         required=False,
         widget=forms.RadioSelect,
     )
+    regex_field = forms.ChoiceField(
+        # translators: label for RegEx search field choice selector
+        label=_("RegEx search field"),
+        choices=REGEX_FIELD_CHOICES,
+        required=False,
+        widget=forms.Select,
+    )
 
     # mapping of solr facet fields to form input
     solr_facet_fields = {
@@ -339,6 +357,13 @@ class DocumentSearchForm(RangeForm):
         # if "has translation" is not selected, language dropdown is disabled
         if not data or not data.get("has_translation", None):
             self.fields["translation_language"].disabled = True
+
+        # in regex mode, change placeholder text
+        if data and data.get("mode", None) == "regex":
+            # translators: placeholder for RegEx search query field
+            self.fields["q"].widget.attrs["placeholder"] = _(
+                "Search by regular expression"
+            )
 
     def get_translated_label(self, field, label):
         """Lookup translated label via db model object when applicable;
