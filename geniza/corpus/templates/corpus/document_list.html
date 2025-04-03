@@ -52,6 +52,16 @@
 
                 {# Translators: Search submit button #}
                 <button type="submit"><span>{{ search_label }}</span></button>
+
+                {% if request.GET.regex_field == 'shelfmark' %}
+                    <span class="shelfmark-help">
+                        {# translators: help text for shelfmark regex search #}
+                        {% blocktrans %}
+                            Case sensitive, must match entire shelfmark. Type one shelfmark,
+                            even if part of a join, for best results.
+                        {% endblocktrans %}
+                    </span>
+                {% endif %}
             </fieldset>
         {% endif %}
         <div id="filters-header">

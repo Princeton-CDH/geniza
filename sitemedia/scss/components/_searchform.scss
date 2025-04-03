@@ -215,12 +215,12 @@ main.search form {
     fieldset#regex-search {
         display: flex;
         flex-flow: column;
-        align-items: center;
         margin-bottom: 1.5rem;
         gap: 1rem;
         @include breakpoints.for-tablet-landscape-up {
-            flex-flow: row;
-            gap: 1.5rem;
+            flex-flow: row wrap;
+            align-items: center;
+            gap: 0.5rem 1.5rem;
         }
         input[type="search"] {
             border-radius: 5px;
@@ -229,6 +229,7 @@ main.search form {
             min-height: 2.5rem;
             @include breakpoints.for-tablet-landscape-up {
                 width: auto;
+                flex: 1 1 auto;
             }
         }
         // field dropdown
@@ -283,6 +284,9 @@ main.search form {
                 width: auto;
                 padding: 1rem;
             }
+        }
+        .shelfmark-help {
+            font-size: typography.$text-size-sm;
         }
     }
     // error messages
