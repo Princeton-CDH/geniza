@@ -8,29 +8,62 @@
     <h1>{{ page_title }}</h1>
     <form data-controller="search" data-turbo-frame="main" data-turbo-action="advance" data-page="document">
         <fieldset id="query">
-            <span class="fieldname">{{ form.mode.label }}</span>
-            <dialog data-search-target="helpDialog">
-                {# Translators: heading for search mode help text #}
-                <h2>
-                    <span>{% translate "How to Search" %}</span>
-                    <button type="button" id="close-search-help" data-action="search#toggleHelpDialog">
-                        {# Translators: accessibility label for button to close search mode help dialog #}
-                        <span class="sr-only">{% translate "Close search mode help" %}</span>
-                    </button>
-                </h2>
-                {% include "corpus/snippets/document_search_helptext.html" %}
-            </dialog>
-            <button type="button" id="search-help" data-action="search#toggleHelpDialog">
-                {# Translators: accessibility label for button to open search mode help dialog #}
-                <span class="sr-only">{% translate "Open search mode help" %}</span>
-            </button>
-            {% render_field form.mode data-action="change->search#update" %}
-            {% render_field form.q data-search-target="query" data-action="input->search#autoUpdateSort change->search#update" %}
-
+            <div id="mode-controls">
+                <span class="fieldname">{{ form.mode.label }}</span>
+                <dialog data-search-target="helpDialog">
+                    {# Translators: heading for search mode help text #}
+                    <h2>
+                        <span>{% translate "How to Search" %}</span>
+                        <button type="button" id="close-search-help" data-action="search#toggleHelpDialog">
+                            {# Translators: accessibility label for button to close search mode help dialog #}
+                            <span class="sr-only">{% translate "Close search mode help" %}</span>
+                        </button>
+                    </h2>
+                    {% include "corpus/snippets/document_search_helptext.html" %}
+                </dialog>
+                <button type="button" id="search-help" data-action="search#toggleHelpDialog">
+                    {# Translators: accessibility label for button to open search mode help dialog #}
+                    <span class="sr-only">{% translate "Open search mode help" %}</span>
+                </button>
+                {% render_field form.mode data-action="change->search#update" %}
+            </div>
             {# Translators: Search submit button #}
-            {% translate 'Submit search' as search_label %}
-            <button type="submit" aria-label="{{ search_label }}" />
+            {% translate 'Search' as search_label %}
+            {% if request.GET.mode != 'regex' %}
+                <div id="search-input">
+                    {% render_field form.q data-search-target="query" data-action="input->search#autoUpdateSort change->search#update" %}
+
+                    <button type="submit" aria-label="{{ search_label }}" />
+                </div>
+            {% endif %}
         </fieldset>
+        {% if request.GET.mode == 'regex' %}
+            <fieldset id="regex-search">
+                {% render_field form.q data-search-target="query" data-action="input->search#autoUpdateSort change->search#update" %}
+
+                {# translators: "in" label between search query form and field dropdown #}
+
+                <label for="{{ form.regex_field.auto_id }}">
+                    <span class="regex-label">{% translate 'in' %}</span>
+
+                    <span class="sr-only">{{ form.regex_field.label }}</span>
+                    {% render_field form.regex_field data-action="change->search#update" %}
+                </label>
+
+                {# Translators: Search submit button #}
+                <button type="submit"><span>{{ search_label }}</span></button>
+
+                {% if request.GET.regex_field == 'shelfmark' %}
+                    <span class="shelfmark-help">
+                        {# translators: help text for shelfmark regex search #}
+                        {% blocktrans %}
+                            Case sensitive, must match entire shelfmark. Type one shelfmark,
+                            even if part of a join, for best results.
+                        {% endblocktrans %}
+                    </span>
+                {% endif %}
+            </fieldset>
+        {% endif %}
         <div id="filters-header">
             <a href="#filters" role="button" id="filters-button" data-search-target="filtersButton" data-action="click->search#toggleFiltersOpen">
                 <svg><use xlink:href="{% static 'img/ui/all/all/search-filter-icon.svg' %}#filter-icon" /></svg>

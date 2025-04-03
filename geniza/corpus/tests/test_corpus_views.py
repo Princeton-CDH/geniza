@@ -391,36 +391,70 @@ class TestDocumentSearchView:
         # no params
         docsearch_view.request.GET = {}
         assert docsearch_view.get_form_kwargs() == {
-            "initial": {"mode": "general", "sort": "random"},
+            "initial": {
+                "mode": "general",
+                "sort": "random",
+                "regex_field": "transcription",
+            },
             "prefix": None,
-            "data": {"mode": "general", "sort": "random"},
+            "data": {
+                "mode": "general",
+                "sort": "random",
+                "regex_field": "transcription",
+            },
             "range_minmax": {},
         }
 
         # keyword search param
         docsearch_view.request.GET = {"q": "contract"}
         assert docsearch_view.get_form_kwargs() == {
-            "initial": {"mode": "general", "sort": "random"},
+            "initial": {
+                "mode": "general",
+                "sort": "random",
+                "regex_field": "transcription",
+            },
             "prefix": None,
-            "data": {"mode": "general", "q": "contract", "sort": "relevance"},
+            "data": {
+                "mode": "general",
+                "q": "contract",
+                "sort": "relevance",
+                "regex_field": "transcription",
+            },
             "range_minmax": {},
         }
 
         # sort search param
         docsearch_view.request.GET = {"sort": "scholarship_desc"}
         assert docsearch_view.get_form_kwargs() == {
-            "initial": {"mode": "general", "sort": "random"},
+            "initial": {
+                "mode": "general",
+                "sort": "random",
+                "regex_field": "transcription",
+            },
             "prefix": None,
-            "data": {"mode": "general", "sort": "scholarship_desc"},
+            "data": {
+                "mode": "general",
+                "sort": "scholarship_desc",
+                "regex_field": "transcription",
+            },
             "range_minmax": {},
         }
 
         # keyword and sort search params
         docsearch_view.request.GET = {"q": "contract", "sort": "scholarship_desc"}
         assert docsearch_view.get_form_kwargs() == {
-            "initial": {"mode": "general", "sort": "random"},
+            "initial": {
+                "mode": "general",
+                "sort": "random",
+                "regex_field": "transcription",
+            },
             "prefix": None,
-            "data": {"mode": "general", "q": "contract", "sort": "scholarship_desc"},
+            "data": {
+                "mode": "general",
+                "q": "contract",
+                "sort": "scholarship_desc",
+                "regex_field": "transcription",
+            },
             "range_minmax": {},
         }
 
@@ -531,7 +565,9 @@ class TestDocumentSearchView:
             docsearch_view.request.GET = {"q": "six apartments", "mode": "regex"}
             docsearch_view.get_queryset()
             mock_sqs = mock_queryset_cls.return_value
-            mock_sqs.regex_search.assert_called_with("six apartments")
+            mock_sqs.regex_search.assert_called_with(
+                "transcription_regex", "six apartments"
+            )
             mock_sqs.keyword_search.assert_not_called()
             # should not highlight with parasolr
             mock_sqs.regex_search.return_value.highlight.assert_not_called()

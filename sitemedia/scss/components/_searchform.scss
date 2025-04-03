@@ -14,32 +14,57 @@
 main.search form {
     // search query box and button
     fieldset#query {
-        margin-bottom: 1.5rem;
-        // search mode switch label (hidden on mobile)
-        span.fieldname {
-            @include typography.headline-3;
-            display: none;
+        display: flex;
+        flex-direction: column;
+        gap: 1.25rem;
+        margin-bottom: 1.25rem;
+        @include breakpoints.for-tablet-landscape-up {
+            flex-direction: row;
+            gap: 0;
+            margin-bottom: 1.5rem;
+        }
+        div#mode-controls {
+            display: flex;
+            width: 100%;
+            flex-flow: row nowrap;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 0.5rem;
             @include breakpoints.for-tablet-landscape-up {
+                width: auto;
+                gap: 0;
+            }
+            // search mode switch label
+            span.fieldname {
+                @include typography.headline-3;
                 display: block;
                 white-space: nowrap;
             }
-        }
-        // search mode help (hidden on mobile)
-        button#search-help {
-            display: none;
-            @include breakpoints.for-tablet-landscape-up {
+            // search mode help
+            button#search-help {
                 display: flex;
                 cursor: pointer;
                 border: none;
                 background: transparent;
                 color: var(--on-background);
                 padding: 0;
-                margin-left: 0.5rem;
                 &::before {
                     @include typography.icon-button-md;
                     font-size: typography.$text-size-2xl;
                     content: "\f1e0"; // phosphor info icon
                 }
+                @include breakpoints.for-tablet-landscape-up {
+                    margin-left: 0.5rem;
+                }
+            }
+        }
+        div#search-input {
+            display: flex;
+            flex-flow: row nowrap;
+            flex: 1 0 auto;
+            width: 100%;
+            @include breakpoints.for-tablet-landscape-up {
+                width: auto;
             }
         }
         dialog {
@@ -110,55 +135,56 @@ main.search form {
                 padding: 0 3px;
             }
         }
-        // search mode switch buttons (hidden on mobile)
+        // search mode switch buttons
         ul#id_mode {
-            display: none;
-            @include breakpoints.for-tablet-landscape-up {
+            display: flex;
+            flex-flow: row nowrap;
+            margin-left: auto;
+            background-color: var(--background-light);
+            border: 1px solid var(--background-gray);
+            border-radius: 50px;
+            align-items: center;
+            input {
+                @include a11y.sr-only;
+            }
+            label {
                 display: flex;
                 flex-flow: row nowrap;
-                background-color: var(--background-light);
-                border: 1px solid var(--background-gray);
-                border-radius: 50px;
                 align-items: center;
-                margin: 0 3.25rem 0 1.5rem;
-                input {
-                    @include a11y.sr-only;
+                padding: 0 1rem;
+                height: 2.5rem;
+                border-radius: 50px;
+                cursor: pointer;
+                border: 2px solid transparent;
+                transition: 0.15s border-color ease-in-out;
+                &:hover {
+                    border-color: var(--disabled);
                 }
-                label {
-                    display: flex;
-                    flex-flow: row nowrap;
-                    align-items: center;
-                    padding: 0 1rem;
-                    height: 2.5rem;
-                    border-radius: 50px;
-                    cursor: pointer;
-                    border: 2px solid transparent;
-                    transition: 0.15s border-color ease-in-out;
+                &:has(input:checked) {
+                    @include typography.body-bold;
+                    background-color: var(--on-primary);
+                    border-color: var(--secondary);
                     &:hover {
-                        border-color: var(--disabled);
-                    }
-                    &:has(input:checked) {
-                        @include typography.body-bold;
-                        background-color: var(--on-primary);
-                        border-color: var(--secondary);
-                        &:hover {
-                            border-color: var(--primary);
-                        }
-                    }
-                    &:has(*:focus-visible) {
-                        outline: 2px solid var(--button-focus);
+                        border-color: var(--primary);
                     }
                 }
+                &:has(*:focus-visible) {
+                    outline: 2px solid var(--button-focus);
+                }
+            }
+            @include breakpoints.for-tablet-landscape-up {
+                margin: 0 3.25rem 0 1.5rem;
             }
         }
     }
-    // dropdown in facet filters
-    #filters label:has(select) {
+    // dropdown in facet filters and regex search fields
+    #filters label:has(select),
+    fieldset#regex-search label:has(select) {
         position: relative;
         select {
             border-radius: 5px;
-            height: 40px;
-            width: 260px;
+            height: 2.5rem;
+            width: 16.25rem;
             cursor: pointer;
             background-color: var(--background-light);
             border: 1px solid var(--background-gray);
@@ -183,6 +209,84 @@ main.search form {
         }
         &:has(select:disabled)::after {
             color: var(--disabled);
+        }
+    }
+    // in regex mode, tweak styles for fields
+    fieldset#regex-search {
+        display: flex;
+        flex-flow: column;
+        margin-bottom: 1.5rem;
+        gap: 1rem;
+        @include breakpoints.for-tablet-landscape-up {
+            flex-flow: row wrap;
+            align-items: center;
+            gap: 0.5rem 1.5rem;
+        }
+        input[type="search"] {
+            border-radius: 5px;
+            border: 1px solid var(--background-gray);
+            width: 100%;
+            min-height: 2.5rem;
+            @include breakpoints.for-tablet-landscape-up {
+                width: auto;
+                flex: 1 1 auto;
+            }
+        }
+        // field dropdown
+        label:has(select) {
+            display: flex;
+            flex-flow: row;
+            align-items: center;
+            gap: 1.5rem;
+            width: 100%;
+            @include breakpoints.for-tablet-landscape-up {
+                width: auto;
+            }
+            // "in" label
+            span {
+                @include typography.body;
+            }
+            select {
+                flex-grow: 1;
+                margin: 0;
+                padding: 0 2rem 0 0.5rem;
+                width: auto;
+                height: 2.5rem;
+                overflow: hidden;
+                white-space: nowrap;
+                box-sizing: border-box;
+                text-overflow: ellipsis;
+                @include breakpoints.for-tablet-landscape-up {
+                    width: 16.25rem;
+                    font-size: typography.$text-size-lg;
+                }
+            }
+            &::after {
+                top: 0.6rem;
+                right: 0.5rem;
+                @include breakpoints.for-tablet-landscape-up {
+                    top: 0.4rem;
+                    right: 1rem;
+                }
+            }
+        }
+        button[type="submit"] {
+            width: 100%;
+            border-radius: 5px;
+            gap: 0.5rem;
+            height: 2.5rem;
+            @include typography.body-bold;
+            &::before {
+                @include typography.icon-button-sm;
+            }
+            @include breakpoints.for-tablet-landscape-up {
+                min-width: auto;
+                width: auto;
+                padding: 1rem;
+            }
+        }
+        .shelfmark-help {
+            font-size: typography.$text-size-sm;
         }
     }
     // error messages
@@ -217,19 +321,16 @@ main.people {
         border-bottom-right-radius: 0;
         border: 1px solid var(--background-gray);
         border-right: none;
-        height: 3rem;
+        height: 2.5rem;
         padding: 0 1rem;
         @include typography.body;
         background-color: var(--background-light);
         color: var(--on-background-light);
-        @include breakpoints.for-tablet-landscape-up {
-            height: 2.5rem;
-        }
     }
     button[type="submit"] {
         cursor: pointer;
-        width: 3rem;
-        height: 3rem;
+        width: 2.5rem;
+        height: 2.5rem;
         border-radius: 5px;
         border-top-left-radius: 0;
         border-bottom-left-radius: 0;
@@ -241,11 +342,10 @@ main.people {
         background-color: var(--secondary);
         color: var(--on-secondary);
         @include breakpoints.for-tablet-landscape-up {
-            height: 2.5rem;
             min-width: 2.5rem;
         }
         // Magnifying glass icon
-        &::after {
+        &::before {
             content: "\f5e6"; // phosphor magnifying glass bold icon
             @include typography.icon-button-md;
             @include breakpoints.for-tablet-landscape-up {

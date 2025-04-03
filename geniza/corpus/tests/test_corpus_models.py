@@ -1183,7 +1183,7 @@ class TestDocument:
         Annotation.objects.create(
             footnote=digital_translation,
             content={
-                "body": [{"value": "translation lines"}],
+                "body": [{"value": "<ol><li>translation lines</li></ol>"}],
             },
         )
         # other footnotes
@@ -1206,7 +1206,11 @@ class TestDocument:
         assert index_data["has_digital_translation_b"] == True
         assert index_data["scholarship_count_i"] == 3  # unique sources
         assert index_data["text_transcription"] == ["transcrip[ti]on lines"]
-        assert index_data["text_translation"] == ["translation lines"]
+        assert index_data["text_translation"] == [
+            '<ol><li value="1">translation lines</li></ol>'
+        ]
+        assert str(source) in index_data["translation_regex_names_ss"]
+        assert index_data["translation_regex"] == ["translation lines"]
         assert index_data["translation_languages_ss"] == ["English"]
         assert index_data["translation_language_code_s"] == "en"
         assert index_data["translation_language_direction_s"] == "ltr"

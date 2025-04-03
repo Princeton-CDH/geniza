@@ -93,7 +93,10 @@
                 {% if document_highlights.translation or document.translation %}
                     <div class="translation" lang="{{ lang }}" dir="{{ dir }}">
                         {% if document_highlights.translation %}
-                            {% for snippet in document_highlights.translation %}{{ snippet.strip|safe }}{% endfor %}
+                            {% for snippet in document_highlights.translation %}
+                                {% if snippet.label %}<span class="snippet-label">{{ snippet.label.strip|safe }}</span>{% endif %}
+                                {{ snippet.text.strip|safe }}{% if snippet.text.strip and not forloop.last %}<div class="separator">[…]</div>{% endif %}
+                            {% endfor %}
                         {% elif document.translation %}
                                 {# otherwise, display truncated transcription #}
                                 {# NOTE: might be nice to display N lines instead of using truncatechars #}

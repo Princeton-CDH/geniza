@@ -317,9 +317,9 @@ class TestDocumentSolrQuerySet:
             mock_get_highlighting.return_value = test_highlight
             # translation html should be cleaned
             cleaned_highlight = dqs.get_highlighting()
-            assert cleaned_highlight["doc.1"]["translation"] == [
-                clean_html("<li>bar baz")
-            ]
+            assert cleaned_highlight["doc.1"]["translation"][0]["text"] == clean_html(
+                "<li>bar baz"
+            )
 
     def test_get_highlighting__exact_search(self):
         dqs = DocumentSolrQuerySet()
@@ -356,10 +356,10 @@ class TestDocumentSolrQuerySet:
                 }
             }
             mock_get_highlighting.return_value = test_highlight
-            # should flatten list with comma separation
+            # should flatten list with semicolon separation
             assert (
                 dqs.get_highlighting()["doc.1"]["old_shelfmark"]
-                == "matched, secondmatch"
+                == "matched; secondmatch"
             )
 
             test_highlight = {
@@ -429,20 +429,47 @@ class TestDocumentSolrQuerySet:
                 assert "label" not in highlighting["document.1"]["transcription"][1]
                 assert highlighting["document.1"]["transcription"][2]["label"] == "src2"
 
+    def test_get_highlighting__old_shelfmark_regex(self):
+        dqs = DocumentSolrQuerySet()
+        # typical shelfmark_regex query (see DocumentSolrQueryset.regex_search)
+        dqs.search_qs = ["shelfmark_regex:/test/ OR old_shelfmark_regex:/test/"]
+        with patch.object(dqs, "get_results") as mock_get_results:
+            mock_get_results.return_value = [
+                {
+                    "id": "doc.1",
+                    "old_shelfmark_regex": ["testing", "test", "other"],
+                }
+            ]
+            highlighting = dqs.get_highlighting()
+            # should match only the one that matches entirely
+            assert highlighting["doc.1"]["old_shelfmark"] == "test"
+            # should match "test" plus 0 or more additional characters
+            dqs.search_qs = ["shelfmark_regex:/test.*/ OR old_shelfmark_regex:/test.*/"]
+            # should flatten list with semicolon separation
+            assert dqs.get_highlighting()["doc.1"]["old_shelfmark"] == "testing; test"
+
     def test_regex_search(self):
         dqs = DocumentSolrQuerySet()
         with patch.object(dqs, "search") as mocksearch:
             query = "six apartments"
-            dqs.regex_search(query)
+            field = "transcription_regex"
+            dqs.regex_search(field, query)
             # should surround with wildcards in order to match entire field,
             # and with slashes for Lucene regex syntax
-            mocksearch.assert_called_with(f"transcription_regex:/.*{query}.*/")
+            mocksearch.assert_called_with(f"{field}:/.*{query}.*/")
+
+            # should NOT surround with wildcards in shelfmark search.
+            # should search both shelfmark_regex and old_shelfmark_regex
+            field = "shelfmark_regex"
+            dqs.regex_search(field, query)
+            mocksearch.assert_called_with(f"{field}:/{query}/ OR old_{field}:/{query}/")
 
     def test_get_regex_highlight(self):
         dqs = DocumentSolrQuerySet()
-        dqs.search_qs = ["transcription_regex:/.*אלאחרף אן למא.*/"]
+        field = "transcription_regex"
+        dqs.search_qs = [f"{field}:/.*אלאחרף אן למא.*/"]
         # no match -> None
-        assert dqs.get_regex_highlight("test") == None
+        assert dqs.get_regex_highlight(field, "test") == None
         # use a bit of a real example, with > 300 characters, as a test
         text = """Recto:\n בש רח נקול נחן אלשהוד [אלוא]צעין כטוטנא תחת הדה אלאחרף אן למא אן כאן \
 יום אלסבת אלסאדס מן שהר אב יהפך לשמחה שנת אתקו לשטרות בעיר קליוב הסמוכה לעיר המלוכה הס[מו]כה \
@@ -450,7 +477,7 @@ class TestDocumentSolrQuerySet:
 יהי שמו לעולם אנא חצרנא פי אלמוצע אלדי יצלו פיה ענד מוסי ולד אלאהוב וכאן תם חאצר אהל קליוב שצ \
 //ביצלו// פחצר תם מן קאל להם אעלמו באן יצחק אלסקלי ביגתהד פי עודתה אליכם פאן כונתו פי נפסכם \
 מן מקאמה ענדכם דון """
-        highlight = dqs.get_regex_highlight(text)
+        highlight = dqs.get_regex_highlight(field, text)
 
         # should highlight the matched portion
         assert "<em>אלאחרף אן למא</em>" in highlight
@@ -464,20 +491,20 @@ class TestDocumentSolrQuerySet:
 
         # should support all regex syntax, such as . wildcard and + 1 or more characters
         dqs.search_qs = ["transcription_regex:/.*אלאחרף.+למא.*/"]
-        highlight = dqs.get_regex_highlight(text)
+        highlight = dqs.get_regex_highlight(field, text)
         assert "<em>אלאחרף אן למא</em>" in highlight
 
         # reserved characters should require escape characters for correct results
         dqs.search_qs = ["transcription_regex:/.*[אלוא]צעין.*/"]
-        highlight = dqs.get_regex_highlight(text)
+        highlight = dqs.get_regex_highlight(field, text)
         assert highlight is None
         dqs.search_qs = ["transcription_regex:/.*\[אלוא\]צעין.*/"]
-        highlight = dqs.get_regex_highlight(text)
+        highlight = dqs.get_regex_highlight(field, text)
         assert "<em>[אלוא]צעין</em>" in highlight
 
         # multiple matches for the query should be separated by line breaks and ellipsis
         dqs.search_qs = ["transcription_regex:/.*מן.*/"]
-        highlight = dqs.get_regex_highlight(text)
+        highlight = dqs.get_regex_highlight(field, text)
         separator = "<br />[…]<br />"
         assert separator in highlight
 
@@ -492,7 +519,7 @@ class TestDocumentSolrQuerySet:
 
         # multiple adjacent matches separated by space should get the .adjacent-em class
         dqs.search_qs = ["transcription_regex:/.*\w.*/"]
-        highlight = dqs.get_regex_highlight("test one two three")
+        highlight = dqs.get_regex_highlight(field, "test one two three")
         assert '</em> <em class="adjacent-em">' in highlight
 
         # matches like the "em" in <em> from the first round of highlighting should not match
@@ -500,7 +527,7 @@ class TestDocumentSolrQuerySet:
 
         # same with the "br" in <br />
         dqs.search_qs = ["transcription_regex:/.*(מן|\w).*/"]
-        highlight = dqs.get_regex_highlight(text)
+        highlight = dqs.get_regex_highlight(field, text)
         assert separator in highlight
         hl_snippets = highlight.split(separator)
         assert all(["<em>br</em>" not in snippet for snippet in hl_snippets])
