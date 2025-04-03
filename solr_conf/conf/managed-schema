@@ -337,14 +337,17 @@
   <copyField source="shelfmark_s" dest="shelfmark_bigram" maxChars="30000" />
   <copyField source="shelfmark_s" dest="shelfmark_textnum" maxChars="30000" />
   <copyField source="shelfmark_s" dest="shelfmark_natsort" maxChars="30000" />
+  <copyField source="shelfmark_s" dest="shelfmark_regex" maxChars="30000" />
   <!-- individual shelfmarks -->
   <copyField source="fragment_shelfmark_ss" dest="shelfmark_t" maxChars="30000" />
   <copyField source="fragment_shelfmark_ss" dest="shelfmark_textnum" maxChars="30000" />
   <copyField source="fragment_shelfmark_ss" dest="shelfmark_bigram" maxChars="30000" />  
+  <copyField source="fragment_shelfmark_ss" dest="shelfmark_regex" maxChars="30000" />
   <!-- old / historic shelfmarks -->
   <copyField source="fragment_old_shelfmark_ss" dest="old_shelfmark_t" maxChars="30000" />
   <copyField source="fragment_old_shelfmark_ss" dest="old_shelfmark_textnum" maxChars="30000" />
   <copyField source="fragment_old_shelfmark_ss" dest="old_shelfmark_bigram" maxChars="30000" />
+  <copyField source="fragment_old_shelfmark_ss" dest="old_shelfmark_regex" maxChars="30000" />
   
   <copyField source="tags_ss_lower" dest="tags_t" maxChars="30000" />
   <copyField source="type_s" dest="type_t" maxChars="300" />

@@ -261,7 +261,7 @@ class DocumentSearchForm(RangeForm):
         # # Translators: label for translation RegEx field
         ("translation", _("Translation")),
         # # Translators: label for shelfmark RegEx field
-        # ("shelfmark", _("Shelfmark")),
+        ("shelfmark", _("Shelfmark")),
     ]
 
     # NOTE these are not set by default!

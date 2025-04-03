@@ -356,10 +356,10 @@ class TestDocumentSolrQuerySet:
                 }
             }
             mock_get_highlighting.return_value = test_highlight
-            # should flatten list with comma separation
+            # should flatten list with semicolon separation
             assert (
                 dqs.get_highlighting()["doc.1"]["old_shelfmark"]
-                == "matched, secondmatch"
+                == "matched; secondmatch"
             )
 
             test_highlight = {
@@ -429,6 +429,25 @@ class TestDocumentSolrQuerySet:
                 assert "label" not in highlighting["document.1"]["transcription"][1]
                 assert highlighting["document.1"]["transcription"][2]["label"] == "src2"
 
+    def test_get_highlighting__old_shelfmark_regex(self):
+        dqs = DocumentSolrQuerySet()
+        # typical shelfmark_regex query (see DocumentSolrQueryset.regex_search)
+        dqs.search_qs = ["shelfmark_regex:/test/ OR old_shelfmark_regex:/test/"]
+        with patch.object(dqs, "get_results") as mock_get_results:
+            mock_get_results.return_value = [
+                {
+                    "id": "doc.1",
+                    "old_shelfmark_regex": ["testing", "test", "other"],
+                }
+            ]
+            highlighting = dqs.get_highlighting()
+            # should match only the one that matches entirely
+            assert highlighting["doc.1"]["old_shelfmark"] == "test"
+            # should match "test" plus 0 or more additional characters
+            dqs.search_qs = ["shelfmark_regex:/test.*/ OR old_shelfmark_regex:/test.*/"]
+            # should flatten list with semicolon separation
+            assert dqs.get_highlighting()["doc.1"]["old_shelfmark"] == "testing; test"
+
     def test_regex_search(self):
         dqs = DocumentSolrQuerySet()
         with patch.object(dqs, "search") as mocksearch:
@@ -438,6 +457,12 @@ class TestDocumentSolrQuerySet:
             # should surround with wildcards in order to match entire field,
             # and with slashes for Lucene regex syntax
             mocksearch.assert_called_with(f"{field}:/.*{query}.*/")
+
+            # should NOT surround with wildcards in shelfmark search.
+            # should search both shelfmark_regex and old_shelfmark_regex
+            field = "shelfmark_regex"
+            dqs.regex_search(field, query)
+            mocksearch.assert_called_with(f"{field}:/{query}/ OR old_{field}:/{query}/")
 
     def test_get_regex_highlight(self):
         dqs = DocumentSolrQuerySet()

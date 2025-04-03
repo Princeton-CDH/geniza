@@ -53,6 +53,7 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
         "status": "status_s",
         "shelfmark": "shelfmark_s",  # string version for display
         "shelfmarks": "fragment_shelfmark_ss",
+        "shelfmark_regex": "shelfmark_regex",
         "document_date": "document_date_t",  # text version for search & display
         "document_dating": "document_dating_t",  # inferred date for display
         "original_date_t": "original_date",
@@ -87,6 +88,7 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
         "has_discussion": "has_discussion_b",
         "old_shelfmark": "old_shelfmark_bigram",
         "old_shelfmark_t": "old_shelfmark_t",
+        "old_shelfmark_regex": "old_shelfmark_regex",
         "transcription_nostem": "transcription_nostem",
         "description_nostem": "description_nostem",
         "related_people": "people_count_i",
@@ -291,10 +293,14 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
         NOTE: this function may cause Lucene errors if input is not validated beforehand.
         """
         # surround passed query with wildcards to allow non-anchored matches,
-        # and slashes so that it is interpreted as regex by Lucene
-        search_term = f"/.*{search_term}.*/"
-        # match in the non-analyzed transcription_regex field
-        search = self.search(f"{field}:{search_term}")
+        # and slashes so that it is interpreted as regex by Lucene;
+        # except shelfmark, since shelfmark regex must match entire field
+        match_any = ".*" if "shelfmark" not in field else ""
+        search_term = f"/{match_any}{search_term}{match_any}/"
+        # if this is shelfmark_regex, also search old_shelfmark_regex
+        fields = [field] if "shelfmark" not in field else [field, f"old_{field}"]
+        # match in the non-analyzed *_regex field
+        search = self.search(" OR ".join([f"{f}:{search_term}" for f in fields]))
         return search
 
     def related_to(self, document):
@@ -364,6 +370,15 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
         all_matches = re.sub(additional_matches_query, r"<em>\1</em>", joined_string)
         # ensure adjacent <em> elements with space between them can display properly
         return re.sub(r"<\/em> <em>", '</em> <em class="adjacent-em">', all_matches)
+
+    def get_old_shelfmark_regex_highlight(self, doc, text):
+        """Get any matches on the old_shelfmark_regex field, then join them by semicolon"""
+        # extract regex query from solr query
+        query = re.sub(r".*old_shelfmark_regex:/(.*)/", r"\1", text)
+        # match only entire string to ensure highlight is the same as solr match
+        return "; ".join(
+            [s for s in doc.get("old_shelfmark_regex", []) if re.fullmatch(query, s)]
+        )
 
     def get_highlights_and_labels(self, doc, regex_field):
         """For transcription_regex and translation_regex, which are multi-valued
@@ -435,6 +450,9 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
                         )
                         if hl
                     ],
+                    "old_shelfmark": self.get_old_shelfmark_regex_highlight(
+                        doc, self.search_qs[0]
+                    ),
                 }
                 # dedupe labels
                 highlights[doc["id"]] = self.dedupe_regex_labels(highlights[doc["id"]])
@@ -469,11 +487,11 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
                 # handle old shelfmark highlighting; sometimes it's on one or the other
                 # field, and sometimes one of the highlight results is empty
                 if "old_shelfmark" in highlights[doc]:
-                    highlights[doc]["old_shelfmark"] = ", ".join(
+                    highlights[doc]["old_shelfmark"] = "; ".join(
                         [h for h in highlights[doc]["old_shelfmark"] if h]
                     )
                 elif "old_shelfmark_t" in highlights[doc]:
-                    highlights[doc]["old_shelfmark"] = ", ".join(
+                    highlights[doc]["old_shelfmark"] = "; ".join(
                         [h for h in highlights[doc]["old_shelfmark_t"] if h]
                     )
 
