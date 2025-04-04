@@ -141,6 +141,7 @@ class DocumentInline(admin.TabularInline):
         "dating_range",
         "document_description",
         "type",
+        "uncertain",
         "notes",
     )
     readonly_fields = ("document_description", "dating_range")
