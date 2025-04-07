@@ -42,7 +42,7 @@ def clean_person_slugs(apps, schema_editor):
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("entities", "0028_place_is_region"),
+        ("entities", "0029_persondocumentrelation_uncertain"),
     ]
 
     operations = [

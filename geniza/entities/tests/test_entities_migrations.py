@@ -200,8 +200,8 @@ class TestSetPlaceRegions(TestMigrations):
 @pytest.mark.django_db
 class TestUpdatePersonSlugs(TestMigrations):
     app = "entities"
-    migrate_from = "0028_place_is_region"
-    migrate_to = "0029_update_person_slugs"
+    migrate_from = "0029_persondocumentrelation_uncertain"
+    migrate_to = "0030_update_person_slugs"
     person = None
     person2 = None
     person2_sameslug = None
