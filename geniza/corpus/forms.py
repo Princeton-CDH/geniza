@@ -583,6 +583,7 @@ class DocumentPersonForm(forms.ModelForm):
         fields = (
             "person",
             "type",
+            "uncertain",
             "notes",
         )
         widgets = {

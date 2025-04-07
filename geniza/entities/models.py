@@ -1187,6 +1187,10 @@ class PersonDocumentRelation(models.Model):
         null=True,
         verbose_name="Relation",
     )
+    uncertain = models.BooleanField(
+        default=False,
+        help_text="True if this association is inferred or uncertain. Please also include reasoning in the notes.",
+    )
     notes = models.TextField(blank=True)
 
     class Meta:

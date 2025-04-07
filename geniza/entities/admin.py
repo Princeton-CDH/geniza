@@ -163,6 +163,14 @@ class PersonDocumentInline(TypedRelationInline, DocumentInline):
     """Related documents inline for the Person admin"""
 
     model = PersonDocumentRelation
+    fields = (
+        "document",
+        "dating_range",
+        "document_description",
+        "type",
+        "uncertain",
+        "notes",
+    )
 
 
 class PlaceInline(admin.TabularInline):
