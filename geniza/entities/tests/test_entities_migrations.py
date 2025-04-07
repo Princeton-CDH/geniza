@@ -233,14 +233,15 @@ class TestUpdatePersonSlugs(TestMigrations):
         )
         self.person2_sameslug = Person.objects.create(slug="yaaqov-b-shelomo")
 
-        self.deleted_person = Person.objects.create(slug="test-test")
-        self.deleted_person.delete()
+        deleted_person = Person.objects.create(slug="test-test")
+        self.deleted_person_pk = deleted_person.pk
         Name.objects.create(
             name="testʿtest",
             content_type=person_contenttype,
-            object_id=self.deleted_person.pk,
+            object_id=self.deleted_person_pk,
             primary=True,
         )
+        deleted_person.delete()
 
     def test_clean_person_slugs(self):
         Person = self.apps.get_model("entities", "Person")
@@ -267,4 +268,4 @@ class TestUpdatePersonSlugs(TestMigrations):
         ).exists()
 
         # should have run without error on a deleted person
-        assert not Person.objects.filter(pk=self.deleted_person.pk).exists()
+        assert not Person.objects.filter(pk=self.deleted_person_pk).exists()
