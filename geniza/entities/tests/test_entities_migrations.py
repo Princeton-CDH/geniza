@@ -192,3 +192,66 @@ class TestSetPlaceRegions(TestMigrations):
         # should be true
         region = Place.objects.get(pk=self.region.pk)
         assert region.is_region
+
+
+@pytest.mark.order(
+    before="geniza/annotations/tests/test_annotations_migrations.py::TestAssociateRelatedFootnotes::test_footnote_associated"
+)
+@pytest.mark.django_db
+class TestUpdatePersonSlugs(TestMigrations):
+    app = "entities"
+    migrate_from = "0028_place_is_region"
+    migrate_to = "0029_update_person_slugs"
+    person = None
+    person2 = None
+    person2_sameslug = None
+
+    def setUpBeforeMigration(self, apps):
+        Person = apps.get_model("entities", "Person")
+        Name = apps.get_model("entities", "Name")
+        ContentType = apps.get_model("contenttypes", "ContentType")
+        person_contenttype = ContentType.objects.get(
+            app_label="entities", model="person"
+        )
+
+        # person to test the normal conversion
+        self.person = Person.objects.create(slug="yeshu-a-b-isma-il-al-makhmuri")
+        Name.objects.create(
+            name="Yeshuʿa b. Ismāʿīl al-Makhmūrī",
+            content_type=person_contenttype,
+            object_id=self.person.pk,
+            primary=True,
+        )
+        # people to test the unique constraint violation prevention
+        self.person2 = Person.objects.create(slug="ya-aqov-b-shelomo")
+        Name.objects.create(
+            name="Yaʿaqov b. Shelomo",
+            content_type=person_contenttype,
+            object_id=self.person2.pk,
+            primary=True,
+        )
+        self.person2_sameslug = Person.objects.create(slug="yaaqov-b-shelomo")
+
+    def test_clean_person_slugs(self):
+        Person = self.apps.get_model("entities", "Person")
+        PastPersonSlug = self.apps.get_model("entities", "PastPersonSlug")
+
+        # person should have the new slug without the dash for ʿ
+        person = Person.objects.get(pk=self.person.pk)
+        assert "yeshu-a" not in person.slug
+        assert "yeshua" in person.slug
+        # should have PastPersonSlug
+        assert PastPersonSlug.objects.filter(
+            slug="yeshu-a-b-isma-il-al-makhmuri", person=person
+        ).exists()
+
+        # person2 should not change slugs because of the collision
+        person2 = Person.objects.get(pk=self.person2.pk)
+        person2_sameslug = Person.objects.get(pk=self.person2_sameslug.pk)
+        assert person2.slug != person2_sameslug.slug
+        assert "ya-aqov" in person2.slug
+        assert "yaaqov" in person2_sameslug.slug
+        # should NOT have PastPersonSlug
+        assert not PastPersonSlug.objects.filter(
+            slug="ya-aqov-b-shelomo", person=person2
+        ).exists()
