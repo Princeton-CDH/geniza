@@ -267,4 +267,4 @@ class TestUpdatePersonSlugs(TestMigrations):
         ).exists()
 
         # should have run without error on a deleted person
-        assert not Person.objects.get(pk=self.deleted_person.pk)
+        assert not Person.objects.filter(pk=self.deleted_person.pk).exists()
