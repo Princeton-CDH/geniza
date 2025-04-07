@@ -372,6 +372,29 @@ class TestPerson:
         person3.generate_slug()
         assert person3.slug == f"{person.slug}-3"
 
+        # should remove ayin and hamza
+        makhluf = Person.objects.create()
+        Name.objects.create(
+            name="Makhlūf Neʾeman ha-Yeshiva", content_object=makhluf, primary=True
+        )
+        makhluf.generate_slug()
+        assert "ne-eman" not in makhluf.slug
+        assert "neeman" in makhluf.slug
+        yeshua = Person.objects.create()
+        Name.objects.create(
+            name="Yeshuʿa b. Ismāʿīl al-Makhmūrī", content_object=yeshua, primary=True
+        )
+        yeshua.generate_slug()
+        assert "yeshu-a" not in yeshua.slug
+        assert "yeshua" in yeshua.slug
+
+        # should remove ' single quotation mark
+        gaon = Person.objects.create()
+        Name.objects.create(name="Yoshiyyahu Ga'on", content_object=gaon, primary=True)
+        gaon.generate_slug()
+        assert "ga-on" not in gaon.slug
+        assert "gaon" in gaon.slug
+
     def test_content_authors(self, person):
         # with no log entries, should have no content_authors
         assert not person.content_authors
