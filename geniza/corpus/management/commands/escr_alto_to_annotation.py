@@ -120,8 +120,11 @@ class Command(BaseCommand):
         # disconnect solr indexing signals; this script will index annotations manually
         IndexableSignalHandler.disconnect()
 
+        # keep track of ingested annotations for new_first ingest
+        self.ingested_pks = {}
+
         # process all files
-        for xmlfile in options["alto"]:
+        for xmlfile in sorted(options["alto"]):
             self.stdout.write("Processing %s" % xmlfile)
             self.ingest_xml(
                 xmlfile,
@@ -167,6 +170,9 @@ class Command(BaseCommand):
             self.stdout.write("Could not match document; skipping")
             return
 
+        if pgpid not in self.ingested_pks:
+            self.ingested_pks[pgpid] = []
+
         # we should be able to match the shelfmark portion to a manifest short_id
         manifest = self.get_manifest(doc, m.group("shelfmark"), xmlfile)
 
@@ -189,7 +195,6 @@ class Command(BaseCommand):
         )
 
         # create annotations
-        new_anno_pks = []
         footnote = None
         for tb_idx, tb in enumerate(alto.printspace.textblocks, start=1):
             block_type = None
@@ -218,7 +223,7 @@ class Command(BaseCommand):
                     ),
                     footnote=footnote,
                 )
-                new_anno_pks.append(block.pk)
+                self.ingested_pks[pgpid].append(block.pk)
                 LogEntry.objects.log_action(
                     user_id=self.script_user.pk,
                     content_type_id=self.anno_contenttype,
@@ -262,7 +267,7 @@ class Command(BaseCommand):
                     footnote=footnote,
                     content__target__source__id=canvas_uri,
                 )
-                .exclude(pk__in=new_anno_pks)
+                .exclude(pk__in=self.ingested_pks[pgpid])
                 .order_by("content__schema:position", "created")
             )
             # move existing annotations to the end so that new ones are first
