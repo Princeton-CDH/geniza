@@ -100,6 +100,12 @@ class Command(BaseCommand):
             "--source-id",
             help=f"Optionally supply a custom source ID for the HTR/OCR model",
         )
+        parser.add_argument(
+            "-n",
+            "--new-first",
+            action="store_true",
+            help="Put the new annotations first on the canvas instead of last, used for re-ingest of missing content.",
+        )
 
     def handle(self, *args, **options):
         self.script_user = User.objects.get(username=settings.SCRIPT_USERNAME)
@@ -122,6 +128,7 @@ class Command(BaseCommand):
                 model_name=options["model_name"],
                 block_level=options["block_level"],
                 source_id=options["source_id"],
+                new_first=options["new_first"],
             )
 
         # report
@@ -142,7 +149,12 @@ class Command(BaseCommand):
                 self.stdout.write(f"\t- {filename}")
 
     def ingest_xml(
-        self, xmlfile, model_name=default_model_name, block_level=False, source_id=None
+        self,
+        xmlfile,
+        model_name=default_model_name,
+        block_level=False,
+        source_id=None,
+        new_first=False,
     ):
         alto = xmlmap.load_xmlobject_from_file(xmlfile, EscriptoriumAlto)
         # associate filename with pgpid
@@ -177,6 +189,8 @@ class Command(BaseCommand):
         )
 
         # create annotations
+        new_anno_pks = []
+        footnote = None
         for tb_idx, tb in enumerate(alto.printspace.textblocks, start=1):
             block_type = None
             if tb.block_type_id:
@@ -204,6 +218,7 @@ class Command(BaseCommand):
                     ),
                     footnote=footnote,
                 )
+                new_anno_pks.append(block.pk)
                 LogEntry.objects.log_action(
                     user_id=self.script_user.pk,
                     content_type_id=self.anno_contenttype,
@@ -240,6 +255,20 @@ class Command(BaseCommand):
                             change_message="Imported line from eScriptorium HTR ALTO",
                             action_flag=ADDITION,
                         )
+        if new_first and footnote:
+            # get existing annotations on this footnote + canvas to reorder them
+            existing_annos = (
+                Annotation.objects.filter(
+                    footnote=footnote,
+                    content__target__source__id=canvas_uri,
+                )
+                .exclude(pk__in=new_anno_pks)
+                .order_by("content__schema:position", "created")
+            )
+            # move existing annotations to the end so that new ones are first
+            for new_idx, anno in enumerate(existing_annos, start=1):
+                anno.content["schema:position"] = tb_idx + new_idx
+                anno.save()
 
         # index after all blocks added
         doc.index()
