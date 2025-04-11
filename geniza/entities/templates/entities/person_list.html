@@ -83,6 +83,11 @@
             </label>
             <label for="{{ form.document_relation.auto_id }}">
                 <span class="fieldname">{{ form.document_relation.label }}</span>
+                <label for="{{ form.exclude_uncertain.auto_id }}">
+                    {% render_field form.exclude_uncertain data-action="search#update" %}
+                    <span>{{ form.exclude_uncertain.label }}</span>
+                    <div class="thumb" aria-hidden="true"></div>
+                </label>
                 {% render_field form.document_relation data-action="search#update" %}
             </label>
         </fieldset>

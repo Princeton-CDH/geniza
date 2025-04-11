@@ -497,6 +497,10 @@ class TestPerson:
         PersonDocumentRelation.objects.create(
             person=person, document=document, type=pdrtype
         )
+        (scribe, _) = PersonDocumentRelationType.objects.get_or_create(name="scribe")
+        PersonDocumentRelation.objects.create(
+            person=person, document=document, type=scribe, uncertain=True
+        )
 
         # these dates should be ignored (deceased)
         (deceased, _) = PersonDocumentRelationType.objects.get_or_create(
@@ -528,6 +532,10 @@ class TestPerson:
         assert index_data["people_i"] == index_data["places_i"] == 0
         assert str(pdrtype) in index_data["document_relation_ss"]
         assert str(deceased) in index_data["document_relation_ss"]
+        assert str(scribe) in index_data["document_relation_ss"]
+        assert str(pdrtype) in index_data["certain_document_relation_ss"]
+        assert str(deceased) in index_data["certain_document_relation_ss"]
+        assert str(scribe) not in index_data["certain_document_relation_ss"]
         assert index_data["tags_ss_lower"] == tags
         assert index_data["date_dr"] == person.solr_date_range()
         assert index_data["date_str_s"] == person.date_str
