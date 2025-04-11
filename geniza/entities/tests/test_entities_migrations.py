@@ -269,3 +269,67 @@ class TestUpdatePersonSlugs(TestMigrations):
 
         # should have run without error on a deleted person
         assert not Person.objects.filter(pk=self.deleted_person_pk).exists()
+
+
+@pytest.mark.order(
+    before="geniza/annotations/tests/test_annotations_migrations.py::TestAssociateRelatedFootnotes::test_footnote_associated"
+)
+@pytest.mark.django_db
+class TestPopulateUncertainRelations(TestMigrations):
+    app = "entities"
+    migrate_from = "0030_update_person_slugs"
+    migrate_to = "0031_populate_persondocumentrelation_uncertain"
+    possible = None
+    possibly = None
+    scribe_type = None
+    mentioned_type = None
+
+    def setUpBeforeMigration(self, apps):
+        Person = apps.get_model("entities", "Person")
+        Document = apps.get_model("corpus", "Document")
+        PersonDocumentRelation = apps.get_model("entities", "PersonDocumentRelation")
+        PersonDocumentRelationType = apps.get_model(
+            "entities", "PersonDocumentRelationType"
+        )
+
+        person = Person.objects.create()
+        document = Document.objects.create()
+
+        (self.scribe_type, _) = PersonDocumentRelationType.objects.get_or_create(
+            name="Scribe"
+        )
+        (self.mentioned_type, _) = PersonDocumentRelationType.objects.get_or_create(
+            name="Mentioned"
+        )
+
+        possible_type = PersonDocumentRelationType.objects.create(
+            name="Possible scribe"
+        )
+        self.possible = PersonDocumentRelation.objects.create(
+            person=person,
+            document=document,
+            type=possible_type,
+        )
+        possibly_type = PersonDocumentRelationType.objects.create(
+            name="Possibly mentioned"
+        )
+        self.possibly = PersonDocumentRelation.objects.create(
+            person=person,
+            document=document,
+            type=possibly_type,
+        )
+
+    def test_clean_person_slugs(self):
+        PersonDocumentRelation = self.apps.get_model(
+            "entities", "PersonDocumentRelation"
+        )
+
+        # possible scribe relation should become "Scribe", uncertain=True
+        possible = PersonDocumentRelation.objects.get(pk=self.possible.pk)
+        assert possible.type.pk == self.scribe_type.pk
+        assert possible.uncertain == True
+
+        # possibly mentioned relation should become "Mentioned", uncertain=True
+        possibly = PersonDocumentRelation.objects.get(pk=self.possibly.pk)
+        assert possibly.type.pk == self.mentioned_type.pk
+        assert possibly.uncertain == True
