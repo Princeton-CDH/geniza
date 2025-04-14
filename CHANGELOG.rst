@@ -1,6 +1,30 @@
 Change Log
 ==========
 
+4.21
+----
+
+- public site
+    - As a front end user, I want to see unpublished scholarship records displayed in CMS citation format so that users can easily cite unpublished material available on the PGP.
+    - As a public site user, I do not want to see the language of a translation indicated in the bibliographic info (including on the transcription editor display) because it is redundant and not in line with CMS practice.
+    - As a front end user, I want a visual indication for places marked "region," with a legend, so I can tell them apart from other places.
+    - As a public site user, I want visual indication in the RegEx search results if transcription/translation snippets come from two separate records, so that I can understand duplicate information.
+    - As a public user, I want expanded RegEx search capabilities with options to filter by search field, so that I can find exact search matches for shelfmarks and within translations, transcriptions, and descriptions.
+    - bugfix: Transcription and translation alignment fails at non-100% zoom levels
+    - bugfix: Missing icons in People List View
+    - bugfix: Searching by tags gives differently-ordered search results each time
+    - bugfix: Weiss ingest errors
+    - chore: Update Geniza Lab logo on mobile and desktop in public
+
+- admin
+    - As a content editor, I would like a new box in the footnote/source section of the document page specifically for "minor emendations" so that the notes field does not get messy.
+    - As an admin user, I want to be able to search people by tag in the admin site, so that I can more easily find people (as I can on the public site).
+    - As a content editor, I want to be able to italicize words in the translation editor so that I can indicate which words are foreign (to the main language of the text)
+    - As a content admin, I want a checkbox for regions to select when entering places so that these entries have a different icon and signal to public users that it's a different type of place.
+    - As a content editor, I want there to be placeholder images for images that are temporarily down, so that I can continue to add transcription and translation content even during outages.
+    - As an content editor/admin, I want an uncertain checkbox next to people-document relations so that I can indicate when a relationship is not entirely supported by evidence in the documents.
+    - As a content admin, I want generated slugs to ignore the characters ʿ and ʾ rather than convert them to hyphens, so that person URLs are more readable.
+
 4.20
 ----
 
