@@ -362,8 +362,13 @@ class RelatedDocumentsMixin:
             )
 
         if "relation" in sort:
-            # sort by document-entity relation type name
-            related_documents = related_documents.order_by(f"{sort_dir}type__name")
+            order = [
+                # sort by document-entity relation type name
+                f"{sort_dir}type__name",
+                # if this list is Person-Document relations, sort uncertains separately
+                "uncertain" if isinstance(obj, Person) else None,
+            ]
+            related_documents = related_documents.order_by(*[o for o in order if o])
 
         if "date" in sort:
             # sort by start or end of date range

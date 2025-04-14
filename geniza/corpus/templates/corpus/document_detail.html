@@ -157,7 +157,8 @@
                         <dt>{{ relation_type.grouper }}</dt>
                         <dd>
                             {% for relation in relation_type.list %}
-                                {% if relation.person.get_absolute_url %}<a data-turbo="false" href="{{ relation.person.get_absolute_url }}">{{ relation.person }}</a>{% else %}{{ relation.person }}{% endif %}{% if not forloop.last %}, {% endif %}
+                                {# Translators: label for an uncertain Person-Document identification #}
+                                {% if relation.person.get_absolute_url %}<a data-turbo="false" href="{{ relation.person.get_absolute_url }}">{{ relation.person }}</a>{% else %}{{ relation.person }}{% endif %}{% if relation.uncertain %} <em class="uncertain">{% translate '(uncertain)' %}</em>{% endif %}{% if not forloop.last %}, {% endif %}
                             {% endfor %}
                         </dd>
                     {% endfor %}
