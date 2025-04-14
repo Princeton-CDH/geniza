@@ -237,6 +237,16 @@ fieldset.transcriptions-field
     white-space: normal;
 }
 
+.field-location input {
+    width: 84px;
+}
+[id^="footnotes"] .field-url input {
+    width: 200px;
+}
+[id^="footnotes"] .field-notes textarea {
+    width: 150px;
+}
+
 /* styling for document attributes in document merge form */
 .transcription-container {
     max-height: 350px;

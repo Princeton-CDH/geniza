@@ -4,6 +4,7 @@
 
 @use "../base/breakpoints";
 @use "../base/container";
+@use "../base/fonts";
 @use "../base/spacing";
 @use "../base/typography";
 @use "../base/colors";
@@ -162,12 +163,6 @@ section#document-list {
                 font-weight: bold;
                 font-style: normal;
             }
-            /* solr returns multiple matches in text without space between */
-            em + em {
-                &::before {
-                    content: " ";
-                }
-            }
         }
 
         .transcription {
@@ -186,6 +181,24 @@ section#document-list {
             &[data-lang-script="hebrew"],
             span[lang="he"] {
                 @include typography.transcription-search;
+            }
+            // labels for snippets when applicable
+            span.snippet-label {
+                display: block;
+                direction: ltr;
+                text-align: left;
+                font-family: fonts.$primary;
+                font-size: typography.$text-size-sm;
+                @include breakpoints.for-tablet-landscape-up {
+                    font-size: typography.$text-size-md;
+                }
+            }
+            div.separator + span.snippet-label {
+                margin-top: 1rem;
+            }
+            // prevent […] separator from showing between a snippet and a label
+            div.separator:has(+ span.snippet-label) {
+                display: none;
             }
         }
 
@@ -505,6 +518,41 @@ a.view-link {
         @include breakpoints.for-tablet-landscape-up {
             margin-left: spacing.$spacing-sm;
             font-size: typography.$text-size-2xl;
+        }
+    }
+}
+
+//  solr returns multiple matches in text without space between, so ensure
+//  a space is added.
+//  this only applies to general (non-regex) search, where solr highlights.
+fieldset#query:not(:has(input[value="regex"]:checked))
+    ~ section#document-list
+    .search-result
+    section:first-of-type {
+    .description,
+    .transcription,
+    .translation {
+        em + em {
+            &::before {
+                content: " ";
+            }
+        }
+    }
+}
+// on regex search, sometimes the "additional matches" logic will result in
+// two adjacent <em> elements that have a space between them, but the space is
+// clobbered in display. we add an 'adjacent-em' class to those, handled here.
+fieldset#query:has(input[value="regex"]:checked)
+    ~ section#document-list
+    .search-result
+    section:first-of-type {
+    .description,
+    .transcription,
+    .translation {
+        em + em.adjacent-em {
+            &::before {
+                content: " ";
+            }
         }
     }
 }

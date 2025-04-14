@@ -1,21 +1,24 @@
 import os.path
 from io import StringIO
-from unittest.mock import ANY, MagicMock, patch
+from unittest.mock import ANY, patch
 
 import pytest
 from django.conf import settings
 from django.contrib.admin.models import ADDITION, LogEntry
 from django.contrib.auth.models import User
+from django.contrib.contenttypes.models import ContentType
 from django.core.management import call_command
 from djiffy.models import Canvas
 from eulxml import xmlmap
 from parasolr.django.signals import IndexableSignalHandler
 
+from geniza.annotations.models import Annotation
 from geniza.corpus.management.commands.escr_alto_to_annotation import (
     Command,
     EscriptoriumAlto,
 )
 from geniza.corpus.models import Document, TextBlock
+from geniza.footnotes.models import Footnote
 
 fixture_dir = os.path.join(os.path.dirname(__file__), "fixtures")
 
@@ -205,6 +208,7 @@ class TestEscrToAltoAnnotation:
                 model_name=Command.default_model_name,
                 block_level=False,
                 source_id=None,
+                new_first=False,
             )
             assert "Done! Processed 1 file(s)." in out.getvalue()
 
@@ -219,6 +223,7 @@ class TestEscrToAltoAnnotation:
                 model_name=Command.default_model_name,
                 block_level=True,
                 source_id=None,
+                new_first=False,
             )
             assert "Done! Processed 1 file(s)." in out.getvalue()
 
@@ -237,6 +242,7 @@ class TestEscrToAltoAnnotation:
                 model_name="Test",
                 block_level=True,
                 source_id=None,
+                new_first=False,
             )
             assert "Done! Processed 1 file(s)." in out.getvalue()
 
@@ -255,6 +261,27 @@ class TestEscrToAltoAnnotation:
                 model_name=Command.default_model_name,
                 block_level=True,
                 source_id=source.pk,
+                new_first=False,
+            )
+            assert "Done! Processed 1 file(s)." in out.getvalue()
+
+        with patch.object(Command, "ingest_xml") as mock_ingest:
+            out = StringIO()
+            call_command(
+                "escr_alto_to_annotation",
+                xmlfile,
+                block_level=True,
+                source_id=source.pk,
+                new_first=True,
+                stdout=out,
+            )
+            assert "Processing %s" % xmlfile in out.getvalue()
+            mock_ingest.assert_called_once_with(
+                xmlfile,
+                model_name=Command.default_model_name,
+                block_level=True,
+                source_id=source.pk,
+                new_first=True,
             )
             assert "Done! Processed 1 file(s)." in out.getvalue()
 
@@ -335,3 +362,70 @@ class TestEscrToAltoAnnotation:
             change_message="Imported line from eScriptorium HTR ALTO",
             action_flag=ADDITION,
         ).exists()
+
+    @pytest.mark.django_db
+    def test_ingest_xml__new_first(self, document, annotation_json, source):
+        document.old_pgpids = [6032]
+        document.save()
+        out = StringIO()
+        manifests = [b.fragment.manifest for b in document.textblock_set.all()]
+
+        # disconnect indexing signal handler
+        IndexableSignalHandler.disconnect()
+        canvas = Canvas.objects.create(
+            short_id="test",
+            manifest=manifests[0],
+            label="fake image",
+            iiif_image_id="http://example.co/iiif/ts-1/00001",
+            uri="http://example.co/iiif/ts-1/canvas/1",
+            order=1,
+        )
+        # create two existing annotations on this canvas and footnote
+        footnote = Footnote.objects.create(
+            doc_relation=Footnote.DIGITAL_EDITION,
+            source=source,
+            content_type=ContentType.objects.get_for_model(Document),
+            object_id=document.pk,
+        )
+        existing_annos = []
+        for i in range(1, 3):
+            anno = Annotation.objects.create(
+                footnote=footnote,
+                content={
+                    **annotation_json,
+                    "target": {"source": {"id": canvas.uri}},
+                    "body": [{"value": "existing annotation %d" % i}],
+                    "schema:position": i,
+                },
+            )
+            existing_annos.append(anno.pk)
+
+        with patch.object(Command, "create_block_annotation") as mock_create_anno:
+            mock_create_anno.return_value = {
+                **annotation_json,
+                "target": {"source": {"id": canvas.uri}},
+            }
+            # mock iiif image to avoid network req
+            with patch.object(Canvas, "image"):
+                # mock indexing
+                with patch.object(Document, "index"):
+                    call_command(
+                        "escr_alto_to_annotation",
+                        xmlfile,
+                        stdout=out,
+                        block_level=True,
+                        source_id=source.pk,
+                        new_first=True,
+                    )
+                    mock_create_anno.assert_called_with(
+                        ANY, canvas.uri, ANY, ANY, ANY, include_content=True
+                    )
+
+        # should have moved the existing two annotations to the end,
+        # while preserving their order
+        for anno in Annotation.objects.filter(pk__in=existing_annos):
+            assert anno.content["schema:position"] in [2, 3]
+            if anno.content["schema:position"] == 2:
+                assert anno.content["body"][0]["value"] == "existing annotation 1"
+            elif anno.content["schema:position"] == 3:
+                assert anno.content["body"][0]["value"] == "existing annotation 2"

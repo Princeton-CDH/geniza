@@ -147,3 +147,125 @@ class TestPopulatePlaceSlugs(TestMigrations):
         # same name should get number
         place_samename = Place.objects.get(pk=self.place_samename.pk)
         assert place_samename.slug == f"{place.slug}-2"
+
+
+@pytest.mark.order(
+    before="geniza/annotations/tests/test_annotations_migrations.py::TestAssociateRelatedFootnotes::test_footnote_associated"
+)
+@pytest.mark.django_db
+class TestSetPlaceRegions(TestMigrations):
+    app = "entities"
+    migrate_from = "0027_placeplacerelation_converse_name"
+    migrate_to = "0028_place_is_region"
+    place = None
+    region = None
+
+    def setUpBeforeMigration(self, apps):
+        Place = apps.get_model("entities", "Place")
+        Name = apps.get_model("entities", "Name")
+        ContentType = apps.get_model("contenttypes", "ContentType")
+        place_contenttype = ContentType.objects.get(app_label="entities", model="place")
+
+        # place
+        self.place = Place.objects.create()
+        Name.objects.create(
+            name="Fustat",
+            content_type=place_contenttype,
+            object_id=self.place.pk,
+            primary=True,
+        )
+        # region
+        self.region = Place.objects.create()
+        Name.objects.create(
+            name="Abyssinia (region)",
+            content_type=place_contenttype,
+            object_id=self.region.pk,
+            primary=True,
+        )
+
+    def test_is_region(self):
+        Place = self.apps.get_model("entities", "Place")
+        # should be false
+        place = Place.objects.get(pk=self.place.pk)
+        assert not place.is_region
+
+        # should be true
+        region = Place.objects.get(pk=self.region.pk)
+        assert region.is_region
+
+
+@pytest.mark.order(
+    before="geniza/annotations/tests/test_annotations_migrations.py::TestAssociateRelatedFootnotes::test_footnote_associated"
+)
+@pytest.mark.django_db
+class TestUpdatePersonSlugs(TestMigrations):
+    app = "entities"
+    migrate_from = "0029_persondocumentrelation_uncertain"
+    migrate_to = "0030_update_person_slugs"
+    person = None
+    person2 = None
+    person2_sameslug = None
+    deleted_person = None
+
+    def setUpBeforeMigration(self, apps):
+        Person = apps.get_model("entities", "Person")
+        Name = apps.get_model("entities", "Name")
+        ContentType = apps.get_model("contenttypes", "ContentType")
+        person_contenttype = ContentType.objects.get(
+            app_label="entities", model="person"
+        )
+
+        # person to test the normal conversion
+        self.person = Person.objects.create(slug="yeshu-a-b-isma-il-al-makhmuri")
+        Name.objects.create(
+            name="Yeshuʿa b. Ismāʿīl al-Makhmūrī",
+            content_type=person_contenttype,
+            object_id=self.person.pk,
+            primary=True,
+        )
+        # people to test the unique constraint violation prevention
+        self.person2 = Person.objects.create(slug="ya-aqov-b-shelomo")
+        Name.objects.create(
+            name="Yaʿaqov b. Shelomo",
+            content_type=person_contenttype,
+            object_id=self.person2.pk,
+            primary=True,
+        )
+        self.person2_sameslug = Person.objects.create(slug="yaaqov-b-shelomo")
+
+        deleted_person = Person.objects.create(slug="test-test")
+        self.deleted_person_pk = deleted_person.pk
+        Name.objects.create(
+            name="testʿtest",
+            content_type=person_contenttype,
+            object_id=self.deleted_person_pk,
+            primary=True,
+        )
+        deleted_person.delete()
+
+    def test_clean_person_slugs(self):
+        Person = self.apps.get_model("entities", "Person")
+        PastPersonSlug = self.apps.get_model("entities", "PastPersonSlug")
+
+        # person should have the new slug without the dash for ʿ
+        person = Person.objects.get(pk=self.person.pk)
+        assert "yeshu-a" not in person.slug
+        assert "yeshua" in person.slug
+        # should have PastPersonSlug
+        assert PastPersonSlug.objects.filter(
+            slug="yeshu-a-b-isma-il-al-makhmuri", person=person
+        ).exists()
+
+        # person2 should not change slugs because of the collision
+        person2 = Person.objects.get(pk=self.person2.pk)
+        person2_sameslug = Person.objects.get(pk=self.person2_sameslug.pk)
+        assert person2.slug != person2_sameslug.slug
+        assert "ya-aqov" in person2.slug
+        assert "yaaqov" in person2_sameslug.slug
+        # should NOT have PastPersonSlug
+        assert not PastPersonSlug.objects.filter(
+            slug="ya-aqov-b-shelomo", person=person2
+        ).exists()
+
+        # should have run without error on a deleted person
+        assert not Person.objects.filter(pk=self.deleted_person_pk).exists()

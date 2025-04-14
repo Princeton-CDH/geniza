@@ -45,6 +45,7 @@ from geniza.entities.models import (
     PersonPlaceRelation,
     PersonPlaceRelationType,
     PersonRole,
+    PersonSolrQuerySet,
     Place,
     PlaceEventRelation,
     PlacePlaceRelation,
@@ -162,6 +163,14 @@ class PersonDocumentInline(TypedRelationInline, DocumentInline):
     """Related documents inline for the Person admin"""
 
     model = PersonDocumentRelation
+    fields = (
+        "document",
+        "dating_range",
+        "document_description",
+        "type",
+        "uncertain",
+        "notes",
+    )
 
 
 class PlaceInline(admin.TabularInline):
@@ -329,31 +338,26 @@ class PersonAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin):
             self.own_pk = None
         return super().get_form(request, obj, **kwargs)
 
-    def get_queryset(self, request):
-        """For autocomplete ONLY, remove self from queryset, so that Person-Person autocomplete
-        does not include self in the list of options"""
-        # also add unaccented name to queryset so we can search on it
-        qs = (
-            super()
-            .get_queryset(request)
-            .annotate(
-                # ArrayAgg to group together related values from related model instances
-                name_unaccented=ArrayAgg("names__name__unaccent", distinct=True),
+    def get_search_results(self, request, queryset, search_term):
+        """Override admin search to use Solr.
+        Adapted from :meth:`DocumentAdmin.get_search_results`."""
+        if search_term:
+            # - return slugs for all matching records
+            sqs = (
+                PersonSolrQuerySet()
+                .keyword_search(search_term)
+                .only("slug")
+                .get_results(rows=10000)
             )
-        )
+            slugs = [r["slug"] for r in sqs]
+            # filter queryset by slug if there are results
+            if sqs:
+                queryset = queryset.filter(slug__in=slugs)
+            else:
+                queryset = queryset.none()
 
-        # only modify if this is the person-person autocomplete request
-        is_autocomplete = request and request.path == "/admin/autocomplete/"
-        is_personperson = (
-            request
-            and request.GET
-            and request.GET.get("model_name") == "personpersonrelation"
-        )
-        if self.own_pk and is_autocomplete and is_personperson:
-            # exclude self from queryset
-            return qs.exclude(pk=int(self.own_pk))
-        # otherwise, return normal queryset
-        return qs
+        # return queryset, use distinct not needed
+        return queryset, False
 
     @admin.display(description="Merge selected people")
     def merge_people(self, request, queryset=None):
@@ -584,7 +588,7 @@ class PlaceAdmin(SortableAdminBase, admin.ModelAdmin):
     """Admin for Place entities in the PGP"""
 
     search_fields = ("name_unaccented", "names__name")
-    fields = ("slug", ("latitude", "longitude"), "notes")
+    fields = ("slug", ("latitude", "longitude"), "is_region", "notes")
     inlines = (
         NameInline,
         DocumentPlaceInline,

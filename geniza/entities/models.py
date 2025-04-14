@@ -225,25 +225,27 @@ class SlugMixin(TrackChangesModel):
     def generate_slug(self):
         """Generate a slug for this entity based on primary name and ensure it is unique.
         Adapted from mep-django."""
-        self.slug = slugify(unidecode(str(self)))
+        self.slug = self.dedupe_slug(slugify(unidecode(str(self))))
+
+    def dedupe_slug(self, slug):
+        """Ensure slug is unique"""
         dupe_slugs = (
-            self.__class__.objects.filter(slug__startswith=self.slug)
+            self.__class__.objects.filter(slug__startswith=slug)
             .exclude(pk=self.pk)
             .order_by("slug")
             .values_list("slug", flat=True)
         )
-        if dupe_slugs.count() and self.slug in dupe_slugs:
+        if dupe_slugs.count() and slug in dupe_slugs:
             # if not unique, add a number
-            prefix = "%s-" % self.slug
+            prefix = "%s-" % slug
             # get all the endings attached to this slug (i.e. unclear-##)
-            suffixes = [
-                slug[len(prefix) :] for slug in dupe_slugs if slug.startswith(prefix)
-            ]
+            suffixes = [s[len(prefix) :] for s in dupe_slugs if s.startswith(prefix)]
             # get the largest numeric suffix
             values = [int(num) for num in suffixes if num.isnumeric()]
             slug_count = max(values) if values else 1
             # use the next number for the current slug
-            self.slug = "%s-%s" % (self.slug, slug_count + 1)
+            slug = "%s-%s" % (slug, slug_count + 1)
+        return slug
 
     class Meta:
         abstract = True
@@ -393,6 +395,13 @@ class Person(
 
     class Meta:
         verbose_name_plural = "People"
+
+    def generate_slug(self):
+        """Override the generate_slug function for Person to prevent
+        ayin, hamza, and single quotation mark from being converted
+        to dashes in slug"""
+        cleaned_name_str = re.sub(r"[ʿʾ']", "", str(self))
+        self.slug = self.dedupe_slug(slugify(unidecode(cleaned_name_str)))
 
     def save(self, *args, **kwargs):
         # if slug has changed, save the old one as a past slug
@@ -1178,6 +1187,10 @@ class PersonDocumentRelation(models.Model):
         null=True,
         verbose_name="Relation",
     )
+    uncertain = models.BooleanField(
+        default=False,
+        help_text="True if this association is inferred or uncertain. Please also include reasoning in the notes.",
+    )
     notes = models.TextField(blank=True)
 
     class Meta:
@@ -1387,6 +1400,11 @@ class Place(ModelIndexable, SlugMixin, PermalinkMixin):
     )
     # sources for the information gathered here
     footnotes = GenericRelation(Footnote, blank=True, related_name="places")
+    is_region = models.BooleanField(
+        "Region",
+        default=False,
+        help_text="Please restrict entries to regions explicitly mentioned in documents.",
+    )
 
     def __str__(self):
         """
@@ -1556,6 +1574,7 @@ class Place(ModelIndexable, SlugMixin, PermalinkMixin):
                 # related object counts
                 "documents_i": self.documentplacerelation_set.count(),
                 "people_i": self.personplacerelation_set.count(),
+                "is_region_b": self.is_region,
             }
         )
         return index_data
@@ -1593,6 +1612,7 @@ class PlaceSolrQuerySet(AliasedSolrQuerySet):
         "documents": "documents_i",
         "people": "people_i",
         "location": "location_p",
+        "is_region": "is_region_b",
     }
 
 

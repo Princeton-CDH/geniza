@@ -305,7 +305,7 @@ def test_old_pgp_edition():
     doc.footnotes.add(fn)
 
     edition_str = old_pgp_edition(doc.editions())
-    assert edition_str == f"Ed. {fn.display()}"
+    assert edition_str == f"Ed. {fn.display(old_pgp=True)}"
 
     source2 = Source.objects.create(title_en="Arabic dictionary", source_type=book)
     fn2 = Footnote.objects.create(
@@ -391,36 +391,70 @@ class TestDocumentSearchView:
         # no params
         docsearch_view.request.GET = {}
         assert docsearch_view.get_form_kwargs() == {
-            "initial": {"mode": "general", "sort": "random"},
+            "initial": {
+                "mode": "general",
+                "sort": "random",
+                "regex_field": "transcription",
+            },
             "prefix": None,
-            "data": {"mode": "general", "sort": "random"},
+            "data": {
+                "mode": "general",
+                "sort": "random",
+                "regex_field": "transcription",
+            },
             "range_minmax": {},
         }
 
         # keyword search param
         docsearch_view.request.GET = {"q": "contract"}
         assert docsearch_view.get_form_kwargs() == {
-            "initial": {"mode": "general", "sort": "random"},
+            "initial": {
+                "mode": "general",
+                "sort": "random",
+                "regex_field": "transcription",
+            },
             "prefix": None,
-            "data": {"mode": "general", "q": "contract", "sort": "relevance"},
+            "data": {
+                "mode": "general",
+                "q": "contract",
+                "sort": "relevance",
+                "regex_field": "transcription",
+            },
             "range_minmax": {},
         }
 
         # sort search param
         docsearch_view.request.GET = {"sort": "scholarship_desc"}
         assert docsearch_view.get_form_kwargs() == {
-            "initial": {"mode": "general", "sort": "random"},
+            "initial": {
+                "mode": "general",
+                "sort": "random",
+                "regex_field": "transcription",
+            },
             "prefix": None,
-            "data": {"mode": "general", "sort": "scholarship_desc"},
+            "data": {
+                "mode": "general",
+                "sort": "scholarship_desc",
+                "regex_field": "transcription",
+            },
             "range_minmax": {},
         }
 
         # keyword and sort search params
         docsearch_view.request.GET = {"q": "contract", "sort": "scholarship_desc"}
         assert docsearch_view.get_form_kwargs() == {
-            "initial": {"mode": "general", "sort": "random"},
+            "initial": {
+                "mode": "general",
+                "sort": "random",
+                "regex_field": "transcription",
+            },
             "prefix": None,
-            "data": {"mode": "general", "q": "contract", "sort": "scholarship_desc"},
+            "data": {
+                "mode": "general",
+                "q": "contract",
+                "sort": "scholarship_desc",
+                "regex_field": "transcription",
+            },
             "range_minmax": {},
         }
 
@@ -450,7 +484,9 @@ class TestDocumentSearchView:
                 "description", snippets=3, method="unified", requireFieldMatch=True
             )
             mock_sqs.also.assert_called_with("score")
-            mock_sqs.also.return_value.order_by.assert_called_with("-score")
+            mock_sqs.also.return_value.order_by.assert_called_with(
+                "-score", "shelfmark_natsort"
+            )
 
             # sort search param
             mock_sqs.reset_mock()
@@ -476,7 +512,7 @@ class TestDocumentSearchView:
                 status=Document.STATUS_PUBLIC
             )
             mock_sqs.keyword_search.return_value.also.return_value.order_by.assert_called_with(
-                "-score"
+                "-score", "shelfmark_natsort"
             )
 
             # keyword, sort, and filter search params
@@ -500,7 +536,7 @@ class TestDocumentSearchView:
             # also filters that result with next filter (has_transcription)
             mock_sqs.keyword_search.return_value.also.return_value.order_by.return_value.filter.return_value.filter.assert_called()
             mock_sqs.keyword_search.return_value.also.return_value.order_by.assert_called_with(
-                "-scholarship_count_i"
+                "-scholarship_count_i", "shelfmark_natsort"
             )
 
             # empty params
@@ -529,7 +565,9 @@ class TestDocumentSearchView:
             docsearch_view.request.GET = {"q": "six apartments", "mode": "regex"}
             docsearch_view.get_queryset()
             mock_sqs = mock_queryset_cls.return_value
-            mock_sqs.regex_search.assert_called_with("six apartments")
+            mock_sqs.regex_search.assert_called_with(
+                "transcription_regex", "six apartments"
+            )
             mock_sqs.keyword_search.assert_not_called()
             # should not highlight with parasolr
             mock_sqs.regex_search.return_value.highlight.assert_not_called()
@@ -723,6 +761,35 @@ class TestDocumentSearchView:
         assert (
             qs[1]["pgpid"] == doc3.id
         ), "document with shelfmark T-S 16.4 returned before T-S 16.377"
+
+    def test_relevance_sort_shelfmark_tiebreaker(self, document, empty_solr):
+        """integration test for sorting by shelfmark when relevance score is tied"""
+        # create a document with shelfmark that should come after CUL Add.2586
+        doc2 = Document.objects.create()
+        frag3 = Fragment.objects.create(shelfmark="T-S 16.4")
+        TextBlock.objects.create(document=doc2, fragment=frag3)
+        # add document's tags to doc2 (they need to have the same tags to produce the
+        # same relevance score when matching one of the tags)
+        doc2.tags.add("bill of sale", "real estate")
+        SolrClient().update.index(
+            [
+                document.index_data(),  # shelfmark = CUL Add.2586
+                doc2.index_data(),  # shelfmark = T-S 16.4
+            ],
+            commit=True,
+        )
+        docsearch_view = DocumentSearchView()
+        docsearch_view.request = Mock()
+        # sort by score desc (relevance)
+        docsearch_view.request.GET = {"sort": "relevance", "q": 'tag:"real estate"'}
+        qs = docsearch_view.get_queryset()
+        # should return document with shelfmark starting with C first
+        assert (
+            qs[0]["pgpid"] == document.id
+        ), "document with shelfmark CUL Add.2586 returned first"
+        assert (
+            qs[1]["pgpid"] == doc2.id
+        ), "document with shelfmark T-S 16.4 returned second"
 
     def test_input_date_sort(self, document, join, empty_solr):
         """Tests for sorting by input date, ascending and descending"""
@@ -1186,7 +1253,7 @@ class TestDocumentSearchView:
         hl = context_data["highlighting"]["document.%d" % document.id]["transcription"]
         assert len(hl) == 1
         assert "<em>العـ[ـبد]</em>" in re.sub(
-            r"\s+", "", hl[0]
+            r"\s+", "", hl[0]["text"]
         )  # rm solr-added whitespace
 
         doc2 = Document.objects.create()
@@ -1215,7 +1282,7 @@ class TestDocumentSearchView:
         context_data = docsearch_view.get_context_data()
         hl = context_data["highlighting"]["document.%d" % doc2.id]["transcription"]
         assert len(hl) == 1
-        highlight = re.sub(r"\s+", "", hl[0])  # rm solr-added whitespace
+        highlight = re.sub(r"\s+", "", hl[0]["text"])  # rm solr-added whitespace
         # should match on all words
         assert all(
             h in highlight for h in ["<em>מ〛תל", "לל[ה]</em>", "<em>תע/א\לי", "<em>דלך"]
@@ -1294,8 +1361,8 @@ class TestDocumentSearchView:
         # no double quotes in search, should highlight entire phrase
         docsearch_view.request.GET = {"q": "אלממ"}
         dqs = docsearch_view.get_queryset()
-        assert dqs.get_highlighting()[f"document.{document.pk}"]["transcription"][
-            0
+        assert dqs.get_highlighting()[f"document.{document.pk}"]["transcription"][0][
+            "text"
         ] == clean_html("<em>אלממחה ... אלממ</em>")
 
         # double quotes in search, should highlight only the exact match
@@ -1304,7 +1371,9 @@ class TestDocumentSearchView:
         assert dqs.raw_params["hl_query"] == '"אלממ"'
         assert (
             clean_html("<em>אלממ</em>")
-            in dqs.get_highlighting()[f"document.{document.pk}"]["transcription"][0]
+            in dqs.get_highlighting()[f"document.{document.pk}"]["transcription"][0][
+                "text"
+            ]
         )
 
     @pytest.mark.django_db
@@ -1335,8 +1404,8 @@ class TestDocumentSearchView:
         # should match word without prefix, smaller than the entered query
         docsearch_view.request.GET = {"q": "אלמרכב"}
         dqs = docsearch_view.get_queryset()
-        assert dqs.get_highlighting()[f"document.{document.pk}"]["transcription"][
-            0
+        assert dqs.get_highlighting()[f"document.{document.pk}"]["transcription"][0][
+            "text"
         ] == clean_html("<em>מרכב</em>")
 
     def test_get_apd_link(self):

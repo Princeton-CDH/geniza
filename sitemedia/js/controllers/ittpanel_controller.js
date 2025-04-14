@@ -24,17 +24,13 @@ export default class extends Controller {
     connect() {
         document.addEventListener("tahqiq-alert", this.boundAlertHandler);
         document.addEventListener("tahqiq-cancel", this.boundCancelHandler);
-        if (this.isDesktop()) {
-            // if transcription + translation both open, align their contents line-by-line
-            this.alignLines();
-            // align the header of the first image with the headers of the other two columns
-            this.alignHeaders();
-        }
-        // on resize, retrigger alignment
+        // trigger alignment on load, resize, or annotations loaded (editor)
+        // if transcription + translation both open, align their contents line-by-line
+        // short timeout needed in case of non 100% zoom level (bbox calculation)
+        setTimeout(this.boundResizeHandler, 50);
         window.addEventListener("resize", this.boundResizeHandler);
-        // a bit hacky; on annotation load, short wait for elements to be created, then align
-        // (this is only used in editor environment)
         document.addEventListener("annotations-loaded", () =>
+            // short timeout needed here for dom to catch up w/ js change
             setTimeout(this.boundResizeHandler, 50)
         );
     }
@@ -47,6 +43,11 @@ export default class extends Controller {
     isDesktop() {
         // Minimum width for desktop devices
         return window.innerWidth >= 900;
+    }
+
+    isSafari() {
+        // detect Safari desktop for zoom level behavior
+        return window.safari !== undefined;
     }
 
     clickToggle() {
@@ -101,8 +102,20 @@ export default class extends Controller {
     getLineCount(el) {
         // determine the number of lines by dividing element's rendered height
         // by its computed line height from CSS, and applying a floor function
+        let elHeight = el.getBoundingClientRect().height;
+
+        // handle non-100% zoom levels on safari
+        if (this.isSafari()) {
+            const screenCssPixelRatio = window.outerWidth / window.innerWidth;
+            if (screenCssPixelRatio > 1.01) {
+                elHeight *= screenCssPixelRatio;
+            } else if (screenCssPixelRatio < 0.98) {
+                elHeight /= screenCssPixelRatio;
+            }
+        }
+
         return Math.floor(
-            el.getBoundingClientRect().height /
+            elHeight /
                 parseInt(getComputedStyle(el).getPropertyValue("line-height"))
         );
     }

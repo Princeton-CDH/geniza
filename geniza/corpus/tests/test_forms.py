@@ -122,6 +122,17 @@ class TestDocumentSearchForm:
         form = DocumentSearchForm(data)
         assert form.fields["translation_language"].disabled == False
 
+        # test placeholder update for regex
+        assert form.fields["q"].widget.attrs["placeholder"] == (
+            "Search all fields by keyword"
+        )
+
+        data = {"q": "illness", "mode": "regex"}
+        form = DocumentSearchForm(data)
+        assert form.fields["q"].widget.attrs["placeholder"] == (
+            "Search by regular expression"
+        )
+
     def test_choices_from_facets(self):
         """A facet dict should produce correct choice labels"""
         fake_facets = {

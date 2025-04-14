@@ -1320,7 +1320,10 @@ class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin, TaggableMixin)
         # collect transcription and translation texts for indexing
         transcription_texts = []
         transcription_texts_plaintext = []
+        transcription_texts_plaintext_names = []
         translation_texts = []
+        translation_texts_plaintext = []
+        translation_texts_plaintext_names = []
         # keep track of translation language for RTL/LTR display
         translation_langcode = ""
         translation_langdir = "ltr"
@@ -1336,13 +1339,20 @@ class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin, TaggableMixin)
                 content = fn.content_html_str
                 if content:
                     transcription_texts.append(Footnote.explicit_line_numbers(content))
+                    fn_name = str(fn.source)
                     for canvas in fn.content_text_canvases:
                         # index plaintext only, per-canvas, for regex
                         transcription_texts_plaintext.append(canvas)
+                        transcription_texts_plaintext_names.append(fn_name)
             elif Footnote.DIGITAL_TRANSLATION in fn.doc_relation:
                 content = fn.content_html_str
                 if content:
                     translation_texts.append(Footnote.explicit_line_numbers(content))
+                    fn_name = str(fn.source)
+                    for canvas in fn.content_text_canvases:
+                        # index plaintext only, per-canvas, for regex
+                        translation_texts_plaintext.append(canvas)
+                        translation_texts_plaintext_names.append(fn_name)
                     # TODO: Index translations in different languages separately
                     if fn.source.languages.exists():
                         lang = fn.source.languages.first()
@@ -1385,11 +1395,14 @@ class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin, TaggableMixin)
                 "text_transcription": transcription_texts,
                 # transcription content as plaintext
                 "transcription_regex": transcription_texts_plaintext,
+                "transcription_regex_names_ss": transcription_texts_plaintext_names,
                 "translation_languages_ss": translation_languages,
                 "translation_language_code_s": translation_langcode,
                 "translation_language_direction_s": translation_langdir,
                 # translation content as html
                 "text_translation": translation_texts,
+                "translation_regex": translation_texts_plaintext,
+                "translation_regex_names_ss": translation_texts_plaintext_names,
                 "has_digital_edition_b": bool(counts[Footnote.DIGITAL_EDITION]),
                 "has_digital_translation_b": bool(counts[Footnote.DIGITAL_TRANSLATION]),
                 "has_discussion_b": bool(counts[Footnote.DISCUSSION]),
@@ -1637,7 +1650,7 @@ class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin, TaggableMixin)
                         source_id=footnote.source.pk,
                     )
                     # copy over notes, location, url if missing from self_fn
-                    for attr in ["notes", "location", "url"]:
+                    for attr in ["notes", "location", "emendations", "url"]:
                         if not getattr(self_fn, attr) and getattr(footnote, attr):
                             setattr(self_fn, attr, getattr(footnote, attr))
                     self_fn.save()

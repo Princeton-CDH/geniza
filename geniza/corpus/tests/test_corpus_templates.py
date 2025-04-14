@@ -675,7 +675,8 @@ class TestDocumentResult:
                     "lang": ["jrb"],
                 },
                 "highlighting": {
-                    "document.%d" % document.id: {"transcription": [test_highlight]}
+                    "document.%d"
+                    % document.id: {"transcription": [{"text": test_highlight}]}
                 },
                 "page_obj": self.page_obj,
             }

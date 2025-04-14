@@ -136,8 +136,9 @@ export default class extends Controller {
             storagePlugin,
             annotationContainer,
             this.element.querySelector(".tahqiq-toolbar"), // toolbar container fieldset
+            config.tiny_api_key,
             config.text_direction,
-            config.tiny_api_key
+            config.italic_enabled
         );
 
         if (window.tinyConfig) {
@@ -173,6 +174,12 @@ export default class extends Controller {
         anno.on("startSelection", () => this.setNavigatorVisible(false));
         anno.on("createSelection", () => this.setNavigatorVisible(true));
         anno.on("cancelSelected", () => this.setNavigatorVisible(true));
+
+        // use a placeholder and show error if opening a tilesource fails
+        viewer.addHandler("open-failed", ({ eventSource, message, source }) => {
+            storagePlugin.alert(`${message}: ${source}`, "error");
+            eventSource.open({ type: "image", url: config.placeholder_img });
+        });
 
         return viewer;
     }

@@ -83,7 +83,7 @@ class DocumentSearchView(
     # Translators: description of document search page, for search engines
     page_description = _("Search and browse Geniza documents.")
     paginate_by = 50
-    initial = {"sort": "random", "mode": "general"}
+    initial = {"sort": "random", "mode": "general", "regex_field": "transcription"}
     # NOTE: does not filter on status, since changing status could modify the page
     solr_lastmodified_filters = {"item_type_s": "document"}
     applied_filter_labels = []
@@ -212,8 +212,9 @@ class DocumentSearchView(
             search_opts = form.cleaned_data
 
             if search_opts["q"] and search_opts["mode"] == "regex":
+                regex_field = f"{search_opts['regex_field'] or 'transcription'}_regex"
                 # use regex search if "mode" is "regex"
-                documents = documents.regex_search(search_opts["q"])
+                documents = documents.regex_search(regex_field, search_opts["q"])
 
             elif search_opts["q"]:
                 # NOTE: using requireFieldMatch so that field-specific search
@@ -263,11 +264,16 @@ class DocumentSearchView(
                 )  # include relevance score in results
 
             # order by sort option
-            documents = documents.order_by(
+            order_by = (
                 self.get_solr_sort(
                     search_opts["sort"], search_opts.get("exclude_inferred", False)
-                )
+                ),
             )
+            # in all sorts except random and shelfmark, order
+            # secondarily by shelfmark, in order to break ties
+            if "random" not in order_by[0] and "shelfmark" not in order_by[0]:
+                order_by += (self.solr_sort["shelfmark"],)
+            documents = documents.order_by(*order_by)
 
             # filter by type if specified
             if search_opts["doctype"]:
@@ -479,19 +485,22 @@ class DocumentDetailView(DocumentDetailBase, DetailView):
                 # preload transcription font when appropriate
                 "page_includes_transcriptions": self.object.has_transcription(),
                 # generate list of related documents that can be filtered by image url for links on excluded images
-                "related_documents": [
-                    {
-                        "document": doc,
-                        "images": [
-                            # TODO: can we use canvas uris here instead?
-                            str(image[0])
-                            for image in doc.get("iiif_images", [])
-                        ],
-                    }
-                    for doc in self.object.related_documents
-                ]
-                # skip solr query if none of the associated TextBlocks have side info
-                if any([tb.side for tb in self.object.textblock_set.all()]) else [],
+                "related_documents": (
+                    [
+                        {
+                            "document": doc,
+                            "images": [
+                                # TODO: can we use canvas uris here instead?
+                                str(image[0])
+                                for image in doc.get("iiif_images", [])
+                            ],
+                        }
+                        for doc in self.object.related_documents
+                    ]
+                    # skip solr query if none of the associated TextBlocks have side info
+                    if any([tb.side for tb in self.object.textblock_set.all()])
+                    else []
+                ),
                 "images": images,
                 # first image for twitter/opengraph meta tags
                 "meta_image": list(images.values())[0]["image"] if images else None,
@@ -919,9 +928,11 @@ class DocumentAddTranscriptionView(PermissionRequiredMixin, DetailView):
         """Create footnote linking source to document, then redirect to edit transcription/translation view"""
         return redirect(
             reverse(
-                "corpus:document-transcribe"
-                if self.doc_relation == "transcription"
-                else "corpus:document-translate",
+                (
+                    "corpus:document-transcribe"
+                    if self.doc_relation == "transcription"
+                    else "corpus:document-translate"
+                ),
                 args=(self.get_object().id, int(request.POST["source"])),
             )
         )
@@ -1021,17 +1032,22 @@ class DocumentTranscribeView(PermissionRequiredMixin, DocumentDetailView):
                     ),
                     "csrf_token": csrf_token(self.request),
                     "tiny_api_key": getattr(settings, "TINY_API_KEY", ""),
-                    "secondary_motivation": "transcribing"
-                    if self.doc_relation == "transcription"
-                    else "translating",
+                    "secondary_motivation": (
+                        "transcribing"
+                        if self.doc_relation == "transcription"
+                        else "translating"
+                    ),
                     "text_direction": text_direction,
+                    "italic_enabled": self.doc_relation == "translation",
                     # line-by-line mode for eScriptorium sourced transcriptions
                     "line_mode": "model" in source.source_type.type,
+                    # placeholder url for annotating a broken image
+                    "placeholder_img": Document.PLACEHOLDER_CANVAS["image"]["info"],
                 },
                 # TODO: Add Footnote notes to the following display, if present
-                "source_detail": mark_safe(source.formatted_display())
-                if source
-                else "",
+                "source_detail": (
+                    mark_safe(source.formatted_display()) if source else ""
+                ),
                 "source_label": source_label if source_label else "",
                 "authors_count": source.authors.count() if source else 0,
                 "page_type": "document annotating",
@@ -1135,7 +1151,7 @@ def old_pgp_edition(editions):
             "%s%s%s"
             % (
                 "and trans. " if Footnote.TRANSLATION in fn.doc_relation else "",
-                fn.display().strip("."),
+                fn.display(old_pgp=True).strip("."),
                 " %s" % fn.url if fn.url else "",
             )
             for fn in editions

@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: princeton-geniza-project\n"
 "Report-Msgid-Bugs-To: cdhdevteam@princeton.edu\n"
-"POT-Creation-Date: 2025-01-29 10:50-0500\n"
-"PO-Revision-Date: 2025-01-29 17:57\n"
+"POT-Creation-Date: 2025-04-03 12:07-0400\n"
+"PO-Revision-Date: 2025-04-03 17:14\n"
 "Last-Translator: \n"
 "Language-Team: Arabic\n"
 "Language: ar_SA\n"
@@ -28,7 +28,7 @@ msgid "Keyword or Phrase"
 msgstr "الكلمة المفتاحية أو العبارة"
 
 #. Translators: label for sort by relevance
-#: corpus/forms.py:226 entities/forms.py:211
+#: corpus/forms.py:226 entities/forms.py:214
 msgid "Relevance"
 msgstr "الصلة"
 
@@ -92,102 +92,123 @@ msgstr ""
 msgid "RegEx"
 msgstr ""
 
+#. Translators: label for transcription RegEx field
+#. Translators: label for "has transcription" search form filter
+#: corpus/forms.py:258 corpus/forms.py:304
+#: corpus/templates/corpus/snippets/document_transcription.html:66
+msgid "Transcription"
+msgstr "النصوص المفرّغة"
+
+#. Translators: label for description RegEx field
+#. Translators: label for document description
+#: corpus/forms.py:260 corpus/templates/corpus/document_detail.html:145
+msgid "Description"
+msgstr "الوصف"
+
+#. Translators: label for translation RegEx field
+#. Translators: label for "has translation" search form filter
+#: corpus/forms.py:262 corpus/forms.py:308
+#: corpus/templates/corpus/snippets/document_transcription.html:71
+#: footnotes/models.py:508
+msgid "Translation"
+msgstr "الترجمة"
+
+#. Translators: label for shelfmark RegEx field
+#: corpus/forms.py:264 corpus/templates/corpus/document_detail.html:48
+msgid "Shelfmark"
+msgstr "علامة الرف"
+
 #. Translators: label for form sort field
-#: corpus/forms.py:262 entities/forms.py:228 entities/forms.py:349
+#: corpus/forms.py:273 entities/forms.py:231 entities/forms.py:352
 msgid "Sort by"
 msgstr "الترتيب حسب"
 
 #. Translators: label for filter documents by date range
 #. Translators: label for the dates of a person's appearances in PGP documents
 #. Translators: Person "dates of activity" column header on the browse page
-#: corpus/forms.py:269 entities/forms.py:207
+#: corpus/forms.py:280 entities/forms.py:210
 #: entities/templates/entities/person_detail.html:38
 #: entities/templates/entities/person_list.html:126
 msgid "Dates"
 msgstr ""
 
 #. Translators: label for "exclude inferred dates" search form filter
-#: corpus/forms.py:278
+#: corpus/forms.py:289
 msgid "Exclude inferred dates"
 msgstr ""
 
 #. Translators: label for document type search form filter
-#: corpus/forms.py:285
+#: corpus/forms.py:296
 #| msgid "Input date"
 msgid "Document type"
 msgstr ""
 
 #. Translators: label for "has image" search form filter
-#: corpus/forms.py:289 corpus/templates/corpus/document_detail.html:117
+#: corpus/forms.py:300 corpus/templates/corpus/document_detail.html:117
 #: corpus/templates/corpus/snippets/document_transcription.html:61
 msgid "Image"
 msgstr ""
 
-#. Translators: label for "has transcription" search form filter
-#: corpus/forms.py:293
-#: corpus/templates/corpus/snippets/document_transcription.html:66
-msgid "Transcription"
-msgstr "النصوص المفرّغة"
-
-#. Translators: label for "has translation" search form filter
-#: corpus/forms.py:297
-#: corpus/templates/corpus/snippets/document_transcription.html:71
-#: footnotes/models.py:495
-msgid "Translation"
-msgstr "الترجمة"
-
 #. Translators: label for "has discussion" search form filter
-#: corpus/forms.py:301 footnotes/models.py:496
+#: corpus/forms.py:312 footnotes/models.py:509
 msgid "Discussion"
 msgstr "المناقشة"
 
 #. Translators: label for document translation language search form filter
-#: corpus/forms.py:305
+#: corpus/forms.py:316
 msgid "Translation language"
 msgstr ""
 
-#: corpus/forms.py:307
+#: corpus/forms.py:318
 msgid "All languages"
 msgstr ""
 
 #. Translators: label for "search mode" (general or regex)
-#: corpus/forms.py:312
+#: corpus/forms.py:323
 #| msgid "Search Documents"
 msgid "Search mode"
 msgstr ""
 
+#: corpus/forms.py:330
+msgid "RegEx search field"
+msgstr ""
+
+#: corpus/forms.py:365
+msgid "Search by regular expression"
+msgstr ""
+
 #. Translators: Default label when document does not have a type
-#: corpus/forms.py:348 corpus/models.py:1005 corpus/solr_queryset.py:332
+#: corpus/forms.py:373 corpus/models.py:1005 corpus/solr_queryset.py:342
 #: corpus/templates/corpus/snippets/document_header.html:17
-#: corpus/templates/corpus/snippets/document_transcription.html:243
+#: corpus/templates/corpus/snippets/document_transcription.html:242
 msgid "Unknown type"
 msgstr "نوع غير معروف"
 
-#: corpus/forms.py:395
+#: corpus/forms.py:420
 msgid "Relevance sort is not available without a keyword search term."
 msgstr "ترتيب الصلة غير متوفر بدون مصطلح البحث بواسطة كلمة مفتاحية."
 
-#: corpus/forms.py:411
+#: corpus/forms.py:436
 #, python-format
 msgid "Regular expression cannot contain { without a preceding character, without an integer afterwards, or without a closing }. %s"
 msgstr ""
 
-#: corpus/forms.py:420
+#: corpus/forms.py:445
 #, python-format
 msgid "Regular expression cannot contain * without a preceding character, or multiple times in a row. %s"
 msgstr ""
 
-#: corpus/forms.py:429
+#: corpus/forms.py:454
 #, python-format
 msgid "Regular expression cannot contain + without a preceding character, or multiple times in a row. %s"
 msgstr ""
 
-#: corpus/forms.py:438
+#: corpus/forms.py:463
 #, python-format
 msgid "Regular expression cannot contain < or use a negative lookbehind query. %s"
 msgstr ""
 
-#: corpus/forms.py:448
+#: corpus/forms.py:473
 #, python-format
 msgid "Regular expression cannot contain the escape character \\ followed by an alphanumeric character other than one of DdSsWw, or at the end of a query. %s"
 msgstr ""
@@ -246,10 +267,6 @@ msgstr[5] "المحررون"
 #: entities/templates/entities/place_detail.html:53
 msgid "Metadata"
 msgstr "بيانات التعريف"
-
-#: corpus/templates/corpus/document_detail.html:48
-msgid "Shelfmark"
-msgstr "علامة الرف"
 
 #. Translators: label for date of this document, if known
 #: corpus/templates/corpus/document_detail.html:56
@@ -316,19 +333,14 @@ msgstr[3] ""
 msgstr[4] ""
 msgstr[5] ""
 
-#. Translators: label for document description
-#: corpus/templates/corpus/document_detail.html:145
-msgid "Description"
-msgstr "الوصف"
-
 #. Translators: heading label for document related people
 #. Translators: label for sort by number of related people
 #. Translators: accessibility label for people list
 #: corpus/templates/corpus/document_detail.html:153
-#: corpus/templates/corpus/snippets/document_result.html:108
-#: entities/forms.py:221 entities/forms.py:344
-#: entities/templates/entities/person_list.html:190
-#: entities/templates/entities/place_list.html:80
+#: corpus/templates/corpus/snippets/document_result.html:113
+#: entities/forms.py:224 entities/forms.py:347
+#: entities/templates/entities/person_list.html:192
+#: entities/templates/entities/place_list.html:103
 #: entities/templates/entities/place_related_people.html:28
 msgid "Related People"
 msgstr ""
@@ -338,16 +350,18 @@ msgstr ""
 #. Translators: accessibility label for place list
 #. Translators: heading label for document related places
 #: corpus/templates/corpus/document_detail.html:172
-#: corpus/templates/corpus/snippets/document_result.html:112
-#: entities/forms.py:223 entities/templates/entities/person_list.html:194
+#: corpus/templates/corpus/snippets/document_result.html:117
+#: entities/forms.py:226 entities/templates/entities/person_list.html:196
 #: entities/templates/entities/person_related_places.html:56
 #: entities/templates/entities/place_detail.html:93
 msgid "Related Places"
 msgstr ""
 
 #. Translators: label for tags on a document
+#. Translators: Person "tags" column header on the browse page
 #: corpus/templates/corpus/document_detail.html:190
-#: corpus/templates/corpus/snippets/document_result.html:125
+#: corpus/templates/corpus/snippets/document_result.html:130
+#: entities/templates/entities/person_list.html:132
 msgid "Tags"
 msgstr "العلامات"
 
@@ -411,58 +425,68 @@ msgstr ""
 msgid "Permalink"
 msgstr "رابط دائم"
 
-#: corpus/templates/corpus/document_list.html:15
+#: corpus/templates/corpus/document_list.html:16
 msgid "How to Search"
 msgstr ""
 
 #. Translators: accessibility label for button to close search mode help dialog
-#: corpus/templates/corpus/document_list.html:18
+#: corpus/templates/corpus/document_list.html:19
 msgid "Close search mode help"
 msgstr ""
 
 #. Translators: accessibility label for button to open search mode help dialog
-#: corpus/templates/corpus/document_list.html:25
+#: corpus/templates/corpus/document_list.html:26
 msgid "Open search mode help"
 msgstr ""
 
 #. Translators: Search submit button
-#: corpus/templates/corpus/document_list.html:31
-#: entities/templates/entities/person_list.html:15
-msgid "Submit search"
-msgstr "إرسال البحث"
+#: corpus/templates/corpus/document_list.html:31 templates/snippets/menu.html:4
+msgid "Search"
+msgstr "بحث"
 
-#: corpus/templates/corpus/document_list.html:37
-#: corpus/templates/corpus/document_list.html:64
+#: corpus/templates/corpus/document_list.html:47
+msgid "in"
+msgstr ""
+
+#: corpus/templates/corpus/document_list.html:59
+msgid "\n"
+"                            Case sensitive, must match entire shelfmark. Type one shelfmark,\n"
+"                            even if part of a join, for best results.\n"
+"                        "
+msgstr ""
+
+#: corpus/templates/corpus/document_list.html:70
+#: corpus/templates/corpus/document_list.html:97
 #: entities/templates/entities/person_list.html:29
 #: entities/templates/entities/person_list.html:56
 msgid "Filters"
 msgstr "عوامل التصفية"
 
 #. Translators: label for button to clear all applied filters
-#: corpus/templates/corpus/document_list.html:58
+#: corpus/templates/corpus/document_list.html:91
 #: entities/templates/entities/person_list.html:50
 msgid "Clear all"
 msgstr ""
 
 #. Translators: label for 'filters' close button for mobile navigation
-#: corpus/templates/corpus/document_list.html:67
+#: corpus/templates/corpus/document_list.html:100
 #: entities/templates/entities/person_list.html:59
 msgid "Close filter options"
 msgstr "إغلاق خيارات التصفية"
 
-#: corpus/templates/corpus/document_list.html:83
+#: corpus/templates/corpus/document_list.html:116
 msgid "Includes"
 msgstr ""
 
 #. Translators: search results section header
-#: corpus/templates/corpus/document_list.html:135
+#: corpus/templates/corpus/document_list.html:168
 #: entities/templates/entities/person_list.html:93
 msgid "Results"
 msgstr ""
 
 #. Translators: number of search results
 #. Translators: number of results
-#: corpus/templates/corpus/document_list.html:139
+#: corpus/templates/corpus/document_list.html:172
 #: entities/templates/entities/person_list.html:97
 #, python-format
 msgid "1 result"
@@ -474,7 +498,7 @@ msgstr[3] "%(count_humanized)s نتائج"
 msgstr[4] "%(count_humanized)s نتائج"
 msgstr[5] "%(count_humanized)s مجموع النتائج"
 
-#: corpus/templates/corpus/document_list.html:163
+#: corpus/templates/corpus/document_list.html:196
 msgid "View results in the Arabic Papyrology Database"
 msgstr ""
 
@@ -537,21 +561,21 @@ msgstr[4] ""
 msgstr[5] ""
 
 #. Translators: label for sort by number of related documents
-#: corpus/templates/corpus/snippets/document_result.html:116
-#: entities/forms.py:219 entities/forms.py:342
-#: entities/templates/entities/person_list.html:186
-#: entities/templates/entities/place_list.html:75
+#: corpus/templates/corpus/snippets/document_result.html:121
+#: entities/forms.py:222 entities/forms.py:345
+#: entities/templates/entities/person_list.html:188
+#: entities/templates/entities/place_list.html:98
 #| msgid "Search Documents"
 msgid "Related Documents"
 msgstr ""
 
-#: corpus/templates/corpus/snippets/document_result.html:132
-#: entities/templates/entities/person_list.html:180
+#: corpus/templates/corpus/snippets/document_result.html:137
+#: entities/templates/entities/person_list.html:182
 msgid "more"
 msgstr "المزيد"
 
 #. Translators: number of editions for this document
-#: corpus/templates/corpus/snippets/document_result.html:144
+#: corpus/templates/corpus/snippets/document_result.html:149
 #, python-format
 msgid "1 Transcription"
 msgid_plural "%(counter)s Transcriptions"
@@ -563,7 +587,7 @@ msgstr[4] "%(counter)s نسخ"
 msgstr[5] "%(counter)s نسخ"
 
 #. Translators: number of translations for this document
-#: corpus/templates/corpus/snippets/document_result.html:154
+#: corpus/templates/corpus/snippets/document_result.html:159
 #, python-format
 msgid "1 Translation"
 msgid_plural "%(counter)s Translations"
@@ -575,7 +599,7 @@ msgstr[4] "%(counter)s ترجمات"
 msgstr[5] "%(counter)s ترجمات"
 
 #. Translators: number of sources that discuss this document
-#: corpus/templates/corpus/snippets/document_result.html:164
+#: corpus/templates/corpus/snippets/document_result.html:169
 #, python-format
 msgid "1 Discussion"
 msgid_plural "%(counter)s Discussions"
@@ -586,38 +610,38 @@ msgstr[3] "%(counter)s مناقشات"
 msgstr[4] "%(counter)s مناقشات"
 msgstr[5] "%(counter)s مناقشات"
 
-#: corpus/templates/corpus/snippets/document_result.html:172
+#: corpus/templates/corpus/snippets/document_result.html:177
 msgid "No Scholarship Records"
 msgstr "لا توجد ثبت المراجع والمصادر"
 
 #. Translators: label for when no image thumbnail is available
-#: corpus/templates/corpus/snippets/document_result.html:193
+#: corpus/templates/corpus/snippets/document_result.html:198
 #: entities/templates/entities/snippets/related_documents_table.html:45
 msgid "No Image"
 msgstr ""
 
 #. Translators: Date document was first added to the PGP
-#: corpus/templates/corpus/snippets/document_result.html:197
+#: corpus/templates/corpus/snippets/document_result.html:202
 msgid "In PGP since"
 msgstr "في PGP منذ"
 
 #. Translators: label for unknown date for date added to PGP
-#: corpus/templates/corpus/snippets/document_result.html:199
+#: corpus/templates/corpus/snippets/document_result.html:204
 msgid "unknown"
 msgstr ""
 
 #. Translators: label for historical/old shelfmark on document fragments
-#: corpus/templates/corpus/snippets/document_result.html:209
+#: corpus/templates/corpus/snippets/document_result.html:214
 msgid "Historical shelfmark"
 msgstr ""
 
 #. Translators: screen-reader label for "view document details" link
-#: corpus/templates/corpus/snippets/document_result.html:219
+#: corpus/templates/corpus/snippets/document_result.html:224
 #, python-format
 msgid "View details for %(document_label)s"
 msgstr ""
 
-#: corpus/templates/corpus/snippets/document_result.html:221
+#: corpus/templates/corpus/snippets/document_result.html:226
 msgid "View document details"
 msgstr "عرض تفاصيل المستند"
 
@@ -761,7 +785,7 @@ msgstr[5] ""
 msgid "Zoom and Rotate"
 msgstr "تكبير و تدوير"
 
-#: corpus/templates/corpus/snippets/document_transcription.html:246
+#: corpus/templates/corpus/snippets/document_transcription.html:245
 #, python-format
 msgid "View %(related_doc)s"
 msgstr "عرض %(related_doc)s"
@@ -804,27 +828,27 @@ msgstr "وثائق"
 msgid "Search and browse Geniza documents."
 msgstr "البحث في وثائق جنيزا وتصفحها."
 
-#: corpus/views.py:326 entities/views.py:721
+#: corpus/views.py:332 entities/views.py:739
 #, python-format
 msgid "After %s"
 msgstr ""
 
-#: corpus/views.py:328 entities/views.py:723
+#: corpus/views.py:334 entities/views.py:741
 #, python-format
 msgid "Before %s"
 msgstr ""
 
-#: corpus/views.py:399
+#: corpus/views.py:405
 msgid "Error retrieving search results. Check regular expression for errors such as unescaped or unclosed brackets or parentheses."
 msgstr ""
 
 #. Translators: title of document scholarship page
-#: corpus/views.py:531
+#: corpus/views.py:540
 #, python-format
 msgid "Scholarship on %(doc)s"
 msgstr "منحة في %(doc)s"
 
-#: corpus/views.py:538
+#: corpus/views.py:547
 #, python-format
 msgid "%(count)d scholarship record"
 msgid_plural "%(count)d scholarship records"
@@ -836,12 +860,12 @@ msgstr[4] "%(count)d سجلات منح دراسية"
 msgstr[5] "%(count)d سجلات منح دراسية"
 
 #. Translators: title of related documents page
-#: corpus/views.py:579
+#: corpus/views.py:588
 #, python-format
 msgid "Related documents for %(doc)s"
 msgstr "المستندات ذات الصلة لـ %(doc)s"
 
-#: corpus/views.py:586 entities/views.py:317
+#: corpus/views.py:595 entities/views.py:335
 #, python-format
 msgid "%(count)d related document"
 msgid_plural "%(count)d related documents"
@@ -853,34 +877,34 @@ msgstr[4] "%(count)d مستندات ذات صلة"
 msgstr[5] "%(count)d مستندات ذات صلة"
 
 #. Translators: placeholder for people keyword search input
-#: entities/forms.py:195
+#: entities/forms.py:198
 msgid "Search for people by name"
 msgstr ""
 
 #. Translators: accessible label for people keyword search input
-#: entities/forms.py:197
+#: entities/forms.py:200
 msgid "word or phrase"
 msgstr ""
 
 #. Translators: label for a person's gender
 #. Translators: Person "gender" column header on the browse page
-#: entities/forms.py:202 entities/templates/entities/person_detail.html:34
+#: entities/forms.py:205 entities/templates/entities/person_detail.html:34
 #: entities/templates/entities/person_list.html:124
 msgid "Gender"
 msgstr ""
 
-#: entities/forms.py:203 entities/views.py:737
+#: entities/forms.py:206 entities/views.py:755
 msgid "Detail page available"
 msgstr ""
 
 #. Translators: Label for a person's social role
 #. Translators: Person "social role" column header on the browse page
-#: entities/forms.py:204 entities/templates/entities/person_detail.html:57
+#: entities/forms.py:207 entities/templates/entities/person_detail.html:57
 #: entities/templates/entities/person_list.html:128
 msgid "Social role"
 msgstr ""
 
-#: entities/forms.py:205
+#: entities/forms.py:208
 msgid "Relation to documents"
 msgstr ""
 
@@ -889,34 +913,34 @@ msgstr ""
 #. Translators: table header for person name
 #. Translators: table header for place name
 #. Translators: table header for person name
-#: entities/forms.py:213 entities/forms.py:340
+#: entities/forms.py:216 entities/forms.py:343
 #: entities/templates/entities/person_list.html:120
 #: entities/templates/entities/person_related_people.html:35
 #: entities/templates/entities/person_related_places.html:65
-#: entities/templates/entities/place_list.html:57
+#: entities/templates/entities/place_list.html:80
 #: entities/templates/entities/place_related_people.html:37
 msgid "Name"
 msgstr ""
 
 #. Translators: label for sort by person activity dates
 #. Translators: table header for document date
-#: entities/forms.py:215
+#: entities/forms.py:218
 #: entities/templates/entities/snippets/related_documents_table.html:31
 msgid "Date"
 msgstr ""
 
 #. Translators: label for sort by social role
-#: entities/forms.py:217
+#: entities/forms.py:220
 msgid "Social Role"
 msgstr ""
 
 #. Translators: label for ascending sort
-#: entities/forms.py:236 entities/forms.py:357
+#: entities/forms.py:239 entities/forms.py:360
 msgid "Ascending"
 msgstr ""
 
 #. Translators: label for descending sort
-#: entities/forms.py:238 entities/forms.py:359
+#: entities/forms.py:241 entities/forms.py:362
 msgid "Descending"
 msgstr ""
 
@@ -932,23 +956,23 @@ msgstr ""
 msgid "Unknown"
 msgstr ""
 
-#: entities/models.py:1220
+#: entities/models.py:1224
 msgid "Immediate family relations"
 msgstr ""
 
-#: entities/models.py:1221
+#: entities/models.py:1225
 msgid "Extended family"
 msgstr ""
 
-#: entities/models.py:1222
+#: entities/models.py:1226
 msgid "Relatives by marriage"
 msgstr ""
 
-#: entities/models.py:1223
+#: entities/models.py:1227
 msgid "Business and property relationships"
 msgstr ""
 
-#: entities/models.py:1224
+#: entities/models.py:1228
 msgid "Ambiguity"
 msgstr ""
 
@@ -997,6 +1021,11 @@ msgstr ""
 msgid "Link to this person:"
 msgstr ""
 
+#. Translators: Search submit button
+#: entities/templates/entities/person_list.html:15
+msgid "Submit search"
+msgstr "إرسال البحث"
+
 #. Translators: label for people browse page list view
 #: entities/templates/entities/person_list.html:21
 msgid "Toggle list view"
@@ -1008,33 +1037,33 @@ msgstr ""
 
 #. Translators: Person "other names" column header on the browse page
 #: entities/templates/entities/person_list.html:122
-#: entities/templates/entities/place_list.html:66
+#: entities/templates/entities/place_list.html:89
 msgid "Other names"
 msgstr ""
 
 #. Translators: Person "document count" column header on the browse page
 #. Translators: table header for count of shared documents between people
-#: entities/templates/entities/person_list.html:133
+#: entities/templates/entities/person_list.html:135
 #: entities/templates/entities/person_related_people.html:49
 msgid "Number of related documents"
 msgstr ""
 
 #. Translators: Person "related people count" column header on the browse page
-#: entities/templates/entities/person_list.html:137
+#: entities/templates/entities/person_list.html:139
 msgid "Number of related people"
 msgstr ""
 
 #. Translators: Person "related place count" column header on the browse page
-#: entities/templates/entities/person_list.html:141
+#: entities/templates/entities/person_list.html:143
 msgid "Number of related places"
 msgstr ""
 
-#: entities/templates/entities/person_list.html:159
+#: entities/templates/entities/person_list.html:161
 msgid "Also known as: "
 msgstr ""
 
 #. Translators: range of search results on the current page, out of total
-#: entities/templates/entities/person_list.html:205
+#: entities/templates/entities/person_list.html:207
 #, python-format
 msgid "\n"
 "            <div>%(start)s – %(end)s of %(count_humanized)s</div>\n"
@@ -1063,7 +1092,7 @@ msgstr ""
 #. Translators: label for Places map mode button on mobile devices
 #: entities/templates/entities/person_related_places.html:31
 #: entities/templates/entities/place_detail.html:32
-#: entities/templates/entities/place_list.html:101
+#: entities/templates/entities/place_list.html:124
 msgid "Map"
 msgstr ""
 
@@ -1072,18 +1101,34 @@ msgstr ""
 msgid "Coordinates"
 msgstr ""
 
+#: entities/templates/entities/place_list.html:22
+msgid "Map pin icon for regions"
+msgstr ""
+
+#: entities/templates/entities/place_list.html:27
+msgid "Region"
+msgstr ""
+
+#: entities/templates/entities/place_list.html:30
+msgid "Map pin icon for other places"
+msgstr ""
+
+#: entities/templates/entities/place_list.html:35
+msgid "Place"
+msgstr ""
+
 #. Translators: accessible label for section showing place metadata, names
-#: entities/templates/entities/place_list.html:56
+#: entities/templates/entities/place_list.html:79
 msgid "metadata"
 msgstr ""
 
 #. Translators: accessible label for section showing counts of entries related to an entity
-#: entities/templates/entities/place_list.html:73
+#: entities/templates/entities/place_list.html:96
 msgid "Related entries"
 msgstr ""
 
 #. Translators: range of search results on the current page, out of total
-#: entities/templates/entities/place_list.html:90
+#: entities/templates/entities/place_list.html:113
 #, python-format
 msgid "\n"
 "                    <div>%(start)s – %(end)s of %(count_humanized)s</div>\n"
@@ -1091,7 +1136,7 @@ msgid "\n"
 msgstr ""
 
 #. Translators: label for Places list mode button on mobile devices
-#: entities/templates/entities/place_list.html:99
+#: entities/templates/entities/place_list.html:122
 msgid "List"
 msgstr ""
 
@@ -1143,18 +1188,18 @@ msgid "Type"
 msgstr ""
 
 #. Translators: title of entity "related documents" page
-#: entities/views.py:309
+#: entities/views.py:327
 #, python-format
 msgid "Related documents for %(p)s"
 msgstr ""
 
 #. Translators: title of entity "related people" page
-#: entities/views.py:399
+#: entities/views.py:417
 #, python-format
 msgid "Related people for %(p)s"
 msgstr ""
 
-#: entities/views.py:407 entities/views.py:477
+#: entities/views.py:425 entities/views.py:495
 #, python-format
 msgid "%(count)d related person"
 msgid_plural "%(count)d related people"
@@ -1166,12 +1211,12 @@ msgstr[4] ""
 msgstr[5] ""
 
 #. Translators: title of person "related places" page
-#: entities/views.py:536
+#: entities/views.py:554
 #, python-format
 msgid "Related places for %(p)s"
 msgstr ""
 
-#: entities/views.py:544
+#: entities/views.py:562
 #, python-format
 msgid "%(count)d related place"
 msgid_plural "%(count)d related places"
@@ -1184,32 +1229,27 @@ msgstr[5] ""
 
 #. Translators: title of people list/browse page
 #. Translators: label for link to people browse page in main navigation
-#: entities/views.py:649 templates/snippets/menu.html:19
+#: entities/views.py:667 templates/snippets/menu.html:19
 msgid "People"
 msgstr "اشخاص"
 
 #. Translators: description of people list/browse page
-#: entities/views.py:651
+#: entities/views.py:669
 msgid "Browse people present in Geniza documents."
 msgstr ""
 
 #. Translators: title of places list/browse page
 #. Translators: label for link to places browse page in main navigation
-#: entities/views.py:827 templates/snippets/menu.html:26
+#: entities/views.py:845 templates/snippets/menu.html:26
 msgid "Places"
 msgstr "أَماكِن"
 
 #. Translators: description of places list/browse page
-#: entities/views.py:829
+#: entities/views.py:847
 msgid "Browse places present in Geniza documents."
 msgstr ""
 
-#. Translators: Placeholder for when a work has no title available
-#: footnotes/models.py:259
-msgid "[digital geniza document edition]"
-msgstr "[طبعة وثيقة جينيزا رقمية]"
-
-#: footnotes/models.py:494
+#: footnotes/models.py:507
 msgid "Edition"
 msgstr "الطبعة"
 
@@ -1341,10 +1381,6 @@ msgstr "الصفحة الرئيسية لـ Princeton Center for Digital Humaniti
 #, python-format
 msgid "read this page in %(language_name)s (%(language_code)s)"
 msgstr "قراءة هذه الصفحة في %(language_name)s (%(language_code)s)"
-
-#: templates/snippets/menu.html:4
-msgid "Search"
-msgstr "بحث"
 
 #. Translators: label for main menu back button for mobile navigation
 #: templates/snippets/sub_menu.html:8

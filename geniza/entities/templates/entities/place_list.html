@@ -16,6 +16,24 @@
                 data-controller="map"
                 data-maptiler-token="{{ maptiler_token }}"
             >
+                <dl class="legend">
+                    <dt>
+                        {# translators: Accessibility label for regions icon #}
+                        <svg class="marker" aria-label="{% translate 'Map pin icon for regions' %}">
+                            <use href="{% static 'img/ui/all/all/map-pin-region.svg' %}#pin" />
+                        </svg>
+                    </dt>
+                    {# translators: Label for regions icon in map legend #}
+                    <dd>{% translate "Region" %}</dd>
+                    <dt>
+                        {# translators: Accessibility label for places icon #}
+                        <svg class="marker" aria-label="{% translate 'Map pin icon for other places' %}">
+                            <use href="{% static 'img/ui/all/all/map-pin.svg' %}#pin" />
+                        </svg>
+                    </dt>
+                    {# translators: Label for places icon in map legend #}
+                    <dd>{% translate "Place" %}</dd>
+                </dl>
                 {% for place in places %}
                     {% if place.location %}
                         <svg
@@ -25,8 +43,13 @@
                             data-lon="{{ place.location|split:","|last }}"
                             data-slug="{{ place.slug }}"
                         >
-                            <use class="pin" href="{% static 'img/ui/all/all/map-pin.svg' %}#pin" />
-                            <use class="selected-pin" href="{% static 'img/ui/all/all/map-pin-fill.svg' %}#pin" />
+                            {% if place.is_region %}
+                                <use class="pin region" href="{% static 'img/ui/all/all/map-pin-region.svg' %}#pin" />
+                                <use class="selected-pin region" href="{% static 'img/ui/all/all/map-pin-region-fill.svg' %}#pin" />
+                            {% else %}
+                                <use class="pin" href="{% static 'img/ui/all/all/map-pin.svg' %}#pin" />
+                                <use class="selected-pin" href="{% static 'img/ui/all/all/map-pin-fill.svg' %}#pin" />
+                            {% endif %}
                         </svg>
                     {% endif %}
                 {% endfor %}
