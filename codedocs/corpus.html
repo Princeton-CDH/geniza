@@ -5,10 +5,10 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Documents and Fragments &#8212; Princeton Geniza Project 4.20.0 documentation</title>
+    <title>Documents and Fragments &#8212; Princeton Geniza Project 4.21.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=5ecbeea2" />
     <link rel="stylesheet" type="text/css" href="../_static/alabaster.css?v=12dfc556" />
-    <script src="../_static/documentation_options.js?v=a5b539c6"></script>
+    <script src="../_static/documentation_options.js?v=d460739f"></script>
     <script src="../_static/doctools.js?v=9a2dae69"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="../genindex.html" />
@@ -1711,10 +1711,24 @@ Example use:</p>
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="geniza.corpus.templatetags.corpus_extras.is_index_cards">
+<span class="sig-prename descclassname"><span class="pre">geniza.corpus.templatetags.corpus_extras.</span></span><span class="sig-name descname"><span class="pre">is_index_cards</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/corpus/templatetags/corpus_extras.html#is_index_cards"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.corpus.templatetags.corpus_extras.is_index_cards" title="Link to this definition">¶</a></dt>
+<dd><p>For scholarship records list: indicate whether or not a source record
+relates to Goitein index cards.</p>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="geniza.corpus.templatetags.corpus_extras.pgp_urlize">
 <span class="sig-prename descclassname"><span class="pre">geniza.corpus.templatetags.corpus_extras.</span></span><span class="sig-name descname"><span class="pre">pgp_urlize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/corpus/templatetags/corpus_extras.html#pgp_urlize"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.corpus.templatetags.corpus_extras.pgp_urlize" title="Link to this definition">¶</a></dt>
 <dd><p>Find all instances of “PGPID #” in the passed text, and convert
 each to a link to the referenced document.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="geniza.corpus.templatetags.corpus_extras.process_citation">
+<span class="sig-prename descclassname"><span class="pre">geniza.corpus.templatetags.corpus_extras.</span></span><span class="sig-name descname"><span class="pre">process_citation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/corpus/templatetags/corpus_extras.html#process_citation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.corpus.templatetags.corpus_extras.process_citation" title="Link to this definition">¶</a></dt>
+<dd><p>For scholarship records list: handle grouped citations by passing to
+Footnote.display_multiple class method.</p>
 </dd></dl>
 
 <dl class="py function">
@@ -2435,7 +2449,9 @@ for the set of users who associated with any of the log entries.</p>
 <li><a class="reference internal" href="#geniza.corpus.templatetags.corpus_extras.iiif_image"><code class="docutils literal notranslate"><span class="pre">iiif_image()</span></code></a></li>
 <li><a class="reference internal" href="#geniza.corpus.templatetags.corpus_extras.iiif_info_json"><code class="docutils literal notranslate"><span class="pre">iiif_info_json()</span></code></a></li>
 <li><a class="reference internal" href="#geniza.corpus.templatetags.corpus_extras.index"><code class="docutils literal notranslate"><span class="pre">index()</span></code></a></li>
+<li><a class="reference internal" href="#geniza.corpus.templatetags.corpus_extras.is_index_cards"><code class="docutils literal notranslate"><span class="pre">is_index_cards()</span></code></a></li>
 <li><a class="reference internal" href="#geniza.corpus.templatetags.corpus_extras.pgp_urlize"><code class="docutils literal notranslate"><span class="pre">pgp_urlize()</span></code></a></li>
+<li><a class="reference internal" href="#geniza.corpus.templatetags.corpus_extras.process_citation"><code class="docutils literal notranslate"><span class="pre">process_citation()</span></code></a></li>
 <li><a class="reference internal" href="#geniza.corpus.templatetags.corpus_extras.querystring_replace"><code class="docutils literal notranslate"><span class="pre">querystring_replace()</span></code></a></li>
 <li><a class="reference internal" href="#geniza.corpus.templatetags.corpus_extras.shelfmark_wrap"><code class="docutils literal notranslate"><span class="pre">shelfmark_wrap()</span></code></a></li>
 <li><a class="reference internal" href="#geniza.corpus.templatetags.corpus_extras.translate_url"><code class="docutils literal notranslate"><span class="pre">translate_url()</span></code></a></li>

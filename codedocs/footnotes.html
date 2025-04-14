@@ -5,10 +5,10 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Scholarship Records &#8212; Princeton Geniza Project 4.20.0 documentation</title>
+    <title>Scholarship Records &#8212; Princeton Geniza Project 4.21.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=5ecbeea2" />
     <link rel="stylesheet" type="text/css" href="../_static/alabaster.css?v=12dfc556" />
-    <script src="../_static/documentation_options.js?v=a5b539c6"></script>
+    <script src="../_static/documentation_options.js?v=d460739f"></script>
     <script src="../_static/doctools.js?v=9a2dae69"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="../genindex.html" />
@@ -165,9 +165,18 @@ keys are canvas ids, list is html content.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="geniza.footnotes.models.Footnote.display">
-<span class="sig-name descname"><span class="pre">display</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/footnotes/models.html#Footnote.display"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.footnotes.models.Footnote.display" title="Link to this definition">¶</a></dt>
-<dd><p>format footnote for display; used on document detail page
-and metadata export for old pgp site</p>
+<span class="sig-name descname"><span class="pre">display</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">old_pgp</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/footnotes/models.html#Footnote.display"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.footnotes.models.Footnote.display" title="Link to this definition">¶</a></dt>
+<dd><p>format footnote for display; used on document detail page</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geniza.footnotes.models.Footnote.display_multiple">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">display_multiple</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">footnotes</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/footnotes/models.html#Footnote.display_multiple"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.footnotes.models.Footnote.display_multiple" title="Link to this definition">¶</a></dt>
+<dd><p>Display method for multiple footnotes, grouped by source, on the scholarship
+records/bibliography page. Normally uses source formatted display, but requires
+special handling for unpublished source records with multiple footnotes.
+Handles Goitein index cards by including URLs and index card numbers when
+available, and by adding the attribution to the PGL.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -258,7 +267,7 @@ of all validation errors if any occur.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="geniza.footnotes.models.Source.formatted_display">
-<span class="sig-name descname"><span class="pre">formatted_display</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">extra_fields</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/footnotes/models.html#Source.formatted_display"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.footnotes.models.Source.formatted_display" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">formatted_display</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">extra_fields</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">format_index_cards</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/footnotes/models.html#Source.formatted_display"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.footnotes.models.Source.formatted_display" title="Link to this definition">¶</a></dt>
 <dd><p>Format source for display; used on document scholarship page.
 To omit publisher, place_published, and page_range fields,
 specify <cite>extra_fields=False</cite>.</p>
@@ -447,6 +456,7 @@ prefetching and count annotation.</p>
 <li><a class="reference internal" href="#geniza.footnotes.models.Footnote.content_text"><code class="docutils literal notranslate"><span class="pre">Footnote.content_text</span></code></a></li>
 <li><a class="reference internal" href="#geniza.footnotes.models.Footnote.content_text_canvases"><code class="docutils literal notranslate"><span class="pre">Footnote.content_text_canvases</span></code></a></li>
 <li><a class="reference internal" href="#geniza.footnotes.models.Footnote.display"><code class="docutils literal notranslate"><span class="pre">Footnote.display()</span></code></a></li>
+<li><a class="reference internal" href="#geniza.footnotes.models.Footnote.display_multiple"><code class="docutils literal notranslate"><span class="pre">Footnote.display_multiple()</span></code></a></li>
 <li><a class="reference internal" href="#geniza.footnotes.models.Footnote.explicit_line_numbers"><code class="docutils literal notranslate"><span class="pre">Footnote.explicit_line_numbers()</span></code></a></li>
 <li><a class="reference internal" href="#geniza.footnotes.models.Footnote.has_url"><code class="docutils literal notranslate"><span class="pre">Footnote.has_url()</span></code></a></li>
 <li><a class="reference internal" href="#geniza.footnotes.models.Footnote.iiif_annotation_content"><code class="docutils literal notranslate"><span class="pre">Footnote.iiif_annotation_content()</span></code></a></li>

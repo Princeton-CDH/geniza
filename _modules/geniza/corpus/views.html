@@ -4,10 +4,10 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>geniza.corpus.views &#8212; Princeton Geniza Project 4.20.0 documentation</title>
+    <title>geniza.corpus.views &#8212; Princeton Geniza Project 4.21.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=5ecbeea2" />
     <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=12dfc556" />
-    <script src="../../../_static/documentation_options.js?v=a5b539c6"></script>
+    <script src="../../../_static/documentation_options.js?v=d460739f"></script>
     <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
@@ -123,7 +123,7 @@
     <span class="c1"># Translators: description of document search page, for search engines</span>
     <span class="n">page_description</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Search and browse Geniza documents.&quot;</span><span class="p">)</span>
     <span class="n">paginate_by</span> <span class="o">=</span> <span class="mi">50</span>
-    <span class="n">initial</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;sort&quot;</span><span class="p">:</span> <span class="s2">&quot;random&quot;</span><span class="p">,</span> <span class="s2">&quot;mode&quot;</span><span class="p">:</span> <span class="s2">&quot;general&quot;</span><span class="p">}</span>
+    <span class="n">initial</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;sort&quot;</span><span class="p">:</span> <span class="s2">&quot;random&quot;</span><span class="p">,</span> <span class="s2">&quot;mode&quot;</span><span class="p">:</span> <span class="s2">&quot;general&quot;</span><span class="p">,</span> <span class="s2">&quot;regex_field&quot;</span><span class="p">:</span> <span class="s2">&quot;transcription&quot;</span><span class="p">}</span>
     <span class="c1"># NOTE: does not filter on status, since changing status could modify the page</span>
     <span class="n">solr_lastmodified_filters</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;item_type_s&quot;</span><span class="p">:</span> <span class="s2">&quot;document&quot;</span><span class="p">}</span>
     <span class="n">applied_filter_labels</span> <span class="o">=</span> <span class="p">[]</span>
@@ -272,8 +272,9 @@
             <span class="n">search_opts</span> <span class="o">=</span> <span class="n">form</span><span class="o">.</span><span class="n">cleaned_data</span>
 
             <span class="k">if</span> <span class="n">search_opts</span><span class="p">[</span><span class="s2">&quot;q&quot;</span><span class="p">]</span> <span class="ow">and</span> <span class="n">search_opts</span><span class="p">[</span><span class="s2">&quot;mode&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;regex&quot;</span><span class="p">:</span>
+                <span class="n">regex_field</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">search_opts</span><span class="p">[</span><span class="s1">&#39;regex_field&#39;</span><span class="p">]</span><span class="w"> </span><span class="ow">or</span><span class="w"> </span><span class="s1">&#39;transcription&#39;</span><span class="si">}</span><span class="s2">_regex&quot;</span>
                 <span class="c1"># use regex search if &quot;mode&quot; is &quot;regex&quot;</span>
-                <span class="n">documents</span> <span class="o">=</span> <span class="n">documents</span><span class="o">.</span><span class="n">regex_search</span><span class="p">(</span><span class="n">search_opts</span><span class="p">[</span><span class="s2">&quot;q&quot;</span><span class="p">])</span>
+                <span class="n">documents</span> <span class="o">=</span> <span class="n">documents</span><span class="o">.</span><span class="n">regex_search</span><span class="p">(</span><span class="n">regex_field</span><span class="p">,</span> <span class="n">search_opts</span><span class="p">[</span><span class="s2">&quot;q&quot;</span><span class="p">])</span>
 
             <span class="k">elif</span> <span class="n">search_opts</span><span class="p">[</span><span class="s2">&quot;q&quot;</span><span class="p">]:</span>
                 <span class="c1"># NOTE: using requireFieldMatch so that field-specific search</span>
@@ -323,11 +324,16 @@
                 <span class="p">)</span>  <span class="c1"># include relevance score in results</span>
 
             <span class="c1"># order by sort option</span>
-            <span class="n">documents</span> <span class="o">=</span> <span class="n">documents</span><span class="o">.</span><span class="n">order_by</span><span class="p">(</span>
+            <span class="n">order_by</span> <span class="o">=</span> <span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">get_solr_sort</span><span class="p">(</span>
                     <span class="n">search_opts</span><span class="p">[</span><span class="s2">&quot;sort&quot;</span><span class="p">],</span> <span class="n">search_opts</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;exclude_inferred&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
-                <span class="p">)</span>
+                <span class="p">),</span>
             <span class="p">)</span>
+            <span class="c1"># in all sorts except random and shelfmark, order</span>
+            <span class="c1"># secondarily by shelfmark, in order to break ties</span>
+            <span class="k">if</span> <span class="s2">&quot;random&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">order_by</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">and</span> <span class="s2">&quot;shelfmark&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">order_by</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+                <span class="n">order_by</span> <span class="o">+=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">solr_sort</span><span class="p">[</span><span class="s2">&quot;shelfmark&quot;</span><span class="p">],)</span>
+            <span class="n">documents</span> <span class="o">=</span> <span class="n">documents</span><span class="o">.</span><span class="n">order_by</span><span class="p">(</span><span class="o">*</span><span class="n">order_by</span><span class="p">)</span>
 
             <span class="c1"># filter by type if specified</span>
             <span class="k">if</span> <span class="n">search_opts</span><span class="p">[</span><span class="s2">&quot;doctype&quot;</span><span class="p">]:</span>
@@ -572,19 +578,22 @@
                 <span class="c1"># preload transcription font when appropriate</span>
                 <span class="s2">&quot;page_includes_transcriptions&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">object</span><span class="o">.</span><span class="n">has_transcription</span><span class="p">(),</span>
                 <span class="c1"># generate list of related documents that can be filtered by image url for links on excluded images</span>
-                <span class="s2">&quot;related_documents&quot;</span><span class="p">:</span> <span class="p">[</span>
-                    <span class="p">{</span>
-                        <span class="s2">&quot;document&quot;</span><span class="p">:</span> <span class="n">doc</span><span class="p">,</span>
-                        <span class="s2">&quot;images&quot;</span><span class="p">:</span> <span class="p">[</span>
-                            <span class="c1"># TODO: can we use canvas uris here instead?</span>
-                            <span class="nb">str</span><span class="p">(</span><span class="n">image</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-                            <span class="k">for</span> <span class="n">image</span> <span class="ow">in</span> <span class="n">doc</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;iiif_images&quot;</span><span class="p">,</span> <span class="p">[])</span>
-                        <span class="p">],</span>
-                    <span class="p">}</span>
-                    <span class="k">for</span> <span class="n">doc</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">object</span><span class="o">.</span><span class="n">related_documents</span>
-                <span class="p">]</span>
-                <span class="c1"># skip solr query if none of the associated TextBlocks have side info</span>
-                <span class="k">if</span> <span class="nb">any</span><span class="p">([</span><span class="n">tb</span><span class="o">.</span><span class="n">side</span> <span class="k">for</span> <span class="n">tb</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">object</span><span class="o">.</span><span class="n">textblock_set</span><span class="o">.</span><span class="n">all</span><span class="p">()])</span> <span class="k">else</span> <span class="p">[],</span>
+                <span class="s2">&quot;related_documents&quot;</span><span class="p">:</span> <span class="p">(</span>
+                    <span class="p">[</span>
+                        <span class="p">{</span>
+                            <span class="s2">&quot;document&quot;</span><span class="p">:</span> <span class="n">doc</span><span class="p">,</span>
+                            <span class="s2">&quot;images&quot;</span><span class="p">:</span> <span class="p">[</span>
+                                <span class="c1"># TODO: can we use canvas uris here instead?</span>
+                                <span class="nb">str</span><span class="p">(</span><span class="n">image</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+                                <span class="k">for</span> <span class="n">image</span> <span class="ow">in</span> <span class="n">doc</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;iiif_images&quot;</span><span class="p">,</span> <span class="p">[])</span>
+                            <span class="p">],</span>
+                        <span class="p">}</span>
+                        <span class="k">for</span> <span class="n">doc</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">object</span><span class="o">.</span><span class="n">related_documents</span>
+                    <span class="p">]</span>
+                    <span class="c1"># skip solr query if none of the associated TextBlocks have side info</span>
+                    <span class="k">if</span> <span class="nb">any</span><span class="p">([</span><span class="n">tb</span><span class="o">.</span><span class="n">side</span> <span class="k">for</span> <span class="n">tb</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">object</span><span class="o">.</span><span class="n">textblock_set</span><span class="o">.</span><span class="n">all</span><span class="p">()])</span>
+                    <span class="k">else</span> <span class="p">[]</span>
+                <span class="p">),</span>
                 <span class="s2">&quot;images&quot;</span><span class="p">:</span> <span class="n">images</span><span class="p">,</span>
                 <span class="c1"># first image for twitter/opengraph meta tags</span>
                 <span class="s2">&quot;meta_image&quot;</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="n">images</span><span class="o">.</span><span class="n">values</span><span class="p">())[</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;image&quot;</span><span class="p">]</span> <span class="k">if</span> <span class="n">images</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
@@ -1090,9 +1099,11 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Create footnote linking source to document, then redirect to edit transcription/translation view&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">redirect</span><span class="p">(</span>
             <span class="n">reverse</span><span class="p">(</span>
-                <span class="s2">&quot;corpus:document-transcribe&quot;</span>
-                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">doc_relation</span> <span class="o">==</span> <span class="s2">&quot;transcription&quot;</span>
-                <span class="k">else</span> <span class="s2">&quot;corpus:document-translate&quot;</span><span class="p">,</span>
+                <span class="p">(</span>
+                    <span class="s2">&quot;corpus:document-transcribe&quot;</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">doc_relation</span> <span class="o">==</span> <span class="s2">&quot;transcription&quot;</span>
+                    <span class="k">else</span> <span class="s2">&quot;corpus:document-translate&quot;</span>
+                <span class="p">),</span>
                 <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_object</span><span class="p">()</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">POST</span><span class="p">[</span><span class="s2">&quot;source&quot;</span><span class="p">])),</span>
             <span class="p">)</span>
         <span class="p">)</span></div>
@@ -1204,17 +1215,22 @@
                     <span class="p">),</span>
                     <span class="s2">&quot;csrf_token&quot;</span><span class="p">:</span> <span class="n">csrf_token</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">),</span>
                     <span class="s2">&quot;tiny_api_key&quot;</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s2">&quot;TINY_API_KEY&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">),</span>
-                    <span class="s2">&quot;secondary_motivation&quot;</span><span class="p">:</span> <span class="s2">&quot;transcribing&quot;</span>
-                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">doc_relation</span> <span class="o">==</span> <span class="s2">&quot;transcription&quot;</span>
-                    <span class="k">else</span> <span class="s2">&quot;translating&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;secondary_motivation&quot;</span><span class="p">:</span> <span class="p">(</span>
+                        <span class="s2">&quot;transcribing&quot;</span>
+                        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">doc_relation</span> <span class="o">==</span> <span class="s2">&quot;transcription&quot;</span>
+                        <span class="k">else</span> <span class="s2">&quot;translating&quot;</span>
+                    <span class="p">),</span>
                     <span class="s2">&quot;text_direction&quot;</span><span class="p">:</span> <span class="n">text_direction</span><span class="p">,</span>
+                    <span class="s2">&quot;italic_enabled&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">doc_relation</span> <span class="o">==</span> <span class="s2">&quot;translation&quot;</span><span class="p">,</span>
                     <span class="c1"># line-by-line mode for eScriptorium sourced transcriptions</span>
                     <span class="s2">&quot;line_mode&quot;</span><span class="p">:</span> <span class="s2">&quot;model&quot;</span> <span class="ow">in</span> <span class="n">source</span><span class="o">.</span><span class="n">source_type</span><span class="o">.</span><span class="n">type</span><span class="p">,</span>
+                    <span class="c1"># placeholder url for annotating a broken image</span>
+                    <span class="s2">&quot;placeholder_img&quot;</span><span class="p">:</span> <span class="n">Document</span><span class="o">.</span><span class="n">PLACEHOLDER_CANVAS</span><span class="p">[</span><span class="s2">&quot;image&quot;</span><span class="p">][</span><span class="s2">&quot;info&quot;</span><span class="p">],</span>
                 <span class="p">},</span>
                 <span class="c1"># TODO: Add Footnote notes to the following display, if present</span>
-                <span class="s2">&quot;source_detail&quot;</span><span class="p">:</span> <span class="n">mark_safe</span><span class="p">(</span><span class="n">source</span><span class="o">.</span><span class="n">formatted_display</span><span class="p">())</span>
-                <span class="k">if</span> <span class="n">source</span>
-                <span class="k">else</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;source_detail&quot;</span><span class="p">:</span> <span class="p">(</span>
+                    <span class="n">mark_safe</span><span class="p">(</span><span class="n">source</span><span class="o">.</span><span class="n">formatted_display</span><span class="p">())</span> <span class="k">if</span> <span class="n">source</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
+                <span class="p">),</span>
                 <span class="s2">&quot;source_label&quot;</span><span class="p">:</span> <span class="n">source_label</span> <span class="k">if</span> <span class="n">source_label</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
                 <span class="s2">&quot;authors_count&quot;</span><span class="p">:</span> <span class="n">source</span><span class="o">.</span><span class="n">authors</span><span class="o">.</span><span class="n">count</span><span class="p">()</span> <span class="k">if</span> <span class="n">source</span> <span class="k">else</span> <span class="mi">0</span><span class="p">,</span>
                 <span class="s2">&quot;page_type&quot;</span><span class="p">:</span> <span class="s2">&quot;document annotating&quot;</span><span class="p">,</span>
@@ -1340,7 +1356,7 @@
             <span class="s2">&quot;</span><span class="si">%s%s%s</span><span class="s2">&quot;</span>
             <span class="o">%</span> <span class="p">(</span>
                 <span class="s2">&quot;and trans. &quot;</span> <span class="k">if</span> <span class="n">Footnote</span><span class="o">.</span><span class="n">TRANSLATION</span> <span class="ow">in</span> <span class="n">fn</span><span class="o">.</span><span class="n">doc_relation</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-                <span class="n">fn</span><span class="o">.</span><span class="n">display</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">),</span>
+                <span class="n">fn</span><span class="o">.</span><span class="n">display</span><span class="p">(</span><span class="n">old_pgp</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">),</span>
                 <span class="s2">&quot; </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">fn</span><span class="o">.</span><span class="n">url</span> <span class="k">if</span> <span class="n">fn</span><span class="o">.</span><span class="n">url</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
             <span class="p">)</span>
             <span class="k">for</span> <span class="n">fn</span> <span class="ow">in</span> <span class="n">editions</span>
