@@ -185,6 +185,9 @@ main.search {
                 }
             }
         }
+        label[for="id_exclude_uncertain"] span {
+            margin: 0.5rem 0;
+        }
     }
 }
 

@@ -1,6 +1,7 @@
 from unittest.mock import Mock, patch
 
 import pytest
+from django.http import QueryDict
 from django.utils.translation import activate, get_language
 
 from geniza.corpus.forms import FacetChoiceField
@@ -157,6 +158,37 @@ class TestPersonListForm:
             form.set_choices_from_facets(facets)
             form.fields["social_role"].populate_from_facets.assert_called_with(
                 {person.role.name_en: (person.role, 1)}
+            )
+
+    def test_set_choices_from_facets__uncertain(self):
+        scribe, _ = PersonDocumentRelationType.objects.get_or_create(
+            name="Scribe", name_en="Scribe"
+        )
+        mentioned, _ = PersonDocumentRelationType.objects.get_or_create(
+            name="Mentioned", name_en="Mentioned"
+        )
+        facets = {
+            "document_relations": {mentioned.name_en: 2, scribe.name_en: 2},
+            "certain_document_relations": {mentioned.name_en: 1, scribe.name_en: 0},
+        }
+        form = PersonListForm()
+        with patch.object(FacetChoiceField, "populate_from_facets"):
+            # should set labels and counts via "document_relations"
+            form.set_choices_from_facets(dict(facets))
+            form.fields["document_relation"].populate_from_facets.assert_called_with(
+                {
+                    mentioned.name_en: (mentioned, 2),
+                    scribe.name_en: (scribe, 2),
+                }
+            )
+            # exclude_uncertain: should set labels and counts via "certain_document_relations"
+            form = PersonListForm(data={"exclude_uncertain": "on"})
+            form.set_choices_from_facets(dict(facets))
+            form.fields["document_relation"].populate_from_facets.assert_called_with(
+                {
+                    mentioned.name_en: (mentioned, 1),
+                    scribe.name_en: (scribe, 0),
+                }
             )
 
     def test_get_translated_label(self):

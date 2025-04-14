@@ -391,6 +391,7 @@ class TestPersonListView:
             name_en="Other person mentioned"
         )
         (author, _) = PersonDocumentRelationType.objects.get_or_create(name_en="Author")
+        (scribe, _) = PersonDocumentRelationType.objects.get_or_create(name_en="Scribe")
         PersonDocumentRelation.objects.create(
             person=person, document=document, type=mentioned
         )
@@ -402,6 +403,16 @@ class TestPersonListView:
         )
         PersonDocumentRelation.objects.create(
             person=person_multiname, document=join, type=author
+        )
+        # certainty
+        PersonDocumentRelation.objects.create(
+            person=person, document=document, type=scribe, uncertain=False
+        )
+        PersonDocumentRelation.objects.create(
+            person=person_diacritic, document=join, type=scribe, uncertain=True
+        )
+        PersonDocumentRelation.objects.create(
+            person=person_multiname, document=document, type=scribe, uncertain=True
         )
         person.date = "990/1020"
         person.has_page = True
@@ -471,6 +482,20 @@ class TestPersonListView:
             }
             qs = personlist_view.get_queryset()
             assert qs.count() == 1
+
+            # filter by CERTAIN document relation
+            mock_get_form.return_value.cleaned_data = {
+                "document_relation": f"['{scribe.name_en}']",
+                "exclude_uncertain": True,
+            }
+            qs = personlist_view.get_queryset()
+            assert qs.count() == 1
+            mock_get_form.return_value.cleaned_data = {
+                "document_relation": f"['{scribe.name_en}']",
+                "exclude_uncertain": False,
+            }
+            qs = personlist_view.get_queryset()
+            assert qs.count() == 3
 
             # filter by detail page
             mock_get_form.return_value.cleaned_data = {"has_page": True}

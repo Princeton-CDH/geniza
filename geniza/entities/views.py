@@ -362,8 +362,13 @@ class RelatedDocumentsMixin:
             )
 
         if "relation" in sort:
-            # sort by document-entity relation type name
-            related_documents = related_documents.order_by(f"{sort_dir}type__name")
+            order = [
+                # sort by document-entity relation type name
+                f"{sort_dir}type__name",
+                # if this list is Person-Document relations, sort uncertains separately
+                "uncertain" if isinstance(obj, Person) else None,
+            ]
+            related_documents = related_documents.order_by(*[o for o in order if o])
 
         if "date" in sort:
             # sort by start or end of date range
@@ -703,7 +708,11 @@ class PersonListView(ListView, FormMixin, SolrDateRangeMixin):
     def get_queryset(self, *args, **kwargs):
         """modify queryset to sort and filter on people in the list"""
         people = PersonSolrQuerySet().facet(
-            "gender", "role", "document_relations", "has_page"
+            "gender",
+            "role",
+            "document_relations",
+            "certain_document_relations",
+            "has_page",
         )
 
         form = self.get_form()
@@ -765,7 +774,10 @@ class PersonListView(ListView, FormMixin, SolrDateRangeMixin):
         if search_opts.get("document_relation"):
             relations = literal_eval(search_opts["document_relation"])
             relations = [re.sub(self.qs_regex, r"\\\1", r) for r in relations]
-            people = people.filter(document_relations__in=relations)
+            if search_opts.get("exclude_uncertain"):
+                people = people.filter(certain_document_relations__in=relations)
+            else:
+                people = people.filter(document_relations__in=relations)
             self.applied_filter_labels += self.get_applied_filter_labels(
                 form, "document_relation", relations
             )

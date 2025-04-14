@@ -49,7 +49,8 @@
                         </a>
                     </td>
                     <td>{{ rel.document.doctype }}</td>
-                    <td>{{ rel.type }}</td>
+                    {# Translators: label for an uncertain Person-Document identification #}
+                    <td><span>{{ rel.type }}{% if rel.uncertain %} <em class="uncertain">{% translate '(uncertain)' %}</em>{% endif %}</span></td>
                     <td class="document-date">
                         {{ rel.document.dating_set.first.display_date|default:rel.document.document_date }}
                     </td>
