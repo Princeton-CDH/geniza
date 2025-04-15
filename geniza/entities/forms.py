@@ -139,7 +139,7 @@ class PersonPersonForm(forms.ModelForm):
             ),
         }
         help_texts = {
-            "to_person": "Please check auto-populated and manually-input people sections to ensure you are not entering the same relationship twice."
+            "to_person": "Please check auto-populated and manually-input people sections to ensure you are not entering the same relationship twice. If there is more than one relationship between the same two people, record the family relationship and add a note about the other relationship."
         }
 
 
