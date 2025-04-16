@@ -48,7 +48,6 @@
                 <dt>{% translate 'Shelfmark' %}</dt>
                 <dd class="shelfmark">{{ document.shelfmark|shelfmark_wrap }}</dd>
             </dl>
-            {# secondary metadata #}
             <dl class="metadata-list secondary">
                 {% if document.document_date %}
                     <dt>
@@ -200,12 +199,18 @@
         {% endif %}
     </div>
 
+    {# secondary metadata #}
     <section class="extra-metadata">
         <h2 class="sr-only">
             {# Translators: label for secondary/historiographical metadata #}
             {% translate 'Additional metadata' %}
         </h2>
         <dl>
+            {% if document.provenance_display %}
+                {# Translators: label for the provenance of document fragments #}
+                <dt>{% translate "Provenance" %}</dt>
+                <dd>{% for provenance in document.provenance_display %}{{ provenance }}{% if not forloop.last %}, {% endif %}{% endfor %}</dd>
+            {% endif %}
             <dt>
                 {# Translators: Document fragment collection(s) label #}
                 {% blocktranslate count counter=document.collections|length trimmed %}

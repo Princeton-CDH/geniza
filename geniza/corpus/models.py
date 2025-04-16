@@ -1159,6 +1159,17 @@ class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin, TaggableMixin)
             extra_attrs_set,
         )
 
+    @property
+    def provenance_display(self):
+        """Set of unique provenance_display values for associated fragments"""
+        return set(
+            [
+                frag.provenance_display
+                for frag in self.fragments.all()
+                if frag.provenance_display
+            ]
+        )
+
     @classmethod
     def total_to_index(cls):
         """static method to efficiently count the number of documents to index in Solr"""
