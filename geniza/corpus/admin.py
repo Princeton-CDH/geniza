@@ -34,6 +34,7 @@ from geniza.corpus.models import (
     DocumentType,
     Fragment,
     LanguageScript,
+    Provenance,
     TextBlock,
 )
 from geniza.corpus.solr_queryset import DocumentSolrQuerySet
@@ -138,6 +139,7 @@ class DocumentTextBlockInline(SortableInlineAdminMixin, admin.TabularInline):
     readonly_fields = (
         "thumbnail",
         "side",
+        "fragment_provenance_display",
         "fragment_provenance",
     )
     fields = (
@@ -147,6 +149,7 @@ class DocumentTextBlockInline(SortableInlineAdminMixin, admin.TabularInline):
         "region",
         "order",
         "certain",
+        "fragment_provenance_display",
         "fragment_provenance",
         "thumbnail",
         "selected_images",
@@ -159,6 +162,10 @@ class DocumentTextBlockInline(SortableInlineAdminMixin, admin.TabularInline):
     }
 
     @admin.display(description="Provenance")
+    def fragment_provenance_display(self, obj):
+        return str(obj.fragment.provenance_display or "")
+
+    @admin.display(description="Provenance notes")
     def fragment_provenance(self, obj):
         return obj.fragment.provenance
 
@@ -791,6 +798,7 @@ class FragmentAdmin(admin.ModelAdmin):
         "collection",
         ("url", "iiif_url"),
         "is_multifragment",
+        "provenance_display",
         "provenance",
         "iiif_provenance",
         "notes",
@@ -839,3 +847,10 @@ class FragmentAdmin(admin.ModelAdmin):
         return urls + super().get_urls()
 
     actions = (export_to_csv,)
+
+
+@admin.register(Provenance)
+class ProvenanceAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
+    search_fields = ("name",)
+    fields = ("name",)
+    ordering = ("name",)
