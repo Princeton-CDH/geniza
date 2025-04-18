@@ -40,6 +40,16 @@
         font-display: swap;
     }
 
+    @font-face {
+        font-family: "Greta Sans Latin Fallback";
+        font-style: normal;
+        src: url("#{$base_url}/WF-037420-011914-001035.woff2") format("woff2"),
+            url("#{$base_url}/WF-037420-011914-001035.woff") format("woff");
+        font-display: swap;
+        // "Basic Latin" range only
+        unicode-range: U+0000-007F;
+    }
+
     // Fallback Greta Sans for Hebrew
     @font-face {
         font-family: "Greta Sans Hebrew Regular";
@@ -220,5 +230,12 @@ $primary-semibold: (
 $primary-italic: ("Greta Sans Regular Italic", "arial-italic", sans-serif);
 
 // Transcriptions (Combined Hebrew and Arabic, chosen by Unicode character,
-// with Times New Roman for missing glyphs)
-$transcription: ("FrankRuhl 1924 MF Medium", "Amiri", "Times New Roman", serif);
+// with Greta Sans for Latin script, and Times New Roman for missing
+// Hebrew/Arabic glyphs)
+$transcription: (
+    "FrankRuhl 1924 MF Medium",
+    "Amiri",
+    "Greta Sans Latin Fallback",
+    "Times New Roman",
+    serif
+);
