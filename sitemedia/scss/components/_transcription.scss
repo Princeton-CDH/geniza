@@ -141,7 +141,7 @@
         height: 16px;
     }
     input#images-on + label:before,
-    div.img-header span:before {
+    div.img-col-header span:before {
         @include typography.icon-button-md;
         content: "\f1dd"; // phosphor ph-image icon
         font-weight: normal;
@@ -308,7 +308,7 @@
             }
         }
         div,
-        div.img-header span {
+        div.img-col-header span {
             display: flex;
             align-items: center;
             justify-content: center;
@@ -325,7 +325,7 @@
             display: grid;
         }
 
-        #toggles:has(#images-on:checked) ~ #header-row div.img-header,
+        #toggles:has(#images-on:checked) ~ #header-row div.img-col-header,
         #toggles:has(#transcription-on:checked)
             ~ #header-row
             div.transcription-header,
@@ -904,28 +904,52 @@
             .rotation-control input[type="range"] {
                 max-width: calc(100% - 1rem - 50px);
             }
-            label[for^="zoom-slider"] {
-                min-width: 40px;
-                max-width: 40px;
-            }
-            label[for^="rotation"] {
-                min-width: 30px;
-                max-width: 30px;
-            }
             label[for^="zoom-slider"],
-            label[for^="rotation"] {
+            label[for^="rotation"] + span {
                 display: none;
-                @include breakpoints.for-tablet-landscape-up {
-                    display: block;
-                }
                 text-align: right;
                 flex: 0 1 40px;
                 color: var(--on-background);
                 font-family: fonts.$primary;
                 font-size: typography.$text-size-sm;
             }
-            label[for^="rotation"] {
+            label[for^="zoom-slider"] {
+                @include breakpoints.for-tablet-landscape-up {
+                    display: block;
+                }
+                min-width: 40px;
+                max-width: 40px;
+            }
+            label[for^="rotation"] + span {
+                @include breakpoints.for-tablet-landscape-up {
+                    display: flex;
+                }
+                flex-flow: row nowrap;
+                justify-content: flex-end;
                 flex: 0 1 30px;
+                min-width: 30px;
+                max-width: 30px;
+                input {
+                    width: 100%;
+                    padding: 0;
+                    border: none;
+                    max-width: 100%;
+                    text-align: right;
+                    background-color: transparent;
+                    &:focus {
+                        background-color: var(--background-light);
+                    }
+                    color: var(--on-background);
+                    font-family: fonts.$primary;
+                    font-size: typography.$text-size-sm;
+                    appearance: textfield;
+                    -moz-appearance: textfield;
+                    &::-webkit-outer-spin-button,
+                    &::-webkit-inner-spin-button {
+                        -webkit-appearance: none;
+                        margin: 0;
+                    }
+                }
             }
             // zoom control (mobile)
             input[type="checkbox"][id^="zoom-toggle"] {
