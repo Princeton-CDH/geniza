@@ -55,7 +55,7 @@
         {% endcomment %}
         {# header row #}
         <div id="header-row">
-            <div class="img-header">
+            <div class="img-col-header">
                 {# translators: label for header above Image panel in viewer #}
                 <span>{% translate "Image" %}</span>
             </div>
@@ -202,7 +202,8 @@
                                     <div class="rotation-control">
                                         {# tablet/desktop: rotation slider #}
                                         <input data-iiif-target="rotation" data-action="iiif#handleDeepZoom" id="rotation-{{ forloop.counter0 }}" type="range" name="rotation-slider" min="0" max="360" value="{{ image_info.rotation }}" step="1" />
-                                        <label for="rotation-{{ forloop.counter0 }}" data-iiif-target="rotationLabel">{{ image_info.rotation }}&deg;</label>
+                                        <label for="rotation-{{ forloop.counter0 }}" data-iiif-target="rotationLabel" class="sr-only"></label>
+                                        <span><input class="rotation" data-action="iiif#handleDeepZoom input->iiif#editRotation" data-iiif-target="rotationEdit" value="{{ image_info.rotation }}" type="number" min="0" max="360" />&deg;</span>
                                     </div>
                                     {# mobile: zoom/rotate toggle #}
                                     <input data-iiif-target="zoomToggle" data-action="iiif#handleDeepZoom" id="zoom-toggle-{{ forloop.counter0 }}" type="checkbox" name="zoom-toggle" />
