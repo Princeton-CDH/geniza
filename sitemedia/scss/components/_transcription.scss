@@ -851,6 +851,9 @@
                     margin-right: 0.5rem;
                 }
             }
+            .rotation-control {
+                gap: 0.75rem;
+            }
             .zoom-control::before {
                 content: "\f20a"; // phosphor magnifying glass icon
             }
@@ -902,7 +905,7 @@
                 max-width: calc(100% - 1rem - 60px);
             }
             .rotation-control input[type="range"] {
-                max-width: calc(100% - 1rem - 50px);
+                max-width: calc(100% - 1rem - 70px);
             }
             label[for^="zoom-slider"],
             label[for^="rotation"] + span {
@@ -926,19 +929,19 @@
                 }
                 flex-flow: row nowrap;
                 justify-content: flex-end;
-                flex: 0 1 30px;
-                min-width: 30px;
-                max-width: 30px;
+                flex: 0 1 36px;
+                min-width: 36px;
+                max-width: 36px;
+                gap: 0.125rem;
                 input {
                     width: 100%;
-                    padding: 0;
+                    padding: 0 0.125rem 0 0;
                     border: none;
                     max-width: 100%;
                     text-align: right;
-                    background-color: transparent;
-                    &:focus {
-                        background-color: var(--background-light);
-                    }
+                    background-color: var(--background-light);
+                    border-radius: 0.25rem;
+                    border: 1px solid var(--on-background);
                     color: var(--on-background);
                     font-family: fonts.$primary;
                     font-size: typography.$text-size-sm;
