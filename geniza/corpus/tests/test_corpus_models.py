@@ -1633,21 +1633,16 @@ class TestDocument:
         )
         assert join.solr_dating_range() in ["[0960 TO 1005]", "[960 TO 1005]"]
 
-    def test_provenance_display(self, document):
+    def test_fragments_by_provenance(self, document):
+        assert not document.fragments_by_provenance
         (g, _) = Provenance.objects.get_or_create(name="Geniza")
         (ng, _) = Provenance.objects.get_or_create(name="Not Geniza")
         f1 = Fragment.objects.create(shelfmark="CUL 123", provenance_display=g)
-        f2 = Fragment.objects.create(shelfmark="CUL 456", provenance_display=g)
-        f3 = Fragment.objects.create(shelfmark="CUL 789", provenance_display=ng)
+        f2 = Fragment.objects.create(shelfmark="CUL 456", provenance_display=ng)
         TextBlock.objects.create(fragment=f1, document=document)
-        assert len(document.provenance_display) == 1
-        assert list(document.provenance_display)[0] == f1.provenance_display
+        assert len(document.fragments_by_provenance) > 0
         TextBlock.objects.create(fragment=f2, document=document)
-        assert len(document.provenance_display) == 1
-        assert list(document.provenance_display)[0] == f1.provenance_display
-        TextBlock.objects.create(fragment=f3, document=document)
-        assert len(document.provenance_display) == 2
-        assert f3.provenance_display in document.provenance_display
+        assert document.fragments_by_provenance[0].pk == f1.pk
 
 
 def test_document_merge_with(document, join):

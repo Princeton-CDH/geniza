@@ -1160,15 +1160,13 @@ class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin, TaggableMixin)
         )
 
     @property
-    def provenance_display(self):
-        """Set of unique provenance_display values for associated fragments"""
-        return set(
-            [
-                frag.provenance_display
-                for frag in self.fragments.all()
-                if frag.provenance_display
-            ]
-        )
+    def fragments_by_provenance(self):
+        """Associated fragments ordered by provenance_display, if set"""
+        return [
+            frag
+            for frag in self.fragments.order_by("provenance_display__name")
+            if frag.provenance_display
+        ]
 
     @classmethod
     def total_to_index(cls):

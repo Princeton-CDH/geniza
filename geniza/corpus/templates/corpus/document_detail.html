@@ -206,10 +206,18 @@
             {% translate 'Additional metadata' %}
         </h2>
         <dl>
-            {% if document.provenance_display %}
+            {% if document.fragments_by_provenance %}
+                {% regroup document.fragments_by_provenance by provenance_display as provenance_list %}
                 {# Translators: label for the provenance of document fragments #}
                 <dt>{% translate "Provenance" %}</dt>
-                <dd>{% for provenance in document.provenance_display %}{{ provenance }}{% if not forloop.last %}, {% endif %}{% endfor %}</dd>
+                <dd>
+                    <dl>
+                        {% for provenance in provenance_list %}
+                            <dt>{{ provenance.grouper }}</dt>
+                            <dd>{% for frag in provenance.list %}{{ frag }}{% if not forloop.last %}, {% endif %}{% endfor %}</dd>
+                        {% endfor %}
+                    </dl>
+                </dd>
             {% endif %}
             <dt>
                 {# Translators: Document fragment collection(s) label #}
