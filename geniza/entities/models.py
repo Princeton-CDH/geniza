@@ -27,6 +27,7 @@ from unidecode import unidecode
 from geniza.common.models import TaggableMixin, TrackChangesModel, cached_class_property
 from geniza.corpus.dates import DocumentDateMixin, PartialDate, standard_date_display
 from geniza.corpus.models import (
+    Dating,
     DisplayLabelMixin,
     Document,
     LanguageScript,
@@ -671,7 +672,9 @@ class Person(
             type__name__icontains="deceased"
         )
         doc_ids = relations.values_list("document__pk", flat=True)
-        docs = Document.objects.filter(pk__in=doc_ids)
+        docs = Document.objects.filter(pk__in=doc_ids).prefetch_related(
+            Prefetch("dating_set", queryset=Dating.objects.only("standard_date"))
+        )
         return self.get_date_range(docs)
 
     @property
@@ -682,7 +685,9 @@ class Person(
             type__name__icontains="deceased"
         )
         doc_ids = relations.values_list("document__pk", flat=True)
-        docs = Document.objects.filter(pk__in=doc_ids)
+        docs = Document.objects.filter(pk__in=doc_ids).prefetch_related(
+            Prefetch("dating_set", queryset=Dating.objects.only("standard_date"))
+        )
         return self.get_date_range(docs)
 
     def merge_with(self, merge_people, user=None):

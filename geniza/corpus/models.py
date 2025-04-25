@@ -1016,12 +1016,14 @@ class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin, TaggableMixin)
         dating_range = [self.start_date or None, self.end_date or None]
 
         # bail out if we don't have any inferred datings
-        if not self.dating_set.exists():
+        # (use list on .all() for prefetch compatibility)
+        inferred_datings = list(self.dating_set.all())
+        if not inferred_datings:
             return tuple(dating_range)
 
         # loop through inferred datings to find min and max among all dates (including both
         # on-document and inferred)
-        for inferred in self.dating_set.all():
+        for inferred in inferred_datings:
             # get start from standardized date range (formatted as "date1/date2" or "date")
             split_date = inferred.standard_date.split("/")
             start = PartialDate(split_date[0])
