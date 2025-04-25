@@ -814,40 +814,41 @@ class TestPersonDocumentsView:
             ],
         )
 
-        # get_related should return an iterable with both relationships
+        # get_related should return an iterable with both documents
         response = client.get(reverse("entities:person-documents", args=(person.slug,)))
-        related_docs_qs = response.context.get("related_documents")
-        assert legal_doc_relation in related_docs_qs
-        assert state_doc_relation in related_docs_qs
+        related_docs_list = response.context.get("related_documents")
+        related_doc_pks = [doc["pk"] for doc in related_docs_list]
+        assert document.pk in related_doc_pks
+        assert state_doc.pk in related_doc_pks
 
         # by default, should sort alphabetically by shelfmark, ascending
         assert response.context.get("sort") == "shelfmark_asc"
         # legal doc shelfmark starts with CUL, state doc shelfmark starts with T-S
-        assert related_docs_qs.first().pk == legal_doc_relation.pk
+        assert related_docs_list[0]["pk"] == legal_doc_relation.document.pk
 
         # sort alphabetically by shelfmark, descending
         response = client.get(
             reverse("entities:person-documents", args=(person.slug,)),
             {"sort": "shelfmark_desc"},
         )
-        related_docs_qs = response.context.get("related_documents")
-        assert related_docs_qs.first().pk == state_doc_relation.pk
+        related_docs_list = response.context.get("related_documents")
+        assert related_docs_list[0]["pk"] == state_doc_relation.document.pk
 
         # sort alphabetically by doctype, ascending (Legal, then State)
         response = client.get(
             reverse("entities:person-documents", args=(person.slug,)),
             {"sort": "doctype_asc"},
         )
-        related_docs_qs = response.context.get("related_documents")
-        assert related_docs_qs.first().pk == legal_doc_relation.pk
+        related_docs_list = response.context.get("related_documents")
+        assert related_docs_list[0]["pk"] == legal_doc_relation.document.pk
 
         # sort alphabetically by relation, ascending (Author, then Recipient)
         response = client.get(
             reverse("entities:person-documents", args=(person.slug,)),
             {"sort": "relation_asc"},
         )
-        related_docs_qs = response.context.get("related_documents")
-        assert related_docs_qs.first().pk == legal_doc_relation.pk
+        related_docs_list = response.context.get("related_documents")
+        assert related_docs_list[0]["pk"] == legal_doc_relation.document.pk
 
         # add some on-document and inferred dates to the documents
         document.doc_date_original = "5 Elul 5567"
@@ -871,20 +872,20 @@ class TestPersonDocumentsView:
             reverse("entities:person-documents", args=(person.slug,)),
             {"sort": "date_asc"},
         )
-        related_docs_qs = response.context.get("related_documents")
+        related_docs_list = response.context.get("related_documents")
         # date sort returns a list due to additional calculations needed
-        assert related_docs_qs[0].pk == state_doc_relation.pk
+        assert related_docs_list[0]["pk"] == state_doc_relation.document.pk
         # undated should be sorted last
-        assert related_docs_qs[-1].pk == undated_doc_relation.pk
+        assert related_docs_list[-1]["pk"] == undated_doc_relation.document.pk
         # sort by date descending
         response = client.get(
             reverse("entities:person-documents", args=(person.slug,)),
             {"sort": "date_desc"},
         )
-        related_docs_qs = response.context.get("related_documents")
-        assert related_docs_qs[0].pk == legal_doc_relation.pk
+        related_docs_list = response.context.get("related_documents")
+        assert related_docs_list[0]["pk"] == legal_doc_relation.document.pk
         # undated should still be sorted last
-        assert related_docs_qs[-1].pk == undated_doc_relation.pk
+        assert related_docs_list[-1]["pk"] == undated_doc_relation.document.pk
 
     def test_get_context_data(self, client):
         # should 404 when no documents related to person

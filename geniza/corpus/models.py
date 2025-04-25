@@ -236,7 +236,7 @@ class Fragment(TrackChangesModel):
         """natural key: shelfmark"""
         return (self.shelfmark,)
 
-    def iiif_images(self):
+    def iiif_images(self, allow_network_reqs=True):
         """IIIF image URLs for this fragment. Returns a list of
         :class:`~piffle.image.IIIFImageClient` and corresponding list of labels,
         or None if this fragement has no IIIF url associated."""
@@ -260,7 +260,7 @@ class Fragment(TrackChangesModel):
                     canvases.append(canvas.uri)
 
         # if not cached, load from remote url
-        else:
+        elif allow_network_reqs:
             try:
                 manifest = IIIFPresentation.from_url(self.iiif_url)
                 for canvas in manifest.sequences[0].canvases:
@@ -769,7 +769,7 @@ class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin, TaggableMixin)
             )
         )
 
-    def iiif_images(self, filter_side=False, with_placeholders=False):
+    def iiif_images(self, filter_side=False, with_placeholders=False, thumbnail=False):
         """
         Dict of IIIF images and labels for images of the Document's Fragments, keyed on canvas.
 
@@ -781,7 +781,7 @@ class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin, TaggableMixin)
         textblocks = self.textblock_set.all()
 
         for b in textblocks:
-            frag_images = b.fragment.iiif_images()
+            frag_images = b.fragment.iiif_images(allow_network_reqs=not thumbnail)
             if frag_images is not None:
                 images, labels, canvases = frag_images
                 for i, img in enumerate(images):
@@ -868,7 +868,7 @@ class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin, TaggableMixin)
 
     def list_thumbnail(self):
         """generate html for thumbnail of first image, for display in related documents lists"""
-        iiif_images = self.iiif_images()
+        iiif_images = self.iiif_images(thumbnail=True)
         if not iiif_images:
             return ""
         img = list(iiif_images.values())[0]

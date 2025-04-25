@@ -204,19 +204,19 @@ class DocumentDateMixin(TrackChangesModel):
             [self.doc_date_original, self.get_doc_date_calendar_display()]
         ).strip()
 
-    @property
-    def document_date(self):
+    @classmethod
+    def get_document_date(cls, doc_date_standard, original_date):
         """Generate formatted display of combined original and standardized dates"""
-        if self.doc_date_standard:
-            standardized_date = standard_date_display(self.doc_date_standard)
+        if doc_date_standard:
+            standardized_date = standard_date_display(doc_date_standard)
             # add parentheses to standardized date if original date is also present
-            if self.original_date:
+            if original_date:
                 # NOTE: we want no-wrap for individual dates when displaying as html
                 # may want to split out formatted/unformatted versions
                 return mark_safe(
                     "<span>%s</span> <span>(%s)</span>"
                     % (
-                        self.original_date,
+                        original_date,
                         standardized_date,
                     )
                 )
@@ -224,7 +224,12 @@ class DocumentDateMixin(TrackChangesModel):
             return standardized_date
         else:
             # if there's no standardized date, just display the historical date
-            return self.original_date
+            return original_date
+
+    @property
+    def document_date(self):
+        """Property: formatted display of combined original and standardized dates"""
+        return self.get_document_date(self.doc_date_standard, self.original_date)
 
     def clean(self):
         """

@@ -135,6 +135,9 @@ main.place table.related-table {
                 font-weight: 700;
             }
         }
+        &.reltype {
+            gap: 0.25rem;
+        }
     }
     .admin-thumbnail {
         max-height: 60px;
