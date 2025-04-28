@@ -456,6 +456,7 @@ class RelatedDocumentsMixin:
                 # build the initial dict for this doc
                 related_documents[doc_pk] = {
                     "pk": doc_pk,
+                    "url": reverse("corpus:document", args=[str(doc_pk)]),
                     "shelfmark": shelfmark,
                     "doctype": doctype_name,
                     "relations": [],
@@ -477,13 +478,13 @@ class RelatedDocumentsMixin:
             )
 
         sort, dir = self.request.GET.get("sort", "shelfmark_asc").split("_")
-        reverse = dir == "desc"
+        desc = dir == "desc"
 
         # sort by passed sort, and fallback to shelfmark as tiebreaker
         if "date" in sort:
             # sort nones at the bottom, i.e., give them the lowest date if reversed,
             # give them the highest date if not
-            none_date = "0" if reverse else "9999"
+            none_date = "0" if desc else "9999"
             sort_fn = lambda doc: (
                 doc["date"]["value"] if doc["date"] else none_date,
                 natsort_key(doc["shelfmark"]),
@@ -502,7 +503,7 @@ class RelatedDocumentsMixin:
         else:
             sort_fn = lambda doc: (doc.get(sort, ""), natsort_key(doc["shelfmark"]))
         related_documents = sorted(
-            related_documents.values(), key=sort_fn, reverse=reverse
+            related_documents.values(), key=sort_fn, reverse=desc
         )
 
         self.set_page_description(len(related_documents))

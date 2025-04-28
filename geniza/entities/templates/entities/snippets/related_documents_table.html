@@ -44,7 +44,7 @@
                             {# Translators: label for when no image thumbnail is available #}
                             <span class="no-image">{% translate 'No Image' %}</span>
                         {% endif %}
-                        <a href="{{ document.pk }}" title="{{ document.shelfmark }}">
+                        <a href="{{ document.url }}" title="{{ document.shelfmark }}">
                             {{ document.shelfmark }}
                         </a>
                     </td>
