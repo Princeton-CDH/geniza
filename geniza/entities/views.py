@@ -1,4 +1,5 @@
 import re
+import time
 from ast import literal_eval
 from collections import defaultdict
 from urllib.parse import urlparse
@@ -324,16 +325,17 @@ class PersonDetailView(SlugDetailMixin):
 
 
 class RelatedDocumentsMixin:
+    _page_description = None
+
     def page_title(self):
         """The title of the entity related documents page"""
         # Translators: title of entity "related documents" page
         return _("Related documents for %(p)s") % {"p": str(self.get_object())}
 
-    def page_description(self):
-        """Description of an entity related documents page, with count"""
-        count = len(self.get_related())
+    def set_page_description(self, count):
+        """Set description for an entity related documents page, with count"""
         # Translators: description of related documents page, for search engines
-        return ngettext(
+        self._page_description = ngettext(
             "%(count)d related document",
             "%(count)d related documents",
             count,
@@ -503,6 +505,8 @@ class RelatedDocumentsMixin:
             related_documents.values(), key=sort_fn, reverse=reverse
         )
 
+        self.set_page_description(len(related_documents))
+
         return related_documents
 
     def get_context_data(self, **kwargs):
@@ -519,6 +523,8 @@ class RelatedDocumentsMixin:
             {
                 "related_documents": self.get_related(),
                 "sort": self.request.GET.get("sort", "shelfmark_asc"),
+                # use an attribute set in get_related() to avoid extra queries for count
+                "page_description": self._page_description,
             }
         )
         return context
