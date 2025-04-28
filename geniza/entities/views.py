@@ -1,5 +1,4 @@
 import re
-import time
 from ast import literal_eval
 from collections import defaultdict
 from urllib.parse import urlparse
