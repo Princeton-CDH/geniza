@@ -31,6 +31,7 @@ from geniza.entities.forms import (
     PlaceListForm,
 )
 from geniza.entities.models import (
+    DocumentPlaceRelationType,
     PastPersonSlug,
     PastPlaceSlug,
     Person,
@@ -766,7 +767,7 @@ class PlaceDocumentsView(RelatedDocumentsMixin, PlaceDetailView):
     template_name = "entities/place_related_documents.html"
     viewname = "entities:place-documents"
     relation_field = "documentplacerelation_set"
-    relation_type_class = PersonDocumentRelationType
+    relation_type_class = DocumentPlaceRelationType
 
 
 class PlacePeopleView(RelatedPeopleMixin, PlaceDetailView):
