@@ -214,7 +214,9 @@
                     <dl>
                         {% for provenance in provenance_list %}
                             <dt>{{ provenance.grouper }}</dt>
-                            <dd>{% for frag in provenance.list %}{{ frag }}{% if not forloop.last %}, {% endif %}{% endfor %}</dd>
+                            {% for frag in provenance.list %}
+                                <dd{% if forloop.last %} class="row-end"{% endif %}>{{ frag }}</dd>
+                            {% endfor %}
                         {% endfor %}
                     </dl>
                 </dd>
