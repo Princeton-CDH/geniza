@@ -220,12 +220,39 @@ main.document {
         }
         @include typography.body;
         color: var(--extra-metadata-text);
-        dl {
+        & > dl {
             display: grid;
-            grid-template-columns: 3fr 7fr;
+            grid-template-columns: 2fr 8fr;
             gap: 0.75rem;
-            dt {
+            & > dt {
                 @include typography.body-bold;
+            }
+            // provenance field
+            & dl {
+                display: grid;
+                grid-template-columns: 4fr 6fr;
+                column-gap: 2rem;
+                row-gap: 0.5rem;
+                position: relative;
+                dt {
+                    grid-column: 1;
+                }
+                dd {
+                    grid-column: 2;
+                }
+                dd.row-end {
+                    padding-bottom: 0.4rem;
+                    &::after {
+                        content: "";
+                        position: absolute;
+                        display: block;
+                        margin-top: 0.4rem;
+                        left: 0;
+                        width: 100%;
+                        height: 1px;
+                        background: var(--background-gray);
+                    }
+                }
             }
         }
     }

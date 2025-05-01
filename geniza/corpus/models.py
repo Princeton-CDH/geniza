@@ -174,6 +174,15 @@ class LanguageScript(models.Model):
         return (self.language, self.script)
 
 
+class Provenance(models.Model):
+    """A provenance designation for a :class:`Fragment`."""
+
+    name = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.name
+
+
 class FragmentManager(models.Manager):
     """Custom manager for :class:`Fragment` with natural key lookup"""
 
@@ -207,8 +216,18 @@ class Fragment(TrackChangesModel):
         default=False,
         help_text="True if there are multiple fragments in one shelfmark",
     )
+    provenance_display = models.ForeignKey(
+        Provenance,
+        verbose_name="Provenance",
+        blank=True,
+        null=True,
+        on_delete=models.SET_NULL,
+        help_text="Origin of this fragment, for public display.",
+    )
     provenance = models.TextField(
-        blank=True, help_text="The origin and acquisition history of this fragment."
+        "Provenance notes",
+        blank=True,
+        help_text="Detailed origin and acquisition history of this fragment.",
     )
     notes = models.TextField(blank=True)
     needs_review = models.TextField(
@@ -1139,6 +1158,15 @@ class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin, TaggableMixin)
             additional_restrictions,
             extra_attrs_set,
         )
+
+    @property
+    def fragments_by_provenance(self):
+        """Associated fragments ordered by provenance_display, if set"""
+        return [
+            frag
+            for frag in self.fragments.order_by("provenance_display__name")
+            if frag.provenance_display
+        ]
 
     @classmethod
     def total_to_index(cls):

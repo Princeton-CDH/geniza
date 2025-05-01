@@ -39,6 +39,7 @@ from geniza.corpus.models import (
     Document,
     Fragment,
     LanguageScript,
+    Provenance,
     TextBlock,
 )
 from geniza.entities.models import Event, Person, PersonDocumentRelation
@@ -429,6 +430,16 @@ class TestDocumentTextBlockInline:
         textblock = TextBlock.objects.create(fragment=fragment, document=doc)
         inline = DocumentTextBlockInline(Document, admin_site=admin.site)
         assert inline.fragment_provenance(textblock) == test_provenance
+        assert inline.fragment_provenance_display(textblock) == ""
+
+    def test_fragment_provenance_display(self):
+        (ng, _) = Provenance.objects.get_or_create(name="Not Geniza")
+        fragment = Fragment.objects.create(shelfmark="CUL 123", provenance_display=ng)
+        doc = Document.objects.create()
+        textblock = TextBlock.objects.create(fragment=fragment, document=doc)
+        inline = DocumentTextBlockInline(Document, admin_site=admin.site)
+        assert inline.fragment_provenance(textblock) == ""
+        assert inline.fragment_provenance_display(textblock) == str(ng)
 
 
 class TestFragmentAdmin:
