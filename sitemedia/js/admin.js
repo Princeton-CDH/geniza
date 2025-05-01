@@ -6,7 +6,7 @@
 // - latitude and longitude validation for Places
 // - map for places
 
-import maplibregl from "maplibre-gl";
+import maplibregl, { ScaleControl } from "maplibre-gl";
 
 window.addEventListener("DOMContentLoaded", () => {
     // append rotation controls to each image in the image order field thumbnail display
@@ -106,6 +106,13 @@ window.addEventListener("DOMContentLoaded", () => {
                 center: lonlat,
                 zoom: 9,
             });
+
+            // add scale controls
+            const scaleImperial = new ScaleControl({ unit: "imperial" });
+            map.addControl(scaleImperial);
+            const scaleMetric = new ScaleControl({ unit: "metric" });
+            map.addControl(scaleMetric);
+
             marker = new maplibregl.Marker({
                 draggable: true,
             })

@@ -1,7 +1,11 @@
 // controllers/map_controller.js
 
 import { Controller } from "@hotwired/stimulus";
-import maplibregl, { LngLatBounds, NavigationControl } from "maplibre-gl";
+import maplibregl, {
+    LngLatBounds,
+    NavigationControl,
+    ScaleControl,
+} from "maplibre-gl";
 
 export default class extends Controller {
     static targets = ["marker"];
@@ -43,6 +47,12 @@ export default class extends Controller {
             // add navigation control
             const control = new NavigationControl({ showCompass: false });
             map.addControl(control);
+
+            // add scale controls
+            const scaleImperial = new ScaleControl({ unit: "imperial" });
+            map.addControl(scaleImperial);
+            const scaleMetric = new ScaleControl({ unit: "metric" });
+            map.addControl(scaleMetric);
 
             // add each marker
             const coordinates = this.markerTargets.map((marker) => {
