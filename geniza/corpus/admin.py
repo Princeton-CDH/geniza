@@ -566,6 +566,12 @@ class DocumentAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin)
     class Media:
         css = {"all": ("css/admin-local.css",)}
 
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        # override to alphabetize doctype dropdown
+        if db_field.name == "doctype":
+            kwargs["queryset"] = DocumentType.objects.order_by("name")
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
     def get_form(self, request, obj=None, **kwargs):
         # Override to inject help text into display field
         help_texts = {
