@@ -42,11 +42,11 @@ jobs:
       - uses: actions/cache@v4
         with:
           path: ~/.cache/pip
-          key: pip-${{ hashFiles('requirements/*.txt') }}
+          key: pip-${{ hashFiles('pyproject.toml') }}
           restore-keys: |
-            pip-${{ hashFiles('requirements/*.txt') }}
+            pip-${{ hashFiles('pyproject.toml') }}
             pip-
-      - run: pip install -r requirements/test.txt
+      - run: pip install -e '.[dev]'
       - run: python -c "import uuid; print('SECRET_KEY = \'%s\'' % uuid.uuid4())" >> geniza/settings/local_settings.py
       - uses: actions/setup-node@v2
         with:

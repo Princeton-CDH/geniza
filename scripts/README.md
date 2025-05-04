@@ -3,7 +3,7 @@
 This directory contains stand-alone scripts associated with
 Princeton Geniza Project that are not part of the web application proper.
 
-Requirements for these scripts can be found in `requirements/scripts.txt`.
+Requirements for these scripts can be found in `scripts/scripts_requirements.txt`.
 
 ## IIIF
 

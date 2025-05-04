@@ -1,5 +1,0 @@
-# requirements for building sphinx documentation
-
--r prod.txt
-
-sphinx

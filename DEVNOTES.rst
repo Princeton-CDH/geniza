@@ -10,7 +10,7 @@ Initial setup and installation:
 
 - Install required python dependencies::
 
-    pip install -r requirements/dev.txt
+    pip install -e '.[dev]'
 
 - Recommended: use `Volta <https://volta.sh/>`_ for Node version management
 
