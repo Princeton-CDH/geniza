@@ -324,10 +324,13 @@ class Fragment(TrackChangesModel):
             verso_img = static("img/ui/all/all/verso-placeholder.svg")
             image_urls = [recto_img, verso_img]
             labels = ["recto", "verso"]
+            canvases = []
         else:
-            images, labels, _ = iiif_images
+            images, labels, canvases = iiif_images
             image_urls = [img.size(height=200) for img in images]
-        return Fragment.admin_thumbnails(image_urls, labels, selected=selected)
+        return Fragment.admin_thumbnails(
+            image_urls, labels, canvases=canvases, selected=selected
+        )
 
     # CUDL manifests attribution include a metadata statement, but it
     # is not relevant for us since we aren't displaying their metadata
@@ -907,13 +910,15 @@ class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin, TaggableMixin)
         iiif_images = self.iiif_images()
         if not iiif_images:
             return ""
+        images = iiif_images.values()
         return Fragment.admin_thumbnails(
             images=[
                 img["image"].size(height=200).rotation(degrees=img["rotation"])
-                for img in iiif_images.values()
+                for img in images
             ],
-            labels=[img["label"] for img in iiif_images.values()],
+            labels=[img["label"] for img in images],
             canvases=iiif_images.keys(),
+            selected=[i for i, img in enumerate(images) if not img["excluded"]],
         )
 
     admin_thumbnails.short_description = "Image order/rotation overrides"

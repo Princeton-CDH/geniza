@@ -329,10 +329,14 @@ div.field-admin_thumbnails img {
 #textblock_set-group td.field-thumbnail {
     min-width: 314px;
 }
-/* selected side thumbnail for fragment admin, drop target for document admin */
+/* selected side thumbnail for fragment admin */
 #textblock_set-group td.field-thumbnail .admin-thumbnail.selected,
 div.field-admin_thumbnails .admin-thumbnail.selected {
     border: 5px solid var(--accent);
+}
+/* drop target for document admin */
+.dragtarget {
+    outline: 5px solid var(--link-selected-fg);
 }
 .admin-thumbnail {
     display: inline-flex;
@@ -340,6 +344,10 @@ div.field-admin_thumbnails .admin-thumbnail.selected {
 }
 div.field-admin_thumbnails .admin-thumbnail {
     margin-right: 1rem;
+    img {
+        flex: 1 0 auto;
+        object-fit: contain;
+    }
 }
 .admin-thumbnail .rotation-controls {
     display: flex;
