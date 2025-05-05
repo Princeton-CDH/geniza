@@ -9,8 +9,9 @@
 import maplibregl, { ScaleControl } from "maplibre-gl";
 
 window.addEventListener("DOMContentLoaded", () => {
-    // append rotation controls to each image in the image order field thumbnail display
-    appendRotationControls();
+    // append image rotation/selection controls to each image in the image order
+    // field thumbnail display
+    appendImageControls();
 
     // loop through the image order field thumbnail display and attach the drag
     // and drop and rotation behaviors to each image
@@ -274,6 +275,8 @@ function attachOverrideEventListeners(fromDragEvent) {
         rotateLeftButton.addEventListener("click", rotate(thumb, -90));
         const rotateRightButton = thumb.querySelector("button.rotate-right");
         rotateRightButton.addEventListener("click", rotate(thumb, 90));
+        const selectCheckbox = thumb.querySelector("input[type='checkbox']");
+        selectCheckbox.addEventListener("input", () => toggleSelected(thumb));
     });
     if (fromDragEvent) {
         // prevent bug where "selected" class applied after drag end
@@ -281,8 +284,9 @@ function attachOverrideEventListeners(fromDragEvent) {
     }
 }
 
-function appendRotationControls() {
-    // append a div with rotate left and rotate right buttons to each image thumbnail
+function appendImageControls() {
+    // append a div with rotate left/right buttons, as well as
+    // a checkbox for selection, to each image thumbnail
     const orderImages =
         document.querySelectorAll(
             "div.field-admin_thumbnails div.admin-thumbnail"
@@ -311,6 +315,12 @@ function appendRotationControls() {
         rotateRightButton.innerHTML = "&#8635;";
         rotationControls.appendChild(rotateRightButton);
         div.appendChild(rotationControls);
+
+        // select control
+        const selectCheckbox = document.createElement("input");
+        selectCheckbox.type = "checkbox";
+        selectCheckbox.checked = div.classList.contains("selected");
+        div.appendChild(selectCheckbox);
     });
 }
 
@@ -353,6 +363,20 @@ function normalize360(degrees) {
     return degrees;
 }
 
+function toggleSelected(node) {
+    // match override section image with textblock fragments image
+    const fragmentImage = document.querySelector(
+        `#textblock_set-group div.admin-thumbnail[data-canvas="${node.dataset.canvas}"]`
+    );
+    if (fragmentImage) {
+        // send a click event down to the image in textblock fragments, so that
+        // toggleImageSelected gets called on it with the appropriate event target
+        fragmentImage.click();
+        // toggle this image's select class
+        node.classList.toggle("selected");
+    }
+}
+
 function rotate(node, degrees) {
     // rotate an image, a child of `node`, at index `idx`, `degrees` degrees
     return function () {
@@ -365,16 +389,34 @@ function rotate(node, degrees) {
         let newRotation = normalize360(oldRotation + degrees);
 
         // get the original rotation from the image source URI
-        const src = node.querySelector("img").getAttribute("src");
+        const img = node.querySelector("img");
+        const src = img.getAttribute("src");
         const uriMatches = src.match(/\/\d+\//g);
         const originalRotation = parseInt(
             uriMatches[uriMatches.length - 1].replace(/\//g, "")
         );
         // set the new rotation (taking into consideration the original from URI) as a class
-        node.classList = ["admin-thumbnail"];
-        node.classList.add(
-            `rotate-${normalize360(newRotation - originalRotation)}`
-        );
+        node.className = node.classList.contains("selected") ? "selected" : "";
+        const classList = [
+            "admin-thumbnail",
+            `rotate-${normalize360(newRotation - originalRotation)}`,
+        ];
+        node.classList.add(...classList);
+
+        // adjust the width and height of the container to accommodate the rotated image,
+        // accounting for controls
+        const rect = img.getBoundingClientRect();
+        const controlRect = node
+            .querySelector(".rotation-controls")
+            .getBoundingClientRect();
+        const checkboxRect = node
+            .querySelector("input[type='checkbox']")
+            .getBoundingClientRect();
+
+        node.style.minWidth = `${rect.width}px`;
+        node.style.minHeight = `${
+            rect.height + controlRect.height + checkboxRect.height
+        }px`;
 
         // finally, update the rotations on the hidden rotation overrides field
         overrides[canvasUri]["rotation"] = newRotation;
@@ -392,23 +434,23 @@ function stopDrag(thumbnails) {
     return function (evt) {
         evt.preventDefault();
         thumbnails.forEach((thumbnailDiv) => {
-            thumbnailDiv.classList.remove("selected");
+            thumbnailDiv.classList.remove("dragtarget");
         });
     };
 }
 
 function setDraggedOver(thumbnails) {
-    // when an image is dragged over, give it "selected" style (and remove that
+    // when an image is dragged over, give it "dragtarget" style (and remove that
     // style from all other images)
     return function (evt) {
         evt.preventDefault();
         const dropTarget = evt.currentTarget;
-        dropTarget.classList.add("selected");
+        dropTarget.classList.add("dragtarget");
         thumbnails.forEach((thumbnailDiv) => {
             if (
                 thumbnailDiv.dataset["canvas"] !== dropTarget.dataset["canvas"]
             ) {
-                thumbnailDiv.classList.remove("selected");
+                thumbnailDiv.classList.remove("dragtarget");
             }
         });
     };
@@ -421,7 +463,11 @@ function dropImage(div, thumbnails) {
         evt.preventDefault();
 
         // use Array instead of NodeList for access to Array prototype functions
-        const thumbArray = Array.from(thumbnails);
+        const thumbArray = Array.from(thumbnails).map((thumbnailDiv) => ({
+            thumbnailDiv,
+            // keep track of selection state
+            selected: thumbnailDiv.classList.contains("selected"),
+        }));
 
         // get or initialize rotation override array
         const imageOverridesField = document.querySelector(
@@ -432,10 +478,14 @@ function dropImage(div, thumbnails) {
         // locate the dragged and dropped canvases in the list
         const draggedCanvas = evt.dataTransfer.getData("text");
         const dragged = thumbArray.find(
-            (thumbnailDiv) => thumbnailDiv.dataset["canvas"] === draggedCanvas
+            ({ thumbnailDiv }) =>
+                thumbnailDiv.dataset["canvas"] === draggedCanvas
         );
         const draggedIndex = thumbArray.indexOf(dragged);
-        const droppedIndex = thumbArray.indexOf(evt.currentTarget);
+        const dropped = thumbArray.find(
+            ({ thumbnailDiv }) => thumbnailDiv === evt.currentTarget
+        );
+        const droppedIndex = thumbArray.indexOf(dropped);
 
         // move the dragged image to the correct index
         thumbArray.splice(draggedIndex, 1);
@@ -443,13 +493,26 @@ function dropImage(div, thumbnails) {
 
         // clear out the div, then append each image to it in the new order
         div.innerHTML = "";
-        thumbArray.forEach((thumbnailDiv, i) => {
+        thumbArray.forEach(({ thumbnailDiv, selected }, i) => {
             // add a space before every image except first
             if (i !== 0) {
                 div.innerHTML += " ";
             }
+
             // clone to remove existing event listeners
-            div.appendChild(thumbnailDiv.cloneNode(true));
+            const clone = thumbnailDiv.cloneNode(true);
+            if (selected) {
+                // re-check checkbox as cloning removes this
+                clone
+                    .querySelector("input[type='checkbox']")
+                    .setAttribute("checked", true);
+            } else {
+                clone
+                    .querySelector("input[type='checkbox']")
+                    .removeAttribute("checked");
+            }
+            div.appendChild(clone);
+
             // update order in overrides
             const canvasUri = thumbnailDiv.dataset["canvas"];
             overrides[canvasUri]["order"] = i;
