@@ -459,8 +459,7 @@ function dropImage(div, thumbnails) {
         const thumbArray = Array.from(thumbnails).map((thumbnailDiv) => ({
             thumbnailDiv,
             // keep track of selection state
-            selected: thumbnailDiv.querySelector("input[type='checkbox']")
-                .checked,
+            selected: thumbnailDiv.classList.contains("selected"),
         }));
 
         // get or initialize rotation override array
@@ -500,6 +499,10 @@ function dropImage(div, thumbnails) {
                 clone
                     .querySelector("input[type='checkbox']")
                     .setAttribute("checked", true);
+            } else {
+                clone
+                    .querySelector("input[type='checkbox']")
+                    .removeAttribute("checked");
             }
             div.appendChild(clone);
 
