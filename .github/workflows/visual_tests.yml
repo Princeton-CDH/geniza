@@ -102,7 +102,7 @@ jobs:
             pip-
 
       - name: Install dependencies
-        run: pip install -e '.[dev]'
+        run: pip install -e '.[test]'
 
       - name: Configure solr and create test core
         run: |

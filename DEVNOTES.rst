@@ -6,7 +6,7 @@ Setup and installation
 
 Initial setup and installation:
 
-- Recommended: create and activate a python 3.8 virtualenv
+- Recommended: create and activate a python 3.9 virtualenv
 
 - Install required python dependencies::
 

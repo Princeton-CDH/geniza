@@ -46,7 +46,7 @@ jobs:
           restore-keys: |
             pip-${{ hashFiles('pyproject.toml') }}
             pip-
-      - run: pip install -e '.[dev]'
+      - run: pip install -e '.[test]'
       - run: python -c "import uuid; print('SECRET_KEY = \'%s\'' % uuid.uuid4())" >> geniza/settings/local_settings.py
       - uses: actions/setup-node@v2
         with:
