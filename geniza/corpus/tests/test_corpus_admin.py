@@ -37,6 +37,7 @@ from geniza.corpus.admin import (
 from geniza.corpus.models import (
     Collection,
     Document,
+    DocumentType,
     Fragment,
     LanguageScript,
     Provenance,
@@ -376,6 +377,19 @@ class TestDocumentAdmin:
         response = admin_client.get(url)
         assert footnote_log_entry not in response.context["footnote_action_list"]
         assert annotation_log_entry not in response.context["annotation_action_list"]
+
+    @pytest.mark.django_db
+    def test_formfield_for_foreignkey(self):
+        doc_admin = DocumentAdmin(model=Document, admin_site=admin.site)
+        doctype_field = Document._meta.get_field("doctype")
+        doctype_z = DocumentType.objects.create(name="ZZZ")
+        doctype_a = DocumentType.objects.create(name="000")
+        formfield = doc_admin.formfield_for_foreignkey(
+            doctype_field, Mock(), queryset=None
+        )
+        # queryset should be sorted alphabetically
+        assert formfield.queryset.first().pk == doctype_a.pk
+        assert formfield.queryset.last().pk == doctype_z.pk
 
 
 @pytest.mark.django_db
