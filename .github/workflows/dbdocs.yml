@@ -41,7 +41,7 @@ jobs:
         with:
           python-version: ${{ env.PYTHON_VERSION }}
       - name: Install dependencies
-        run: pip install -r requirements/test.txt
+        run: pip install -e '.[test]'
       - name: Setup local_settings.py
         run: python -c "import uuid; print('SECRET_KEY = \'%s\'' % uuid.uuid4())" >> geniza/settings/local_settings.py
 
