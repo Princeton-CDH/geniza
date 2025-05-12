@@ -45,6 +45,9 @@ def test_source_export_data(source):
     data = src_exporter.get_export_data_dict(source_obj)
     assert not data["languages"]
 
+    # should include citation
+    assert data["citation"] == str(source)
+
 
 @pytest.mark.django_db
 def test_admin_source_export_data(source):
