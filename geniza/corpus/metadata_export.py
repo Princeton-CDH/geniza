@@ -310,11 +310,16 @@ class PublicFragmentExporter(FragmentExporter):
     """
 
     def get_queryset(self):
-        return super().get_queryset().filter(documents__status=Document.PUBLIC)
+        # must use distinct() as filtering on documents__status produces
+        # duplicate rows for fragments on multiple documents
+        return (
+            super().get_queryset().filter(documents__status=Document.PUBLIC).distinct()
+        )
 
 
 class AdminFragmentExporter(FragmentExporter):
     "Admin fragment export variant; adds notes, review, and admin url fields."
+
     csv_fields = FragmentExporter.csv_fields + ["notes", "needs_review", "url_admin"]
 
     def get_export_data_dict(self, fragment):
