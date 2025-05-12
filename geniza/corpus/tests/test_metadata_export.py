@@ -271,6 +271,10 @@ def test_public_fragment_export(fragment, multifragment, document, join):
     # should include both fragments
     assert fragment in qs_frags
     assert multifragment in qs_frags
+    # PublicFragmentExporter should not create duplicate rows for frag
+    # associated with multiple documents (fails without distinct())
+    assert PublicFragmentExporter().get_queryset().count() == 2
+    assert FragmentExporter().get_queryset().count() == 2
 
     # if we suppress join, then multifragment should no longer be included
     join.status = Document.SUPPRESSED
