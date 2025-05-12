@@ -413,7 +413,8 @@ class RelatedDocumentsMixin:
             doc_pk = rel["document"]
             if doc_pk not in related_documents:
                 # get related items by doc pk
-                doctype_name = doctypes_by_doc.get(doc_pk)
+                # translators: Label for unknown document type
+                doctype_name = doctypes_by_doc.get(doc_pk, _("Unknown type"))
                 doc_datings = datings_by_doc.get(doc_pk, [])
                 shelfmarks = shelfmarks_by_doc.get(doc_pk, set())
                 shelfmark = rel["document__shelfmark_override"] or " + ".join(
