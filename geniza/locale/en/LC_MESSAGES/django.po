@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: geniza\n"
 "Report-Msgid-Bugs-To: cdhdevteam@princeton.edu\n"
-"POT-Creation-Date: 2025-04-14 11:59-0400\n"
+"POT-Creation-Date: 2025-05-12 14:16-0400\n"
 "PO-Revision-Date: 2022-08-01 14:25\n"
 "Last-Translator: \n"
 "Language-Team: English\n"
@@ -101,7 +101,7 @@ msgstr ""
 
 #. Translators: label for description RegEx field
 #. Translators: label for document description
-#: corpus/forms.py:260 corpus/templates/corpus/document_detail.html:145
+#: corpus/forms.py:260 corpus/templates/corpus/document_detail.html:144
 msgid "Description"
 msgstr ""
 
@@ -145,7 +145,7 @@ msgid "Document type"
 msgstr "Input date"
 
 #. Translators: label for "has image" search form filter
-#: corpus/forms.py:300 corpus/templates/corpus/document_detail.html:117
+#: corpus/forms.py:300 corpus/templates/corpus/document_detail.html:116
 #: corpus/templates/corpus/snippets/document_transcription.html:61
 msgid "Image"
 msgstr ""
@@ -180,9 +180,10 @@ msgid "Search by regular expression"
 msgstr ""
 
 #. Translators: Default label when document does not have a type
-#: corpus/forms.py:373 corpus/models.py:1005 corpus/solr_queryset.py:342
+#: corpus/forms.py:373 corpus/models.py:1029 corpus/solr_queryset.py:342
 #: corpus/templates/corpus/snippets/document_header.html:17
-#: corpus/templates/corpus/snippets/document_transcription.html:242
+#: corpus/templates/corpus/snippets/document_transcription.html:243
+#: entities/views.py:417
 msgid "Unknown type"
 msgstr ""
 
@@ -224,24 +225,24 @@ msgid ""
 "alphanumeric character other than one of DdSsWw, or at the end of a query. %s"
 msgstr ""
 
-#: corpus/models.py:1128 templates/base.html:21
+#: corpus/models.py:1154 templates/base.html:21
 msgid "Princeton Geniza Project"
 msgstr ""
 
 #. Translators: attribution for local IIIF manifests
-#: corpus/models.py:1130
+#: corpus/models.py:1156
 #, python-format
 msgid "Compilation by %(pgp)s."
 msgstr ""
 
 #. Translators: attribution for local IIIF manifests that include transcription
-#: corpus/models.py:1133
+#: corpus/models.py:1159
 #, python-format
 msgid "Compilation and transcription by %(pgp)s."
 msgstr ""
 
 #. Translators: manifest attribution note that content from other institutions may have restrictions
-#: corpus/models.py:1135
+#: corpus/models.py:1161
 msgid "Additional restrictions may apply."
 msgstr ""
 
@@ -272,44 +273,44 @@ msgid "Metadata"
 msgstr ""
 
 #. Translators: label for date of this document, if known
-#: corpus/templates/corpus/document_detail.html:56
+#: corpus/templates/corpus/document_detail.html:55
 msgid "Document Date"
 msgstr ""
 
 #. Translators: Inferred dating label
-#: corpus/templates/corpus/document_detail.html:67
+#: corpus/templates/corpus/document_detail.html:66
 msgid "Inferred Date"
 msgid_plural "Inferred Dates"
 msgstr[0] ""
 msgstr[1] ""
 
 #. Translators: Primary language label
-#: corpus/templates/corpus/document_detail.html:84
+#: corpus/templates/corpus/document_detail.html:83
 msgid "Primary Language"
 msgid_plural "Primary Languages"
 msgstr[0] ""
 msgstr[1] ""
 
 #. Translators: Secondary language label
-#: corpus/templates/corpus/document_detail.html:97
+#: corpus/templates/corpus/document_detail.html:96
 msgid "Secondary Language"
 msgid_plural "Secondary Languages"
 msgstr[0] ""
 msgstr[1] ""
 
 #. Translators: label for document content stats (number of translations, transcriptions, images)
-#: corpus/templates/corpus/document_detail.html:114
+#: corpus/templates/corpus/document_detail.html:113
 msgid "What's in the PGP"
 msgstr ""
 
-#: corpus/templates/corpus/document_detail.html:121
+#: corpus/templates/corpus/document_detail.html:120
 #, python-format
 msgid "%(n_transcriptions)s Transcription"
 msgid_plural "%(n_transcriptions)s Transcriptions"
 msgstr[0] ""
 msgstr[1] ""
 
-#: corpus/templates/corpus/document_detail.html:131
+#: corpus/templates/corpus/document_detail.html:130
 #, python-format
 msgid "%(n_translations)s Translation"
 msgid_plural "%(n_translations)s Translations"
@@ -319,7 +320,7 @@ msgstr[1] ""
 #. Translators: heading label for document related people
 #. Translators: label for sort by number of related people
 #. Translators: accessibility label for people list
-#: corpus/templates/corpus/document_detail.html:153
+#: corpus/templates/corpus/document_detail.html:152
 #: corpus/templates/corpus/snippets/document_result.html:113
 #: entities/forms.py:225 entities/forms.py:362
 #: entities/templates/entities/person_list.html:197
@@ -329,8 +330,8 @@ msgid "Related People"
 msgstr ""
 
 #. Translators: label for an uncertain Person-Document identification
-#: corpus/templates/corpus/document_detail.html:161
-#: entities/templates/entities/snippets/related_documents_table.html:53
+#: corpus/templates/corpus/document_detail.html:160
+#: entities/templates/entities/snippets/related_documents_table.html:55
 msgid "(uncertain)"
 msgstr ""
 
@@ -338,7 +339,7 @@ msgstr ""
 #. Translators: label for sort by number of related places
 #. Translators: accessibility label for place list
 #. Translators: heading label for document related places
-#: corpus/templates/corpus/document_detail.html:173
+#: corpus/templates/corpus/document_detail.html:172
 #: corpus/templates/corpus/snippets/document_result.html:117
 #: entities/forms.py:227 entities/templates/entities/person_list.html:201
 #: entities/templates/entities/person_related_places.html:56
@@ -348,7 +349,7 @@ msgstr ""
 
 #. Translators: label for tags on a document
 #. Translators: Person "tags" column header on the browse page
-#: corpus/templates/corpus/document_detail.html:191
+#: corpus/templates/corpus/document_detail.html:190
 #: corpus/templates/corpus/snippets/document_result.html:130
 #: entities/templates/entities/person_list.html:137
 msgid "Tags"
@@ -359,25 +360,30 @@ msgstr ""
 msgid "Additional metadata"
 msgstr ""
 
+#. Translators: label for the provenance of document fragments
+#: corpus/templates/corpus/document_detail.html:212
+msgid "Provenance"
+msgstr ""
+
 #. Translators: Document fragment collection(s) label
-#: corpus/templates/corpus/document_detail.html:211
+#: corpus/templates/corpus/document_detail.html:226
 msgid "Collection"
 msgid_plural "Collections"
 msgstr[0] ""
 msgstr[1] ""
 
 #. Translators: label for historical/old shelfmarks on document fragments
-#: corpus/templates/corpus/document_detail.html:228
+#: corpus/templates/corpus/document_detail.html:243
 msgid "Historical shelfmarks"
 msgstr ""
 
 #. Translators: Label for date document was first added to the PGP
-#: corpus/templates/corpus/document_detail.html:232
+#: corpus/templates/corpus/document_detail.html:247
 msgid "Input date"
 msgstr "Input date"
 
 #. Translators: Date document was first added to the PGP
-#: corpus/templates/corpus/document_detail.html:235
+#: corpus/templates/corpus/document_detail.html:250
 #, python-format
 msgid ""
 "\n"
@@ -387,26 +393,26 @@ msgstr ""
 
 #. Translators: label for a citation for a document detail page
 #. Translators: label for a citation for a person page
-#: corpus/templates/corpus/document_detail.html:250
+#: corpus/templates/corpus/document_detail.html:265
 #: entities/templates/entities/person_detail.html:131
 msgid "How to cite this record:"
 msgstr ""
 
 #. Translators: accessibility label for a citation for a document
 #. Translators: accessibility label for a citation for a person
-#: corpus/templates/corpus/document_detail.html:254
+#: corpus/templates/corpus/document_detail.html:269
 #: entities/templates/entities/person_detail.html:135
 msgid "Citation"
 msgstr ""
 
 #. Translators: label for permanent link to a document
-#: corpus/templates/corpus/document_detail.html:259
+#: corpus/templates/corpus/document_detail.html:274
 msgid "Link to this document:"
 msgstr ""
 
 #. Translators: accessibility label for permanent link to a document
 #. Translators: accessibility label for permanent link to a person
-#: corpus/templates/corpus/document_detail.html:266
+#: corpus/templates/corpus/document_detail.html:281
 #: entities/templates/entities/person_detail.html:146
 msgid "Permalink"
 msgstr ""
@@ -753,11 +759,11 @@ msgid_plural "Translators: %(eds)s"
 msgstr[0] ""
 msgstr[1] ""
 
-#: corpus/templates/corpus/snippets/document_transcription.html:210
+#: corpus/templates/corpus/snippets/document_transcription.html:211
 msgid "Zoom and Rotate"
 msgstr ""
 
-#: corpus/templates/corpus/snippets/document_transcription.html:245
+#: corpus/templates/corpus/snippets/document_transcription.html:246
 #, python-format
 msgid "View %(related_doc)s"
 msgstr ""
@@ -801,12 +807,12 @@ msgstr "Input date"
 msgid "Search and browse Geniza documents."
 msgstr ""
 
-#: corpus/views.py:332 entities/views.py:748
+#: corpus/views.py:332 entities/views.py:867
 #, python-format
 msgid "After %s"
 msgstr ""
 
-#: corpus/views.py:334 entities/views.py:750
+#: corpus/views.py:334 entities/views.py:869
 #, python-format
 msgid "Before %s"
 msgstr ""
@@ -836,7 +842,7 @@ msgstr[1] ""
 msgid "Related documents for %(doc)s"
 msgstr ""
 
-#: corpus/views.py:595 entities/views.py:335
+#: corpus/views.py:595 entities/views.py:339
 #, python-format
 msgid "%(count)d related document"
 msgid_plural "%(count)d related documents"
@@ -860,7 +866,7 @@ msgstr ""
 msgid "Gender"
 msgstr ""
 
-#: entities/forms.py:206 entities/views.py:764
+#: entities/forms.py:206 entities/views.py:883
 msgid "Detail page available"
 msgstr ""
 
@@ -915,35 +921,35 @@ msgstr ""
 msgid "Descending"
 msgstr ""
 
-#: entities/models.py:377
+#: entities/models.py:378
 msgid "Male"
 msgstr ""
 
-#: entities/models.py:378
+#: entities/models.py:379
 msgid "Female"
 msgstr ""
 
-#: entities/models.py:379
+#: entities/models.py:380
 msgid "Unknown"
 msgstr ""
 
-#: entities/models.py:1243
+#: entities/models.py:1248
 msgid "Immediate family relations"
 msgstr ""
 
-#: entities/models.py:1244
+#: entities/models.py:1249
 msgid "Extended family"
 msgstr ""
 
-#: entities/models.py:1245
+#: entities/models.py:1250
 msgid "Relatives by marriage"
 msgstr ""
 
-#: entities/models.py:1246
+#: entities/models.py:1251
 msgid "Business and property relationships"
 msgstr ""
 
-#: entities/models.py:1247
+#: entities/models.py:1252
 msgid "Ambiguity"
 msgstr ""
 
@@ -1158,18 +1164,18 @@ msgid "Type"
 msgstr ""
 
 #. Translators: title of entity "related documents" page
-#: entities/views.py:327
+#: entities/views.py:333
 #, python-format
 msgid "Related documents for %(p)s"
 msgstr ""
 
 #. Translators: title of entity "related people" page
-#: entities/views.py:422
+#: entities/views.py:539
 #, python-format
 msgid "Related people for %(p)s"
 msgstr ""
 
-#: entities/views.py:430 entities/views.py:500
+#: entities/views.py:547 entities/views.py:618
 #, python-format
 msgid "%(count)d related person"
 msgid_plural "%(count)d related people"
@@ -1177,12 +1183,12 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. Translators: title of person "related places" page
-#: entities/views.py:559
+#: entities/views.py:677
 #, python-format
 msgid "Related places for %(p)s"
 msgstr ""
 
-#: entities/views.py:567
+#: entities/views.py:685
 #, python-format
 msgid "%(count)d related place"
 msgid_plural "%(count)d related places"
@@ -1191,23 +1197,23 @@ msgstr[1] ""
 
 #. Translators: title of people list/browse page
 #. Translators: label for link to people browse page in main navigation
-#: entities/views.py:672 templates/snippets/menu.html:19
+#: entities/views.py:791 templates/snippets/menu.html:19
 msgid "People"
 msgstr ""
 
 #. Translators: description of people list/browse page
-#: entities/views.py:674
+#: entities/views.py:793
 msgid "Browse people present in Geniza documents."
 msgstr ""
 
 #. Translators: title of places list/browse page
 #. Translators: label for link to places browse page in main navigation
-#: entities/views.py:857 templates/snippets/menu.html:26
+#: entities/views.py:976 templates/snippets/menu.html:26
 msgid "Places"
 msgstr ""
 
 #. Translators: description of places list/browse page
-#: entities/views.py:859
+#: entities/views.py:978
 msgid "Browse places present in Geniza documents."
 msgstr ""
 
