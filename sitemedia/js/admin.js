@@ -319,7 +319,15 @@ function appendImageControls() {
         // select control
         const selectCheckbox = document.createElement("input");
         selectCheckbox.type = "checkbox";
-        selectCheckbox.checked = div.classList.contains("selected");
+
+        const fragmentImage = document.querySelector(
+            `#textblock_set-group div.admin-thumbnail[data-canvas="${div.dataset.canvas}"]`
+        );
+        // match selected state from fragments inline
+        if (fragmentImage.classList.contains("selected")) {
+            selectCheckbox.checked = true;
+            div.classList.add("selected");
+        }
         div.appendChild(selectCheckbox);
     });
 }

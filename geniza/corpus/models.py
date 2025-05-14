@@ -918,7 +918,6 @@ class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin, TaggableMixin)
             ],
             labels=[img["label"] for img in images],
             canvases=iiif_images.keys(),
-            selected=[i for i, img in enumerate(images) if not img["excluded"]],
         )
 
     admin_thumbnails.short_description = "Image order/rotation overrides"
