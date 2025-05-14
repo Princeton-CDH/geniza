@@ -304,7 +304,7 @@ class Fragment(TrackChangesModel):
                 # on Document
                 '<div class="admin-thumbnail%s" %s><img src="%s" loading="lazy" height="%d" title="%s" /></div>'
                 % (
-                    " selected" if i in selected or not len(selected) else "",
+                    " selected" if i in selected else "",
                     f'data-canvas="{list(canvases)[i]}"' if canvases else "",
                     img,
                     img.size.options["height"] if hasattr(img, "size") else 200,
@@ -918,7 +918,6 @@ class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin, TaggableMixin)
             ],
             labels=[img["label"] for img in images],
             canvases=iiif_images.keys(),
-            selected=[i for i, img in enumerate(images) if not img["excluded"]],
         )
 
     admin_thumbnails.short_description = "Image order/rotation overrides"
