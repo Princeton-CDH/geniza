@@ -304,7 +304,7 @@ class Fragment(TrackChangesModel):
                 # on Document
                 '<div class="admin-thumbnail%s" %s><img src="%s" loading="lazy" height="%d" title="%s" /></div>'
                 % (
-                    " selected" if i in selected else "",
+                    " selected" if i in selected or not len(selected) else "",
                     f'data-canvas="{list(canvases)[i]}"' if canvases else "",
                     img,
                     img.size.options["height"] if hasattr(img, "size") else 200,

@@ -577,7 +577,9 @@ class DocumentAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin)
         help_texts = {
             "admin_thumbnails": """Drag image thumbnails to customize order when necessary (i.e.
             image sequence does not follow fragment/shelfmark sequence). Click rotation buttons to
-            rotate images. Changes will be applied on save."""
+            rotate images, and use checkboxes to select or deselect images as part of the document.
+            Changes will be applied on save. NOTE: You cannot deselect ALL images from a fragment. If
+            no images on a fragment are part of the document, the fragment should be removed."""
         }
         kwargs.update({"help_texts": help_texts})
         return super().get_form(request, obj, **kwargs)
