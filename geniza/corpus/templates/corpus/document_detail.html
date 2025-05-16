@@ -211,14 +211,18 @@
                 {# Translators: label for the provenance of document fragments #}
                 <dt>{% translate "Provenance" %}</dt>
                 <dd>
-                    <dl>
-                        {% for provenance in provenance_list %}
-                            <dt>{{ provenance.grouper }}</dt>
-                            {% for frag in provenance.list %}
-                                <dd{% if forloop.last %} class="row-end"{% endif %}>{{ frag }}</dd>
+                    {% if provenance_list|length > 1 %}
+                        <dl>
+                            {% for provenance in provenance_list %}
+                                <dt>{{ provenance.grouper }}</dt>
+                                {% for frag in provenance.list %}
+                                    <dd{% if forloop.last %} class="row-end"{% endif %}>{{ frag }}</dd>
+                                {% endfor %}
                             {% endfor %}
-                        {% endfor %}
-                    </dl>
+                        </dl>
+                    {% else %}
+                        {{ provenance_list.0.grouper }}
+                    {% endif %}
                 </dd>
             {% endif %}
             <dt>
