@@ -5,10 +5,10 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Documents and Fragments &#8212; Princeton Geniza Project 4.21.0 documentation</title>
+    <title>Documents and Fragments &#8212; Princeton Geniza Project 4.22.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=5ecbeea2" />
     <link rel="stylesheet" type="text/css" href="../_static/alabaster.css?v=12dfc556" />
-    <script src="../_static/documentation_options.js?v=d460739f"></script>
+    <script src="../_static/documentation_options.js?v=461fad74"></script>
     <script src="../_static/doctools.js?v=9a2dae69"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="../genindex.html" />
@@ -236,6 +236,12 @@ edition.</p>
 <dd><p>List of external URLs to view the Document’s Fragments.</p>
 </dd></dl>
 
+<dl class="py property">
+<dt class="sig sig-object py" id="geniza.corpus.models.Document.fragments_by_provenance">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">fragments_by_provenance</span></span><a class="headerlink" href="#geniza.corpus.models.Document.fragments_by_provenance" title="Link to this definition">¶</a></dt>
+<dd><p>Associated fragments ordered by provenance_display, if set</p>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="geniza.corpus.models.Document.fragments_other_docs">
 <span class="sig-name descname"><span class="pre">fragments_other_docs</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/corpus/models.html#Document.fragments_other_docs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.corpus.models.Document.fragments_other_docs" title="Link to this definition">¶</a></dt>
@@ -298,7 +304,7 @@ has any images, digital editions, or digital translations.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="geniza.corpus.models.Document.iiif_images">
-<span class="sig-name descname"><span class="pre">iiif_images</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filter_side</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">with_placeholders</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/corpus/models.html#Document.iiif_images"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.corpus.models.Document.iiif_images" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">iiif_images</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filter_side</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">with_placeholders</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">thumbnail</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/corpus/models.html#Document.iiif_images"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.corpus.models.Document.iiif_images" title="Link to this definition">¶</a></dt>
 <dd><p>Dict of IIIF images and labels for images of the Document’s Fragments, keyed on canvas.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -612,7 +618,7 @@ separated for reuse in Document</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="geniza.corpus.models.Fragment.iiif_images">
-<span class="sig-name descname"><span class="pre">iiif_images</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/corpus/models.html#Fragment.iiif_images"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.corpus.models.Fragment.iiif_images" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">iiif_images</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">allow_network_reqs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/corpus/models.html#Fragment.iiif_images"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.corpus.models.Fragment.iiif_images" title="Link to this definition">¶</a></dt>
 <dd><p>IIIF image URLs for this fragment. Returns a list of
 <code class="xref py py-class docutils literal notranslate"><span class="pre">IIIFImageClient</span></code> and corresponding list of labels,
 or None if this fragement has no IIIF url associated.</p>
@@ -696,6 +702,49 @@ in the old_shelfmarks field</p>
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geniza.corpus.models.</span></span><span class="sig-name descname"><span class="pre">PermalinkMixin</span></span><a class="reference internal" href="../_modules/geniza/corpus/models.html#PermalinkMixin"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.corpus.models.PermalinkMixin" title="Link to this definition">¶</a></dt>
 <dd><p>Mixin to generate a permalink for Django model objects by removing language code
 from the object’s absolute URL.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="geniza.corpus.models.Provenance">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geniza.corpus.models.</span></span><span class="sig-name descname"><span class="pre">Provenance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/corpus/models.html#Provenance"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.corpus.models.Provenance" title="Link to this definition">¶</a></dt>
+<dd><p>A provenance designation for a <a class="reference internal" href="#geniza.corpus.models.Fragment" title="geniza.corpus.models.Fragment"><code class="xref py py-class docutils literal notranslate"><span class="pre">Fragment</span></code></a>.</p>
+<dl class="py exception">
+<dt class="sig sig-object py" id="geniza.corpus.models.Provenance.DoesNotExist">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">DoesNotExist</span></span><a class="headerlink" href="#geniza.corpus.models.Provenance.DoesNotExist" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="geniza.corpus.models.Provenance.MultipleObjectsReturned">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">MultipleObjectsReturned</span></span><a class="headerlink" href="#geniza.corpus.models.Provenance.MultipleObjectsReturned" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geniza.corpus.models.Provenance.clean_fields">
+<span class="sig-name descname"><span class="pre">clean_fields</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">exclude</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#geniza.corpus.models.Provenance.clean_fields" title="Link to this definition">¶</a></dt>
+<dd><p>Clean all fields and raise a ValidationError containing a dict
+of all validation errors if any occur.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geniza.corpus.models.Provenance.get_deferred_fields">
+<span class="sig-name descname"><span class="pre">get_deferred_fields</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#geniza.corpus.models.Provenance.get_deferred_fields" title="Link to this definition">¶</a></dt>
+<dd><p>Return a set containing names of deferred fields for this instance.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geniza.corpus.models.Provenance.refresh_from_db">
+<span class="sig-name descname"><span class="pre">refresh_from_db</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">using</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fields</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#geniza.corpus.models.Provenance.refresh_from_db" title="Link to this definition">¶</a></dt>
+<dd><p>Reload field values from the database.</p>
+<p>By default, the reloading happens from the database this instance was
+loaded from, or by the read router if this instance wasn’t loaded from
+any database. The using parameter will override the default.</p>
+<p>Fields can be used to specify which fields to reload. The fields
+should be an iterable of field attnames. If fields is None, then
+all non-deferred fields are reloaded.</p>
+<p>When accessing deferred fields of an instance, the deferred loading
+of the field will call this method.</p>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="py class">
@@ -814,13 +863,19 @@ if either one is present.</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="geniza.corpus.dates.DocumentDateMixin.document_date">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">document_date</span></span><a class="headerlink" href="#geniza.corpus.dates.DocumentDateMixin.document_date" title="Link to this definition">¶</a></dt>
-<dd><p>Generate formatted display of combined original and standardized dates</p>
+<dd><p>Property: formatted display of combined original and standardized dates</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="geniza.corpus.dates.DocumentDateMixin.end_date">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">end_date</span></span><a class="headerlink" href="#geniza.corpus.dates.DocumentDateMixin.end_date" title="Link to this definition">¶</a></dt>
 <dd><p>Return the end date of the document’s standardized date or date range, if set.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geniza.corpus.dates.DocumentDateMixin.get_document_date">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_document_date</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">doc_date_standard</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">original_date</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/corpus/dates.html#DocumentDateMixin.get_document_date"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.corpus.dates.DocumentDateMixin.get_document_date" title="Link to this definition">¶</a></dt>
+<dd><p>Generate formatted display of combined original and standardized dates</p>
 </dd></dl>
 
 <dl class="py property">
@@ -2156,6 +2211,7 @@ for the set of users who associated with any of the log entries.</p>
 <li><a class="reference internal" href="#geniza.corpus.models.Document.formatted_citation"><code class="docutils literal notranslate"><span class="pre">Document.formatted_citation</span></code></a></li>
 <li><a class="reference internal" href="#geniza.corpus.models.Document.fragment_historical_shelfmarks"><code class="docutils literal notranslate"><span class="pre">Document.fragment_historical_shelfmarks</span></code></a></li>
 <li><a class="reference internal" href="#geniza.corpus.models.Document.fragment_urls"><code class="docutils literal notranslate"><span class="pre">Document.fragment_urls()</span></code></a></li>
+<li><a class="reference internal" href="#geniza.corpus.models.Document.fragments_by_provenance"><code class="docutils literal notranslate"><span class="pre">Document.fragments_by_provenance</span></code></a></li>
 <li><a class="reference internal" href="#geniza.corpus.models.Document.fragments_other_docs"><code class="docutils literal notranslate"><span class="pre">Document.fragments_other_docs()</span></code></a></li>
 <li><a class="reference internal" href="#geniza.corpus.models.Document.from_manifest_uri"><code class="docutils literal notranslate"><span class="pre">Document.from_manifest_uri()</span></code></a></li>
 <li><a class="reference internal" href="#geniza.corpus.models.Document.get_absolute_url"><code class="docutils literal notranslate"><span class="pre">Document.get_absolute_url()</span></code></a></li>
@@ -2244,6 +2300,14 @@ for the set of users who associated with any of the log entries.</p>
 </ul>
 </li>
 <li><a class="reference internal" href="#geniza.corpus.models.PermalinkMixin"><code class="docutils literal notranslate"><span class="pre">PermalinkMixin</span></code></a></li>
+<li><a class="reference internal" href="#geniza.corpus.models.Provenance"><code class="docutils literal notranslate"><span class="pre">Provenance</span></code></a><ul>
+<li><a class="reference internal" href="#geniza.corpus.models.Provenance.DoesNotExist"><code class="docutils literal notranslate"><span class="pre">Provenance.DoesNotExist</span></code></a></li>
+<li><a class="reference internal" href="#geniza.corpus.models.Provenance.MultipleObjectsReturned"><code class="docutils literal notranslate"><span class="pre">Provenance.MultipleObjectsReturned</span></code></a></li>
+<li><a class="reference internal" href="#geniza.corpus.models.Provenance.clean_fields"><code class="docutils literal notranslate"><span class="pre">Provenance.clean_fields()</span></code></a></li>
+<li><a class="reference internal" href="#geniza.corpus.models.Provenance.get_deferred_fields"><code class="docutils literal notranslate"><span class="pre">Provenance.get_deferred_fields()</span></code></a></li>
+<li><a class="reference internal" href="#geniza.corpus.models.Provenance.refresh_from_db"><code class="docutils literal notranslate"><span class="pre">Provenance.refresh_from_db()</span></code></a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#geniza.corpus.models.TagSignalHandlers"><code class="docutils literal notranslate"><span class="pre">TagSignalHandlers</span></code></a><ul>
 <li><a class="reference internal" href="#geniza.corpus.models.TagSignalHandlers.tagged_item_change"><code class="docutils literal notranslate"><span class="pre">TagSignalHandlers.tagged_item_change()</span></code></a></li>
 <li><a class="reference internal" href="#geniza.corpus.models.TagSignalHandlers.unidecode_tag"><code class="docutils literal notranslate"><span class="pre">TagSignalHandlers.unidecode_tag()</span></code></a></li>
@@ -2273,6 +2337,7 @@ for the set of users who associated with any of the log entries.</p>
 <li><a class="reference internal" href="#geniza.corpus.dates.DocumentDateMixin.clean"><code class="docutils literal notranslate"><span class="pre">DocumentDateMixin.clean()</span></code></a></li>
 <li><a class="reference internal" href="#geniza.corpus.dates.DocumentDateMixin.document_date"><code class="docutils literal notranslate"><span class="pre">DocumentDateMixin.document_date</span></code></a></li>
 <li><a class="reference internal" href="#geniza.corpus.dates.DocumentDateMixin.end_date"><code class="docutils literal notranslate"><span class="pre">DocumentDateMixin.end_date</span></code></a></li>
+<li><a class="reference internal" href="#geniza.corpus.dates.DocumentDateMixin.get_document_date"><code class="docutils literal notranslate"><span class="pre">DocumentDateMixin.get_document_date()</span></code></a></li>
 <li><a class="reference internal" href="#geniza.corpus.dates.DocumentDateMixin.original_date"><code class="docutils literal notranslate"><span class="pre">DocumentDateMixin.original_date</span></code></a></li>
 <li><a class="reference internal" href="#geniza.corpus.dates.DocumentDateMixin.parsed_date"><code class="docutils literal notranslate"><span class="pre">DocumentDateMixin.parsed_date</span></code></a></li>
 <li><a class="reference internal" href="#geniza.corpus.dates.DocumentDateMixin.solr_date_range"><code class="docutils literal notranslate"><span class="pre">DocumentDateMixin.solr_date_range()</span></code></a></li>

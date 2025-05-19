@@ -4,10 +4,10 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>geniza.corpus.metadata_export &#8212; Princeton Geniza Project 4.21.0 documentation</title>
+    <title>geniza.corpus.metadata_export &#8212; Princeton Geniza Project 4.22.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=5ecbeea2" />
     <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=12dfc556" />
-    <script src="../../../_static/documentation_options.js?v=d460739f"></script>
+    <script src="../../../_static/documentation_options.js?v=461fad74"></script>
     <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
@@ -376,7 +376,11 @@
 <div class="viewcode-block" id="PublicFragmentExporter.get_queryset">
 <a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.metadata_export.PublicFragmentExporter.get_queryset">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_queryset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">get_queryset</span><span class="p">()</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">documents__status</span><span class="o">=</span><span class="n">Document</span><span class="o">.</span><span class="n">PUBLIC</span><span class="p">)</span></div>
+        <span class="c1"># must use distinct() as filtering on documents__status produces</span>
+        <span class="c1"># duplicate rows for fragments on multiple documents</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">get_queryset</span><span class="p">()</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">documents__status</span><span class="o">=</span><span class="n">Document</span><span class="o">.</span><span class="n">PUBLIC</span><span class="p">)</span><span class="o">.</span><span class="n">distinct</span><span class="p">()</span>
+        <span class="p">)</span></div>
 </div>
 
 
@@ -385,6 +389,7 @@
 <a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.metadata_export.AdminFragmentExporter">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">AdminFragmentExporter</span><span class="p">(</span><span class="n">FragmentExporter</span><span class="p">):</span>
     <span class="s2">&quot;Admin fragment export variant; adds notes, review, and admin url fields.&quot;</span>
+
     <span class="n">csv_fields</span> <span class="o">=</span> <span class="n">FragmentExporter</span><span class="o">.</span><span class="n">csv_fields</span> <span class="o">+</span> <span class="p">[</span><span class="s2">&quot;notes&quot;</span><span class="p">,</span> <span class="s2">&quot;needs_review&quot;</span><span class="p">,</span> <span class="s2">&quot;url_admin&quot;</span><span class="p">]</span>
 
 <div class="viewcode-block" id="AdminFragmentExporter.get_export_data_dict">
