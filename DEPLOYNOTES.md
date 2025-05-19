@@ -1,5 +1,11 @@
 # Deploy Notes
 
+## 4.22
+
+-   Indexing logic has changed. Reindex all content: `python manage.py index`.
+-   The Python package installation command is now `pip install -e .` from the
+    project root, or `pip install -e '.[dev]'` to include development dependencies.
+
 ## 4.21
 
 -   Solr configuration has changed. Ensure Solr configset has been updated

@@ -1,6 +1,30 @@
 Change Log
 ==========
 
+4.22
+----
+
+- public site
+    - As a public site user, I want to see uncertain person-document relations marked in parentheses on the person detail page so I can see at a glance where the person-document relation is not 100% supported by documentary evidence.
+    - As a public site user, I want to be able to filter person-document relations by uncertainty of the connection so I have the option to only see identifications that are fully supported by the document.
+    - As a front end user, I want to see fragment provenance on the document detail page, so that I can find out where a fragment came from.
+    - As a front end user, I want the transcription editor's rotation degrees to be clickable and editable, so that I can enter the exact degree of rotation I want without relying on pointer controls.
+    - As a public site user, I want the font to match the rest of the site when I encounter Latin script in search result transcription/translation snippets from other languages, so that I am not confused by visual inconsistency.
+    - As a public site user, I want the places map to have an adjustable scale so I can judge distances on the map as I zoom in and out.
+    - bugfix: Front-end people pages with more than 100 documents loading slowly
+    - bugfix: Navigation bar styles broken in newer versions of Chrome
+    - bugfix: document metadata doesn't update when accessed from search with javascript enabled
+    - bugfix: Fragments data export includes duplicates; there is no way to link Sources and Footnotes exports
+    - chore: Exempt single-fragment or single-provenance docs from tabular provenance display
+
+- admin
+    - As a content admin/editor, I want csvs of individual people to mark uncertainty of person-document relations in the same column as the relations appear so that I can sort this information more easily.
+    - As a content admin, I want help text in the people-to-people relationship field that tells me to prioritize recording family relationships (when more than one relationship exists between the same two people), so that data entry is uniform
+    - As a content editor, I want to be able to choose fragment provenance from a dropdown which will be displayed on the front end, so that there is a shorthand way to indicate provenance (and to facilitate data entry).
+    - As a content editor, I want the collection name to come first before collection abbreviation when I go to add a collection, to facilitate data entry.
+    - As a content editor, I want the dropdown list of document types in the document edit form alphabetized, so that I know where to look when I make a selection (especially if the list grows)
+    - As an admin user, I would like to be able to choose which images are selected in the same place as order and rotation, so that I do not have to scroll back and forth between them.
+
 4.21
 ----
 
