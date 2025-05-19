@@ -35,23 +35,28 @@
             </tr>
         </thead>
         <tbody>
-            {% for rel in relations %}
+            {% for document in relations %}
                 <tr>
                     <td class="document-title">
-                        {% if rel.document.list_thumbnail %}
-                            {{ rel.document.list_thumbnail }}
+                        {% if document.thumbnail %}
+                            {{ document.thumbnail }}
                         {% else %}
                             {# Translators: label for when no image thumbnail is available #}
                             <span class="no-image">{% translate 'No Image' %}</span>
                         {% endif %}
-                        <a href="{{ rel.document.permalink }}" title="{{ rel.document.shelfmark_display }}">
-                            {{ rel.document.shelfmark_display }}
+                        <a href="{{ document.url }}" title="{{ document.shelfmark }}">
+                            {{ document.shelfmark }}
                         </a>
                     </td>
-                    <td>{{ rel.document.doctype }}</td>
-                    <td>{{ rel.type }}</td>
+                    <td>{{ document.doctype }}</td>
+                    {# Translators: label for an uncertain Person-Document identification #}
+                    <td class="reltype">
+                        {% for reltype in document.relations %}
+                            <span>{% if not forloop.first %}{{ reltype.name|lower }}{% else %}{{ reltype.name }}{% endif %}{% if reltype.uncertain %} <em class="uncertain">{% translate '(uncertain)' %}</em>{% endif %}{% if not forloop.last %},{% endif %}</span>
+                        {% endfor %}
+                    </td>
                     <td class="document-date">
-                        {{ rel.document.dating_set.first.display_date|default:rel.document.document_date }}
+                        {{ document.date.label }}
                     </td>
                 </tr>
             {% endfor %}

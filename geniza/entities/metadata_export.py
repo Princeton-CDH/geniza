@@ -254,6 +254,7 @@ class PersonRelationsExporter(RelationsExporter):
                 related_object_type=Value("Person"),
                 relationship_type_id=F("type"),
                 use_converse_typename=Value(True),
+                is_uncertain=Value(False),
             )
             .union(
                 person.to_person.values(
@@ -261,6 +262,7 @@ class PersonRelationsExporter(RelationsExporter):
                     related_object_type=Value("Person"),
                     relationship_type_id=F("type"),
                     use_converse_typename=Value(False),
+                    is_uncertain=Value(False),
                 )
             )
             .union(
@@ -269,6 +271,7 @@ class PersonRelationsExporter(RelationsExporter):
                     related_object_type=Value("Place"),
                     relationship_type_id=F("type"),
                     use_converse_typename=Value(False),
+                    is_uncertain=Value(False),
                 )
             )
             .union(
@@ -277,6 +280,7 @@ class PersonRelationsExporter(RelationsExporter):
                     related_object_type=Value("Document"),
                     relationship_type_id=F("type"),
                     use_converse_typename=Value(False),
+                    is_uncertain=F("uncertain"),
                 )
             )
             .union(
@@ -287,6 +291,7 @@ class PersonRelationsExporter(RelationsExporter):
                     # type for event relations
                     relationship_type_id=Value(-1),
                     use_converse_typename=Value(False),
+                    is_uncertain=Value(False),
                 )
             )
         )
@@ -443,7 +448,8 @@ class PersonRelationsExporter(RelationsExporter):
                 rel.update(
                     {
                         "related_object_name": docs_dict.get(rel[ID]),
-                        "relationship_type": doc_relation_typedict.get(rel[RTID]),
+                        "relationship_type": doc_relation_typedict.get(rel[RTID])
+                        + (" (uncertain)" if rel["is_uncertain"] else ""),
                     }
                 )
             elif rel[TYPE] == "Event":

@@ -25,6 +25,7 @@ class SourceExporter(Exporter):
         "languages",
         "url",
         "notes",
+        "citation",
         "num_footnotes",
     ]
 
@@ -63,6 +64,7 @@ class SourceExporter(Exporter):
             },
             "url": source.url,
             "notes": source.notes,
+            "citation": str(source),
             # count via annotated queryset
             "num_footnotes": source.footnote__count,
         }

@@ -34,6 +34,7 @@ from geniza.corpus.models import (
     DocumentType,
     Fragment,
     LanguageScript,
+    Provenance,
     TextBlock,
 )
 from geniza.corpus.solr_queryset import DocumentSolrQuerySet
@@ -73,6 +74,7 @@ class CollectionAdmin(admin.ModelAdmin):
     list_display = ("library", "name", "lib_abbrev", "abbrev", "location")
     search_fields = ("library", "location", "name")
     list_display_links = ("library", "name")
+    fields = ("library", "lib_abbrev", "name", "abbrev", "location")
 
 
 @admin.register(LanguageScript)
@@ -138,6 +140,7 @@ class DocumentTextBlockInline(SortableInlineAdminMixin, admin.TabularInline):
     readonly_fields = (
         "thumbnail",
         "side",
+        "fragment_provenance_display",
         "fragment_provenance",
     )
     fields = (
@@ -147,6 +150,7 @@ class DocumentTextBlockInline(SortableInlineAdminMixin, admin.TabularInline):
         "region",
         "order",
         "certain",
+        "fragment_provenance_display",
         "fragment_provenance",
         "thumbnail",
         "selected_images",
@@ -159,6 +163,10 @@ class DocumentTextBlockInline(SortableInlineAdminMixin, admin.TabularInline):
     }
 
     @admin.display(description="Provenance")
+    def fragment_provenance_display(self, obj):
+        return str(obj.fragment.provenance_display or "")
+
+    @admin.display(description="Provenance notes")
     def fragment_provenance(self, obj):
         return obj.fragment.provenance
 
@@ -558,12 +566,21 @@ class DocumentAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin)
     class Media:
         css = {"all": ("css/admin-local.css",)}
 
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        # override to alphabetize doctype dropdown
+        if db_field.name == "doctype":
+            kwargs["queryset"] = DocumentType.objects.order_by("name")
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
     def get_form(self, request, obj=None, **kwargs):
         # Override to inject help text into display field
         help_texts = {
             "admin_thumbnails": """Drag image thumbnails to customize order when necessary (i.e.
             image sequence does not follow fragment/shelfmark sequence). Click rotation buttons to
-            rotate images. Changes will be applied on save."""
+            rotate images, and use checkboxes to select or deselect images as part of the document.
+            Changes will be applied on save. NOTE: Deselecting ALL images from a fragment will
+            be treated the same as selecting all images from that fragment, since a fragment must
+            have at least one selected image; if not, the fragment should be removed from the document."""
         }
         kwargs.update({"help_texts": help_texts})
         return super().get_form(request, obj, **kwargs)
@@ -791,6 +808,7 @@ class FragmentAdmin(admin.ModelAdmin):
         "collection",
         ("url", "iiif_url"),
         "is_multifragment",
+        "provenance_display",
         "provenance",
         "iiif_provenance",
         "notes",
@@ -839,3 +857,10 @@ class FragmentAdmin(admin.ModelAdmin):
         return urls + super().get_urls()
 
     actions = (export_to_csv,)
+
+
+@admin.register(Provenance)
+class ProvenanceAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
+    search_fields = ("name",)
+    fields = ("name",)
+    ordering = ("name",)

@@ -8,6 +8,7 @@ export default class extends Controller {
         "imageHeader",
         "osd",
         "rotation",
+        "rotationEdit",
         "rotationLabel",
         "image",
         "zoomSlider",
@@ -55,11 +56,14 @@ export default class extends Controller {
         const OSD = this.osdTarget.querySelector(".openseadragon-container");
         if (!OSD || this.osdTarget.classList.contains("hidden-img")) {
             const isMobile = evt.currentTarget.id.startsWith("zoom-toggle");
-            this.activateDeepZoom({ isMobile });
+            let rotationAngle;
             if (evt.currentTarget.classList.contains("rotation")) {
                 // if activated via rotate, ensure zoom UI appears active
                 this.updateZoomUI(1.0, false);
+                // initial rotation
+                rotationAngle = parseInt(evt.currentTarget.value);
             }
+            this.activateDeepZoom({ isMobile, rotationAngle });
         }
     }
     activateDeepZoom(settings) {
@@ -112,7 +116,7 @@ export default class extends Controller {
     }
 
     addOpenSeaDragon(settings) {
-        const { isMobile } = settings;
+        const { isMobile, rotationAngle } = settings;
 
         // constants for OSD
         const minZoom = 1.0; // Minimum zoom as a multiple of image size
@@ -165,6 +169,9 @@ export default class extends Controller {
                     this.zoomToggleTarget.checked = true;
                 }
             }
+            if (this.isValidRotation(rotationAngle)) {
+                viewer.viewport.setRotation(rotationAngle);
+            }
             // initialize zoom slider
             this.zoomSliderTarget.setAttribute("min", minZoom);
             // use toPrecision to ensure no extra pixels on the right of the slider
@@ -195,6 +202,10 @@ export default class extends Controller {
                 "input",
                 this.handleRotationInput(viewer)
             );
+            this.rotationEditTarget.addEventListener(
+                "input",
+                this.handleRotationEditInput(viewer)
+            );
             this.rotationTarget.addEventListener(
                 "change",
                 this.handleRotationInput(viewer)
@@ -221,6 +232,14 @@ export default class extends Controller {
             let angle = parseInt(evt.currentTarget.value);
             viewer.viewport.setRotation(angle);
             this.updateRotationUI(angle, evt);
+        };
+    }
+    handleRotationEditInput(viewer) {
+        return (evt) => {
+            let angle = parseInt(evt.currentTarget.value);
+            if (this.isValidRotation(angle)) {
+                viewer.viewport.setRotation(angle);
+            }
         };
     }
     handleZoomSliderInput(viewer, minZoom) {
@@ -278,9 +297,19 @@ export default class extends Controller {
             );
         }
     }
+    isValidRotation(angle) {
+        return Number.isInteger(angle) && angle >= 0 && angle <= 360;
+    }
+    editRotation() {
+        const angle = parseInt(this.rotationEditTarget.value, 10);
+        if (this.isValidRotation(angle)) {
+            this.updateRotationUI(angle, false, false);
+        }
+    }
     updateRotationUI(angle, autoUpdate, deactivating) {
         // update rotation label
         this.rotationLabelTarget.innerHTML = `${angle}&deg;`;
+        this.rotationEditTarget.value = angle;
         if (!autoUpdate) {
             // update input value and pivot angle
             this.rotationTarget.value = angle.toString();

@@ -135,6 +135,9 @@ main.place table.related-table {
                 font-weight: 700;
             }
         }
+        &.reltype {
+            gap: 0.25rem;
+        }
     }
     .admin-thumbnail {
         max-height: 60px;
@@ -153,6 +156,13 @@ main.place table.related-table {
         td:last-of-type {
             padding-right: 2rem;
         }
+    }
+}
+// italic styling for uncertain person-document relations
+main.person table.related-table td span,
+main.document section.related dl dd {
+    em.uncertain {
+        font-family: fonts.$primary-italic;
     }
 }
 main.person table.related-people {

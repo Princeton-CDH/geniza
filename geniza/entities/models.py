@@ -27,6 +27,7 @@ from unidecode import unidecode
 from geniza.common.models import TaggableMixin, TrackChangesModel, cached_class_property
 from geniza.corpus.dates import DocumentDateMixin, PartialDate, standard_date_display
 from geniza.corpus.models import (
+    Dating,
     DisplayLabelMixin,
     Document,
     LanguageScript,
@@ -671,7 +672,9 @@ class Person(
             type__name__icontains="deceased"
         )
         doc_ids = relations.values_list("document__pk", flat=True)
-        docs = Document.objects.filter(pk__in=doc_ids)
+        docs = Document.objects.filter(pk__in=doc_ids).prefetch_related(
+            Prefetch("dating_set", queryset=Dating.objects.only("standard_date"))
+        )
         return self.get_date_range(docs)
 
     @property
@@ -682,7 +685,9 @@ class Person(
             type__name__icontains="deceased"
         )
         doc_ids = relations.values_list("document__pk", flat=True)
-        docs = Document.objects.filter(pk__in=doc_ids)
+        docs = Document.objects.filter(pk__in=doc_ids).prefetch_related(
+            Prefetch("dating_set", queryset=Dating.objects.only("standard_date"))
+        )
         return self.get_date_range(docs)
 
     def merge_with(self, merge_people, user=None):
@@ -921,7 +926,7 @@ class Person(
                 "url_s": url,
                 "has_page_b": bool(url),
                 # related object counts
-                "documents_i": self.documents.count(),
+                "documents_i": self.documents.distinct().count(),
                 "people_i": self.related_people_count,
                 "places_i": self.personplacerelation_set.count(),
                 # kinds of relationships to documents
@@ -929,6 +934,11 @@ class Person(
                     self.persondocumentrelation_set.values_list(
                         "type__name_en", flat=True
                     ).distinct()
+                ),
+                "certain_document_relation_ss": list(
+                    self.persondocumentrelation_set.exclude(uncertain=True)
+                    .values_list("type__name_en", flat=True)
+                    .distinct()
                 ),
                 "tags_ss_lower": [t.name for t in self.tags.all()],
             }
@@ -1010,6 +1020,7 @@ class PersonSolrQuerySet(AliasedSolrQuerySet):
         "people": "people_i",
         "places": "places_i",
         "document_relations": "document_relation_ss",
+        "certain_document_relations": "certain_document_relation_ss",
         "date_str": "date_str_s",
         "has_page": "has_page_b",
         "tags": "tags_ss_lower",

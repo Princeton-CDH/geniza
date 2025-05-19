@@ -55,19 +55,19 @@ jobs:
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
-      # We base the python cache on the hash of all requirements files, so that
+      # We base the python cache on the hash of the toml file, so that
       # if any change, the cache is invalidated.
       - name: Cache pip
         uses: actions/cache@v4
         with:
           path: ~/.cache/pip
-          key: pip-${{ hashFiles('requirements/*.txt') }}
+          key: pip-${{ hashFiles('pyproject.toml') }}
           restore-keys: |
-            pip-${{ hashFiles('requirements/*.txt') }}
+            pip-${{ hashFiles('pyproject.toml') }}
             pip-
 
       - name: Install dependencies
-        run: pip install -r requirements/test.txt
+        run: pip install -e '.[test]'
 
       - name: Setup local_settings.py
         run: python -c "import uuid; print('SECRET_KEY = \'%s\'' % uuid.uuid4())" >> geniza/settings/local_settings.py

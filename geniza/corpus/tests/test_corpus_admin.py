@@ -37,8 +37,10 @@ from geniza.corpus.admin import (
 from geniza.corpus.models import (
     Collection,
     Document,
+    DocumentType,
     Fragment,
     LanguageScript,
+    Provenance,
     TextBlock,
 )
 from geniza.entities.models import Event, Person, PersonDocumentRelation
@@ -376,6 +378,19 @@ class TestDocumentAdmin:
         assert footnote_log_entry not in response.context["footnote_action_list"]
         assert annotation_log_entry not in response.context["annotation_action_list"]
 
+    @pytest.mark.django_db
+    def test_formfield_for_foreignkey(self):
+        doc_admin = DocumentAdmin(model=Document, admin_site=admin.site)
+        doctype_field = Document._meta.get_field("doctype")
+        doctype_z = DocumentType.objects.create(name="ZZZ")
+        doctype_a = DocumentType.objects.create(name="000")
+        formfield = doc_admin.formfield_for_foreignkey(
+            doctype_field, Mock(), queryset=None
+        )
+        # queryset should be sorted alphabetically
+        assert formfield.queryset.first().pk == doctype_a.pk
+        assert formfield.queryset.last().pk == doctype_z.pk
+
 
 @pytest.mark.django_db
 class TestDocumentForm:
@@ -429,6 +444,16 @@ class TestDocumentTextBlockInline:
         textblock = TextBlock.objects.create(fragment=fragment, document=doc)
         inline = DocumentTextBlockInline(Document, admin_site=admin.site)
         assert inline.fragment_provenance(textblock) == test_provenance
+        assert inline.fragment_provenance_display(textblock) == ""
+
+    def test_fragment_provenance_display(self):
+        (ng, _) = Provenance.objects.get_or_create(name="Not Geniza")
+        fragment = Fragment.objects.create(shelfmark="CUL 123", provenance_display=ng)
+        doc = Document.objects.create()
+        textblock = TextBlock.objects.create(fragment=fragment, document=doc)
+        inline = DocumentTextBlockInline(Document, admin_site=admin.site)
+        assert inline.fragment_provenance(textblock) == ""
+        assert inline.fragment_provenance_display(textblock) == str(ng)
 
 
 class TestFragmentAdmin:

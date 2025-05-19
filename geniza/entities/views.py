@@ -1,5 +1,6 @@
 import re
 from ast import literal_eval
+from collections import defaultdict
 from urllib.parse import urlparse
 
 from dal import autocomplete
@@ -7,7 +8,7 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.contrib.postgres.aggregates import ArrayAgg
-from django.db.models import Count, Q
+from django.db.models import Count, Prefetch, Q
 from django.forms import ValidationError
 from django.http import Http404, HttpResponsePermanentRedirect, HttpResponseRedirect
 from django.urls import resolve, reverse
@@ -17,8 +18,10 @@ from django.utils.translation import gettext as _
 from django.utils.translation import ngettext
 from django.views.generic import DetailView, FormView, ListView
 from django.views.generic.edit import FormMixin
+from natsort import natsort_key
 
-from geniza.corpus.dates import PartialDate
+from geniza.corpus.dates import DocumentDateMixin, standard_date_display
+from geniza.corpus.models import Dating, Document, DocumentType, TextBlock
 from geniza.corpus.views import SolrDateRangeMixin
 from geniza.entities.forms import (
     PersonDocumentRelationTypeMergeForm,
@@ -28,6 +31,7 @@ from geniza.entities.forms import (
     PlaceListForm,
 )
 from geniza.entities.models import (
+    DocumentPlaceRelationType,
     PastPersonSlug,
     PastPlaceSlug,
     Person,
@@ -321,17 +325,17 @@ class PersonDetailView(SlugDetailMixin):
 
 
 class RelatedDocumentsMixin:
+    _page_description = None
+
     def page_title(self):
         """The title of the entity related documents page"""
         # Translators: title of entity "related documents" page
         return _("Related documents for %(p)s") % {"p": str(self.get_object())}
 
-    def page_description(self):
-        """Description of an entity related documents page, with count"""
-        obj = self.get_object()
-        count = getattr(obj, self.relation_field).count()
+    def set_page_description(self, count):
+        """Set description for an entity related documents page, with count"""
         # Translators: description of related documents page, for search engines
-        return ngettext(
+        self._page_description = ngettext(
             "%(count)d related document",
             "%(count)d related documents",
             count,
@@ -342,52 +346,168 @@ class RelatedDocumentsMixin:
     def get_related(self):
         """Get and process the queryset of related documents"""
         obj = self.get_object()
-        related_documents = getattr(obj, self.relation_field).all()
 
-        sort = self.request.GET.get("sort", "shelfmark_asc")
+        # values() fields we want, including uncertain if person-doc relation
+        fields = [
+            "document",
+            "document__shelfmark_override",
+            "document__doctype",
+            "document__doc_date_original",
+            "document__doc_date_standard",
+            "document__doc_date_calendar",
+            "type",
+            "uncertain" if "person" in self.relation_field else None,
+        ]
+        doc_relations = getattr(obj, self.relation_field).values(
+            *[f for f in fields if f]
+        )
 
-        sort_dir = "-" if sort.endswith("desc") else ""
+        # get needed related items in batch queries
+        doc_pks = doc_relations.values_list("document", flat=True)
 
-        if "shelfmark" in sort:
-            # annotate and sort by combined shelfmarks
-            related_documents = related_documents.annotate(
-                shelfmk_all=ArrayAgg("document__textblock__fragment__shelfmark")
-            ).order_by(f"{sort_dir}shelfmk_all")
+        # get textblocks so we can get all shelfmarks per document
+        textblocks = TextBlock.objects.filter(
+            certain=True, document__pk__in=doc_pks
+        ).values("document__pk", "fragment__shelfmark")
+        shelfmarks_by_doc = defaultdict(set)
+        for tb in textblocks:
+            shelfmarks_by_doc[tb["document__pk"]].add(tb["fragment__shelfmark"])
 
-        if "doctype" in sort:
-            # sort by doc type (display label first then name)
-            related_documents = related_documents.order_by(
-                f"{sort_dir}document__doctype__display_label",
-                f"{sort_dir}document__doctype__name",
+        # just for thumbnail generation, use prefetching on Document instances
+        thumbnail_docs = Document.objects.filter(pk__in=doc_pks).prefetch_related(
+            Prefetch(
+                "textblock_set",
+                queryset=TextBlock.objects.filter(certain=True)
+                .select_related("fragment__manifest")
+                .prefetch_related("fragment__manifest__canvases"),
+            )
+        )
+        thumbnail_docs_by_pk = {doc.pk: doc for doc in thumbnail_docs}
+
+        # get document types
+        doctypes = DocumentType.objects.filter(document__pk__in=doc_pks).values(
+            "document__pk", "name", "display_label"
+        )
+        doctypes_by_doc = {
+            d["document__pk"]: (d["display_label"] or d["name"]) for d in doctypes
+        }
+
+        # get datings
+        datings = Dating.objects.filter(document__pk__in=doc_pks).values(
+            "document__pk", "display_date", "standard_date"
+        )
+        datings_by_doc = defaultdict(list)
+        for d in datings:
+            datings_by_doc[d["document__pk"]].append(d)
+
+        # get relationship types
+        reltype_pks = doc_relations.values_list("type", flat=True)
+        reltypes = self.relation_type_class.objects.filter(pk__in=reltype_pks).values(
+            "pk", "name"
+        )
+        reltypes_by_pk = {r["pk"]: r["name"] for r in reltypes}
+
+        # produce the set to render; use dict keyed on pk for deduplication
+        related_documents = {}
+        for rel in doc_relations:
+            doc_pk = rel["document"]
+            if doc_pk not in related_documents:
+                # get related items by doc pk
+                # translators: Label for unknown document type
+                doctype_name = doctypes_by_doc.get(doc_pk, _("Unknown type"))
+                doc_datings = datings_by_doc.get(doc_pk, [])
+                shelfmarks = shelfmarks_by_doc.get(doc_pk, set())
+                shelfmark = rel["document__shelfmark_override"] or " + ".join(
+                    shelfmarks
+                )
+                thumbnail_doc = thumbnail_docs_by_pk.get(doc_pk)
+                thumbnail = thumbnail_doc.list_thumbnail() if thumbnail_doc else ""
+
+                # get default date display without loading entire Document into memory (as it creates sub-queries)
+                original_date = (
+                    " ".join(
+                        [
+                            rel["document__doc_date_original"],
+                            dict(DocumentDateMixin.CALENDAR_CHOICES).get(
+                                rel["document__doc_date_calendar"]
+                            ),
+                        ]
+                    ).strip()
+                    if rel["document__doc_date_original"]
+                    else None
+                )
+                document_date = DocumentDateMixin.get_document_date(
+                    rel["document__doc_date_standard"], original_date
+                )
+                if document_date:
+                    # value for sorting, label for display
+                    document_date = {
+                        "value": rel["document__doc_date_standard"],
+                        "label": document_date,
+                    }
+                elif doc_datings:
+                    # use inferred date if one exists and no doc date
+                    dating = doc_datings[0]
+                    document_date = {
+                        "value": dating["standard_date"],
+                        "label": dating["display_date"]
+                        or standard_date_display(dating["standard_date"]),
+                    }
+
+                # build the initial dict for this doc
+                related_documents[doc_pk] = {
+                    "pk": doc_pk,
+                    "url": reverse("corpus:document", args=[str(doc_pk)]),
+                    "shelfmark": shelfmark,
+                    "doctype": doctype_name,
+                    "relations": [],
+                    "uncertain": rel.get("uncertain", None),
+                    "date": document_date,
+                    "thumbnail": thumbnail,
+                }
+
+            # add this relationship type to the relations list, including uncertain
+            relation_name = reltypes_by_pk.get(rel["type"])
+            related_documents[doc_pk]["relations"].append(
+                {
+                    "name": relation_name,
+                    "uncertain": rel.get("uncertain", None),
+                }
+            )
+            related_documents[doc_pk]["relations"] = sorted(
+                related_documents[doc_pk]["relations"], key=lambda r: r["name"]
             )
 
-        if "relation" in sort:
-            # sort by document-entity relation type name
-            related_documents = related_documents.order_by(f"{sort_dir}type__name")
+        sort, dir = self.request.GET.get("sort", "shelfmark_asc").split("_")
+        desc = dir == "desc"
 
+        # sort by passed sort, and fallback to shelfmark as tiebreaker
         if "date" in sort:
-            # sort by start or end of date range
-            if sort_dir == "-":
-                # sort nones at the bottom, i.e., give them the lowest date
-                none = PartialDate("0001").numeric_format(mode="min")
-                # sort by maximum possible date for the end of the range, descending
-                (mode, idx, reverse) = ("max", 1, True)
-            else:
-                # sort nones at the bottom, i.e., give them the highest date
-                none = PartialDate("9999").numeric_format(mode="max")
-                # sort by minimum possible date for the start of the range, ascending
-                (mode, idx, reverse) = ("min", 0, False)
-
-            # NOTE: is there a way to do this with in-DB sorting?
-            related_documents = sorted(
-                related_documents,
-                key=lambda t: (
-                    t.document.dating_range()[idx].numeric_format(mode=mode)
-                    if t.document.dating_range()[idx]
-                    else none
-                ),
-                reverse=reverse,
+            # sort nones at the bottom, i.e., give them the lowest date if reversed,
+            # give them the highest date if not
+            none_date = "0" if desc else "9999"
+            sort_fn = lambda doc: (
+                doc["date"]["value"] if doc["date"] else none_date,
+                natsort_key(doc["shelfmark"]),
             )
+        elif "relation" in sort:
+            # sort uncertains after relation name
+            sort_fn = lambda doc: (
+                ", ".join(
+                    f"{r['name']}{' (uncertain)' if r['uncertain'] else ''}"
+                    for r in doc["relations"]
+                ),
+                natsort_key(doc["shelfmark"]),
+            )
+        elif "shelfmark" in sort:
+            sort_fn = lambda doc: natsort_key(doc["shelfmark"])
+        else:
+            sort_fn = lambda doc: (doc.get(sort, ""), natsort_key(doc["shelfmark"]))
+        related_documents = sorted(
+            related_documents.values(), key=sort_fn, reverse=desc
+        )
+
+        self.set_page_description(len(related_documents))
 
         return related_documents
 
@@ -405,6 +525,8 @@ class RelatedDocumentsMixin:
             {
                 "related_documents": self.get_related(),
                 "sort": self.request.GET.get("sort", "shelfmark_asc"),
+                # use an attribute set in get_related() to avoid extra queries for count
+                "page_description": self._page_description,
             }
         )
         return context
@@ -477,6 +599,7 @@ class PersonDocumentsView(RelatedDocumentsMixin, PersonDetailView):
     template_name = "entities/person_related_documents.html"
     viewname = "entities:person-documents"
     relation_field = "persondocumentrelation_set"
+    relation_type_class = PersonDocumentRelationType
 
 
 class PersonPeopleView(RelatedPeopleMixin, PersonDetailView):
@@ -646,6 +769,7 @@ class PlaceDocumentsView(RelatedDocumentsMixin, PlaceDetailView):
     template_name = "entities/place_related_documents.html"
     viewname = "entities:place-documents"
     relation_field = "documentplacerelation_set"
+    relation_type_class = DocumentPlaceRelationType
 
 
 class PlacePeopleView(RelatedPeopleMixin, PlaceDetailView):
@@ -703,7 +827,11 @@ class PersonListView(ListView, FormMixin, SolrDateRangeMixin):
     def get_queryset(self, *args, **kwargs):
         """modify queryset to sort and filter on people in the list"""
         people = PersonSolrQuerySet().facet(
-            "gender", "role", "document_relations", "has_page"
+            "gender",
+            "role",
+            "document_relations",
+            "certain_document_relations",
+            "has_page",
         )
 
         form = self.get_form()
@@ -765,7 +893,10 @@ class PersonListView(ListView, FormMixin, SolrDateRangeMixin):
         if search_opts.get("document_relation"):
             relations = literal_eval(search_opts["document_relation"])
             relations = [re.sub(self.qs_regex, r"\\\1", r) for r in relations]
-            people = people.filter(document_relations__in=relations)
+            if search_opts.get("exclude_uncertain"):
+                people = people.filter(certain_document_relations__in=relations)
+            else:
+                people = people.filter(document_relations__in=relations)
             self.applied_filter_labels += self.get_applied_filter_labels(
                 form, "document_relation", relations
             )

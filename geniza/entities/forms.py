@@ -139,7 +139,7 @@ class PersonPersonForm(forms.ModelForm):
             ),
         }
         help_texts = {
-            "to_person": "Please check auto-populated and manually-input people sections to ensure you are not entering the same relationship twice."
+            "to_person": "Please check auto-populated and manually-input people sections to ensure you are not entering the same relationship twice. If there is more than one relationship between the same two people, record the family relationship and add a note about the other relationship."
         }
 
 
@@ -206,6 +206,7 @@ class PersonListForm(RangeForm):
     has_page = BooleanFacetField(label=_("Detail page available"))
     social_role = FacetChoiceField(label=_("Social role"))
     document_relation = FacetChoiceField(label=_("Relation to documents"))
+    exclude_uncertain = BooleanFacetField(label=_("Exclude uncertain identifications"))
     # translators: label for person activity dates field
     date_range = RangeField(label=_("Dates"), required=False, widget=YearRangeWidget())
 
@@ -253,11 +254,13 @@ class PersonListForm(RangeForm):
         "has_page": "has_page",
         "role": "social_role",
         "document_relations": "document_relation",
+        "certain_document_relations": "document_relation",
     }
     # mapping of solr facet fields to db models in order to retrieve objects by label
     solr_db_models = {
         "role": PersonRole,
         "document_relations": PersonDocumentRelationType,
+        "certain_document_relations": PersonDocumentRelationType,
     }
 
     def get_translated_label(self, field, label):
@@ -277,7 +280,19 @@ class PersonListForm(RangeForm):
 
     def set_choices_from_facets(self, facets):
         """Set choices on field from a dictionary of facets"""
-        # borrowed from ppa-django;
+        # borrowed from ppa-django
+
+        # show all or only certain doc relations, based on whether
+        # exclude_uncertain has been checked
+        if (
+            self.is_valid()
+            and self.cleaned_data.get("exclude_uncertain", False)
+            and facets.get("document_relations", None)
+        ):
+            del facets["document_relations"]
+        elif facets.get("certain_document_relations", None):
+            del facets["certain_document_relations"]
+
         # populate facet field choices from current facets
         for key, facet_dict in facets.items():
             # restructure dict to set values of each key to tuples of (label, count)

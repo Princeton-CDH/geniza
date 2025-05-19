@@ -174,6 +174,15 @@ class LanguageScript(models.Model):
         return (self.language, self.script)
 
 
+class Provenance(models.Model):
+    """A provenance designation for a :class:`Fragment`."""
+
+    name = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.name
+
+
 class FragmentManager(models.Manager):
     """Custom manager for :class:`Fragment` with natural key lookup"""
 
@@ -207,8 +216,18 @@ class Fragment(TrackChangesModel):
         default=False,
         help_text="True if there are multiple fragments in one shelfmark",
     )
+    provenance_display = models.ForeignKey(
+        Provenance,
+        verbose_name="Provenance",
+        blank=True,
+        null=True,
+        on_delete=models.SET_NULL,
+        help_text="Origin of this fragment, for public display.",
+    )
     provenance = models.TextField(
-        blank=True, help_text="The origin and acquisition history of this fragment."
+        "Provenance notes",
+        blank=True,
+        help_text="Detailed origin and acquisition history of this fragment.",
     )
     notes = models.TextField(blank=True)
     needs_review = models.TextField(
@@ -236,7 +255,7 @@ class Fragment(TrackChangesModel):
         """natural key: shelfmark"""
         return (self.shelfmark,)
 
-    def iiif_images(self):
+    def iiif_images(self, allow_network_reqs=True):
         """IIIF image URLs for this fragment. Returns a list of
         :class:`~piffle.image.IIIFImageClient` and corresponding list of labels,
         or None if this fragement has no IIIF url associated."""
@@ -260,7 +279,7 @@ class Fragment(TrackChangesModel):
                     canvases.append(canvas.uri)
 
         # if not cached, load from remote url
-        else:
+        elif allow_network_reqs:
             try:
                 manifest = IIIFPresentation.from_url(self.iiif_url)
                 for canvas in manifest.sequences[0].canvases:
@@ -305,10 +324,13 @@ class Fragment(TrackChangesModel):
             verso_img = static("img/ui/all/all/verso-placeholder.svg")
             image_urls = [recto_img, verso_img]
             labels = ["recto", "verso"]
+            canvases = []
         else:
-            images, labels, _ = iiif_images
+            images, labels, canvases = iiif_images
             image_urls = [img.size(height=200) for img in images]
-        return Fragment.admin_thumbnails(image_urls, labels, selected=selected)
+        return Fragment.admin_thumbnails(
+            image_urls, labels, canvases=canvases, selected=selected
+        )
 
     # CUDL manifests attribution include a metadata statement, but it
     # is not relevant for us since we aren't displaying their metadata
@@ -769,7 +791,7 @@ class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin, TaggableMixin)
             )
         )
 
-    def iiif_images(self, filter_side=False, with_placeholders=False):
+    def iiif_images(self, filter_side=False, with_placeholders=False, thumbnail=False):
         """
         Dict of IIIF images and labels for images of the Document's Fragments, keyed on canvas.
 
@@ -781,7 +803,7 @@ class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin, TaggableMixin)
         textblocks = self.textblock_set.all()
 
         for b in textblocks:
-            frag_images = b.fragment.iiif_images()
+            frag_images = b.fragment.iiif_images(allow_network_reqs=not thumbnail)
             if frag_images is not None:
                 images, labels, canvases = frag_images
                 for i, img in enumerate(images):
@@ -868,7 +890,7 @@ class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin, TaggableMixin)
 
     def list_thumbnail(self):
         """generate html for thumbnail of first image, for display in related documents lists"""
-        iiif_images = self.iiif_images()
+        iiif_images = self.iiif_images(thumbnail=True)
         if not iiif_images:
             return ""
         img = list(iiif_images.values())[0]
@@ -888,12 +910,13 @@ class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin, TaggableMixin)
         iiif_images = self.iiif_images()
         if not iiif_images:
             return ""
+        images = iiif_images.values()
         return Fragment.admin_thumbnails(
             images=[
                 img["image"].size(height=200).rotation(degrees=img["rotation"])
-                for img in iiif_images.values()
+                for img in images
             ],
-            labels=[img["label"] for img in iiif_images.values()],
+            labels=[img["label"] for img in images],
             canvases=iiif_images.keys(),
         )
 
@@ -1016,12 +1039,14 @@ class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin, TaggableMixin)
         dating_range = [self.start_date or None, self.end_date or None]
 
         # bail out if we don't have any inferred datings
-        if not self.dating_set.exists():
+        # (use list on .all() for prefetch compatibility)
+        inferred_datings = list(self.dating_set.all())
+        if not inferred_datings:
             return tuple(dating_range)
 
         # loop through inferred datings to find min and max among all dates (including both
         # on-document and inferred)
-        for inferred in self.dating_set.all():
+        for inferred in inferred_datings:
             # get start from standardized date range (formatted as "date1/date2" or "date")
             split_date = inferred.standard_date.split("/")
             start = PartialDate(split_date[0])
@@ -1139,6 +1164,15 @@ class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin, TaggableMixin)
             additional_restrictions,
             extra_attrs_set,
         )
+
+    @property
+    def fragments_by_provenance(self):
+        """Associated fragments ordered by provenance_display, if set"""
+        return [
+            frag
+            for frag in self.fragments.order_by("provenance_display__name")
+            if frag.provenance_display
+        ]
 
     @classmethod
     def total_to_index(cls):

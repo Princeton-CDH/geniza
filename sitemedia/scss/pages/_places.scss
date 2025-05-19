@@ -130,6 +130,9 @@ main.places {
                 margin: 0 2rem 3.5rem 0;
             }
         }
+        .maplibregl-ctrl-bottom-left {
+            margin: 0 0 2rem 1.25rem;
+        }
         // map legend (region and place markers)
         dl.legend {
             position: absolute;

@@ -96,13 +96,13 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.cache/pip
-          key: pip-${{ hashFiles('requirements/*.txt') }}
+          key: pip-${{ hashFiles('pyproject.toml') }}
           restore-keys: |
-            pip-${{ hashFiles('requirements/*.txt') }}
+            pip-${{ hashFiles('pyproject.toml') }}
             pip-
 
       - name: Install dependencies
-        run: pip install -r requirements/test.txt
+        run: pip install -e '.[test]'
 
       - name: Configure solr and create test core
         run: |

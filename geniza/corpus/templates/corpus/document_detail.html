@@ -48,7 +48,6 @@
                 <dt>{% translate 'Shelfmark' %}</dt>
                 <dd class="shelfmark">{{ document.shelfmark|shelfmark_wrap }}</dd>
             </dl>
-            {# secondary metadata #}
             <dl class="metadata-list secondary">
                 {% if document.document_date %}
                     <dt>
@@ -157,7 +156,8 @@
                         <dt>{{ relation_type.grouper }}</dt>
                         <dd>
                             {% for relation in relation_type.list %}
-                                {% if relation.person.get_absolute_url %}<a data-turbo="false" href="{{ relation.person.get_absolute_url }}">{{ relation.person }}</a>{% else %}{{ relation.person }}{% endif %}{% if not forloop.last %}, {% endif %}
+                                {# Translators: label for an uncertain Person-Document identification #}
+                                {% if relation.person.get_absolute_url %}<a data-turbo="false" href="{{ relation.person.get_absolute_url }}">{{ relation.person }}</a>{% else %}{{ relation.person }}{% endif %}{% if relation.uncertain %} <em class="uncertain">{% translate '(uncertain)' %}</em>{% endif %}{% if not forloop.last %}, {% endif %}
                             {% endfor %}
                         </dd>
                     {% endfor %}
@@ -199,12 +199,32 @@
         {% endif %}
     </div>
 
+    {# secondary metadata #}
     <section class="extra-metadata">
         <h2 class="sr-only">
             {# Translators: label for secondary/historiographical metadata #}
             {% translate 'Additional metadata' %}
         </h2>
         <dl>
+            {% if document.fragments_by_provenance %}
+                {% regroup document.fragments_by_provenance by provenance_display as provenance_list %}
+                {# Translators: label for the provenance of document fragments #}
+                <dt>{% translate "Provenance" %}</dt>
+                <dd>
+                    {% if provenance_list|length > 1 %}
+                        <dl>
+                            {% for provenance in provenance_list %}
+                                <dt>{{ provenance.grouper }}</dt>
+                                {% for frag in provenance.list %}
+                                    <dd{% if forloop.last %} class="row-end"{% endif %}>{{ frag }}</dd>
+                                {% endfor %}
+                            {% endfor %}
+                        </dl>
+                    {% else %}
+                        {{ provenance_list.0.grouper }}
+                    {% endif %}
+                </dd>
+            {% endif %}
             <dt>
                 {# Translators: Document fragment collection(s) label #}
                 {% blocktranslate count counter=document.collections|length trimmed %}

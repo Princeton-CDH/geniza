@@ -188,7 +188,7 @@ def test_person_relations_csv(
     PersonPlaceRelation.objects.create(person=person, place=fustat, type=roots)
     (pdrtype, _) = PersonDocumentRelationType.objects.get_or_create(name="test")
     PersonDocumentRelation.objects.create(
-        document=document, person=person, type=pdrtype
+        document=document, person=person, type=pdrtype, uncertain=True
     )
     PersonDocumentRelation.objects.create(document=join, person=person, type=pdrtype)
     PersonDocumentRelation.objects.create(
@@ -237,7 +237,10 @@ def test_person_relations_csv(
             elif id == fustat.id:
                 assert reltype == roots.name
         elif objtype == "Document":
-            assert reltype == pdrtype.name
+            if id == document.id:
+                assert reltype == pdrtype.name + " (uncertain)"
+            elif id == join.id:
+                assert reltype == pdrtype.name
             assert obj["related_object_name"] in [str(document), str(join)]
         elif objtype == "Event":
             assert "relationship_type" not in obj
