@@ -79,11 +79,11 @@ main.places {
         svg.marker {
             color: var(--map-pin-disabled-outline);
             fill: var(--map-pin-disabled);
-            width: 22px;
-            height: 28px;
+            width: 18px;
+            height: 24px;
             &:has(.region) {
-                width: 37px;
-                height: 37px;
+                width: 32px;
+                height: 32px;
             }
             cursor: pointer;
             .selected-pin {
@@ -93,23 +93,15 @@ main.places {
                 filter: drop-shadow(0px 1px 3px rgba(0, 0, 0, 0.33));
                 color: var(--map-pin-primary);
                 fill: var(--map-pin-secondary);
-                width: 33px;
-                height: 42px;
+                width: 32px;
+                height: 32px;
                 &:has(.region) {
-                    width: 56px;
-                    height: 56px;
+                    width: 43px;
+                    height: 43px;
                 }
                 z-index: 2;
                 transition: width 0.3s ease-out, height 0.3s ease-out,
                     filter 0.3s ease-out;
-                @include breakpoints.for-tablet-landscape-up {
-                    width: 42px;
-                    height: 48px;
-                    &:has(.region) {
-                        width: 64px;
-                        height: 64px;
-                    }
-                }
                 .pin {
                     display: none;
                 }
@@ -162,6 +154,9 @@ main.places {
                 cursor: default;
                 position: relative;
                 height: 24px;
+                &.region {
+                    width: 26px;
+                }
             }
             dt,
             dd {
