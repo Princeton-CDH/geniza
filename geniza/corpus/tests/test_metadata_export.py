@@ -231,7 +231,7 @@ def test_fragment_export_data(multifragment):
     data = FragmentExporter().get_export_data_dict(multifragment)
     assert data["shelfmark"] == multifragment.shelfmark
     assert data["pgpids"] == []
-    assert data["old_shelfmarks"] == ""
+    assert data["shelfmarks_historic"] == ""
     # fixture is not in a collection
     assert "collection" not in data
 

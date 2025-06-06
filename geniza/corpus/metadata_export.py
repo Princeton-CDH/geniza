@@ -242,7 +242,7 @@ class FragmentExporter(Exporter):
     csv_fields = [
         "shelfmark",
         "pgpids",
-        "old_shelfmarks",
+        "shelfmarks_historic",
         "collection",
         "library",
         "library_abbrev",
@@ -279,7 +279,7 @@ class FragmentExporter(Exporter):
         data = {
             "shelfmark": fragment.shelfmark,
             "pgpids": [doc.pk for doc in fragment.documents.all()],
-            "old_shelfmarks": fragment.old_shelfmarks,
+            "shelfmarks_historic": fragment.old_shelfmarks,
             "url": fragment.url,
             "iiif_url": fragment.iiif_url,
             "is_multifragment": fragment.is_multifragment,
