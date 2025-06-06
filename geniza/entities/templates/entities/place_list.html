@@ -43,6 +43,13 @@
                 <h1>{{ page_title }}</h1>
                 <i data-map-target="loading" class="ph ph-spinner-gap"></i>
             </div>
+            <fieldset id="query">
+                {% render_field form.q data-search-target="query" data-action="input->search#autoUpdateRadioSort change->search#update" %}
+
+                {# Translators: Search submit button #}
+                {% translate 'Submit search' as search_label %}
+                <button type="submit" aria-label="{{ search_label }}" />
+            </fieldset>
             <div class="header-row count-sort">
                 <span data-map-target="count"></span>
                 <fieldset id="sort-field">

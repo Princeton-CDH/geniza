@@ -308,6 +308,11 @@ main.people {
         width: 100%;
         padding: 0;
     }
+}
+
+main.search,
+main.people,
+main.places {
     fieldset#query {
         display: flex;
         align-items: center;
