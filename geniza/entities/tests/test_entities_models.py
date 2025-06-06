@@ -1058,7 +1058,7 @@ class TestPlace:
 
         assert index_data["slug_s"] == mosul.slug
         assert index_data["name_s"] == pname.name
-        assert index_data["other_names_s"] == oname.name
+        assert index_data["other_names_ss"] == [oname.name]
         assert index_data["url_s"] == mosul.get_absolute_url()
         assert index_data["location_p"] == "36.34,43.13"
         assert index_data["documents_i"] == 2

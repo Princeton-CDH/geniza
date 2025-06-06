@@ -8,11 +8,104 @@ import maplibregl, {
 } from "maplibre-gl";
 
 export default class extends Controller {
-    static targets = ["marker"];
+    static targets = [
+        "count",
+        "listItem",
+        "loading",
+        "map",
+        "marker",
+        "placeList",
+        "placeMarkers",
+    ];
 
-    connect() {
+    async getPlaces(url, sort) {
+        // get all pages of chunked place HTML snippets
+        let page = 1;
+        let hasNextPage = true;
+        let places = [];
+        const sortBy = sort ? `&sort=${sort}` : "";
+        this.loadingTarget.classList.add("loading");
+        while (hasNextPage) {
+            const data = await fetch(`${url}?page=${page}${sortBy}`, {
+                headers: {
+                    Accept: "application/json",
+                },
+            });
+            const {
+                markers_snippet,
+                results_snippet,
+                has_next,
+                next_page_number,
+                count,
+            } = await data.json();
+            this.countTarget.innerText = count;
+            this.placeMarkersTarget.insertAdjacentHTML(
+                "beforeend",
+                markers_snippet
+            );
+            this.placeListTarget.insertAdjacentHTML(
+                "beforeend",
+                results_snippet
+            );
+            page = next_page_number;
+            hasNextPage = has_next;
+        }
+        this.loadingTarget.classList.remove("loading");
+
+        return places;
+    }
+
+    initialize() {
+        // set up coordinates list for map auto-zoom after all loaded
+        this.coordinates = [];
+        this.count = 0;
+    }
+
+    async connect() {
+        // load search variables from django settings; must use DOM query due to json_script
+        const searchOpts = JSON.parse(
+            document.getElementById("search-opts").textContent
+        );
+        await this.getPlaces(searchOpts.snippets_url, searchOpts.order_by);
+    }
+
+    listItemTargetConnected() {}
+
+    markerTargetConnected(marker) {
+        // add each marker to the map
+        const loc = [
+            parseFloat(marker.dataset.lon),
+            parseFloat(marker.dataset.lat),
+        ];
+        if (loc) {
+            marker.addEventListener("click", this.onClickMarker);
+            new maplibregl.Marker({
+                anchor: "bottom",
+                element: marker,
+            })
+                .setLngLat(loc)
+                .addTo(this.map);
+        }
+
+        // add to list of coordinate sets
+        this.coordinates.push(loc);
+
+        if (this.markerTargets.length > 1 && marker.dataset.final === "true") {
+            // more than one marker, and all markers have been rendered and
+            // added to map: fit map to marker boundaries
+            // code from https://stackoverflow.com/a/63058036/394067
+            const bounds = this.coordinates.reduce(function (bounds, coord) {
+                return bounds.extend(coord);
+            }, new LngLatBounds(this.coordinates[0], this.coordinates[0]));
+            this.map.fitBounds(bounds, {
+                padding: { top: 125, bottom: 50, left: 50, right: 50 },
+            });
+        }
+    }
+
+    mapTargetConnected() {
         // add map if we have an access token
-        const accessToken = this.element.dataset.maptilerToken;
+        const accessToken = this.mapTarget.dataset.maptilerToken;
         const singleMarker = this.markerTargets.length === 1;
 
         // set center to fustat by default
@@ -34,11 +127,13 @@ export default class extends Controller {
         }
         if (accessToken) {
             // add the rtl text plugin to fix arabic text issues
-            maplibregl.setRTLTextPlugin(
-                "https://unpkg.com/@mapbox/mapbox-gl-rtl-text@0.2.3/mapbox-gl-rtl-text.min.js",
-                true // Lazy load the plugin
-            );
-            const map = new maplibregl.Map({
+            if (maplibregl.getRTLTextPluginStatus() === "unavailable") {
+                maplibregl.setRTLTextPlugin(
+                    "https://unpkg.com/@mapbox/mapbox-gl-rtl-text@0.2.3/mapbox-gl-rtl-text.min.js",
+                    true // Lazy load the plugin
+                );
+            }
+            this.map = new maplibregl.Map({
                 container: "map",
                 style: `https://api.maptiler.com/maps/5f93d3e5-e339-45bf-86fb-bf7f98a22936/style.json?key=${accessToken}`,
                 ...zoomParams,
@@ -46,42 +141,13 @@ export default class extends Controller {
 
             // add navigation control
             const control = new NavigationControl({ showCompass: false });
-            map.addControl(control);
+            this.map.addControl(control);
 
             // add scale controls
             const scaleImperial = new ScaleControl({ unit: "imperial" });
-            map.addControl(scaleImperial);
+            this.map.addControl(scaleImperial);
             const scaleMetric = new ScaleControl({ unit: "metric" });
-            map.addControl(scaleMetric);
-
-            // add each marker
-            const coordinates = this.markerTargets.map((marker) => {
-                const loc = [
-                    parseFloat(marker.dataset.lon),
-                    parseFloat(marker.dataset.lat),
-                ];
-                if (loc) {
-                    marker.addEventListener("click", this.onClickMarker);
-                    new maplibregl.Marker({
-                        anchor: "bottom",
-                        element: marker,
-                    })
-                        .setLngLat(loc)
-                        .addTo(map);
-                }
-                return loc;
-            });
-
-            if (this.markerTargets.length > 1) {
-                // more than one marker: fit map to marker boundaries
-                // code from https://stackoverflow.com/a/63058036/394067
-                const bounds = coordinates.reduce(function (bounds, coord) {
-                    return bounds.extend(coord);
-                }, new LngLatBounds(coordinates[0], coordinates[0]));
-                map.fitBounds(bounds, {
-                    padding: { top: 50, bottom: 50, left: 50, right: 50 },
-                });
-            }
+            this.map.addControl(scaleMetric);
         }
     }
 

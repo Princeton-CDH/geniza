@@ -8,15 +8,22 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.contrib.postgres.aggregates import ArrayAgg
+from django.core.paginator import EmptyPage, Paginator
 from django.db.models import Count, Prefetch, Q
 from django.forms import ValidationError
-from django.http import Http404, HttpResponsePermanentRedirect, HttpResponseRedirect
+from django.http import (
+    Http404,
+    HttpResponsePermanentRedirect,
+    HttpResponseRedirect,
+    JsonResponse,
+)
+from django.template.loader import render_to_string
 from django.urls import resolve, reverse
 from django.utils.safestring import mark_safe
 from django.utils.text import Truncator
 from django.utils.translation import gettext as _
 from django.utils.translation import ngettext
-from django.views.generic import DetailView, FormView, ListView
+from django.views.generic import DetailView, FormView, ListView, View
 from django.views.generic.edit import FormMixin
 from natsort import natsort_key
 
@@ -975,42 +982,17 @@ class PlaceListView(ListView, FormMixin):
     page_title = _("Places")
     # Translators: description of places list/browse page
     page_description = _("Browse places present in Geniza documents.")
-    paginate_by = 300
     form_class = PlaceListForm
+    queryset = PlaceSolrQuerySet().none()
 
     # sort options mapped to solr fields
-    sort_fields = {"name": "slug_s", "documents": "documents_i", "people": "people_i"}
+    sort_fields = {
+        "name": "slug_s",
+        "documents": "documents_i",
+        "people": "people_i",
+        "relevance": "score",
+    }
     initial = {"sort": "name", "sort_dir": "asc"}
-
-    def get_queryset(self, *args, **kwargs):
-        """modify queryset to sort and filter on places in the list"""
-        places = PlaceSolrQuerySet()
-
-        form = self.get_form()
-        # bail out if form is invalid
-        if not form.is_valid():
-            return places.none()
-
-        search_opts = form.cleaned_data
-
-        # TODO: filter by location with solr
-
-        # sort with solr
-        if search_opts.get("sort"):
-            sort_field = search_opts.get("sort")
-            order_by = self.sort_fields[sort_field]
-            # default is ascending; handle descending by appending a - in order_by
-            if (
-                "sort_dir" in search_opts
-                and search_opts["sort_dir"] == "desc"
-                and "date" not in sort_field
-            ):
-                order_by = f"-{order_by}"
-            places = places.order_by(order_by)
-
-        self.queryset = places
-
-        return places
 
     def get_form_kwargs(self):
         """get form arguments from request and configured defaults"""
@@ -1031,12 +1013,98 @@ class PlaceListView(ListView, FormMixin):
         """extend context data to add page metadata, facets"""
         context_data = super().get_context_data(**kwargs)
 
+        # setup config to serialize as json in template and pass to PlaceListSnippetView
+        search_opts = {
+            "form_valid": False,
+            "snippets_url": reverse("entities:place-list-snippets"),
+        }
+
+        # get form data to pass to snippet view
+        form = self.get_form()
+        if form.is_valid():
+            search_opts.update({"form_valid": True})
+            form_data = form.cleaned_data
+            if form_data.get("sort"):
+                sort_field = form_data.get("sort")
+                order_by = self.sort_fields[sort_field]
+                # default is ascending; handle descending by appending a - in order_by
+                if (
+                    "sort_dir" in form_data
+                    and form_data["sort_dir"] == "desc"
+                    and "date" not in sort_field
+                ):
+                    order_by = f"-{order_by}"
+
+                # add to context so we can pass to snippet view
+                search_opts.update({"order_by": order_by})
+
         context_data.update(
             {
+                "search_opts": search_opts,
                 "page_title": self.page_title,
                 "page_description": self.page_description,
+                "total": PlaceSolrQuerySet().count(),
                 "page_type": "places",
                 "maptiler_token": getattr(settings, "MAPTILER_API_TOKEN", ""),
             }
         )
         return context_data
+
+
+class PlaceListSnippetView(View):
+    """A view used in :class:`PlaceListView` to render snippets of paginated
+    place results asynchronously: markers to be displayed on the map, and search
+    results for the list."""
+
+    paginate_by = 100
+
+    def get(self, *args, **kwargs):
+        """Return a JSON response with the rendered snippets, based on the
+        modified queryset and pagination params in the GET request."""
+        # handle sorting and filtering on solr queryset
+        places = PlaceSolrQuerySet()
+
+        order_by = self.request.GET.get("sort", "slug_s")
+        places = places.order_by(order_by)
+
+        count = places.count()
+        # Translators: number of results
+        count_str = ngettext("%(count)d result", "%(count)d results", count) % {
+            "count": count
+        }
+
+        # handle pagination
+        paginator = Paginator(places, self.paginate_by)
+        page_number = self.request.GET.get("page", 1)
+        try:
+            page = paginator.get_page(page_number)
+        except EmptyPage:
+            # if page_number is too large, return the last page
+            page = paginator.get_page(paginator.num_pages)
+
+        # render the snippets to HTML strings so we can asynchronously insert them
+        # with JS
+        markers_snippet = render_to_string(
+            "entities/snippets/place_markers.html",
+            {
+                "places": [p for p in page if "location" in p],
+                "has_next": page.has_next(),
+            },
+        )
+        results_snippet = render_to_string(
+            "entities/snippets/place_results.html", {"places": page}
+        )
+
+        # use JSON response since we don't need any additional template rendering,
+        # and this will allow Stimulus to work with the data easily
+        return JsonResponse(
+            {
+                "markers_snippet": markers_snippet,
+                "results_snippet": results_snippet,
+                "has_next": page.has_next(),
+                "next_page_number": (
+                    page.next_page_number() if page.has_next() else None
+                ),
+                "count": count_str,
+            }
+        )

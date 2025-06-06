@@ -1592,9 +1592,7 @@ class Place(ModelIndexable, SlugMixin, PermalinkMixin):
                 # basic metadata
                 "slug_s": self.slug,
                 "name_s": str(self),
-                "other_names_s": ", ".join(
-                    sorted([n.name for n in self.names.non_primary()])
-                ),
+                "other_names_ss": sorted([n.name for n in self.names.non_primary()]),
                 "url_s": self.get_absolute_url(),
                 # LatLonPointSpatialField takes lat,lon string
                 "location_p": (
@@ -1638,7 +1636,8 @@ class PlaceSolrQuerySet(AliasedSolrQuerySet):
     field_aliases = {
         "slug": "slug_s",
         "name": "name_s",
-        "other_names": "other_names_s",
+        "other_names": "other_names_ss",
+        # copies of other_names for improved search
         "url": "url_s",
         "documents": "documents_i",
         "people": "people_i",
