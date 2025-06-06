@@ -1,0 +1,38 @@
+{% load i18n %}
+
+{% for place in places %}
+    <li data-map-target="listItem" class="place" data-slug-anchor="{{ place.slug }}">
+        {# Translators: accessible label for section showing place metadata, names #}
+        <dl class="metadata" aria-label="{% translate 'metadata' %}">
+            <dt class="sr-only">{% translate "Name" %}</dt>
+            <dd class="name">
+                {% if place.url %}
+                    <a href="{{ place.url }}" data-turbo="false">{{ place.name }}</a>
+                {% else %}
+                    <span>{{ place.name }}</span>
+                {% endif %}
+            </dd>
+            {% if place.other_names %}
+                <dt class="sr-only">{% translate "Other names" %}</dt>
+                <dd class="other-names">
+                    {% for other_name in place.other_names %}
+                        {{ other_name }}{% if not forloop.last %}, {% endif %}
+                    {% endfor %}
+                </dd>
+            {% endif %}
+        </dl>
+        {# Translators: accessible label for section showing counts of entries related to an entity #}
+        <dl class="relations" aria-label="{% translate 'Related entries' %}">
+            <dt class="documents">
+                {% translate "Related Documents" %}</dt>
+            <dd>
+                <span>{{ place.documents }}</span>
+            </dd>
+            <dt class="people">
+                {% translate "Related People" %}</dt>
+            <dd>
+                <span>{{ place.people }}</span>
+            </dd>
+        </dl>
+    </li>
+{% endfor %}
