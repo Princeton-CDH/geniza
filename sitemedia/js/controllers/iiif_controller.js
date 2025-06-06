@@ -66,7 +66,7 @@ export default class extends Controller {
             this.activateDeepZoom({ isMobile, rotationAngle });
         }
     }
-    activateDeepZoom(settings) {
+    async activateDeepZoom(settings) {
         // scroll to top of controls (if not in editor)
         if (!this.editModeValue) {
             this.imageHeaderTarget.scrollIntoView();
@@ -76,7 +76,7 @@ export default class extends Controller {
         this.imageTarget.classList.remove("visible");
         this.imageTarget.classList.add("hidden-img");
         if (!OSD) {
-            this.addOpenSeaDragon(settings);
+            await this.addOpenSeaDragon(settings);
             OSD = this.osdTarget.querySelector(".openseadragon-container");
         }
         // OSD styles have to be set directly on the element instead of adding a class, due to
@@ -115,25 +115,32 @@ export default class extends Controller {
         }
     }
 
-    addOpenSeaDragon(settings) {
+    checkTileSource(url) {
+        // use HEAD request to check that a tilesource doesn't 404 or cause other errors
+        return new Promise((resolve, reject) => {
+            fetch(url, { method: "HEAD" })
+                .then((response) => {
+                    if (response.ok) {
+                        resolve(url);
+                    } else {
+                        reject();
+                    }
+                })
+                .catch(reject);
+        });
+    }
+
+    async addOpenSeaDragon(settings) {
         const { isMobile, rotationAngle } = settings;
 
         // constants for OSD
         const minZoom = 1.0; // Minimum zoom as a multiple of image size
         const maxZoom = 1.5; // Maximum zoom as a multiple of image size
         const url = this.osdTarget.dataset.iiifUrl;
-
-        // allow placeholder image (url ending in .png instead of .json; assumes all real
-        // images are IIIF)
-        const isPlaceholder = url.endsWith(".png");
-        const tileSource = isPlaceholder ? { type: "image", url } : url;
-
-        // inject OSD into the image container
-        let viewer = OpenSeadragon({
+        const osdOptions = {
             element: this.osdTarget,
             prefixUrl:
                 "https://cdnjs.cloudflare.com/ajax/libs/openseadragon/3.0.0/images/",
-            tileSources: [tileSource],
             sequenceMode: false,
             autoHideControls: true,
             showHomeControl: false,
@@ -144,8 +151,6 @@ export default class extends Controller {
             },
             showZoomControl: false,
             showNavigationControl: false,
-            // show navigator in top left (unless placeholder)
-            showNavigator: !isPlaceholder,
             navigatorPosition: "TOP_LEFT",
             navigatorOpacity: 0.5,
             showFullPageControl: false,
@@ -156,76 +161,124 @@ export default class extends Controller {
             },
             minZoomImageRatio: minZoom,
             maxZoomPixelRatio: maxZoom,
-        });
-        viewer.addHandler("open", () => {
-            // zoom to current zoom
-            viewer.viewport.zoomTo(parseFloat(this.zoomSliderTarget.value));
-            // ensure image is positioned in top-left corner of viewer
-            this.resetBounds(viewer);
-            if (isMobile) {
-                // zoom to 110% if on mobile
-                viewer.viewport.zoomTo(1.1);
-                if (!this.zoomToggleTarget.checked) {
-                    this.zoomToggleTarget.checked = true;
-                }
-            }
-            if (this.isValidRotation(rotationAngle)) {
-                viewer.viewport.setRotation(rotationAngle);
-            }
-            // initialize zoom slider
-            this.zoomSliderTarget.setAttribute("min", minZoom);
-            // use toPrecision to ensure no extra pixels on the right of the slider
-            this.zoomSliderTarget.setAttribute(
-                "max",
-                viewer.viewport.getMaxZoom().toPrecision(2)
-            );
-            this.zoomSliderTarget.addEventListener(
-                "input",
-                this.handleZoomSliderInput(viewer, minZoom)
-            );
-            // initialize mobile zoom toggle
-            this.zoomToggleTarget.addEventListener("input", (evt) => {
-                // always first zoom to 100%
-                viewer.viewport.zoomTo(1.0);
-                if (!evt.currentTarget.checked) {
-                    // wait to reset bounds until element is hidden
-                    setTimeout(() => this.resetBounds(viewer), 300);
-                    this.deactivateDeepZoom();
-                } else {
-                    // reset bounds immediately and zoom to 110%
-                    this.resetBounds(viewer);
-                    viewer.viewport.zoomTo(1.1);
-                }
-            });
-            // initialize desktop rotation control
-            this.rotationTarget.addEventListener(
-                "input",
-                this.handleRotationInput(viewer)
-            );
-            this.rotationEditTarget.addEventListener(
-                "input",
-                this.handleRotationEditInput(viewer)
-            );
-            this.rotationTarget.addEventListener(
-                "change",
-                this.handleRotationInput(viewer)
-            );
-        });
-        viewer.addHandler("zoom", (evt) => {
-            // Handle changes in the canvas zoom
-            let { zoom } = evt;
-            if (zoom <= minZoom) {
-                // If zooming to less than 100%, force it to 100%
-                zoom = minZoom;
-            }
-            // Set zoom slider value to the chosen percentage
-            this.zoomSliderTarget.value = parseFloat(zoom);
-            this.updateZoomUI(zoom, false);
-        });
+        };
 
-        // keep reference to OSD viewer object on the controller object
-        this.viewer = viewer;
-        return viewer;
+        // allow placeholder image (url ending in .png instead of .json; assumes all real
+        // images are IIIF)
+        let isPlaceholder = url.endsWith(".png");
+
+        // placeholder fallback for broken images in annotation mode, must be done on OSD initialization
+        const annotationConfig = document.getElementById("annotation-config");
+        const handlePlaceholderFallback = (url) => {
+            if (annotationConfig && !isPlaceholder) {
+                const config = JSON.parse(annotationConfig.textContent);
+                // check for a broken image
+                return this.checkTileSource(url).then(
+                    // image worked: use url
+                    () => ({ tileSource: url, isPlaceholder: false }),
+                    // image failed: use placeholder img
+                    () => {
+                        this.element.classList.add("placeholder");
+                        return {
+                            tileSource: {
+                                type: "image",
+                                url: config.placeholder_img,
+                            },
+                            isPlaceholder: true,
+                        };
+                    }
+                );
+            } else {
+                // not annotation mode, or this was already a placeholder: just use url
+                const tileSource = isPlaceholder
+                    ? { type: "image", url: url }
+                    : url;
+                return Promise.resolve({ tileSource, isPlaceholder });
+            }
+        };
+
+        return handlePlaceholderFallback(url).then(
+            ({ tileSource, isPlaceholder }) => {
+                // initialize viewer with resolved tilesource
+                const viewer = OpenSeadragon({
+                    ...osdOptions,
+                    tileSources: [tileSource],
+                    // show navigator in top left (unless placeholder)
+                    showNavigator: !isPlaceholder,
+                });
+                viewer.addHandler("open", () => {
+                    // zoom to current zoom
+                    viewer.viewport.zoomTo(
+                        parseFloat(this.zoomSliderTarget.value)
+                    );
+                    // ensure image is positioned in top-left corner of viewer
+                    this.resetBounds(viewer);
+                    if (isMobile) {
+                        // zoom to 110% if on mobile
+                        viewer.viewport.zoomTo(1.1);
+                        if (!this.zoomToggleTarget.checked) {
+                            this.zoomToggleTarget.checked = true;
+                        }
+                    }
+                    if (this.isValidRotation(rotationAngle)) {
+                        viewer.viewport.setRotation(rotationAngle);
+                    }
+                    // initialize zoom slider
+                    this.zoomSliderTarget.setAttribute("min", minZoom);
+                    // use toPrecision to ensure no extra pixels on the right of the slider
+                    this.zoomSliderTarget.setAttribute(
+                        "max",
+                        viewer.viewport.getMaxZoom().toPrecision(2)
+                    );
+                    this.zoomSliderTarget.addEventListener(
+                        "input",
+                        this.handleZoomSliderInput(viewer, minZoom)
+                    );
+                    // initialize mobile zoom toggle
+                    this.zoomToggleTarget.addEventListener("input", (evt) => {
+                        // always first zoom to 100%
+                        viewer.viewport.zoomTo(1.0);
+                        if (!evt.currentTarget.checked) {
+                            // wait to reset bounds until element is hidden
+                            setTimeout(() => this.resetBounds(viewer), 300);
+                            this.deactivateDeepZoom();
+                        } else {
+                            // reset bounds immediately and zoom to 110%
+                            this.resetBounds(viewer);
+                            viewer.viewport.zoomTo(1.1);
+                        }
+                    });
+                    // initialize desktop rotation control
+                    this.rotationTarget.addEventListener(
+                        "input",
+                        this.handleRotationInput(viewer)
+                    );
+                    this.rotationEditTarget.addEventListener(
+                        "input",
+                        this.handleRotationEditInput(viewer)
+                    );
+                    this.rotationTarget.addEventListener(
+                        "change",
+                        this.handleRotationInput(viewer)
+                    );
+                });
+                viewer.addHandler("zoom", (evt) => {
+                    // Handle changes in the canvas zoom
+                    let { zoom } = evt;
+                    if (zoom <= minZoom) {
+                        // If zooming to less than 100%, force it to 100%
+                        zoom = minZoom;
+                    }
+                    // Set zoom slider value to the chosen percentage
+                    this.zoomSliderTarget.value = parseFloat(zoom);
+                    this.updateZoomUI(zoom, false);
+                });
+
+                // keep reference to OSD viewer object on the controller object
+                this.viewer = viewer;
+                return viewer;
+            }
+        );
     }
     handleRotationInput(viewer) {
         return (evt) => {
