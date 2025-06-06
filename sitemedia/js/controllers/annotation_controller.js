@@ -1,4 +1,7 @@
-import { Controller } from "@hotwired/stimulus";
+import {
+    Controller,
+    getControllerForElementAndIdentifier,
+} from "@hotwired/stimulus";
 import { useIntersection } from "stimulus-use";
 import * as Annotorious from "@recogito/annotorious-openseadragon";
 import {
@@ -24,7 +27,7 @@ export default class extends Controller {
         // enable intersection behaviors (appear, disappear)
         useIntersection(this);
     }
-    appear() {
+    async appear() {
         // enable deep zoom, annotorious-tahqiq on first appearance
         // (appear may fire subsequently, but nothing should happen then)
         if (
@@ -82,11 +85,11 @@ export default class extends Controller {
 
             // wait for each image to load fully before enabling OSD so we know its full height
             if (this.imageTarget.complete) {
-                this.element.iiif.activateDeepZoom(settings);
+                await this.element.iiif.activateDeepZoom(settings);
                 this.initAnnotorious(settings);
             } else {
-                this.imageTarget.addEventListener("load", () => {
-                    this.element.iiif.activateDeepZoom(settings);
+                this.imageTarget.addEventListener("load", async () => {
+                    await this.element.iiif.activateDeepZoom(settings);
                     this.initAnnotorious(settings);
                 });
             }
