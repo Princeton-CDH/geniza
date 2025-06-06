@@ -1083,11 +1083,7 @@ class PlaceListSnippetView(View):
         # handle pagination
         paginator = Paginator(places, self.paginate_by)
         page_number = self.request.GET.get("page", 1)
-        try:
-            page = paginator.get_page(page_number)
-        except EmptyPage:
-            # if page_number is too large, return the last page
-            page = paginator.get_page(paginator.num_pages)
+        page = paginator.get_page(page_number)
 
         # render the snippets to HTML strings so we can asynchronously insert them
         # with JS
