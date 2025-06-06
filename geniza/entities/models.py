@@ -1000,7 +1000,47 @@ class Person(
     }
 
 
-class PersonSolrQuerySet(AliasedSolrQuerySet):
+class EntitySolrQuerySet(AliasedSolrQuerySet):
+    """Mixin for shared logic between Person and Place solr queryset.
+    Requires class attributes: re_solr_fields, search_aliases"""
+
+    keyword_search_qf = (
+        "{!type=edismax qf=$entities_qf pf=$entities_pf v=$keyword_query}"
+    )
+
+    def keyword_search(self, search_term):
+        """Allow searching using keywords with the specified query and phrase match
+        fields, and set the default operator to AND"""
+        if ":" in search_term:
+            # if any of the field aliases occur with a colon, replace with actual solr field
+            search_term = self.re_solr_fields.sub(
+                lambda x: "%s:" % self.search_aliases[x.group(1)], search_term
+            )
+        query_params = {"keyword_query": search_term, "q.op": "AND"}
+        return self.search(self.keyword_search_qf).raw_query_parameters(
+            **query_params,
+        )
+
+    def get_highlighting(self):
+        """dedupe highlights across variant fields (e.g. for other_names)"""
+        highlights = super().get_highlighting()
+        highlights = {k: v for k, v in highlights.items() if v}
+        for result in highlights.keys():
+            other_names = set()
+            # iterate through other_names_* fields to get all matches
+            for hls in [
+                highlights[result][field]
+                for field in highlights[result].keys()
+                if field.startswith("other_names_")
+            ]:
+                # strip highglight tags and whitespace, then add to set
+                cleaned_names = [strip_tags(hl.strip()) for hl in hls]
+                other_names.update(set(cleaned_names))
+            highlights[result]["other_names"] = [n for n in other_names if n]
+        return highlights
+
+
+class PersonSolrQuerySet(EntitySolrQuerySet):
     """':class:`~parasolr.django.AliasedSolrQuerySet` for
     :class:`~geniza.corpus.models.Person`"""
 
@@ -1040,39 +1080,6 @@ class PersonSolrQuerySet(AliasedSolrQuerySet):
         r"(%s):" % "|".join(key for key, val in search_aliases.items() if key != val),
         flags=re.DOTALL,
     )
-
-    keyword_search_qf = "{!type=edismax qf=$people_qf pf=$people_pf v=$keyword_query}"
-
-    def keyword_search(self, search_term):
-        """Allow searching using keywords with the specified query and phrase match
-        fields, and set the default operator to AND"""
-        if ":" in search_term:
-            # if any of the field aliases occur with a colon, replace with actual solr field
-            search_term = self.re_solr_fields.sub(
-                lambda x: "%s:" % self.search_aliases[x.group(1)], search_term
-            )
-        query_params = {"keyword_query": search_term, "q.op": "AND"}
-        return self.search(self.keyword_search_qf).raw_query_parameters(
-            **query_params,
-        )
-
-    def get_highlighting(self):
-        """dedupe highlights across variant fields (e.g. for other_names)"""
-        highlights = super().get_highlighting()
-        highlights = {k: v for k, v in highlights.items() if v}
-        for person in highlights.keys():
-            other_names = set()
-            # iterate through other_names_* fields to get all matches
-            for hls in [
-                highlights[person][field]
-                for field in highlights[person].keys()
-                if field.startswith("other_names_")
-            ]:
-                # strip highglight tags and whitespace, then add to set
-                cleaned_names = [strip_tags(hl.strip()) for hl in hls]
-                other_names.update(set(cleaned_names))
-            highlights[person]["other_names"] = [n for n in other_names if n]
-        return highlights
 
 
 class PastPersonSlug(models.Model):
@@ -1625,7 +1632,7 @@ class Place(ModelIndexable, SlugMixin, PermalinkMixin):
     }
 
 
-class PlaceSolrQuerySet(AliasedSolrQuerySet):
+class PlaceSolrQuerySet(EntitySolrQuerySet):
     """':class:`~parasolr.django.AliasedSolrQuerySet` for
     :class:`~geniza.corpus.models.Place`"""
 
@@ -1638,12 +1645,20 @@ class PlaceSolrQuerySet(AliasedSolrQuerySet):
         "name": "name_s",
         "other_names": "other_names_ss",
         # copies of other_names for improved search
+        "other_names_nostem": "other_names_nostem",
+        "other_names_bigram": "other_names_bigram",
         "url": "url_s",
         "documents": "documents_i",
         "people": "people_i",
         "location": "location_p",
         "is_region": "is_region_b",
     }
+    search_aliases = field_aliases.copy()
+
+    re_solr_fields = re.compile(
+        r"(%s):" % "|".join(key for key, val in search_aliases.items() if key != val),
+        flags=re.DOTALL,
+    )
 
 
 class PastPlaceSlug(models.Model):

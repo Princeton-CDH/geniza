@@ -18,15 +18,16 @@ export default class extends Controller {
         "placeMarkers",
     ];
 
-    async getPlaces(url, sort) {
+    async getPlaces(url, sort, query) {
         // get all pages of chunked place HTML snippets
         let page = 1;
         let hasNextPage = true;
         let places = [];
         const sortBy = sort ? `&sort=${sort}` : "";
+        const queryBy = query ? `&q=${query}` : "";
         this.loadingTarget.classList.add("loading");
         while (hasNextPage) {
-            const data = await fetch(`${url}?page=${page}${sortBy}`, {
+            const data = await fetch(`${url}?page=${page}${sortBy}${queryBy}`, {
                 headers: {
                     Accept: "application/json",
                 },
@@ -66,7 +67,11 @@ export default class extends Controller {
         const searchOpts = JSON.parse(
             document.getElementById("search-opts").textContent
         );
-        await this.getPlaces(searchOpts.snippets_url, searchOpts.order_by);
+        await this.getPlaces(
+            searchOpts.snippets_url,
+            searchOpts.order_by,
+            searchOpts.query
+        );
     }
 
     listItemTargetConnected() {}

@@ -1037,6 +1037,9 @@ class PlaceListView(ListView, FormMixin):
 
                 # add to context so we can pass to snippet view
                 search_opts.update({"order_by": order_by})
+            if form_data.get("q"):
+                # add to context so we can pass to snippet view
+                search_opts.update({"query": form_data.get("q")})
 
         context_data.update(
             {
@@ -1063,6 +1066,10 @@ class PlaceListSnippetView(View):
         modified queryset and pagination params in the GET request."""
         # handle sorting and filtering on solr queryset
         places = PlaceSolrQuerySet()
+        query = self.request.GET.get("q")
+        if query:
+            # keyword search query and relevance scoring
+            places = places.keyword_search(query.replace("'", "")).also("score")
 
         order_by = self.request.GET.get("sort", "slug_s")
         places = places.order_by(order_by)

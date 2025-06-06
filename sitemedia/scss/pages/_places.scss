@@ -216,6 +216,7 @@ main.places {
             gap: 0.5rem;
             align-items: baseline;
             h1 {
+                display: none;
                 flex: 0 1 auto;
                 font-family: fonts.$primary;
                 font-size: typography.$text-size-5xl;
