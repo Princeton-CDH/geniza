@@ -1216,11 +1216,11 @@ class TestPlaceListView:
             # should pass query to search opts
             placelist_view.request.GET = {
                 "q": "cairo",
-                "sort": "score",
+                "sort": "relevance",
                 "sort_dir": "desc",
             }
             context_data = placelist_view.get_context_data()
-            assert context_data["search_opts"]["order_by"] == "score"
+            assert context_data["search_opts"]["order_by"] == "-score"
             assert "query" in context_data["search_opts"]
             assert context_data["search_opts"]["query"] == "cairo"
 
