@@ -280,7 +280,7 @@ class PersonAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin):
         "__str__",
         "slug",
         "gender",
-        "role",
+        "all_roles",
         "all_tags",
         "has_page",
     )
@@ -288,7 +288,7 @@ class PersonAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin):
     fields = (
         "slug",
         "gender",
-        "role",
+        "roles",
         "has_page",
         "date",
         "active_dates",
@@ -309,6 +309,7 @@ class PersonAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin):
     # mixed fieldsets and inlines: /templates/admin/snippets/mixed_inlines_fieldsets.html
     fieldsets_and_inlines_order = (
         "i",  # NameInline
+        "i",  # PersonRoleInline
         "f",  # all Person fields
         "i",  # PersonDocumentInline
         "i",  # PersonPersonInline

@@ -450,14 +450,14 @@ class TestPersonListView:
 
             # filter by social role
             mock_get_form.return_value.cleaned_data = {
-                "social_role": f"['{person.role.name}']"
+                "social_role": f"['{person.roles.first().name}']"
             }
             qs = personlist_view.get_queryset()
             assert qs.count() == 2
 
             # filter by social role and gender
             mock_get_form.return_value.cleaned_data = {
-                "social_role": f"['{person.role.name}']",
+                "social_role": f"['{person.roles.first().name}']",
                 "gender": f"['Female']",
             }
             qs = personlist_view.get_queryset()
@@ -624,9 +624,9 @@ class TestPersonListView:
             == PersonListView.initial["sort"]
         )
         # should not overwrite values from request if they are set
-        sort_role = "role"
-        response = client.get(reverse("entities:person-list"), {"sort": sort_role})
-        assert response.context["form"].cleaned_data["sort"] == sort_role
+        sort_name = "name"
+        response = client.get(reverse("entities:person-list"), {"sort": sort_name})
+        assert response.context["form"].cleaned_data["sort"] == sort_name
 
     def test_get_applied_filter_labels(self):
         # should return list of dicts with field, value, translated label

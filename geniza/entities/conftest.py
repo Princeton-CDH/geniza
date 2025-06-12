@@ -6,10 +6,9 @@ from geniza.entities.models import Name, Person, PersonRole
 def make_person():
     (official, _) = PersonRole.objects.get_or_create(name_en="State official")
     person = Person.objects.create(
-        gender=Person.FEMALE,
-        role=official,
-        description_en="A person in the PGP database.",
+        gender=Person.FEMALE, description_en="A person in the PGP database."
     )
+    person.roles.add(official)
     Name.objects.create(name="Berakha bt. Yijū", content_object=person, primary=True)
     person.generate_slug()
     person.save()
@@ -18,7 +17,8 @@ def make_person():
 
 def make_person_diacritic():
     (official, _) = PersonRole.objects.get_or_create(name_en="State official")
-    person = Person.objects.create(gender=Person.MALE, role=official)
+    person = Person.objects.create(gender=Person.MALE)
+    person.roles.add(official)
     Name.objects.create(
         name="Ḥalfon ha-Levi b. Netanʾel", content_object=person, primary=True
     )
@@ -29,7 +29,8 @@ def make_person_diacritic():
 
 def make_person_multiname():
     (community, _) = PersonRole.objects.get_or_create(name_en="Jewish community member")
-    person = Person.objects.create(gender=Person.FEMALE, role=community)
+    person = Person.objects.create(gender=Person.FEMALE)
+    person.roles.add(community)
     Name.objects.create(name="Zed", content_object=person, primary=True)
     Name.objects.create(name="Apple", content_object=person, primary=False)
     person.generate_slug()
