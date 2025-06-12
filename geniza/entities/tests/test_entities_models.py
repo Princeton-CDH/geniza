@@ -97,13 +97,13 @@ class TestPerson:
         person_2 = Person.objects.create(
             description_en="testing description",
             gender=Person.FEMALE,
-            role=role,
             has_page=True,
         )
+        person_2.roles.add(role)
         p2_str = str(person_2)
         person.merge_with([person_2])
         # migrated public page override/missing info
-        assert person.role == role
+        assert role.pk in person.roles.values_list("pk", flat=True)
         assert person.gender == Person.FEMALE
         assert person.has_page == True
         # combined descriptions
@@ -121,11 +121,9 @@ class TestPerson:
         person = Person.objects.create(
             gender=Person.UNKNOWN,
         )
-        role = PersonRole.objects.create(name="example")
         person_2 = Person.objects.create(
             description_en="testing description",
             gender=Person.FEMALE,
-            role=role,
             has_page=True,
         )
         person.merge_with([person_2])
@@ -139,13 +137,6 @@ class TestPerson:
         person_2 = Person.objects.create(gender=Person.FEMALE)
         with pytest.raises(ValidationError):
             person.merge_with([person_2])
-        # should raise ValidationError on conflicting role
-        role = PersonRole.objects.create(name="example")
-        role_2 = PersonRole.objects.create(name="other")
-        person_3 = Person.objects.create(gender=Person.MALE, role=role)
-        person_4 = Person.objects.create(gender=Person.MALE, role=role_2)
-        with pytest.raises(ValidationError):
-            person_3.merge_with([person_4])
 
     def test_merge_with_names(self):
         person = Person.objects.create()
@@ -344,7 +335,7 @@ class TestPerson:
         # test past slugs are recorded on save
         person = Person(slug="test")
         person.save()
-        person.slug = ""
+        person.slug = "newslug"
         person.save()
         assert PastPersonSlug.objects.filter(slug="test", person=person).exists()
 
@@ -520,7 +511,7 @@ class TestPerson:
         assert index_data["name_s"] == str(person)
         assert index_data["description_txt"] == person.description_en
         assert index_data["gender_s"] == person.get_gender_display()
-        assert index_data["role_s"] == str(person.role)
+        assert str(person.roles.first()) in index_data["role_ss"]
         assert not index_data["url_s"]
         assert index_data["has_page_b"] == False
         person.has_page = True
@@ -587,6 +578,21 @@ class TestPerson:
             person=person, document=join, type=deceased
         )
         assert person.deceased_date_range == join.doc_date_standard
+
+    def test_all_roles(self, person):
+        # should just be the one role we assigned in conftest
+        assert person.all_roles() == str(person.roles.first())
+        pr = PersonRole.objects.create(name="Aaa")
+        # should sort alphabetically first
+        person.roles.add(pr)
+        assert person.all_roles().startswith("%s," % pr.name)
+        pr.display_label = "Zzz"
+        pr.save()
+        # display label should take precedence
+        assert pr.display_label in person.all_roles()
+        assert pr.name not in person.all_roles()
+        # should sort alphabetically last
+        assert person.all_roles().endswith(pr.display_label)
 
 
 class TestPersonSolrQuerySet:
@@ -666,7 +672,7 @@ class TestPersonSignalHandlers:
         assert person in mock_indexitems.call_args[0][0]
 
         # role
-        role = person.role
+        role = person.roles.first()
         role.name_en = "changed"
         role.save()
         mock_indexitems.reset_mock()
@@ -1005,7 +1011,7 @@ class TestPlace:
         # test past slugs are recorded on save
         place = Place(slug="test")
         place.save()
-        place.slug = ""
+        place.slug = "newslug"
         place.save()
         assert PastPlaceSlug.objects.filter(slug="test", place=place).exists()
 

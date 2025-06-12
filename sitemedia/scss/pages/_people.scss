@@ -134,7 +134,7 @@ main.people {
                     "name name name"
                     "gender gender gender"
                     "date date date"
-                    "role role role"
+                    "roles roles roles"
                     "desc desc desc"
                     "tags tags tags"
                     "reldocs relpeople relplaces";
@@ -164,8 +164,8 @@ main.people {
                 td.dates {
                     grid-area: date;
                 }
-                td.role {
-                    grid-area: role;
+                td.roles {
+                    grid-area: roles;
                 }
                 td.description {
                     grid-area: desc;
