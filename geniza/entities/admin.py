@@ -50,6 +50,7 @@ from geniza.entities.models import (
     PlaceEventRelation,
     PlacePlaceRelation,
     PlacePlaceRelationType,
+    Region,
 )
 from geniza.entities.views import (
     PersonDocumentRelationTypeMerge,
@@ -589,7 +590,13 @@ class PlaceAdmin(SortableAdminBase, admin.ModelAdmin):
     """Admin for Place entities in the PGP"""
 
     search_fields = ("name_unaccented", "names__name")
-    fields = ("slug", ("latitude", "longitude"), "is_region", "notes")
+    fields = (
+        "slug",
+        ("latitude", "longitude"),
+        "is_region",
+        "notes",
+        "containing_region",
+    )
     inlines = (
         NameInline,
         DocumentPlaceInline,
@@ -739,3 +746,12 @@ class EventAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin):
     def automatic_date(self, obj):
         """Display automatically generated date/date range for an event as a formatted string"""
         return standard_date_display(obj.documents_date_range)
+
+
+@admin.register(Region)
+class RegionAdmin(SortableAdminBase, admin.ModelAdmin):
+    """Admin for Region model instances in the PGP"""
+
+    fields = ("name",)
+    search_fields = ("name",)
+    ordering = ("name",)

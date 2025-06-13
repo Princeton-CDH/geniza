@@ -36,6 +36,7 @@ from geniza.entities.models import (
     PlacePlaceRelation,
     PlacePlaceRelationType,
     PlaceSignalHandlers,
+    Region,
 )
 from geniza.footnotes.models import Footnote
 
@@ -1263,3 +1264,10 @@ class TestPlaceSignalHandlers:
         PlaceSignalHandlers.related_delete(DocumentPlaceRelation, dpr)
         assert mock_indexitems.call_count == 1
         assert place in mock_indexitems.call_args[0][0]
+
+
+@pytest.mark.django_db
+class TestRegion:
+    def test_str(self):
+        r = Region.objects.create(name="Oceania")
+        assert str(r) == r.name
