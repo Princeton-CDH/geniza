@@ -4,10 +4,10 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>geniza.corpus.metadata_export &#8212; Princeton Geniza Project 4.22.0 documentation</title>
+    <title>geniza.corpus.metadata_export &#8212; Princeton Geniza Project 4.22.1 documentation</title>
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=5ecbeea2" />
     <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=12dfc556" />
-    <script src="../../../_static/documentation_options.js?v=461fad74"></script>
+    <script src="../../../_static/documentation_options.js?v=e267296d"></script>
     <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
@@ -297,7 +297,7 @@
     <span class="n">csv_fields</span> <span class="o">=</span> <span class="p">[</span>
         <span class="s2">&quot;shelfmark&quot;</span><span class="p">,</span>
         <span class="s2">&quot;pgpids&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;old_shelfmarks&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;shelfmarks_historic&quot;</span><span class="p">,</span>
         <span class="s2">&quot;collection&quot;</span><span class="p">,</span>
         <span class="s2">&quot;library&quot;</span><span class="p">,</span>
         <span class="s2">&quot;library_abbrev&quot;</span><span class="p">,</span>
@@ -339,7 +339,7 @@
         <span class="n">data</span> <span class="o">=</span> <span class="p">{</span>
             <span class="s2">&quot;shelfmark&quot;</span><span class="p">:</span> <span class="n">fragment</span><span class="o">.</span><span class="n">shelfmark</span><span class="p">,</span>
             <span class="s2">&quot;pgpids&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">doc</span><span class="o">.</span><span class="n">pk</span> <span class="k">for</span> <span class="n">doc</span> <span class="ow">in</span> <span class="n">fragment</span><span class="o">.</span><span class="n">documents</span><span class="o">.</span><span class="n">all</span><span class="p">()],</span>
-            <span class="s2">&quot;old_shelfmarks&quot;</span><span class="p">:</span> <span class="n">fragment</span><span class="o">.</span><span class="n">old_shelfmarks</span><span class="p">,</span>
+            <span class="s2">&quot;shelfmarks_historic&quot;</span><span class="p">:</span> <span class="n">fragment</span><span class="o">.</span><span class="n">old_shelfmarks</span><span class="p">,</span>
             <span class="s2">&quot;url&quot;</span><span class="p">:</span> <span class="n">fragment</span><span class="o">.</span><span class="n">url</span><span class="p">,</span>
             <span class="s2">&quot;iiif_url&quot;</span><span class="p">:</span> <span class="n">fragment</span><span class="o">.</span><span class="n">iiif_url</span><span class="p">,</span>
             <span class="s2">&quot;is_multifragment&quot;</span><span class="p">:</span> <span class="n">fragment</span><span class="o">.</span><span class="n">is_multifragment</span><span class="p">,</span>
