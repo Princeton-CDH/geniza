@@ -42,7 +42,7 @@ def set_region_permissions(apps, schema_editor):
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("entities", "0031_populate_persondocumentrelation_uncertain"),
+        ("entities", "0032_person_roles"),
     ]
 
     operations = [
