@@ -799,7 +799,6 @@ class PersonListView(ListView, FormMixin, SolrDateRangeMixin):
     sort_fields = {
         "relevance": "score",
         "name": "slug_s",
-        "roles": "role_ss",
         "documents": "documents_i",
         "people": "people_i",
         "places": "places_i",

@@ -217,8 +217,6 @@ class PersonListForm(RangeForm):
         ("name", _("Name")),
         # Translators: label for sort by person activity dates
         ("date", _("Date")),
-        # Translators: label for sort by social role
-        ("roles", _("Social Role")),
         # Translators: label for sort by number of related documents
         ("documents", _("Related Documents")),
         # Translators: label for sort by number of related people
