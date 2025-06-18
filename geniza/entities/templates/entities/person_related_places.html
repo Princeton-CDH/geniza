@@ -33,6 +33,7 @@
             <div
                 id="map"
                 data-controller="map"
+                data-map-target="map"
                 data-maptiler-token="{{ maptiler_token }}"
             >
                 {% for relation in person.personplacerelation_set.all %}
@@ -42,6 +43,7 @@
                             data-map-target="marker"
                             data-lat="{{ relation.place.latitude }}"
                             data-lon="{{ relation.place.longitude }}"
+                            {% if forloop.last %}data-final="true"{% endif %}
                         >
                             <use href="{% static 'img/ui/all/all/map-pin-fill.svg' %}#pin" />
                         </svg>
