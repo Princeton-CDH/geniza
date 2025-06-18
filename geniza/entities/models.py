@@ -208,6 +208,7 @@ class PersonRole(DisplayLabelMixin, models.Model):
     class Meta:
         verbose_name = "Person social role"
         verbose_name_plural = "Person social roles"
+        ordering = ["display_label", "name"]
 
 
 class SlugMixin(TrackChangesModel):
