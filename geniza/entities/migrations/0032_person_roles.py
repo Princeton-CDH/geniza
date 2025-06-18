@@ -32,4 +32,12 @@ class Migration(migrations.Migration):
             model_name="person",
             name="role",
         ),
+        migrations.AlterModelOptions(
+            name="personrole",
+            options={
+                "ordering": ["display_label", "name"],
+                "verbose_name": "Person social role",
+                "verbose_name_plural": "Person social roles",
+            },
+        ),
     ]
