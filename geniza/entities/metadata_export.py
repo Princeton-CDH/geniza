@@ -40,7 +40,7 @@ class PublicPersonExporter(Exporter):
         "name",
         "name_variants",
         "gender",
-        "social_role",
+        "social_roles",
         # TODO: floruit vs mentioned as dead date columns
         "auto_date_range",
         "manual_date_range",
@@ -78,7 +78,7 @@ class PublicPersonExporter(Exporter):
             qset.prefetch_related(None)
             .prefetch_related(
                 "names",
-                "role",
+                "roles",
                 "relationships",
                 "from_person",
                 "to_person",
@@ -113,7 +113,9 @@ class PublicPersonExporter(Exporter):
                 sorted([n.name for n in person.names.non_primary()])
             ),
             "gender": person.get_gender_display(),
-            "social_role": str(person.role),
+            "social_roles": ", ".join(
+                person.roles.order_by("name").values_list("name", flat=True)
+            ),
             "active_date_range": standard_date_display(person.active_date_range),
             "deceased_date_range": standard_date_display(person.deceased_date_range),
             "manual_date_range": person.date,

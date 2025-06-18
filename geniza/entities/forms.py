@@ -217,8 +217,6 @@ class PersonListForm(RangeForm):
         ("name", _("Name")),
         # Translators: label for sort by person activity dates
         ("date", _("Date")),
-        # Translators: label for sort by social role
-        ("role", _("Social Role")),
         # Translators: label for sort by number of related documents
         ("documents", _("Related Documents")),
         # Translators: label for sort by number of related people
@@ -252,13 +250,13 @@ class PersonListForm(RangeForm):
     solr_facet_fields = {
         "gender": "gender",
         "has_page": "has_page",
-        "role": "social_role",
+        "roles": "social_role",
         "document_relations": "document_relation",
         "certain_document_relations": "document_relation",
     }
     # mapping of solr facet fields to db models in order to retrieve objects by label
     solr_db_models = {
-        "role": PersonRole,
+        "roles": PersonRole,
         "document_relations": PersonDocumentRelationType,
         "certain_document_relations": PersonDocumentRelationType,
     }

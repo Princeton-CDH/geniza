@@ -153,11 +153,11 @@ class TestPersonListForm:
             )
             # should get translated labels
             facets = {
-                "role": {person.role.name_en: 1},
+                "roles": {person.roles.first().name_en: 1},
             }
             form.set_choices_from_facets(facets)
             form.fields["social_role"].populate_from_facets.assert_called_with(
-                {person.role.name_en: (person.role, 1)}
+                {person.roles.first().name_en: (person.roles.first(), 1)}
             )
 
     def test_set_choices_from_facets__uncertain(self):
@@ -208,7 +208,7 @@ class TestPersonListForm:
             name_en="Author", display_label_en="Author", display_label_he="מְחַבֵּר"
         )
         assert str(pr) == "מְחַבֵּר"
-        assert str(form.get_translated_label("role", "Author")) == "מְחַבֵּר"
+        assert str(form.get_translated_label("roles", "Author")) == "מְחַבֵּר"
         # Gender should be able to find the translated label
         with patch("geniza.entities.models.Person") as mock_person:
             mock_person.GENDER_CHOICES = {"M": "test"}
@@ -226,15 +226,15 @@ class TestPersonListForm:
         form = PersonListForm({"gender": [Person.FEMALE]})
         assert form.filters_active() == True
         # sort SHOULD count as a filter (required for accurate facet counts after sorting)
-        form = PersonListForm({"sort": "role"})
+        form = PersonListForm({"sort": "name"})
         assert form.filters_active() == True
 
     def test_get_sort_label(self):
         form = PersonListForm({})
         assert form.get_sort_label() is None
 
-        form = PersonListForm({"sort": "role"})
-        assert form.get_sort_label() == dict(PersonListForm.SORT_CHOICES)["role"]
+        form = PersonListForm({"sort": "name"})
+        assert form.get_sort_label() == dict(PersonListForm.SORT_CHOICES)["name"]
 
 
 @pytest.mark.django_db

@@ -208,6 +208,7 @@ class PersonRole(DisplayLabelMixin, models.Model):
     class Meta:
         verbose_name = "Person social role"
         verbose_name_plural = "Person social roles"
+        ordering = ["display_label", "name"]
 
 
 class SlugMixin(TrackChangesModel):
@@ -260,7 +261,7 @@ class PersonSignalHandlers:
     # for use in queryset filter
     model_filter = {
         "name": "names",
-        "Person social role": "role",
+        "Person social role": "roles",
         "document": "documents",  # documents in case dates change
         "person person relation": ["to_person", "from_person"],
         "person place relation": "personplacerelation",
@@ -348,13 +349,11 @@ class Person(
         through="PersonPersonRelation",
         verbose_name="Related People",
     )
-    role = models.ForeignKey(
+    roles = models.ManyToManyField(
         PersonRole,
-        null=True,
         blank=True,
-        on_delete=models.SET_NULL,
-        verbose_name="Role",
-        help_text="Social role",
+        verbose_name="Roles",
+        help_text="This person's social roles.",
     )
     events = models.ManyToManyField(
         Event,
@@ -441,6 +440,14 @@ class Person(
     def deceased_date_str(self):
         """Return a formatted string for the person's mentioned as deceased date range."""
         return standard_date_display(self.deceased_date_range) or ""
+
+    def all_roles(self):
+        """Comma-separated list of a person's roles, sorted by display label or name"""
+        roles = self.roles.values("display_label", "name")
+        labels = sorted([(r["display_label"] or r["name"]) for r in roles])
+        return ", ".join(labels)
+
+    all_roles.short_description = "Roles"
 
     def solr_date_range(self):
         """Return the person's date range as a Solr date range."""
@@ -717,13 +724,9 @@ class Person(
             # ensure any has_page overrides are respected
             self.has_page = self.has_page or person.has_page
 
-            # migrate/copy role and gender if not already present, check for conflicts otherwise
-            if person.role and not self.role:
-                self.role = person.role
-            elif person.role and self.role and person.role.pk != self.role.pk:
-                raise ValidationError(
-                    "Merged people must not have conflicting social roles; resolve before merge"
-                )
+            # migrate/copy roles and gender if not already present, check for conflicts otherwise
+            if person.roles.exists():
+                self.roles.add(*person.roles.all())
             if self.gender == Person.UNKNOWN and person.gender != Person.UNKNOWN:
                 self.gender = person.gender
             elif person.gender != Person.UNKNOWN and self.gender != person.gender:
@@ -872,7 +875,7 @@ class Person(
         bulk."""
         return Person.objects.prefetch_related(
             "names",
-            "role",
+            "roles",
             "relationships",
             "from_person",
             "to_person",
@@ -894,7 +897,7 @@ class Person(
         models.prefetch_related_objects(
             chunk,
             "names",
-            "role",
+            "roles",
             "relationships",
             "from_person",
             "to_person",
@@ -922,7 +925,7 @@ class Person(
                 "other_names_ss": [n.name for n in self.names.non_primary()],
                 "description_txt": self.description_en,
                 "gender_s": self.get_gender_display(),
-                "role_s": self.role.name_en if self.role else None,
+                "role_ss": [role.name_en for role in self.roles.all()],
                 "url_s": url,
                 "has_page_b": bool(url),
                 # related object counts
@@ -974,7 +977,7 @@ class Person(
             "post_save": PersonSignalHandlers.related_save,
             "pre_delete": PersonSignalHandlers.related_delete,
         },
-        "role": {
+        "roles": {
             "post_save": PersonSignalHandlers.related_save,
             "pre_delete": PersonSignalHandlers.related_delete,
         },
@@ -1014,7 +1017,7 @@ class PersonSolrQuerySet(AliasedSolrQuerySet):
         "other_names_bigram": "other_names_bigram",
         "description": "description_txt",
         "gender": "gender_s",
-        "role": "role_s",
+        "roles": "role_ss",
         "url": "url_s",
         "documents": "documents_i",
         "people": "people_i",

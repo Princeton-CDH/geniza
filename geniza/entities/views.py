@@ -799,7 +799,6 @@ class PersonListView(ListView, FormMixin, SolrDateRangeMixin):
     sort_fields = {
         "relevance": "score",
         "name": "slug_s",
-        "role": "role_s",
         "documents": "documents_i",
         "people": "people_i",
         "places": "places_i",
@@ -828,7 +827,7 @@ class PersonListView(ListView, FormMixin, SolrDateRangeMixin):
         """modify queryset to sort and filter on people in the list"""
         people = PersonSolrQuerySet().facet(
             "gender",
-            "role",
+            "roles",
             "document_relations",
             "certain_document_relations",
             "has_page",
@@ -886,7 +885,7 @@ class PersonListView(ListView, FormMixin, SolrDateRangeMixin):
         if search_opts.get("social_role"):
             roles = literal_eval(search_opts["social_role"])
             roles = [re.sub(self.qs_regex, r"\\\1", r) for r in roles]
-            people = people.filter(role__in=roles)
+            people = people.filter(roles__in=roles)
             self.applied_filter_labels += self.get_applied_filter_labels(
                 form, "social_role", roles
             )
