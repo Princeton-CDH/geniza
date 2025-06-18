@@ -34,6 +34,7 @@ from geniza.entities.models import (
     Place,
     PlacePlaceRelation,
     PlacePlaceRelationType,
+    Region,
 )
 
 
@@ -463,8 +464,13 @@ class TestPlaceAdmin:
         # adapted from document csv export tests
         mosul = Place.objects.create(slug="mosul", notes="A city in Iraq")
         Name.objects.create(content_object=mosul, name="Mosul", primary=True)
-        fustat = Place.objects.create(slug="fustat")
+        egypt_region = Region.objects.create(name="Egypt")
+        fustat = Place.objects.create(slug="fustat", containing_region=egypt_region)
         Name.objects.create(content_object=fustat, name="Fusṭāṭ", primary=True)
+        abyssinia = Place.objects.create(slug="abyssinia-region", is_region=True)
+        Name.objects.create(
+            name="Abyssinia (region)", content_object=abyssinia, primary=True
+        )
 
         place_admin = PlaceAdmin(model=Place, admin_site=admin.site)
         response = place_admin.export_to_csv(Mock())
@@ -475,11 +481,21 @@ class TestPlaceAdmin:
         # spot-check that we get expected data
         # - header row
         assert "name,name_variants," in content
+        is_region_idx = content.split(",").index("is_region")
         # - some content
         assert str(mosul) in content
-        assert mosul.notes in content
         assert str(fustat) in content
-        assert fustat.permalink in content
+        assert str(abyssinia) in content
+        for row in content.split("\n"):
+            if str(mosul) in row:
+                assert mosul.notes in row
+            elif str(fustat) in row:
+                assert fustat.permalink in row
+                assert str(egypt_region) in row
+                assert row.split(",")[is_region_idx] == "N"
+            elif str(abyssinia) in row:
+                assert str(egypt_region) not in row
+                assert row.split(",")[is_region_idx] == "Y"
 
     @pytest.mark.django_db
     def test_export_relations_to_csv(self, person):

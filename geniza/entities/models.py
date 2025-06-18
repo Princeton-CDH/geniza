@@ -1329,6 +1329,16 @@ class PersonEventRelation(models.Model):
         return f"Person-Event relation: {self.person} and {self.event}"
 
 
+class Region(models.Model):
+    """A region category for situating a :class:`Place` record geographically
+    when a map is not available, such as in exports"""
+
+    name = models.CharField(max_length=255, unique=True)
+
+    def __str__(self):
+        return self.name
+
+
 class PlaceSignalHandlers:
     """Signal handlers for indexing :class:`Place` records when
     related records are saved or deleted."""
@@ -1418,6 +1428,13 @@ class Place(ModelIndexable, SlugMixin, PermalinkMixin):
         "Region",
         default=False,
         help_text="Please restrict entries to regions explicitly mentioned in documents.",
+    )
+    containing_region = models.ForeignKey(
+        Region,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        help_text="The geographic region containing this place. For internal use and CSV exports only.",
     )
 
     def __str__(self):

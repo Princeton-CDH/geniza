@@ -487,7 +487,9 @@ class PublicPlaceExporter(Exporter):
     csv_fields = [
         "name",
         "name_variants",
+        "is_region",
         "coordinates",
+        "containing_region",
         "notes",
         "related_documents_count",
         "related_people_count",
@@ -519,6 +521,7 @@ class PublicPlaceExporter(Exporter):
                 "documentplacerelation_set",
                 "placeeventrelation_set",
             )
+            .select_related("containing_region")
             .order_by("slug")
         )
         return qset
@@ -560,7 +563,9 @@ class PublicPlaceExporter(Exporter):
             "name_variants": ", ".join(
                 sorted([n.name for n in place.names.non_primary()])
             ),
+            "is_region": place.is_region,
             "coordinates": place.coordinates,
+            "containing_region": place.containing_region,
             "notes": place.notes,
             "related_documents_count": related_docs_count,
             "related_people_count": related_people_count,
