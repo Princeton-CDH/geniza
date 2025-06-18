@@ -1,6 +1,13 @@
 Change Log
 ==========
 
+4.22.1
+------
+
+- As a content editor, I want there to be placeholder images for images that are temporarily down, so that I can continue to add transcription and translation content even during outages.
+- chore: Change Fragment export "old_shelfmarks" to “shelfmarks_historic” so it matches Document export
+
+
 4.22
 ----
 
