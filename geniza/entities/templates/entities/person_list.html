@@ -174,7 +174,19 @@
                             {% endwith %}
                             <td class="gender">{{ person.gender }}</td>
                             <td class="dates">{{ person.date_str }}</td>
-                            <td class="roles">{{ person.roles|join:", " }}</td>
+                            <td class="roles">
+                                {% if person.roles %}<span class="role">{{ person.roles.0 }}</span>{% endif %}
+                                {% if person.roles|length > 1 %}
+                                    <span
+                                        class="role tooltip"
+                                        role="tooltip"
+                                        tabindex="0"
+                                        aria-label="{% for role in person.roles %}{% if not forloop.first %}{{ role }}{% if not forloop.last %}, {% endif %}{% endif %}{% endfor %}"
+                                    >
+                                        +{{ person.roles|length|add:-1 }}
+                                    </span>
+                                {% endif %}
+                            </td>
                             <td class="description">{{ person.description.0|truncatewords:15 }}</td>
                             {# tags #}
                             <td class="tags">{% if person.tags %}

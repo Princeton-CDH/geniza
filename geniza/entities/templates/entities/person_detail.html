@@ -60,7 +60,7 @@
                             Social roles
                         {% endblocktranslate %}
                     </dt>
-                    <dd>{{ person.all_roles }}</dd>
+                    <dd><ul class="roles">{% for role in person.roles.all %}<li>{{ role }}</li>{% endfor %}</ul></dd>
                 {% endif %}
             </dl>
             {# secondary metadata #}

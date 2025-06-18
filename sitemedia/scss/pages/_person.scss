@@ -244,6 +244,15 @@ main.place {
         }
     }
 }
+main.person ul.roles li,
+main.people span.role {
+    // social role "bubble" for multiple roles list
+    background-color: var(--person-role-bg);
+    white-space: nowrap;
+    font-size: typography.$text-size-sm;
+    padding: 0.25rem 0.5rem;
+    border-radius: 5px;
+}
 main.person,
 main.place,
 main.document {
@@ -432,6 +441,16 @@ main.person {
         align-items: center;
         justify-content: center;
         text-align: center;
+    }
+    ul.roles {
+        display: flex;
+        flex-flow: row wrap;
+        gap: 0.5rem;
+        @include breakpoints.for-tablet-landscape-up {
+            li {
+                font-size: typography.$text-size-lg;
+            }
+        }
     }
 }
 

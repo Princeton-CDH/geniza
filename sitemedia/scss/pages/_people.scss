@@ -166,6 +166,29 @@ main.people {
                 }
                 td.roles {
                     grid-area: roles;
+                    .tooltip {
+                        position: relative;
+                    }
+                    .tooltip::after {
+                        content: attr(aria-label);
+                        position: absolute;
+                        bottom: 125%;
+                        left: 50%;
+                        transform: translateX(-50%);
+                        box-shadow: 0px 1px 8px 0px var(--on-background-25);
+                        background: var(--background);
+                        color: var(--on-background);
+                        padding: 0.25rem 0.5rem;
+                        border-radius: 5px;
+                        white-space: nowrap;
+                        opacity: 0;
+                        pointer-events: none;
+                        transition: opacity 0.2s ease-in-out;
+                    }
+                    .tooltip:hover::after,
+                    .tooltip:focus::after {
+                        opacity: 1;
+                    }
                 }
                 td.description {
                     grid-area: desc;
