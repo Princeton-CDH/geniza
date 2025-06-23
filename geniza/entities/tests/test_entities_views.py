@@ -1257,7 +1257,8 @@ class TesttPlaceListSnippetView:
             data = json.loads(json_resp.content)
             assert mock_qs.keyword_search.called_with("qaid")
             assert mock_qs.order_by.called_with("-score")
-            assert data["count"] == "150 results"
+            assert data["results_count"] == "150 results"
+            assert data["places_count"] == "150 places"
 
             # test pagination
             snippet_view.request.GET = {"page": "1"}

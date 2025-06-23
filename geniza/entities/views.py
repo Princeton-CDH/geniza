@@ -1079,6 +1079,10 @@ class PlaceListSnippetView(View):
         count_str = ngettext("%(count)d result", "%(count)d results", count) % {
             "count": count
         }
+        # Translators: number of places
+        button_count_str = ngettext("%(count)d place", "%(count)d places", count) % {
+            "count": count
+        }  # different verbiage for the "toggle to list mode" mobile button
 
         # handle pagination
         paginator = Paginator(places, self.paginate_by)
@@ -1108,6 +1112,7 @@ class PlaceListSnippetView(View):
                 "next_page_number": (
                     page.next_page_number() if page.has_next() else None
                 ),
-                "count": count_str,
+                "results_count": count_str,
+                "places_count": button_count_str,
             }
         )
