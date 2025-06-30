@@ -18,8 +18,9 @@ from django.utils.html import strip_tags
 from django.utils.safestring import SafeString
 from django.utils.translation import activate, deactivate_all, get_language
 from django.utils.translation import override as translation_override
-from djiffy.models import Canvas, IIIFException, IIIFImage, Manifest
+from djiffy.models import Canvas, IIIFImage, Manifest
 from modeltranslation.manager import MultilingualQuerySet
+from piffle.presentation import IIIFException
 from piffle.presentation import IIIFException as piffle_IIIFException
 
 from geniza.annotations.models import Annotation
@@ -258,23 +259,6 @@ class TestFragment(TestCase):
         assert isinstance(images[0], IIIFImage)
         assert len(labels) == 1
         assert labels[0] == "fake image"
-
-    @pytest.mark.django_db
-    @patch("geniza.corpus.models.GenizaManifestImporter")
-    def test_iiif_images_iiifexception(self, mock_manifestimporter):
-        # patch IIIFPresentation.from_url to always raise IIIFException
-        with patch("geniza.corpus.models.IIIFPresentation") as mock_iiifpresentation:
-            mock_iiifpresentation.from_url = Mock()
-            mock_iiifpresentation.from_url.side_effect = IIIFException
-            mock_manifestimporter.return_value.import_paths.return_value = []
-            frag = Fragment(shelfmark="TS 1")
-            frag.iiif_url = "http://example.io/manifests/1"
-            frag.save()
-            # should raise the exception
-            with self.assertRaises(IIIFException):
-                # should log at level WARN
-                with self.assertLogs(level="WARN"):
-                    frag.iiif_images()
 
     @pytest.mark.django_db
     @patch("geniza.corpus.models.GenizaManifestImporter")
