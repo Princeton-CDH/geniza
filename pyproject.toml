@@ -15,8 +15,7 @@ dependencies = [
     "django-split-settings",
     "requests",
     "django-taggit>=1.5.1,<2.0",
-    # TODO: unpin piffle from 0.4 once breaking changes with piffle.iiif are handled
-    "piffle==0.4",
+    "piffle>=0.6",
     "taggit-selectize",
     # NOTE: as of 2024-07-91, django-multiselectfield 0.1.13 causes an error in unit"
     # tests and loaddata for loading fixtures"
@@ -30,7 +29,8 @@ dependencies = [
     "parasolr>=0.9.1",
     "django-gfklookupwidget",
     "django-adminlogentries",
-    "django-autocomplete-light>=3.11.0",
+    # TODO: Unpin from 3.9.7 when djiffy dependencies are updated
+    "django-autocomplete-light==3.9.7",
     "django-webpack-loader",
     "django-csp",
     "gitpython",
@@ -38,8 +38,7 @@ dependencies = [
     "rich",
     "wagtail>=2.15.3,<2.16",
     "wagtail-localize",
-    "rdflib<6.2",
-    "djiffy>=0.8",
+    "djiffy==0.9.2",
     "natsort",
     "django-widget-tweaks",
     "django-csp-helpers",
