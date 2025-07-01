@@ -47,6 +47,8 @@ dependencies = [
     "convertdate",
     "unidecode",
     "addict",
+    # TODO: replace with attrdict3 or addict before python 3.10 upgrade
+    "attrdict",
     "beautifulsoup4",
     "bleach",
     "python-slugify"
