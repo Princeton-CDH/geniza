@@ -3,7 +3,9 @@ from unittest import TestCase
 from unittest.mock import Mock, patch
 
 import pytest
-from attrdict import AttrDict
+
+# from attrdict import AttrDict
+from addict import Dict
 from bs4 import BeautifulSoup
 from django.conf import settings
 from django.contrib.admin.models import ADDITION, CHANGE, LogEntry
@@ -180,7 +182,7 @@ class TestFragment(TestCase):
 
         frag.iiif_url = "http://example.co/iiif/ts-1"
         # return simplified part of the manifest we need for this
-        mockiifpres.from_url.return_value = AttrDict(
+        mockiifpres.from_url.return_value = Dict(
             {
                 "sequences": [
                     {
@@ -216,6 +218,42 @@ class TestFragment(TestCase):
                 ]
             }
         )
+        # mockiifpres.from_url.return_value = AttrDict(
+        #     {
+        #         "sequences": [
+        #             {
+        #                 "canvases": [
+        #                     {
+        #                         "images": [
+        #                             {
+        #                                 "resource": {
+        #                                     "service": {
+        #                                         "id": "http://example.co/iiif/ts-1/00001",
+        #                                     }
+        #                                 }
+        #                             }
+        #                         ],
+        #                         "label": "1r",
+        #                         "uri": "http://example.co/iiif/ts-1/canvas/00001",
+        #                     },
+        #                     {
+        #                         "images": [
+        #                             {
+        #                                 "resource": {
+        #                                     "service": {
+        #                                         "id": "http://example.co/iiif/ts-1/00002",
+        #                                     }
+        #                                 }
+        #                             }
+        #                         ],
+        #                         "label": "1v",
+        #                         "uri": "http://example.co/iiif/ts-1/canvas/00002",
+        #                     },
+        #                 ]
+        #             }
+        #         ]
+        #     }
+        # )
 
         thumbnails = frag.iiif_thumbnails()
         assert (

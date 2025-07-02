@@ -1,6 +1,7 @@
 """Local utilities for creating IIIF manifests and annotation lists"""
 
-from attrdict import AttrMap
+# from attrdict import AttrMap
+from addict import Dict
 from django.core.serializers.json import DjangoJSONEncoder
 from django.utils.translation import get_language
 from djiffy.importer import ManifestImporter
@@ -66,7 +67,8 @@ def empty_iiif_canvas():
 class AttrDictEncoder(DjangoJSONEncoder):
     # make attrdict json-serializable
     def default(self, obj):
-        if isinstance(obj, AttrMap):
+        # if isinstance(obj, AttrMap):
+        if isinstance(obj, Dict):
             return dict(obj)
         return super().default(obj)
 
