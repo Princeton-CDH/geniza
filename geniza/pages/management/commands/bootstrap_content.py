@@ -2,11 +2,11 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.core.files.uploadedfile import UploadedFile
 from django.core.management.base import BaseCommand
 from django.templatetags.static import static
-from wagtail.core.models import Page
-from wagtail.core.models.i18n import Locale
-from wagtail.core.models.sites import Site
-from wagtail.core.rich_text import RichText
 from wagtail.images.models import Image
+from wagtail.models import Page
+from wagtail.models.i18n import Locale
+from wagtail.models.sites import Site
+from wagtail.rich_text import RichText
 
 from geniza.pages.models import ContainerPage, ContentPage, HomePage
 

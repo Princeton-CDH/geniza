@@ -1,12 +1,12 @@
 from django.db import models
 from django.http.response import HttpResponseRedirect
 from django.utils.translation import gettext_lazy as _
-from wagtail.admin.edit_handlers import FieldPanel, StreamFieldPanel
-from wagtail.core import blocks
-from wagtail.core.fields import StreamField
-from wagtail.core.models import Page
+from wagtail import blocks
+from wagtail.admin.panels import FieldPanel
 from wagtail.documents.blocks import DocumentChooserBlock
+from wagtail.fields import StreamField
 from wagtail.images.blocks import ImageChooserBlock
+from wagtail.models import Page
 
 # Translators: help text for image alternative text
 ALT_TEXT_HELP = _(
@@ -16,7 +16,7 @@ briefly communicate the intended message of the image in this context."""
 
 
 class CaptionedImageBlock(blocks.StructBlock):
-    """:class:`~wagtail.core.blocks.StructBlock` for an image with
+    """:class:`~wagtail.blocks.StructBlock` for an image with
     alternative text and optional formatted caption, so
     that both caption and alternative text can be context-specific."""
 
@@ -35,7 +35,7 @@ class CaptionedImageBlock(blocks.StructBlock):
 
 
 class SVGImageBlock(blocks.StructBlock):
-    """:class:`~wagtail.core.blocks.StructBlock` for an SVG image with
+    """:class:`~wagtail.blocks.StructBlock` for an SVG image with
     alternative text and optional formatted caption. Separate from
     :class:`CaptionedImageBlock` because Wagtail image handling
     does not work with SVG."""
@@ -65,7 +65,7 @@ class SVGImageBlock(blocks.StructBlock):
 
 
 class AccordionBlock(blocks.StructBlock):
-    """Accordion :class:`~wagtail.core.blocks.StructBlock` for collapsible
+    """Accordion :class:`~wagtail.blocks.StructBlock` for collapsible
     sections and/or FAQs"""
 
     label = blocks.CharBlock(label="Heading label/question", required=True)
@@ -121,17 +121,19 @@ class BodyContentBlock(blocks.StreamBlock):
 
 
 class HomePage(Page):
-    """:class:`wagtail.core.models.Page` model for Geniza home page."""
+    """:class:`wagtail.models.Page` model for Geniza home page."""
 
     # fields
     description = models.TextField(blank=True)
-    body = StreamField(BodyContentBlock)
+    # body = StreamField(BodyContentBlock)
+    body = StreamField(BodyContentBlock, use_json_field=True)
     # can only be child of Root
     parent_page_types = [Page]
     subpage_types = ["pages.ContentPage", "pages.ContainerPage"]
     content_panels = Page.content_panels + [
         FieldPanel("description"),
-        StreamFieldPanel("body"),
+        # StreamFieldPanel("body"),
+        FieldPanel("body"),
     ]
 
     class Meta:
@@ -167,12 +169,13 @@ class ContentPage(Page):
 
     # fields
     description = models.TextField(blank=True)
-    body = StreamField(BodyContentBlock)
+    body = StreamField(BodyContentBlock, use_json_field=True)
     # can be child of Home or Container page
     parent_page_types = [HomePage, ContainerPage]
     content_panels = Page.content_panels + [
         FieldPanel("description"),
-        StreamFieldPanel("body"),
+        # StreamFieldPanel("body"),
+        FieldPanel("body"),
     ]
 
     # show in menu by default
