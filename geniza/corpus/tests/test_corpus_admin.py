@@ -622,7 +622,7 @@ class TestDateListFilter:
 
         date_after_filter = DateAfterListFilter(
             request=Mock(),
-            params={DateAfterListFilter.parameter_name: "1900"},
+            params={DateAfterListFilter.parameter_name: ["1900"]},
             model=Document,
             model_admin=DocumentAdmin,
         )

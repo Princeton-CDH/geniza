@@ -9,13 +9,13 @@ requires-python = ">=3.10"
 license = { text = "Apache-2" }
 classifiers = ["Programming Language :: Python :: 3"]
 dependencies = [
-    "django>=4.1,<4.2",
+    "django>=5.2,<5.3",
     "attrdict",
     "psycopg2-binary",
     "pucas>=0.6",
     "django-split-settings",
     "requests",
-    "django-taggit",
+    "django-taggit==4.0.0",
     "piffle>=0.6",
     "django-multiselectfield",
     "django-modeltranslation>=0.18.4",
@@ -31,8 +31,8 @@ dependencies = [
     "gitpython",
     "eulxml",
     "rich",
-    "wagtail==5.0",
-    "wagtail-localize==1.6",
+    "wagtail>=7.0,<8",
+    "wagtail-localize==1.8",
     "rdflib>=7.0",
     "djiffy>=1.0",
     "natsort",
