@@ -1,4 +1,4 @@
-from adminsortable2.admin import SortableInlineAdminMixin
+from adminsortable2.admin import SortableAdminBase, SortableInlineAdminMixin
 from django import forms
 from django.contrib import admin
 from django.contrib.admin import SimpleListFilter
@@ -202,7 +202,7 @@ class DocumentFootnoteInline(GenericTabularInline):
 
 
 @admin.register(Source)
-class SourceAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
+class SourceAdmin(SortableAdminBase, TabbedTranslationAdmin, admin.ModelAdmin):
     footnote_admin_url = "admin:footnotes_footnote_changelist"
 
     list_display = ("all_authors", "title", "journal", "volume", "year", "footnotes")
