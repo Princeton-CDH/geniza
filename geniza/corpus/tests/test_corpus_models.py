@@ -1840,6 +1840,7 @@ def test_document_merge_with_annotations_no_match(document, join, source):
     assert anno.footnote.object_id == document.pk
 
 
+@pytest.mark.mohamed
 def test_document_merge_with_empty_digital_footnote(document, join, source):
     # create two digital edition footnotes on the same doc/source without annotations
     Footnote.objects.create(
@@ -1866,6 +1867,7 @@ def test_document_merge_with_empty_digital_footnote(document, join, source):
 
     # same should be true for a digital translation
     new_footnote.refresh_from_db()
+    assert new_footnote.content_object.id == document.id
     new_footnote.doc_relation = [Footnote.DIGITAL_TRANSLATION]
     new_footnote.save()
     assert document.digital_translations().count() == 1

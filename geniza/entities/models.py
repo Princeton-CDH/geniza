@@ -21,7 +21,7 @@ from gfklookupwidget.fields import GfkLookupField
 from parasolr.django import AliasedSolrQuerySet
 from parasolr.django.indexing import ModelIndexable
 from slugify import slugify
-from taggit_selectize.managers import TaggableManager
+from taggit.managers import TaggableManager
 from unidecode import unidecode
 
 from geniza.common.models import TaggableMixin, TrackChangesModel, cached_class_property
