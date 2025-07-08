@@ -90,7 +90,10 @@
         {% block extrascript %}{% endblock extrascript %}
     </head>
     <body {% if IS_ARCHIVE_CRAWLER %}data-turbo="false"{% endif %}>
-        {% wagtailuserbar 'bottom-right' %}
+        {# use a permanent turbo container to prevent redefining custom elements #}
+        <div id="userbar-container" data-turbo-permanent>
+            {% wagtailuserbar 'bottom-right' %}
+        </div>
         {% if "SHOW_WARNING_BANNER" in FEATURE_FLAGS %}
             {% include 'snippets/test_banner.html' %}
         {% endif %}
