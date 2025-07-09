@@ -45,7 +45,6 @@ INSTALLED_APPS = [
     "djiffy",
     "fullurl",
     "taggit",
-    "taggit_selectize",
     "pucas",
     "multiselectfield",
     "adminsortable2",
