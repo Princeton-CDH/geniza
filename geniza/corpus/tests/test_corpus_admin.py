@@ -604,6 +604,7 @@ class TestDateListFilter:
             request=Mock(), params={}, model=Mock(), model_admin=Mock()
         )
         changelist = Mock()
+        changelist.add_facets = False
         changelist.get_filters_params.return_value = {}
         all_option = next(filter.choices(changelist))
         assert all_option["display"] == "All"
@@ -641,7 +642,7 @@ class TestDateListFilter:
     def test_get_queryset_date_before(self, mock_dqs):
         date_before_filter = DateBeforeListFilter(
             request=Mock(),
-            params={DateBeforeListFilter.parameter_name: "1900"},
+            params={DateBeforeListFilter.parameter_name: ["1900"]},
             model=Document,
             model_admin=DocumentAdmin,
         )
@@ -690,7 +691,7 @@ class TestDateListFilter:
     def test_get_queryset_exclude_inferred(self, mock_dqs):
         date_before_filter = DateBeforeListFilter(
             request=Mock(),
-            params={DateBeforeListFilter.parameter_name: "1900"},
+            params={DateBeforeListFilter.parameter_name: ["1900"]},
             model=Document,
             model_admin=DocumentAdmin,
         )
