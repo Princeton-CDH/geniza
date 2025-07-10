@@ -18,20 +18,24 @@ export default class extends Controller {
         "placeMarkers",
     ];
 
-    async getPlaces(url, sort, query) {
+    async getPlaces(url, sort, query, date_range) {
         // get all pages of chunked place HTML snippets
         let page = 1;
         let hasNextPage = true;
         let places = [];
         const sortBy = sort ? `&sort=${sort}` : "";
         const queryBy = query ? `&q=${query}` : "";
+        const dateRange = date_range ? `&date_range=${date_range}` : "";
         this.loadingTarget.classList.add("loading");
         while (hasNextPage) {
-            const data = await fetch(`${url}?page=${page}${sortBy}${queryBy}`, {
-                headers: {
-                    Accept: "application/json",
-                },
-            });
+            const data = await fetch(
+                `${url}?page=${page}${sortBy}${queryBy}${dateRange}`,
+                {
+                    headers: {
+                        Accept: "application/json",
+                    },
+                }
+            );
             const {
                 markers_snippet,
                 results_snippet,
@@ -64,14 +68,16 @@ export default class extends Controller {
 
     async connect() {
         // load search variables from django settings; must use DOM query due to json_script
-        const searchOpts = JSON.parse(
-            document.getElementById("search-opts").textContent
-        );
-        await this.getPlaces(
-            searchOpts.snippets_url,
-            searchOpts.order_by,
-            searchOpts.query
-        );
+        const searchOptsElem = document.getElementById("search-opts");
+        if (searchOptsElem) {
+            const searchOpts = JSON.parse(searchOptsElem.textContent);
+            await this.getPlaces(
+                searchOpts.snippets_url,
+                searchOpts.order_by,
+                searchOpts.query,
+                searchOpts.date_range
+            );
+        }
     }
 
     listItemTargetConnected() {}
@@ -102,8 +108,14 @@ export default class extends Controller {
             const bounds = this.coordinates.reduce(function (bounds, coord) {
                 return bounds.extend(coord);
             }, new LngLatBounds(this.coordinates[0], this.coordinates[0]));
+            let bottom = 50;
+            const isMobile = window.innerWidth <= 900;
+            if (!isMobile && document.getElementById("search-opts")) {
+                // on the desktop search page, this should take timeline into account
+                bottom = 180;
+            }
             this.map.fitBounds(bounds, {
-                padding: { top: 125, bottom: 50, left: 50, right: 50 },
+                padding: { top: 125, bottom, left: 50, right: 50 },
             });
         }
     }

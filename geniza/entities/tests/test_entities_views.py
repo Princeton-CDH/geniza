@@ -1168,6 +1168,7 @@ class TestPlaceListView:
     def test_get_form_kwargs(self):
         placelist_view = PlaceListView()
         placelist_view.request = Mock()
+        placelist_view.get_range_stats = Mock(return_value={})
 
         # no params
         placelist_view.request.GET = {}
@@ -1180,6 +1181,13 @@ class TestPlaceListView:
         kwargs = placelist_view.get_form_kwargs()
         assert kwargs["initial"] == PlaceListView.initial
         assert kwargs["data"] == {"sort": "documents", "sort_dir": "desc"}
+
+        # range_stats date range rounding
+        placelist_view.get_range_stats.return_value = {"date_range": (890, 1967)}
+        kwargs = placelist_view.get_form_kwargs()
+        # should round lower date down, upper date up
+        assert kwargs["range_minmax"]["date_range"][0] == 800
+        assert kwargs["range_minmax"]["date_range"][1] == 2000
 
     @pytest.mark.usefixtures("mock_solr_queryset")
     @patch("geniza.entities.views.PlaceListView.get_queryset")
@@ -1194,6 +1202,7 @@ class TestPlaceListView:
             placelist_view.queryset = mock_qs
             placelist_view.object_list = mock_qs
             placelist_view.request = rf.get("/places/")
+            placelist_view.get_range_stats = Mock(return_value={})
             context_data = placelist_view.get_context_data()
             assert context_data["page_type"] == "places"
             assert context_data["search_opts"]["form_valid"] == True
@@ -1223,6 +1232,16 @@ class TestPlaceListView:
             assert context_data["search_opts"]["order_by"] == "-score"
             assert "query" in context_data["search_opts"]
             assert context_data["search_opts"]["query"] == "cairo"
+            assert len(context_data["applied_filters"]) == 0
+
+            # date filter
+            placelist_view.get_form = Mock()
+            placelist_view.get_form.return_value.cleaned_data = {
+                "date_range": (800, None)
+            }
+            context_data = placelist_view.get_context_data()
+            assert context_data["search_opts"]["date_range"] == (800, None)
+            assert len(context_data["applied_filters"]) == 1
 
 
 @pytest.mark.django_db
@@ -1255,8 +1274,8 @@ class TesttPlaceListSnippetView:
 
             json_resp = snippet_view.get()
             data = json.loads(json_resp.content)
-            assert mock_qs.keyword_search.called_with("qaid")
-            assert mock_qs.order_by.called_with("-score")
+            mock_qs.keyword_search.assert_called_with("qaid")
+            mock_qs.order_by.assert_called_with("-score")
             assert data["count"] == "150 results"
 
             # test pagination
@@ -1281,3 +1300,21 @@ class TesttPlaceListSnippetView:
             assert data["has_next"] == False
             assert not data["next_page_number"]
             assert 'data-final="true"' in data["markers_snippet"]
+            mock_qs.filter.assert_not_called
+
+            # test date filter
+            snippet_view.request.GET = {"date_range": "800,1200"}
+            snippet_view.get()
+            mock_qs.filter.assert_called_with(
+                "{!join from=places_ids_ss to=id}item_type_s:document AND document_date_dr:[800 TO 1200]"
+            )
+            snippet_view.request.GET = {"date_range": "800,"}
+            snippet_view.get()
+            mock_qs.filter.assert_called_with(
+                "{!join from=places_ids_ss to=id}item_type_s:document AND document_date_dr:[800 TO *]"
+            )
+            snippet_view.request.GET = {"date_range": ",1200"}
+            snippet_view.get()
+            mock_qs.filter.assert_called_with(
+                "{!join from=places_ids_ss to=id}item_type_s:document AND document_date_dr:[* TO 1200]"
+            )

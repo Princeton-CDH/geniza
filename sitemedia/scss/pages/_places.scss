@@ -48,6 +48,59 @@ main.places {
         max-height: $content-height-desktop;
     }
     form {
+        fieldset#query {
+            button {
+                flex: 1 0 2.5rem;
+            }
+            input[type="checkbox"] {
+                @include a11y.sr-only;
+                & + label {
+                    position: relative;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    margin-left: 1rem;
+                    width: 2.5rem;
+                    height: 2.5rem;
+                    flex: 1 0 2.5rem;
+                    border-radius: 5px;
+                    color: var(--on-background);
+                    fill: var(--on-background);
+                    background-color: var(--background-light);
+                    border: 1px solid var(--background-gray);
+                    svg {
+                        width: 20px;
+                        height: 20px;
+                    }
+                    span.filter-count {
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        position: absolute;
+                        top: -0.5rem;
+                        right: -0.3125rem;
+                        width: 1rem;
+                        height: 1rem;
+                        border-radius: 50%;
+                        font-size: 0.75rem;
+                        background-color: var(--primary);
+                        color: var(--on-primary);
+                    }
+                    @include breakpoints.for-tablet-landscape-up {
+                        display: none;
+                    }
+                }
+                &:checked + label {
+                    background-color: var(--secondary);
+                    color: var(--on-secondary);
+                    border: none;
+                }
+                &:focus-visible + label,
+                &:checked:focus-visible + label {
+                    border: 2px solid var(--button-focus);
+                }
+            }
+        }
         @include breakpoints.for-tablet-landscape-up {
             display: grid;
             grid-template-columns: 1fr 404px;
@@ -137,11 +190,14 @@ main.places {
             display: none;
             @include breakpoints.for-tablet-landscape-up {
                 display: block;
-                margin: 0 2rem 3.5rem 0;
+                margin: 0 2rem 11.5rem 0;
             }
         }
         .maplibregl-ctrl-bottom-left {
             margin: 0 0 2rem 1.25rem;
+            @include breakpoints.for-tablet-landscape-up {
+                margin-bottom: 11.5rem;
+            }
         }
         // map legend (region and place markers)
         dl.legend {
@@ -195,6 +251,15 @@ main.places {
             }
         }
     }
+    &:has(#date-filter[aria-expanded="true"]) section#map-container {
+        // smaller map if filters open on mobile
+        height: calc(100vh - 21.5rem);
+        max-height: calc(100vh - 21.5rem);
+        @include breakpoints.for-tablet-landscape-up {
+            height: auto;
+            max-height: none;
+        }
+    }
     // Primary container
     section#place-list {
         position: relative;
@@ -228,7 +293,7 @@ main.places {
             .ph-spinner-gap {
                 position: absolute;
                 top: 2rem;
-                right: 4rem;
+                right: 7.5rem;
                 @include breakpoints.for-tablet-landscape-up {
                     position: relative;
                     top: auto;
@@ -362,6 +427,226 @@ main.places {
                         width: 15px;
                         height: 16px;
                         vertical-align: middle;
+                    }
+                }
+            }
+        }
+    }
+    #date-filter {
+        display: flex;
+        position: relative;
+        padding: 1rem 0 0;
+        &:not([aria-expanded="true"]) {
+            display: none;
+            @include breakpoints.for-tablet-landscape-up {
+                display: flex;
+            }
+        }
+        @include breakpoints.for-tablet-landscape-up {
+            position: fixed;
+            left: 0;
+            bottom: 6.5rem;
+            height: 10rem;
+            width: calc(100% - 404px);
+            padding: 0.75rem 2rem 0;
+            color: var(--places-date-text);
+            background-color: var(--places-date-bg);
+            z-index: 4;
+            display: flex;
+            flex-flow: row wrap;
+            align-items: flex-start;
+            justify-content: space-between;
+        }
+        > label {
+            width: 100%;
+            @include breakpoints.for-tablet-landscape-up {
+                display: flex;
+                flex-flow: row nowrap;
+                align-items: center;
+                height: 2.375rem;
+                width: auto;
+                gap: 1rem;
+            }
+            span.fieldname {
+                @include typography.body-bold;
+                display: block;
+                font-size: 1.125rem;
+                padding: 1rem 0;
+                @include breakpoints.for-tablet-landscape-up {
+                    padding: 0;
+                }
+            }
+            div.inputs {
+                display: flex;
+                flex-flow: row nowrap;
+                align-items: center;
+                width: 100%;
+                justify-content: space-between;
+                margin-top: 2.75rem;
+                @include breakpoints.for-tablet-landscape-up {
+                    margin-top: 0;
+                    gap: 0.5rem;
+                    width: auto;
+                    justify-content: flex-start;
+                }
+                label {
+                    @include a11y.sr-only;
+                }
+                input[type="number"] {
+                    width: 5rem;
+                    height: 2.5rem;
+                    border: 1px solid var(--background-gray);
+                    border-radius: 5px;
+                    padding: 0 0.5rem 0 1rem;
+                    background-color: var(--background-light);
+                    color: var(--on-background);
+                    font-size: typography.$text-size-xs;
+                    &::placeholder {
+                        color: var(--date-placeholder);
+                    }
+                    @include breakpoints.for-tablet-landscape-up {
+                        width: 7.5rem;
+                        height: 2.375rem;
+                        border-color: var(--places-date-border);
+                        background-color: var(--places-date-fields);
+                        color: var(--places-date-text);
+                        @include typography.meta;
+                    }
+                }
+                input + span {
+                    display: none;
+                    @include breakpoints.for-tablet-landscape-up {
+                        display: block;
+                    }
+                }
+            }
+        }
+        > button {
+            position: absolute;
+            top: 1.725rem;
+            right: 0;
+            cursor: pointer;
+            background: none;
+            border: none;
+            display: flex;
+            flex-flow: row nowrap;
+            align-items: center;
+            gap: 0.25rem;
+            height: 2.375rem;
+            @include typography.body;
+            font-size: 1rem;
+            color: var(--on-background);
+            @include breakpoints.for-tablet-landscape-up {
+                position: relative;
+                top: auto;
+                right: auto;
+                font-size: 1rem;
+                color: var(--places-date-text);
+            }
+            span {
+                text-decoration: underline;
+            }
+            &::before {
+                font-family: "Phosphor" !important;
+                content: "\f021"; // phosphor arrow-counter-clockwise icon
+            }
+        }
+        .timeline {
+            position: absolute;
+            top: 5rem;
+            display: grid;
+            width: 100%;
+            height: 0.25rem;
+            grid-template: repeat(2, max-content) 1rem/ 1fr 1fr;
+            margin: 1rem auto;
+            overflow: visible;
+            background: linear-gradient(
+                0deg,
+                var(--background-gray) 1rem,
+                transparent 0
+            );
+            @include breakpoints.for-tablet-landscape-up {
+                position: relative;
+                top: 0;
+                background: linear-gradient(
+                    0deg,
+                    var(--timeline-bg) 1rem,
+                    transparent 0
+                );
+                height: 1px;
+            }
+            &::before,
+            &::after {
+                grid-column: 1 / span 2;
+                grid-row: 3;
+                height: 0.25rem;
+                background: var(--on-background);
+                content: "";
+                @include breakpoints.for-tablet-landscape-up {
+                    background: var(--timeline-fg);
+                    margin-top: -1.5px;
+                }
+            }
+            --dif: calc(var(--max) - var(--min));
+            &::before {
+                margin-left: calc((var(--a) - var(--min)) / var(--dif) * 100%);
+                width: calc((var(--b) - var(--a)) / var(--dif) * 100%);
+            }
+            &::after {
+                margin-left: calc((var(--b) - var(--min)) / var(--dif) * 100%);
+                width: calc((var(--a) - var(--b)) / var(--dif) * 100%);
+            }
+            @mixin track() {
+                background: none; /* get rid of Firefox track background */
+                height: 100%;
+                width: 100%;
+            }
+            @mixin thumb() {
+                background: currentcolor;
+                border: none; /* get rid of Firefox thumb border */
+                border-radius: 50%;
+                pointer-events: auto; /* catch clicks */
+                width: 1rem;
+                height: 1rem;
+                margin-top: -0.35rem;
+                cursor: pointer;
+                @include breakpoints.for-tablet-landscape-up {
+                    margin-top: -0.475rem;
+                }
+            }
+            input[type="range"] {
+                &::-webkit-slider-runnable-track,
+                &::-webkit-slider-thumb,
+                & {
+                    -webkit-appearance: none;
+                }
+                grid-column: 1 / span 2;
+                grid-row: 3;
+                background: none; /* get rid of white Chrome background */
+                color: var(--on-background);
+                font: inherit; /* fix too small font-size in both Chrome & Firefox */
+                margin: 0;
+                pointer-events: none; /* let clicks pass through */
+                @include breakpoints.for-tablet-landscape-up {
+                    color: var(--timeline-fg);
+                }
+                &::-webkit-slider-runnable-track {
+                    @include track;
+                }
+                &::-moz-range-track {
+                    @include track;
+                }
+                &::-webkit-slider-thumb {
+                    @include thumb;
+                }
+                &::-moz-range-thumb {
+                    @include thumb;
+                }
+                z-index: 1;
+                &:focus {
+                    z-index: 2;
+                    & {
+                        color: var(--filter-active);
                     }
                 }
             }
