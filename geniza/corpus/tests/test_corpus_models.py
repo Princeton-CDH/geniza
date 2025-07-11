@@ -1840,7 +1840,6 @@ def test_document_merge_with_annotations_no_match(document, join, source):
     assert anno.footnote.object_id == document.pk
 
 
-@pytest.mark.mohamed
 def test_document_merge_with_empty_digital_footnote(document, join, source):
     # create two digital edition footnotes on the same doc/source without annotations
     Footnote.objects.create(

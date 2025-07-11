@@ -153,7 +153,9 @@ class TestCustomEmptyFieldListFilter:
             model_admin=Mock(),
             field_path=Mock(),
         )
-        choices = filter.choices(Mock())
+        change_list = Mock()
+        change_list.add_facets = False
+        choices = filter.choices(change_list)
         assert choices[1]["display"] == "nope"
         assert choices[2]["display"] == "yep"
 

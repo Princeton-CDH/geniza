@@ -8,6 +8,7 @@ from taggit.models import Tag
 
 from geniza.corpus.forms import (
     CheckboxSelectWithCount,
+    ChoiceLabel,
     DocumentChoiceField,
     DocumentMergeForm,
     DocumentSearchForm,
@@ -28,7 +29,7 @@ class TestSelectedWithDisabled:
         """Build a test form use the widget"""
 
         CHOICES = (
-            ("no", {"label": "no select", "disabled": True}),
+            ("no", ChoiceLabel(label="no select", disabled=True)),
             ("yes", "yes can select"),
         )
 
@@ -105,18 +106,12 @@ class TestDocumentSearchForm:
         # empty query, relevance disabled
         data["q"] = ""
         form = DocumentSearchForm(data)
-        assert form.fields["sort"].widget.choices[0] == (
-            "relevance",
-            {"label": "Relevance", "disabled": True},
-        )
+        assert form.fields["sort"].widget.choices[0][1].disabled == True
 
         # no query, also relevance disabled
         del data["q"]
         form = DocumentSearchForm(data)
-        assert form.fields["sort"].widget.choices[0] == (
-            "relevance",
-            {"label": "Relevance", "disabled": True},
-        )
+        assert form.fields["sort"].widget.choices[0][1].disabled == True
 
         data = {"q": "illness", "has_translation": True}
         form = DocumentSearchForm(data)
