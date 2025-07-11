@@ -68,6 +68,9 @@
                     <div class="timeline" role="group" style="--a: {{ form.date_range.value.0|default:min_year }}; --b: {{ form.date_range.value.1|default:max_year }}; --min: {{ min_year }}; --max: {{ max_year }}">
                         <input id="a" type="range" min="{{ min_year }}" max="{{ max_year }}" value="{{ form.date_range.value.0|default:min_year }}" aria-label="{% translate "From year" %}" data-search-target="minYear" data-action="input->search#updateTimeline change->search#update">
                         <input id="b" type="range" min="{{ min_year }}" max="{{ max_year }}" value="{{ form.date_range.value.1|default:max_year }}" aria-label="{% translate "To year" %}" data-search-target="maxYear" data-action="input->search#updateTimeline change->search#update">
+                        <div role="presentation" class="ticks" data-map-target="timelineTicks" data-min="{{ min_year }}" data-max="{{ max_year }}">
+                            <svg width="100%" height="44" overflow="visible" shapeRendering="crispEdges"></svg>
+                        </div>
                     </div>
                 {% endwith %}
             </fieldset>

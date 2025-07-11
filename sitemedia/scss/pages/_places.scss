@@ -551,6 +551,7 @@ main.places {
                 content: "\f021"; // phosphor arrow-counter-clockwise icon
             }
         }
+        // adapted from https://css-tricks.com/multi-thumb-sliders-particular-two-thumb-case/
         .timeline {
             position: absolute;
             top: 5rem;
@@ -568,11 +569,7 @@ main.places {
             @include breakpoints.for-tablet-landscape-up {
                 position: relative;
                 top: 0;
-                background: linear-gradient(
-                    0deg,
-                    var(--timeline-bg) 1rem,
-                    transparent 0
-                );
+                background: transparent;
                 height: 1px;
             }
             &::before,
@@ -585,6 +582,7 @@ main.places {
                 @include breakpoints.for-tablet-landscape-up {
                     background: var(--timeline-fg);
                     margin-top: -1.5px;
+                    z-index: 2;
                 }
             }
             --dif: calc(var(--max) - var(--min));
@@ -641,13 +639,30 @@ main.places {
                 }
                 &::-moz-range-thumb {
                     @include thumb;
+                    transform: translate(0, -0.475rem);
                 }
-                z-index: 1;
+                z-index: 3;
                 &:focus {
-                    z-index: 2;
+                    z-index: 4;
                     & {
                         color: var(--filter-active);
                     }
+                }
+            }
+            div.ticks {
+                position: absolute;
+                width: 100%;
+                top: 0;
+                left: 0;
+                z-index: 1;
+                // desktop only
+                display: none;
+                @include breakpoints.for-tablet-landscape-up {
+                    display: block;
+                }
+                text {
+                    // disallow label text interactivity
+                    pointer-events: none;
                 }
             }
         }
