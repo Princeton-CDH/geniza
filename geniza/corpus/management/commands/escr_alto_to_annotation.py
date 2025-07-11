@@ -6,7 +6,7 @@ from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.core.management.base import BaseCommand
 from djiffy.models import Canvas, Manifest
-from eulxml import xmlmap
+from neuxml import xmlmap
 from parasolr.django.signals import IndexableSignalHandler
 
 from geniza.annotations.models import Annotation
