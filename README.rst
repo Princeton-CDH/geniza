@@ -23,10 +23,6 @@ Python 3.12 / Django 5.2 / Node 22 / Postgresql 16 / Solr 9.2
     :target: https://dbdocs.io/princetoncdh/geniza
     :alt: dbdocs build
 
-.. image:: https://percy.io/static/images/percy-badge.svg
-    :target: https://percy.io/2cf28a24/geniza
-    :alt: Visual regression tests
-
 .. image:: https://img.shields.io/badge/code%20style-black-000000.svg
     :target: https://github.com/psf/black
     :alt: code style: Black
