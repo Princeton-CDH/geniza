@@ -3,8 +3,6 @@ from unittest import TestCase
 from unittest.mock import Mock, patch
 
 import pytest
-
-# from attrdict import AttrDict
 from addict import Dict
 from bs4 import BeautifulSoup
 from django.conf import settings
@@ -23,7 +21,6 @@ from django.utils.translation import override as translation_override
 from djiffy.models import Canvas, IIIFImage, Manifest
 from modeltranslation.manager import MultilingualQuerySet
 from piffle.presentation import IIIFException
-from piffle.presentation import IIIFException as piffle_IIIFException
 
 from geniza.annotations.models import Annotation
 from geniza.corpus.dates import Calendar, PartialDate
@@ -218,42 +215,6 @@ class TestFragment(TestCase):
                 ]
             }
         )
-        # mockiifpres.from_url.return_value = AttrDict(
-        #     {
-        #         "sequences": [
-        #             {
-        #                 "canvases": [
-        #                     {
-        #                         "images": [
-        #                             {
-        #                                 "resource": {
-        #                                     "service": {
-        #                                         "id": "http://example.co/iiif/ts-1/00001",
-        #                                     }
-        #                                 }
-        #                             }
-        #                         ],
-        #                         "label": "1r",
-        #                         "uri": "http://example.co/iiif/ts-1/canvas/00001",
-        #                     },
-        #                     {
-        #                         "images": [
-        #                             {
-        #                                 "resource": {
-        #                                     "service": {
-        #                                         "id": "http://example.co/iiif/ts-1/00002",
-        #                                     }
-        #                                 }
-        #                             }
-        #                         ],
-        #                         "label": "1v",
-        #                         "uri": "http://example.co/iiif/ts-1/canvas/00002",
-        #                     },
-        #                 ]
-        #             }
-        #         ]
-        #     }
-        # )
 
         thumbnails = frag.iiif_thumbnails()
         assert (
@@ -297,6 +258,22 @@ class TestFragment(TestCase):
         assert isinstance(images[0], IIIFImage)
         assert len(labels) == 1
         assert labels[0] == "fake image"
+
+    @pytest.mark.django_db
+    @patch("geniza.corpus.models.GenizaManifestImporter")
+    def test_iiif_images_iiifexception(self, mock_manifestimporter):
+        # patch IIIFPresentation.from_url to always raise IIIFException
+        with patch("geniza.corpus.models.IIIFPresentation") as mock_iiifpresentation:
+            mock_iiifpresentation.from_url = Mock()
+            mock_iiifpresentation.from_url.side_effect = IIIFException
+            mock_manifestimporter.return_value.import_paths.return_value = []
+            frag = Fragment(shelfmark="TS 1")
+            frag.iiif_url = "http://example.io/manifests/1"
+            frag.save()
+            # should log at level WARN
+            with self.assertLogs(level="WARN"):
+                frag.iiif_images()
+                mock_iiifpresentation.from_url.assert_called()
 
     @pytest.mark.django_db
     @patch("geniza.corpus.models.GenizaManifestImporter")
@@ -434,9 +411,7 @@ class TestFragment(TestCase):
         )
 
         # import causes an error
-        mock_manifestimporter.return_value.import_paths.side_effect = (
-            piffle_IIIFException
-        )
+        mock_manifestimporter.return_value.import_paths.side_effect = IIIFException
         frag.iiif_url = "something else"  # change again to trigger relevant block
         frag.save()
         mock_messages.error.assert_called_with(

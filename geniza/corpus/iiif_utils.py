@@ -1,6 +1,5 @@
 """Local utilities for creating IIIF manifests and annotation lists"""
 
-# from attrdict import AttrMap
 from addict import Dict
 from django.core.serializers.json import DjangoJSONEncoder
 from django.utils.translation import get_language

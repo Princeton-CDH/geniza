@@ -439,7 +439,7 @@ class DocumentSearchForm(RangeForm):
         if mode == "regex":
             # reused text about needing an escape character
             needs_escape = (
-                lambda char: f"If you are searching for the character {char} in a transcription, escape it with \ by writing \{char} instead."
+                lambda char: f"If you are searching for the character {char} in a transcription, escape it with \ by writing \\{char} instead."
             )
             # see error messages for explanations of each regex here
             if re.search(r"((?<!\\)\{[^0-9])|(^\{)|((?<!\\)\{[^\}]*$)", q):

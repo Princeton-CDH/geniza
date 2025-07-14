@@ -77,7 +77,7 @@ def querystring_replace(context, **kwargs):
 @register.filter
 def iiif_image(img, args):
     """Add options to resize or otherwise change the display of an iiif
-    image; expects an instance of :class:`piffle.iiif.IIIFImageClient`.
+    image; expects an instance of :class:`piffle.image.IIIFImageClient`.
     Provide the method and arguments as filter string, i.e.::
 
         {{ myimg|iiif_image:"size:width=225,height=255" }}

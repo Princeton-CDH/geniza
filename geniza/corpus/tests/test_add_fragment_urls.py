@@ -2,8 +2,6 @@ from collections import defaultdict
 from unittest.mock import Mock, mock_open, patch
 
 import pytest
-
-# from attrdict import AttrMap
 from addict import Dict
 from django.contrib.admin.models import CHANGE, LogEntry
 from django.core.management import call_command
