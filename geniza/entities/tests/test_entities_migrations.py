@@ -333,3 +333,27 @@ class TestPopulateUncertainRelations(TestMigrations):
         possibly = PersonDocumentRelation.objects.get(pk=self.possibly.pk)
         assert possibly.type.pk == self.mentioned_type.pk
         assert possibly.uncertain == True
+
+
+@pytest.mark.order(
+    before="geniza/annotations/tests/test_annotations_migrations.py::TestAssociateRelatedFootnotes::test_footnote_associated"
+)
+@pytest.mark.django_db
+class TestMigrateRoleToRoles(TestMigrations):
+    app = "entities"
+    migrate_from = "0031_populate_persondocumentrelation_uncertain"
+    migrate_to = "0032_person_roles"
+    person = None
+    other_role = None
+
+    def setUpBeforeMigration(self, apps):
+        Person = apps.get_model("entities", "Person")
+        PersonRole = apps.get_model("entities", "PersonRole")
+        (self.other_role, _) = PersonRole.objects.get_or_create(name="Other")
+        self.person = Person.objects.create(role=self.other_role)
+
+    def test_migrate_role_to_roles(self):
+        Person = self.apps.get_model("entities", "Person")
+        person = Person.objects.get(pk=self.person.pk)
+        assert person.roles.count() == 1
+        assert self.other_role.pk in person.roles.values_list("pk", flat=True)

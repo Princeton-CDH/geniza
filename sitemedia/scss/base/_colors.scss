@@ -106,6 +106,8 @@ $off-white: #f7f7f7;
     --network-secondary-node: #b8c6b8;
     --network-tertiary-node: #e2e8e2;
     --network-border: rgba(22, 22, 22, 0.2);
+    // person "social role" background color
+    --person-role-bg: #d9d9d9;
 }
 
 // Dark mode theme colors
@@ -197,6 +199,8 @@ $off-white: #f7f7f7;
     --network-secondary-node: #6a3043;
     --network-tertiary-node: #595959;
     --network-border: rgba(22, 22, 22, 0.2);
+    // person "social role" background color
+    --person-role-bg: #595959;
 }
 
 html {

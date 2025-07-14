@@ -1,5 +1,9 @@
 # Deploy Notes
 
+## 4.23
+
+-   Indexing logic has changed. Reindex all content: `python manage.py index`.
+
 ## 4.22
 
 -   Indexing logic has changed. Reindex all content: `python manage.py index`.

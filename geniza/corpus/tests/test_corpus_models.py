@@ -18,9 +18,9 @@ from django.utils.html import strip_tags
 from django.utils.safestring import SafeString
 from django.utils.translation import activate, deactivate_all, get_language
 from django.utils.translation import override as translation_override
-from djiffy.models import Canvas, IIIFException, IIIFImage, Manifest
+from djiffy.models import Canvas, IIIFImage, Manifest
 from modeltranslation.manager import MultilingualQuerySet
-from piffle.presentation import IIIFException as piffle_IIIFException
+from piffle.presentation import IIIFException
 
 from geniza.annotations.models import Annotation
 from geniza.corpus.dates import Calendar, PartialDate
@@ -270,11 +270,10 @@ class TestFragment(TestCase):
             frag = Fragment(shelfmark="TS 1")
             frag.iiif_url = "http://example.io/manifests/1"
             frag.save()
-            # should raise the exception
-            with self.assertRaises(IIIFException):
-                # should log at level WARN
-                with self.assertLogs(level="WARN"):
-                    frag.iiif_images()
+            # should log at level WARN
+            with self.assertLogs(level="WARN"):
+                frag.iiif_images()
+                mock_iiifpresentation.from_url.assert_called()
 
     @pytest.mark.django_db
     @patch("geniza.corpus.models.GenizaManifestImporter")
@@ -412,9 +411,7 @@ class TestFragment(TestCase):
         )
 
         # import causes an error
-        mock_manifestimporter.return_value.import_paths.side_effect = (
-            piffle_IIIFException
-        )
+        mock_manifestimporter.return_value.import_paths.side_effect = IIIFException
         frag.iiif_url = "something else"  # change again to trigger relevant block
         frag.save()
         mock_messages.error.assert_called_with(

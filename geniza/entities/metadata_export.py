@@ -40,7 +40,7 @@ class PublicPersonExporter(Exporter):
         "name",
         "name_variants",
         "gender",
-        "social_role",
+        "social_roles",
         # TODO: floruit vs mentioned as dead date columns
         "auto_date_range",
         "manual_date_range",
@@ -78,7 +78,7 @@ class PublicPersonExporter(Exporter):
             qset.prefetch_related(None)
             .prefetch_related(
                 "names",
-                "role",
+                "roles",
                 "relationships",
                 "from_person",
                 "to_person",
@@ -113,7 +113,9 @@ class PublicPersonExporter(Exporter):
                 sorted([n.name for n in person.names.non_primary()])
             ),
             "gender": person.get_gender_display(),
-            "social_role": str(person.role),
+            "social_roles": ", ".join(
+                person.roles.order_by("name").values_list("name", flat=True)
+            ),
             "active_date_range": standard_date_display(person.active_date_range),
             "deceased_date_range": standard_date_display(person.deceased_date_range),
             "manual_date_range": person.date,
@@ -485,7 +487,9 @@ class PublicPlaceExporter(Exporter):
     csv_fields = [
         "name",
         "name_variants",
+        "is_region",
         "coordinates",
+        "containing_region",
         "notes",
         "related_documents_count",
         "related_people_count",
@@ -517,6 +521,7 @@ class PublicPlaceExporter(Exporter):
                 "documentplacerelation_set",
                 "placeeventrelation_set",
             )
+            .select_related("containing_region")
             .order_by("slug")
         )
         return qset
@@ -558,7 +563,9 @@ class PublicPlaceExporter(Exporter):
             "name_variants": ", ".join(
                 sorted([n.name for n in place.names.non_primary()])
             ),
+            "is_region": place.is_region,
             "coordinates": place.coordinates,
+            "containing_region": place.containing_region,
             "notes": place.notes,
             "related_documents_count": related_docs_count,
             "related_people_count": related_people_count,

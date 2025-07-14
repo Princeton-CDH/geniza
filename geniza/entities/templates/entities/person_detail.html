@@ -51,12 +51,16 @@
                         </dl>
                     </dd>
                 {% endif %}
-                {% if person.role %}
+                {% if person.roles.exists %}
                     <dt>
-                        {# Translators: Label for a person's social role #}
-                        {% translate 'Social role' %}
+                        {# Translators: Label for a person's social roles #}
+                        {% blocktranslate count counter=person.roles.count trimmed %}
+                            Social role
+                        {% plural %}
+                            Social roles
+                        {% endblocktranslate %}
                     </dt>
-                    <dd>{{ person.role }}</dd>
+                    <dd><ul class="roles">{% for role in person.roles.all %}<li>{{ role }}</li>{% endfor %}</ul></dd>
                 {% endif %}
             </dl>
             {# secondary metadata #}
