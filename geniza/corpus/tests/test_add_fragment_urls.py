@@ -122,7 +122,6 @@ def test_view_to_iiif_url():
 def test_add_fragment_urls(mock_log_change):
     # Ensure shelfmark not existing is properly handled.
     command = add_fragment_urls.Command()
-    # row = AttrMap({"shelfmark": "mm", "url": "example.com"})
     row = Dict({"shelfmark": "mm", "url": "example.com"})
     command.add_fragment_urls(row)  # Test would fail if error were raised
     assert command.stats["not_found"] == 1
@@ -136,12 +135,6 @@ def test_add_fragment_urls(mock_log_change):
         shelfmark="T-S NS 305.66",
         iiif_url="https://cudl.lib.cam.ac.uk/iiif/MS-TS-NS-J-00490",
     )
-    # row = AttrMap(
-    #     {
-    #         "shelfmark": orig_frag.shelfmark,
-    #         "url": "https://cudl.lib.cam.ac.uk/view/MS-TS-NS-J-00600",
-    #     }
-    # )
     row = Dict(
         {
             "shelfmark": orig_frag.shelfmark,
@@ -165,12 +158,6 @@ def test_add_fragment_urls(mock_log_change):
         shelfmark="T-S NS 305.75",
         iiif_url="https://cudl.lib.cam.ac.uk/iiif/MS-TS-NS-J-00490",
     )
-    # row = AttrMap(
-    #     {
-    #         "shelfmark": orig_frag.shelfmark,
-    #         "url": "https://cudl.lib.cam.ac.uk/view/MS-TS-NS-J-00600",
-    #     }
-    # )
     row = Dict(
         {
             "shelfmark": orig_frag.shelfmark,
@@ -220,12 +207,6 @@ def test_add_fragment_urls(mock_log_change):
         shelfmark="T-S NS 305.80",
         iiif_url="https://cudl.lib.cam.ac.uk/iiif/MS-TS-NS-J-00490",
     )
-    # row = AttrMap(
-    #     {
-    #         "shelfmark": orig_frag.shelfmark,
-    #         "url": "https://cudl.lib.cam.ac.uk/view/MS-TS-NS-J-00600",
-    #     }
-    # )
     row = Dict(
         {
             "shelfmark": orig_frag.shelfmark,

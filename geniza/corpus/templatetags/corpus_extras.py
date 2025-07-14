@@ -187,7 +187,6 @@ def all_doc_relations(footnotes):
     """For scholarship records list: list doc relations for all footnotes."""
     relations = set()
     for fn in footnotes:
-        # relations.update(set([n.strip() for n in str(fn.doc_relation).split(",")]))
         relations.update(
             set([n.strip() for n in fn.get_doc_relation_display().split(",")])
         )
