@@ -89,7 +89,7 @@ html_sidebars = {
 # Configure for intersphinx for Python standard library, Django,
 # and local dependencies with sphinx docs.
 intersphinx_mapping = {
-    "https://docs.python.org/3/": None,
+    "python": ("https://docs.python.org/3/", None),
     "django": ("https://django.readthedocs.org/en/latest/", None),
     "djiffy": ("https://princeton-cdh.github.io/djiffy/", None),
     "viapy": ("https://viapy.readthedocs.io/en/latest/", None),
