@@ -80,7 +80,8 @@ main.search {
                 }
             }
         }
-        li label {
+        li label,
+        div > div > label {
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -254,7 +255,7 @@ main.search {
                     background-color: var(--background);
                     box-shadow: 0px 1px 8px 0px var(--on-background-25);
                     z-index: 9;
-                    ul {
+                    & > div {
                         display: flex;
                         flex-flow: column;
                         gap: 0.35rem;
@@ -272,7 +273,7 @@ main.search {
                                 margin: 0 0.5rem 0.2rem 0;
                                 overflow: visible;
                             }
-                            li:has(:disabled) label {
+                            div:has(:disabled) label {
                                 color: var(--disabled);
                             }
                         }
@@ -296,11 +297,11 @@ main.search {
                                     outline: 1px solid var(--secondary);
                                 }
                             }
-                            li:first-of-type label::before {
+                            div:first-of-type label::before {
                                 // ascending
                                 content: "\f061"; // phosphor arrow-up icon
                             }
-                            li:last-of-type label::before {
+                            div:last-of-type label::before {
                                 // descending
                                 content: "\f022"; // phosphor arrow-down icon
                             }

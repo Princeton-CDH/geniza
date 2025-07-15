@@ -1285,7 +1285,8 @@ class TestDocumentSearchView:
         highlight = re.sub(r"\s+", "", hl[0]["text"])  # rm solr-added whitespace
         # should match on all words
         assert all(
-            h in highlight for h in ["<em>מ〛תל", "לל[ה]</em>", "<em>תע/א\לי", "<em>דלך"]
+            h in highlight
+            for h in ["<em>מ〛תל", "לל[ה]</em>", "<em>תע/א\לי", "<em>דלך"]
         )
 
         # should remove superfluous characters surrounded by {}
@@ -1525,9 +1526,9 @@ class TestDocumentManifestView:
     ):
         # document fragment has iiif, but no transcription; should return a manifest
 
-        mock_manifest = (
-            mock_view_iiifpres.from_url.return_value
-        ) = mock_model_iiifpres.from_url.return_value
+        mock_manifest = mock_view_iiifpres.from_url.return_value = (
+            mock_model_iiifpres.from_url.return_value
+        )
         mock_manifest.label = "Remote content"
         mock_manifest.id = "http://example.io/manifest/1"
         mock_manifest.attribution = (
@@ -1540,7 +1541,7 @@ class TestDocumentManifestView:
         response = client.get(reverse(self.view_name, args=[document.pk]))
         assert response.status_code == 200
 
-        assert mock_view_iiifpres.from_url.called_with(fragment.iiif_url)
+        mock_view_iiifpres.from_url.assert_called_with(fragment.iiif_url)
 
         # should not contain annotation list, since there is no transcription
         assertNotContains(response, "otherContent")
@@ -1580,9 +1581,9 @@ class TestDocumentManifestView:
         self, mock_view_iiifpres, mock_model_iiifpres, client, fragment
     ):
         # original manifest with canvases in order c1, c2, c3
-        mock_manifest = (
-            mock_view_iiifpres.from_url.return_value
-        ) = mock_model_iiifpres.from_url.return_value
+        mock_manifest = mock_view_iiifpres.from_url.return_value = (
+            mock_model_iiifpres.from_url.return_value
+        )
         mock_canvases = []
         for i in range(3):
             mock_canvas = MagicMock()

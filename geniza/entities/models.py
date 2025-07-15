@@ -21,7 +21,7 @@ from gfklookupwidget.fields import GfkLookupField
 from parasolr.django import AliasedSolrQuerySet
 from parasolr.django.indexing import ModelIndexable
 from slugify import slugify
-from taggit_selectize.managers import TaggableManager
+from taggit.managers import TaggableManager
 from unidecode import unidecode
 
 from geniza.common.models import TaggableMixin, TrackChangesModel, cached_class_property
@@ -536,7 +536,8 @@ class Person(
                 has_page=F("from_person__has_page"),
                 related_slug=F("from_person__slug"),
                 related_id=F("from_person"),
-            ).union(  # union instead of joins for efficiency
+            )
+            .union(  # union instead of joins for efficiency
                 self.to_person.annotate(
                     gender=F("to_person__gender"),
                     use_converse_typename=Value(False),
@@ -545,20 +546,29 @@ class Person(
                     related_id=F("to_person"),
                 )
             )
-            # have to use values_list (NOT values) here with one argument, otherwise strange things
-            # happen, possibly due to union(). TODO: see if this is fixed in later django versions.
-            .values_list("related_id")
+            .values_list(
+                "related_id",
+                "related_slug",
+                "has_page",
+                "use_converse_typename",
+                "gender",
+                "notes",
+                "type_id",
+            )
         )
+        # TODO: See if we can use values() now instead of values_list above,
+        # then use its return value as relation_list instead of the below.
+        # (will need to make sure related_id and related_slug are accessed
+        # correctly in the rest of the function)
         relation_list = [
             {
-                # this is the order of fields returned by SQL after the annotated union
-                "id": r[-1],
-                "slug": r[-2],
-                "has_page": r[-3],
-                "use_converse_typename": r[-4],
-                "gender": r[-5],
-                "notes": r[-6],
-                "type_id": r[-7],
+                "id": r[0],
+                "slug": r[1],
+                "has_page": r[2],
+                "use_converse_typename": r[3],
+                "gender": r[4],
+                "notes": r[5],
+                "type_id": r[6],
             }
             for r in people_relations
         ]
@@ -1512,25 +1522,33 @@ class Place(ModelIndexable, SlugMixin, PermalinkMixin):
                 use_converse_typename=Value(True),
                 related_slug=F("place_a__slug"),
                 related_id=F("place_a"),
-            ).union(  # union instead of joins for efficiency
+            )
+            .union(  # union instead of joins for efficiency
                 self.place_b.annotate(
                     use_converse_typename=Value(False),
                     related_slug=F("place_b__slug"),
                     related_id=F("place_b"),
                 )
             )
-            # have to use values_list (NOT values) here with one argument, otherwise strange things
-            # happen, possibly due to union(). TODO: see if this is fixed in later django versions.
-            .values_list("related_id")
+            .values_list(
+                "related_id",
+                "related_slug",
+                "use_converse_typename",
+                "notes",
+                "type_id",
+            )
         )
+        # TODO: See if we can use values() now instead of values_list above,
+        # then use its return value as relation_list instead of the below.
+        # (will need to make sure related_id and related_slug are accessed
+        # correctly in the rest of the function)
         relation_list = [
             {
-                # this is the order of fields returned by SQL after the annotated union
-                "id": r[-1],
-                "slug": r[-2],
-                "use_converse_typename": r[-3],
-                "notes": r[-4],
-                "type_id": r[-5],
+                "id": r[0],
+                "slug": r[1],
+                "use_converse_typename": r[2],
+                "notes": r[3],
+                "type_id": r[4],
             }
             for r in place_relations
         ]
