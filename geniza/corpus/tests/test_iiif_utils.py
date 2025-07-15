@@ -1,4 +1,3 @@
-import json
 from unittest.mock import Mock
 
 from addict import Dict
@@ -50,10 +49,10 @@ def test_manifestimporter_canvas_id():
     assert gmi.canvas_short_id(canvas) == "c12345"
 
 
-def test_convert_attrdct():
+def test_convert_attrdict():
     # should convert addict Dict into python dict
     attrdict = Dict({"key": "value"})
     assert attrdict.key == "value"
-    json_dump = json.dumps(attrdict, cls=AttrDictEncoder)
-    new_dict = json.loads(json_dump)
+    encoder = AttrDictEncoder()
+    new_dict = encoder.default(attrdict)
     assert new_dict["key"] == "value"
