@@ -66,7 +66,6 @@ def empty_iiif_canvas():
 class AttrDictEncoder(DjangoJSONEncoder):
     # make attrdict json-serializable
     def default(self, obj):
-        # if isinstance(obj, AttrMap):
         if isinstance(obj, Dict):
             return dict(obj)
         return super().default(obj)

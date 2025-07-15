@@ -125,14 +125,12 @@ class HomePage(Page):
 
     # fields
     description = models.TextField(blank=True)
-    # body = StreamField(BodyContentBlock)
     body = StreamField(BodyContentBlock, use_json_field=True)
     # can only be child of Root
     parent_page_types = [Page]
     subpage_types = ["pages.ContentPage", "pages.ContainerPage"]
     content_panels = Page.content_panels + [
         FieldPanel("description"),
-        # StreamFieldPanel("body"),
         FieldPanel("body"),
     ]
 
@@ -174,7 +172,6 @@ class ContentPage(Page):
     parent_page_types = [HomePage, ContainerPage]
     content_panels = Page.content_panels + [
         FieldPanel("description"),
-        # StreamFieldPanel("body"),
         FieldPanel("body"),
     ]
 
