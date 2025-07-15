@@ -1,8 +1,14 @@
+import json
 from unittest.mock import Mock
 
+from addict import Dict
 from django.utils.translation import activate
 
-from geniza.corpus.iiif_utils import GenizaManifestImporter, get_iiif_string
+from geniza.corpus.iiif_utils import (
+    AttrDictEncoder,
+    GenizaManifestImporter,
+    get_iiif_string,
+)
 
 
 def test_get_iiif_string():
@@ -42,3 +48,12 @@ def test_manifestimporter_canvas_id():
 
     canvas = Mock(id="https://example.co/iiif/c12345")
     assert gmi.canvas_short_id(canvas) == "c12345"
+
+
+def test_convert_attrdct():
+    # should convert addict Dict into python dict
+    attrdict = Dict({"key": "value"})
+    assert attrdict.key == "value"
+    json_dump = json.dumps(attrdict, cls=AttrDictEncoder)
+    new_dict = json.loads(json_dump)
+    assert new_dict["key"] == "value"

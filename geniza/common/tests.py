@@ -34,6 +34,7 @@ from geniza.common.utils import (
     absolutize_url,
     custom_tag_string,
 )
+from geniza.common.views import TagAutocompleteView
 from geniza.corpus.models import Document
 
 
@@ -496,3 +497,35 @@ def test_admin_export_to_csv(document):
         assert log_entry.user.username in content
         # action flag converted to text
         assert LogEntryExporter.action_label[log_entry.action_flag] in content
+
+
+@pytest.mark.django_db
+class TestTagAutocompleteView:
+    def test_get_queryset(self, rf):
+        # set up some tags
+        document = Document.objects.create()
+        document.tags.add("Tag_Ex")
+        document.tags.add("Tag2")
+        document.tags.add("other")
+        assert Tag.objects.count() == 3
+
+        view = TagAutocompleteView()
+        view.q = "Tag"  # search query
+
+        # should be empty queryset with unauthenticated user
+        view.request = rf.get(reverse("tag-autocomplete"))
+        view.request.user = Mock()
+        view.request.user.is_authenticated = False
+        assert not view.get_queryset().exists()
+
+        # should not be empty queryset with authenticated user
+        view.request.user.is_authenticated = True
+        qs = view.get_queryset()
+        assert qs.exists()
+        # should include the two tags that start with Tag
+        assert qs.count() == 2
+
+    def test_get_create_option(self):
+        # should always return empty list
+        view = TagAutocompleteView()
+        assert view.get_create_option(Mock(), "Tag") == []
