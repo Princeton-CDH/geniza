@@ -1,12 +1,13 @@
 from itertools import groupby
 
 from adminsortable2.admin import SortableAdminBase
+from dal import autocomplete
 from django.contrib import admin, messages
 from django.contrib.contenttypes.admin import GenericTabularInline
 from django.contrib.contenttypes.forms import BaseGenericInlineFormSet
 from django.contrib.postgres.aggregates import ArrayAgg
 from django.db.models.fields import CharField, TextField
-from django.forms import ModelChoiceField, ValidationError
+from django.forms import ModelChoiceField, ModelForm, ValidationError
 from django.forms.models import ModelChoiceIterator
 from django.forms.widgets import Textarea, TextInput
 from django.http import HttpResponseRedirect
@@ -273,10 +274,20 @@ class PersonEventInline(admin.TabularInline):
     }
 
 
+class PersonForm(ModelForm):
+    """Override to allow using the custom tag autocomplete widget"""
+
+    class Meta:
+        model = Person
+        exclude = ()
+        widgets = {"tags": autocomplete.TaggitSelect2("tag-autocomplete")}
+
+
 @admin.register(Person)
 class PersonAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin):
     """Admin for Person entities in the PGP"""
 
+    form = PersonForm
     list_display = (
         "__str__",
         "slug",

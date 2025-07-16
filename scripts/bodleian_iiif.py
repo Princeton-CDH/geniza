@@ -10,6 +10,7 @@ of this GitHub repository: https://github.com/bodleian/genizah-mss
 Install python dependencies with pip:
 
    pip install eulxml python-slugify requests iiif iiif-prezi
+   eulxml is replaced by neuxml to support Python 3.12 summer of 2025
 
 Run with the path to one or more Bodleian TEI files. You must also
 specify an output directory and a base url where the iiif content
@@ -41,9 +42,9 @@ import os.path
 import re
 
 import requests
-from eulxml import xmlmap
-from eulxml.xmlmap import teimap
 from iiif_prezi.factory import ManifestFactory
+from neuxml import xmlmap
+from neuxml.xmlmap import teimap
 from slugify import slugify
 
 # parse bodleian tei files, generate iiif manifests,

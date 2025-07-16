@@ -180,6 +180,7 @@ class DocumentForm(forms.ModelForm):
             "needs_review": Textarea(attrs={"rows": 3}),
             "notes": Textarea(attrs={"rows": 3}),
             "image_overrides": HiddenInput(),
+            "tags": autocomplete.TaggitSelect2("tag-autocomplete"),
         }
 
     def clean(self):

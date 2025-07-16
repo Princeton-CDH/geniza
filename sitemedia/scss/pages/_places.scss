@@ -691,7 +691,7 @@ main.places {
         transform: translateX(-50%);
         @include typography.body-bold;
         &::before {
-            content: "\f20f"; // phosphor ph-map-trifold icon
+            content: "\f1fb"; // phosphor ph-list-bullets icon
             @include typography.icon-button-sm;
             font-weight: normal;
         }
@@ -707,6 +707,9 @@ main.places {
         }
         &:has(input:checked) {
             position: fixed;
+            &::before {
+                content: "\f20f"; // phosphor ph-map-trifold icon
+            }
         }
         @include breakpoints.for-tablet-landscape-up {
             display: none;

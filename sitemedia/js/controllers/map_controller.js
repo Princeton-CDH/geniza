@@ -10,6 +10,7 @@ import maplibregl, {
 export default class extends Controller {
     static targets = [
         "count",
+        "countButton",
         "listItem",
         "loading",
         "map",
@@ -42,9 +43,11 @@ export default class extends Controller {
                 results_snippet,
                 has_next,
                 next_page_number,
-                count,
+                results_count,
+                places_count,
             } = await data.json();
-            this.countTarget.innerText = count;
+            this.countTarget.innerText = results_count;
+            this.countButtonTarget.innerText = places_count;
             this.placeMarkersTarget.insertAdjacentHTML(
                 "beforeend",
                 markers_snippet

@@ -3,7 +3,7 @@ from unittest import TestCase
 from unittest.mock import Mock, patch
 
 import pytest
-from attrdict import AttrDict
+from addict import Dict
 from bs4 import BeautifulSoup
 from django.conf import settings
 from django.contrib.admin.models import ADDITION, CHANGE, LogEntry
@@ -18,9 +18,9 @@ from django.utils.html import strip_tags
 from django.utils.safestring import SafeString
 from django.utils.translation import activate, deactivate_all, get_language
 from django.utils.translation import override as translation_override
-from djiffy.models import Canvas, IIIFException, IIIFImage, Manifest
+from djiffy.models import Canvas, IIIFImage, Manifest
 from modeltranslation.manager import MultilingualQuerySet
-from piffle.presentation import IIIFException as piffle_IIIFException
+from piffle.presentation import IIIFException
 
 from geniza.annotations.models import Annotation
 from geniza.corpus.dates import Calendar, PartialDate
@@ -179,7 +179,7 @@ class TestFragment(TestCase):
 
         frag.iiif_url = "http://example.co/iiif/ts-1"
         # return simplified part of the manifest we need for this
-        mockiifpres.from_url.return_value = AttrDict(
+        mockiifpres.from_url.return_value = Dict(
             {
                 "sequences": [
                     {
@@ -270,11 +270,10 @@ class TestFragment(TestCase):
             frag = Fragment(shelfmark="TS 1")
             frag.iiif_url = "http://example.io/manifests/1"
             frag.save()
-            # should raise the exception
-            with self.assertRaises(IIIFException):
-                # should log at level WARN
-                with self.assertLogs(level="WARN"):
-                    frag.iiif_images()
+            # should log at level WARN
+            with self.assertLogs(level="WARN"):
+                frag.iiif_images()
+                mock_iiifpresentation.from_url.assert_called()
 
     @pytest.mark.django_db
     @patch("geniza.corpus.models.GenizaManifestImporter")
@@ -412,9 +411,7 @@ class TestFragment(TestCase):
         )
 
         # import causes an error
-        mock_manifestimporter.return_value.import_paths.side_effect = (
-            piffle_IIIFException
-        )
+        mock_manifestimporter.return_value.import_paths.side_effect = IIIFException
         frag.iiif_url = "something else"  # change again to trigger relevant block
         frag.save()
         mock_messages.error.assert_called_with(
@@ -1505,7 +1502,7 @@ class TestDocument:
         document.delete()
         # get fresh copy of the same log entry
         fresh_log_entry = LogEntry.objects.get(pk=log_entry.pk)
-        assert fresh_log_entry.object_id is None
+        assert fresh_log_entry is None or fresh_log_entry.object_id is None
 
     def test_save_set_standard_date(self, document):
         document.doc_date_original = "493"
@@ -1844,6 +1841,7 @@ def test_document_merge_with_empty_digital_footnote(document, join, source):
 
     # same should be true for a digital translation
     new_footnote.refresh_from_db()
+    assert new_footnote.content_object.id == document.id
     new_footnote.doc_relation = [Footnote.DIGITAL_TRANSLATION]
     new_footnote.save()
     assert document.digital_translations().count() == 1

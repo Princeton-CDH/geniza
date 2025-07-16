@@ -1,6 +1,15 @@
 Change Log
 ==========
 
+4.23
+----
+
+- As a content editor, I want to be able to choose multiple roles for People so that I capture the complexity of Geniza society
+- As an admin, I want places to have a new editable module for regions that will only show up in csvs and on the admin interface so that users can geographically situate place names when the visual map is not available.
+- chore: Manage python requirements in a pyproject.toml file
+- chore: In document descriptions, find-replace Taherti (with any diacriticals) or Tahirti (with any diacriticals) to --> Tāhartī
+- chore: Upgrade djiffy to 0.9.2 and run django migrations on QA and production instances
+
 4.22.1
 ------
 

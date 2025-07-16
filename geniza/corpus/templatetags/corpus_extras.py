@@ -2,11 +2,10 @@ import json
 import re
 
 from django import template
-from django.template.defaultfilters import pluralize
 from django.urls import reverse
 from django.urls import translate_url as django_translate_url
 from django.utils.safestring import mark_safe
-from piffle.iiif import IIIFImageClientException
+from piffle.image import IIIFImageClientException
 
 from geniza.common.utils import absolutize_url
 from geniza.footnotes.models import Footnote
@@ -78,7 +77,7 @@ def querystring_replace(context, **kwargs):
 @register.filter
 def iiif_image(img, args):
     """Add options to resize or otherwise change the display of an iiif
-    image; expects an instance of :class:`piffle.iiif.IIIFImageClient`.
+    image; expects an instance of :class:`piffle.image.IIIFImageClient`.
     Provide the method and arguments as filter string, i.e.::
 
         {{ myimg|iiif_image:"size:width=225,height=255" }}
@@ -188,7 +187,10 @@ def all_doc_relations(footnotes):
     """For scholarship records list: list doc relations for all footnotes."""
     relations = set()
     for fn in footnotes:
-        relations.update(set([n.strip() for n in str(fn.doc_relation).split(",")]))
+        relations.update(
+            set([n.strip() for n in fn.get_doc_relation_display().split(",")])
+        )
+
     return sorted(relations)
 
 

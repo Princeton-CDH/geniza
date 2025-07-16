@@ -33,7 +33,7 @@ from parasolr.django.indexing import ModelIndexable
 from piffle.image import IIIFImageClient
 from piffle.presentation import IIIFException, IIIFPresentation
 from requests.exceptions import ConnectionError
-from taggit_selectize.managers import TaggableManager
+from taggit.managers import TaggableManager
 from unidecode import unidecode
 from urllib3.exceptions import HTTPError, NewConnectionError
 
@@ -633,6 +633,8 @@ class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin, TaggableMixin)
         # ordering = [Least('textblock__fragment__shelfmark')]
 
     def __str__(self):
+        if not self.id:
+            return f"{self.shelfmark_override or '??'} (PGPID ??)"
         return f"{self.shelfmark_display or '??'} (PGPID {self.id or '??'})"
 
     def save(self, *args, **kwargs):
@@ -1461,9 +1463,9 @@ class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin, TaggableMixin)
             # instead of indexing separately
             # (may require parasolr datetime conversion support? or implement
             # in local queryset?)
-            index_data[
-                "input_date_dt"
-            ] = last_log_entry.action_time.isoformat().replace("+00:00", "Z")
+            index_data["input_date_dt"] = (
+                last_log_entry.action_time.isoformat().replace("+00:00", "Z")
+            )
         elif self.created:
             # when log entry not available, use created date on document object
             # (will always exist except in some unit tests)

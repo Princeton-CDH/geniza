@@ -15,25 +15,40 @@ from geniza.corpus.models import Document, DocumentType
 from geniza.entities.models import DocumentPlaceRelation, PersonDocumentRelation
 
 
-class SelectDisabledMixin:
+class ChoiceLabel:
+    """Custom choice label that can be used to set an option as disabled
+    without resulting in extra choices when normalized."""
+
+    def __init__(self, label, disabled=False):
+        self.label = label
+        self.disabled = disabled
+
+    def __str__(self):
+        return str(self.label)
+
+
+class SelectDisabledMixin(object):
     """
     Mixin for :class:`django.forms.RadioSelect` or :class:`django.forms.CheckboxSelect`
     classes to set an option as disabled. To disable, the widget's choice
     label option should be passed in as a dictionary with `disabled` set
     to True::
+
         {'label': 'option', 'disabled': True}.
     """
-
-    # copied from mep-django
 
     # Using a solution at https://djangosnippets.org/snippets/2453/
     def create_option(
         self, name, value, label, selected, index, subindex=None, attrs=None
     ):
+        """Overide option creation to optionally disable specified values"""
         disabled = None
 
         if isinstance(label, dict):
             label, disabled = label["label"], label.get("disabled", False)
+        elif isinstance(label, ChoiceLabel):
+            disabled = label.disabled
+
         option_dict = super().create_option(
             name, value, label, selected, index, subindex=subindex, attrs=attrs
         )
@@ -351,7 +366,7 @@ class DocumentSearchForm(RangeForm):
         if not data or not data.get("q", None):
             self.fields["sort"].widget.choices[0] = (
                 self.SORT_CHOICES[0][0],
-                {"label": self.SORT_CHOICES[0][1], "disabled": True},
+                ChoiceLabel(self.SORT_CHOICES[0][1], disabled=True),
             )
 
         # if "has translation" is not selected, language dropdown is disabled
@@ -424,7 +439,7 @@ class DocumentSearchForm(RangeForm):
         if mode == "regex":
             # reused text about needing an escape character
             needs_escape = (
-                lambda char: f"If you are searching for the character {char} in a transcription, escape it with \ by writing \{char} instead."
+                lambda char: f"If you are searching for the character {char} in a transcription, escape it with \ by writing \\{char} instead."
             )
             # see error messages for explanations of each regex here
             if re.search(r"((?<!\\)\{[^0-9])|(^\{)|((?<!\\)\{[^\}]*$)", q):

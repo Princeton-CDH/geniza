@@ -770,7 +770,7 @@ class TestFieldsetSnippet:
         assertTemplateUsed(response, template_name=DocumentDatingInline.template)
         assertContains(
             response,
-            'div class="js-inline-admin-formset inline-group" id="dating_set-group"',
+            '<fieldset class="module sortable" aria-labelledby="textblock_set-heading">',
         )
 
         # Dating inline should be immediately after fieldset containing standard_date
@@ -785,7 +785,7 @@ class TestFieldsetSnippet:
         # should include other inlines outside of form fieldsets
         assertContains(
             response,
-            'div class="inline-group sortable" id="textblock_set-group"',
+            '<fieldset class="module sortable" aria-labelledby="textblock_set-heading">',
         )
         textblock_set_inline = soup.find("div", id="textblock_set-group")
         assert not textblock_set_inline.find_parent("fieldset")
