@@ -71,7 +71,7 @@ $off-white: #f7f7f7;
     --permalink-icon: #f7f7f7;
     --permalink-icon-bg: #3d3d3d;
     // placeholder text for date input
-    --date-placeholder: #595959;
+    --date-placeholder: #9e9e9e;
     // toggle icons for ITT panel
     --toggle: #161616;
     --toggle-background: #ffffff;
@@ -108,6 +108,13 @@ $off-white: #f7f7f7;
     --network-border: rgba(22, 22, 22, 0.2);
     // person "social role" background color
     --person-role-bg: #d9d9d9;
+    // places date filter (timeline)
+    --places-date-bg: rgba(247, 247, 247, 0.6);
+    --places-date-border: #ebebeb;
+    --places-date-fields: #ffffff;
+    --places-date-text: #161616;
+    --timeline-bg: #9e9e9e;
+    --timeline-fg: #4d4d4d;
 }
 
 // Dark mode theme colors
@@ -201,6 +208,11 @@ $off-white: #f7f7f7;
     --network-border: rgba(22, 22, 22, 0.2);
     // person "social role" background color
     --person-role-bg: #595959;
+    // places date filter (timeline)
+    --places-date-bg: rgba(247, 247, 247, 0.6);
+    --places-date-border: #ebebeb;
+    --places-date-fields: #ffffff;
+    --places-date-text: #161616;
 }
 
 html {
