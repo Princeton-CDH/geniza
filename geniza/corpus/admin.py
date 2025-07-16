@@ -29,6 +29,7 @@ from geniza.corpus.metadata_export import AdminDocumentExporter, AdminFragmentEx
 from geniza.corpus.models import (
     Collection,
     Dating,
+    DescriptionAuthorship,
     Document,
     DocumentEventRelation,
     DocumentType,
@@ -421,6 +422,15 @@ class DocumentEventInline(admin.TabularInline):
         return formset
 
 
+class DocumentDescriptionAuthorshipInline(
+    SortableInlineAdminMixin, admin.TabularInline
+):
+    model = DescriptionAuthorship
+    autocomplete_fields = ["creator"]
+    fields = ("creator", "sort_order")
+    extra = 1
+
+
 @admin.register(Document)
 class DocumentAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin):
     form = DocumentForm
@@ -510,6 +520,7 @@ class DocumentAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin)
                     ("languages", "secondary_languages"),
                     "language_note",
                     "description",
+                    "cite_description",
                 )
             },
         ),
@@ -543,6 +554,7 @@ class DocumentAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin)
     autocomplete_fields = ["languages", "secondary_languages"]
     # NOTE: autocomplete does not honor limit_choices_to in model
     inlines = [
+        DocumentDescriptionAuthorshipInline,
         DocumentDatingInline,
         DocumentTextBlockInline,
         DocumentFootnoteInline,
@@ -553,6 +565,7 @@ class DocumentAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin)
     # mixed fieldsets and inlines: /templates/admin/snippets/mixed_inlines_fieldsets.html
     fieldsets_and_inlines_order = (
         "f",  # shelfmark, languages, description fieldset
+        "i",  # DocumentDescriptionAuthorshipInline
         "f",  # date on document fieldset
         "i",  # DocumentDatingInline
         "f",  # tags, status, order override fieldset
