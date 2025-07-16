@@ -805,14 +805,14 @@
         old_shelfmark_bigram
       </str>
 
-      <!-- search fields for people -->
-      <str name="people_qf">
+      <!-- search fields for entities -->
+      <str name="entities_qf">
         name_nostem^30
         name_bigram^20
         other_names_nostem^10
         other_names_bigram
       </str>
-      <str name="people_pf">
+      <str name="entities_pf">
         name_nostem^30
         name_bigram^20
         other_names_nostem^10

@@ -1,4 +1,5 @@
-from unittest.mock import Mock, patch
+import json
+from unittest.mock import MagicMock, Mock, patch
 
 import pytest
 from django.forms import ValidationError
@@ -32,6 +33,7 @@ from geniza.entities.views import (
     PersonMerge,
     PersonPersonRelationTypeMerge,
     PlaceAutocompleteView,
+    PlaceListSnippetView,
     PlaceListView,
 )
 
@@ -1163,34 +1165,6 @@ class TestPlacePeopleView:
 
 @pytest.mark.django_db
 class TestPlaceListView:
-    @pytest.mark.usefixtures("mock_solr_queryset")
-    def test_get_queryset(self, mock_solr_queryset):
-        with patch(
-            "geniza.entities.views.PlaceSolrQuerySet",
-            new=self.mock_solr_queryset(PlaceSolrQuerySet),
-        ) as mock_queryset_cls:
-            placelist_view = PlaceListView()
-            placelist_view.request = Mock()
-
-            # invalid form
-            placelist_view.request.GET = {"sort": "abcdefg"}
-            placelist_view.get_queryset()
-            mock_queryset_cls.assert_called_with()
-            mock_sqs = mock_queryset_cls.return_value
-            mock_sqs.none.assert_called_once()
-
-            # sort param
-            mock_sqs.reset_mock()
-            placelist_view.request.GET = {"sort": "name"}
-            placelist_view.get_queryset()
-            mock_sqs.none.assert_not_called()
-            mock_sqs.order_by.assert_called_with("slug_s")
-
-            mock_sqs.reset_mock()
-            placelist_view.request.GET = {"sort": "name", "sort_dir": "desc"}
-            placelist_view.get_queryset()
-            mock_sqs.order_by.assert_called_with("-slug_s")
-
     def test_get_form_kwargs(self):
         placelist_view = PlaceListView()
         placelist_view.request = Mock()
@@ -1222,3 +1196,89 @@ class TestPlaceListView:
             placelist_view.request = rf.get("/places/")
             context_data = placelist_view.get_context_data()
             assert context_data["page_type"] == "places"
+            assert context_data["search_opts"]["form_valid"] == True
+
+            # total count should be pulled from SolrQuerySet
+            mock_qs.count.assert_called()
+
+            # invalid form
+            placelist_view.request.GET = {"sort": "abcdefg"}
+            context_data = placelist_view.get_context_data()
+            assert context_data["search_opts"]["form_valid"] == False
+
+            # should resolve desc sort
+            placelist_view.request.GET = {"sort": "name", "sort_dir": "desc"}
+            context_data = placelist_view.get_context_data()
+            assert "order_by" in context_data["search_opts"]
+            assert context_data["search_opts"]["order_by"] == "-slug_s"
+            assert "query" not in context_data["search_opts"]
+
+            # should pass query to search opts
+            placelist_view.request.GET = {
+                "q": "cairo",
+                "sort": "relevance",
+                "sort_dir": "desc",
+            }
+            context_data = placelist_view.get_context_data()
+            assert context_data["search_opts"]["order_by"] == "-score"
+            assert "query" in context_data["search_opts"]
+            assert context_data["search_opts"]["query"] == "cairo"
+
+
+@pytest.mark.django_db
+class TesttPlaceListSnippetView:
+    @pytest.mark.usefixtures("mock_solr_queryset")
+    def test_get(self, rf, mock_solr_queryset):
+        with patch(
+            "geniza.entities.views.PlaceSolrQuerySet",
+            new=self.mock_solr_queryset(PlaceSolrQuerySet),
+        ) as mock_queryset_cls:
+            mock_qs = mock_queryset_cls.return_value
+            mock_qs.keyword_search.return_value = mock_qs
+            mock_qs.also.return_value = mock_qs
+            mock_qs.order_by.return_value = mock_qs
+
+            # simulate two pages of results (150 results, 100 per page)
+            mock_qs.count.return_value = 150
+            mock_qs.__len__.return_value = 150
+            mock_places = [
+                # set '"location" in p' conditional always true
+                MagicMock(**{"__contains__.return_value": True})
+                for _ in range(150)
+            ]
+            mock_qs.__getitem__.side_effect = lambda i: mock_places[i]
+
+            # test search options
+            snippet_view = PlaceListSnippetView()
+            snippet_view.request = rf.get("/place-snippets/")
+            snippet_view.request.GET = {"q": "qa'id", "sort": "-score"}
+
+            json_resp = snippet_view.get()
+            data = json.loads(json_resp.content)
+            mock_qs.keyword_search.assert_called_with("qaid")
+            mock_qs.order_by.assert_called_with("-score")
+            assert data["results_count"] == "150 results"
+            assert data["places_count"] == "150 places"
+
+            # test pagination
+            snippet_view.request.GET = {"page": "1"}
+            json_resp = snippet_view.get()
+            data = json.loads(json_resp.content)
+            assert data["has_next"] == True
+            assert data["next_page_number"] == 2
+            assert 'data-final="true"' not in data["markers_snippet"]
+
+            snippet_view.request.GET = {"page": "2"}
+            json_resp = snippet_view.get()
+            data = json.loads(json_resp.content)
+            assert data["has_next"] == False
+            assert not data["next_page_number"]
+            assert 'data-final="true"' in data["markers_snippet"]
+
+            snippet_view.request.GET = {"page": "100"}
+            json_resp = snippet_view.get()
+            data = json.loads(json_resp.content)
+            # should fallback to final page (2)
+            assert data["has_next"] == False
+            assert not data["next_page_number"]
+            assert 'data-final="true"' in data["markers_snippet"]
