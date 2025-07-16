@@ -136,7 +136,7 @@ main.search form {
             }
         }
         // search mode switch buttons
-        ul#id_mode {
+        div#id_mode {
             display: flex;
             flex-flow: row nowrap;
             margin-left: auto;
@@ -644,7 +644,7 @@ html[dir="rtl"] main.search form {
             margin-left: 0;
             margin-right: 1.5rem;
         }
-        ul#id_mode {
+        div#id_mode {
             margin: 0 1.5rem 0 3.25rem;
         }
     }

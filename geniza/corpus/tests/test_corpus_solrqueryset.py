@@ -274,10 +274,10 @@ class TestDocumentSolrQuerySet:
 
     def test_clean_html(self):
         # whitespace should be unmodified within <li> tags; minimal prettifier in others
-        assert clean_html("<li>foo</li><p>bar</p>") == "<li>foo</li>\n<p>\n bar\n</p>"
+        assert clean_html("<li>foo</li><p>bar</p>") == "<li>foo</li>\n<p>\n bar\n</p>\n"
         # should open and close partial </li> tags
-        assert clean_html("<li>foo") == "<li>foo</li>"
-        assert clean_html("foo</li>") == "<li>...foo</li>"
+        assert clean_html("<li>foo") == "<li>foo</li>\n"
+        assert clean_html("foo</li>") == "<li>...foo</li>\n"
         # should insert (value - 1) of first numbered <li>
         assert (
             clean_html('foo</li>\n<li value="3">bar</li>').replace("\n", "")

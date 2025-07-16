@@ -3,7 +3,7 @@ from unittest.mock import MagicMock, Mock
 import pytest
 from django.http.request import HttpRequest, QueryDict
 from django.urls import reverse
-from piffle.iiif import IIIFImageClient
+from piffle.image import IIIFImageClient
 from pytest_django.asserts import assertContains
 
 from geniza.common.utils import absolutize_url

@@ -1,8 +1,8 @@
 import pytest
 from django.http.request import HttpRequest
 from django.http.response import HttpResponseRedirect
-from wagtail.core.models import Page
-from wagtail.core.models.sites import Site
+from wagtail.models import Page
+from wagtail.models.sites import Site
 
 from geniza.pages.models import ContainerPage, ContentPage, HomePage
 

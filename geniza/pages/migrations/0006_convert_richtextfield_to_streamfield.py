@@ -2,12 +2,12 @@
 
 import json
 
-import wagtail.core.blocks
-import wagtail.core.fields
+import wagtail.blocks
+import wagtail.fields
 import wagtail.images.blocks
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db import migrations
-from wagtail.core.rich_text import RichText
+from wagtail.rich_text import RichText
 
 # adapted from https://docs.wagtail.org/en/stable/topics/streamfield.html#migrating-richtextfields-to-streamfield
 
@@ -85,7 +85,6 @@ def pagerevision_to_richtext(revision_data):
 
 def convert(model, page_converter, pagerevision_converter):
     for page in model.objects.all():
-
         page, changed = page_converter(page)
         if changed:
             page.save()
@@ -113,7 +112,6 @@ def convert_to_richtext(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("pages", "0005_containerpage"),
     ]
@@ -122,11 +120,11 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name="contentpage",
             name="body",
-            field=wagtail.core.fields.StreamField(
+            field=wagtail.fields.StreamField(
                 [
                     (
                         "paragraph",
-                        wagtail.core.blocks.RichTextBlock(
+                        wagtail.blocks.RichTextBlock(
                             features=[
                                 "h2",
                                 "h3",
@@ -146,19 +144,19 @@ class Migration(migrations.Migration):
                     ),
                     (
                         "image",
-                        wagtail.core.blocks.StructBlock(
+                        wagtail.blocks.StructBlock(
                             [
                                 ("image", wagtail.images.blocks.ImageChooserBlock()),
                                 (
                                     "alternative_text",
-                                    wagtail.core.blocks.TextBlock(
+                                    wagtail.blocks.TextBlock(
                                         help_text="Alternative text for visually impaired users to\nbriefly communicate the intended message of the image in this context.",
                                         required=True,
                                     ),
                                 ),
                                 (
                                     "caption",
-                                    wagtail.core.blocks.RichTextBlock(
+                                    wagtail.blocks.RichTextBlock(
                                         features=["link", "superscript"], required=False
                                     ),
                                 ),
@@ -171,11 +169,11 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name="homepage",
             name="body",
-            field=wagtail.core.fields.StreamField(
+            field=wagtail.fields.StreamField(
                 [
                     (
                         "paragraph",
-                        wagtail.core.blocks.RichTextBlock(
+                        wagtail.blocks.RichTextBlock(
                             features=[
                                 "h2",
                                 "h3",
@@ -195,19 +193,19 @@ class Migration(migrations.Migration):
                     ),
                     (
                         "image",
-                        wagtail.core.blocks.StructBlock(
+                        wagtail.blocks.StructBlock(
                             [
                                 ("image", wagtail.images.blocks.ImageChooserBlock()),
                                 (
                                     "alternative_text",
-                                    wagtail.core.blocks.TextBlock(
+                                    wagtail.blocks.TextBlock(
                                         help_text="Alternative text for visually impaired users to\nbriefly communicate the intended message of the image in this context.",
                                         required=True,
                                     ),
                                 ),
                                 (
                                     "caption",
-                                    wagtail.core.blocks.RichTextBlock(
+                                    wagtail.blocks.RichTextBlock(
                                         features=["link", "superscript"], required=False
                                     ),
                                 ),

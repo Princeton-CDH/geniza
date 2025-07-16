@@ -6,7 +6,7 @@ Princeton Geniza Project
 Python/Django web application for a version 4.x of the `Princeton Geniza Project
 <https://cdh.princeton.edu/projects/princeton-geniza-project/>`_.
 
-Python 3.9 / Django 3.2 / Node 16 / Postgresql / Solr 9.2
+Python 3.12 / Django 5.2 / Node 22 / Postgresql 16 / Solr 9.2
 
 .. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.7347726.svg
    :target: https://doi.org/10.5281/zenodo.7347726
@@ -22,10 +22,6 @@ Python 3.9 / Django 3.2 / Node 16 / Postgresql / Solr 9.2
 .. image:: https://github.com/Princeton-CDH/geniza/workflows/dbdocs/badge.svg
     :target: https://dbdocs.io/princetoncdh/geniza
     :alt: dbdocs build
-
-.. image:: https://percy.io/static/images/percy-badge.svg
-    :target: https://percy.io/2cf28a24/geniza
-    :alt: Visual regression tests
 
 .. image:: https://img.shields.io/badge/code%20style-black-000000.svg
     :target: https://github.com/psf/black

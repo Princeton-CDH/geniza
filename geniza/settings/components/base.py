@@ -45,7 +45,6 @@ INSTALLED_APPS = [
     "djiffy",
     "fullurl",
     "taggit",
-    "taggit_selectize",
     "pucas",
     "multiselectfield",
     "adminsortable2",
@@ -61,7 +60,7 @@ INSTALLED_APPS = [
     "wagtail.users",
     "wagtail.snippets",
     "wagtail.admin",
-    "wagtail.core",
+    "wagtail",
     "wagtail_localize",
     "wagtail_localize.locales",
     "modelcluster",
@@ -177,8 +176,6 @@ TIME_ZONE = "America/New_York"
 USE_I18N = True
 WAGTAIL_I18N_ENABLED = True
 
-USE_L10N = True
-
 USE_TZ = True
 
 WAGTAIL_CONTENT_LANGUAGES = LANGUAGES = [
@@ -243,6 +240,8 @@ DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 PGP_DOCTYPE_GUIDE = "https://docs.google.com/document/d/1FHr1iS_JD5h-y5O1rv5JNNw1OqEVQFb-vSTGr3hoiF4/edit"
 
 ANNOTATION_MANIFEST_BASE_URL = "https://geniza.princeton.edu"
+WAGTAILADMIN_BASE_URL = "https://geniza.princeton.edu/admin"
+
 
 # django-csp configuration for content security policy definition and
 # violation reporting - https://github.com/mozilla/django-csp

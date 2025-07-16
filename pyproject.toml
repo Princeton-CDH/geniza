@@ -5,41 +5,34 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "geniza"
 description = "Cairo Geniza - Python/Django web application"
-requires-python = ">=3.9"
+requires-python = ">=3.12"
 license = { text = "Apache-2" }
 classifiers = ["Programming Language :: Python :: 3"]
 dependencies = [
-    "django>=3.2,<4.0",
+    "django>=5.2,<5.3",
     "psycopg2-binary",
     "pucas>=0.6",
     "django-split-settings",
     "requests",
-    "django-taggit>=1.5.1,<2.0",
-    # TODO: unpin piffle from 0.4 once breaking changes with piffle.iiif are handled
-    "piffle==0.4",
-    "taggit-selectize",
-    # NOTE: as of 2024-07-91, django-multiselectfield 0.1.13 causes an error in unit"
-    # tests and loaddata for loading fixtures"
-    "django-multiselectfield==0.1.12",
-    # NOTE: as of 2022-04-29, modeltranslation v0.17.6 causes an error in Django admin
-    # TypeError: Cannot use multi-field values as a filter value.
-    "django-modeltranslation==0.17.5",
-    "django-admin-sortable2",
+    "django-taggit>=6.0.0,<7.0",
+    "piffle>=0.6,<0.7",
+    "django-multiselectfield>=1.0,<2.0",
+    "django-modeltranslation>=0.19.15,<0.20",
+    "django-admin-sortable2>=2.2.8,<2.3",
     "python-dateutil>=2.8",
     "django-tabular-export",
     "parasolr>=0.9.1",
     "django-gfklookupwidget",
     "django-adminlogentries",
-    "django-autocomplete-light>=3.11.0",
+    "django-autocomplete-light>=3.12,<3.13",
     "django-webpack-loader",
     "django-csp",
     "gitpython",
-    "eulxml",
+    "neuxml",
     "rich",
-    "wagtail>=2.15.3,<2.16",
-    "wagtail-localize",
-    "rdflib<6.2",
-    "djiffy>=0.8",
+    "wagtail>=7.0,<8",
+    "wagtail-localize>=1.12,<1.13",
+    "djiffy>=1.0.1,<1.1",
     "natsort",
     "django-widget-tweaks",
     "django-csp-helpers",
@@ -70,7 +63,6 @@ dev = [
     "pytest-order",
     "wheel",
     "django-dbml==0.7.0",
-    "percy-selenium>=2.1.1",
     "selenium>=4.8.0",
     "django-fixture-magic",
     "future",
@@ -87,7 +79,6 @@ test = [
     "pytest-order",
     "wheel",
     "django-dbml==0.7.0",
-    "percy-selenium>=2.1.1",
     "selenium>=4.8.0",
     "django-fixture-magic"
 ]
@@ -102,6 +93,6 @@ markers = ["last", "second_to_last"]
 
 [tool.black]
 line-length = 88
-target-version = ['py39']
+target-version = ['py312']
 # include = ''
 # extend-exclude = ''
