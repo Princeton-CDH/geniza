@@ -545,7 +545,7 @@ class PermalinkMixin:
 
 
 class DescriptionAuthorship(models.Model):
-    """Ordered relationship between :class:`Creator` and :class:`Source`."""
+    """Ordered relationship between :class:`Creator` and :class:`Document`."""
 
     creator = models.ForeignKey(Creator, on_delete=models.CASCADE)
     document = models.ForeignKey("Document", on_delete=models.CASCADE)
