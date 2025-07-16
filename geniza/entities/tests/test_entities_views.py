@@ -1255,8 +1255,8 @@ class TesttPlaceListSnippetView:
 
             json_resp = snippet_view.get()
             data = json.loads(json_resp.content)
-            assert mock_qs.keyword_search.called_with("qaid")
-            assert mock_qs.order_by.called_with("-score")
+            mock_qs.keyword_search.assert_called_with("qaid")
+            mock_qs.order_by.assert_called_with("-score")
             assert data["results_count"] == "150 results"
             assert data["places_count"] == "150 places"
 
