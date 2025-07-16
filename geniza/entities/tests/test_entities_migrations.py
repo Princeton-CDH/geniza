@@ -2,6 +2,7 @@ import pytest
 from slugify import slugify
 
 from geniza.common.tests import TestMigrations
+from geniza.corpus.models import Document
 
 
 # must run before other migrations in order to prevent Group.DoesNotExist
@@ -286,13 +287,13 @@ class TestPopulateUncertainRelations(TestMigrations):
 
     def setUpBeforeMigration(self, apps):
         Person = apps.get_model("entities", "Person")
-        Document = apps.get_model("corpus", "Document")
         PersonDocumentRelation = apps.get_model("entities", "PersonDocumentRelation")
         PersonDocumentRelationType = apps.get_model(
             "entities", "PersonDocumentRelationType"
         )
 
         person = Person.objects.create()
+        # use current model since corpus is not a dependency on this migration
         document = Document.objects.create()
 
         (self.scribe_type, _) = PersonDocumentRelationType.objects.get_or_create(
@@ -307,7 +308,7 @@ class TestPopulateUncertainRelations(TestMigrations):
         )
         self.possible = PersonDocumentRelation.objects.create(
             person=person,
-            document=document,
+            document_id=document.pk,
             type=possible_type,
         )
         possibly_type = PersonDocumentRelationType.objects.create(
@@ -315,7 +316,7 @@ class TestPopulateUncertainRelations(TestMigrations):
         )
         self.possibly = PersonDocumentRelation.objects.create(
             person=person,
-            document=document,
+            document_id=document.pk,
             type=possibly_type,
         )
 
