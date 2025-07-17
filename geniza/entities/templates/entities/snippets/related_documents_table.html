@@ -37,7 +37,7 @@
         <tbody>
             {% for document in relations %}
                 <tr>
-                    <td class="document-title">
+                    <td class="document-title" data-controller="thumbnail">
                         {% if document.thumbnail %}
                             {{ document.thumbnail }}
                         {% else %}
