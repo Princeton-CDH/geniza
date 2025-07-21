@@ -561,6 +561,7 @@ main.people {
     form fieldset#filters {
         div.fieldset-left-column label[for="id_exclude_inferred"],
         label[for="id_exclude_uncertain"] {
+            display: block;
             position: relative;
             cursor: pointer;
             input[type="checkbox"] + span::before {
