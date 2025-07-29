@@ -2,6 +2,7 @@
 
 import { Controller } from "@hotwired/stimulus";
 import maplibregl, {
+    AttributionControl,
     LngLatBounds,
     NavigationControl,
     ScaleControl,
@@ -157,8 +158,13 @@ export default class extends Controller {
             this.map = new maplibregl.Map({
                 container: "map",
                 style: `https://api.maptiler.com/maps/5f93d3e5-e339-45bf-86fb-bf7f98a22936/style.json?key=${accessToken}`,
+                attributionControl: false,
                 ...zoomParams,
             });
+            this.map.addControl(
+                new AttributionControl({ compact: true }),
+                "bottom-left"
+            );
 
             // add navigation control
             const control = new NavigationControl({ showCompass: false });
