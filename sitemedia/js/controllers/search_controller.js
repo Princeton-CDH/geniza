@@ -10,9 +10,13 @@ export default class extends Controller {
         "sort",
         "filterModal",
         "filtersButton",
+        "dateRange",
         "doctypeFilter",
         "dropdownDetails",
         "helpDialog",
+        "maxYear",
+        "minYear",
+        "placeFiltersCheckbox",
         "placesMode",
         "peopleMode",
         "radioSort",
@@ -43,8 +47,10 @@ export default class extends Controller {
 
     toggleFiltersOpen(e) {
         // toggle filters modal/panel open and closed
-        e.preventDefault();
-        e.currentTarget.classList.toggle("open");
+        if (!e.currentTarget.closest('label[for="place-filters"]')) {
+            e.preventDefault();
+            e.currentTarget.classList.toggle("open");
+        }
         const filtersOpen =
             this.filterModalTarget.getAttribute("aria-expanded");
         const newFiltersOpen = filtersOpen === "true" ? "false" : "true";
@@ -82,8 +88,12 @@ export default class extends Controller {
                 "aria-expanded",
                 savedFilterState
             );
-            if (this.hasFiltersButtonTarget && savedFilterState === "true") {
-                this.filtersButtonTarget.classList.add("open");
+            if (savedFilterState === "true") {
+                if (this.hasFiltersButtonTarget) {
+                    this.filtersButtonTarget.classList.add("open");
+                } else if (this.hasPlaceFiltersCheckboxTarget) {
+                    this.placeFiltersCheckboxTarget.checked = true;
+                }
             }
         }
     }
@@ -347,6 +357,25 @@ export default class extends Controller {
             window.sessionStorage.getItem("people-list-view");
         if (isPeopleListMode === "true") {
             this.peopleModeTarget.checked = true;
+        }
+    }
+
+    updateTimeline(e) {
+        e.target.parentNode.style.setProperty(
+            `--${e.target.id}`,
+            +e.target.value
+        );
+        const val = parseInt(e.target.value);
+        const isMin = e.target === this.minYearTarget;
+        const otherThumbVal = parseInt(
+            isMin ? this.maxYearTarget.value : this.minYearTarget.value
+        );
+        if (val < otherThumbVal) {
+            this.dateRangeTargets[0].value = val;
+            this.dateRangeTargets[1].value = otherThumbVal;
+        } else {
+            this.dateRangeTargets[0].value = otherThumbVal;
+            this.dateRangeTargets[1].value = val;
         }
     }
 }

@@ -350,7 +350,7 @@ class EventForm(forms.ModelForm):
         }
 
 
-class PlaceListForm(forms.Form):
+class PlaceListForm(RangeForm):
     SORT_CHOICES = [
         # Translators: label for sort by name
         ("name", _("Name")),
@@ -395,6 +395,10 @@ class PlaceListForm(forms.Form):
                 "type": "search",
             }
         ),
+    )
+    # Translators: label for place dates filter
+    date_range = RangeField(
+        label=_("Filter by year"), required=False, widget=YearRangeWidget()
     )
 
     def get_sort_label(self):

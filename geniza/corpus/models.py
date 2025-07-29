@@ -1269,6 +1269,8 @@ class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin, TaggableMixin)
         related_document_pks = set(itertools.chain.from_iterable(other_textblocks_docs))
         # filter by side so that search results only show the relevant side image(s)
         images = self.iiif_images(filter_side=True).values()
+        # get related place IDs for join query on document dates
+        places = list(self.documentplacerelation_set.values_list("place", flat=True))
         index_data.update(
             {
                 "pgpid_i": self.id,
@@ -1345,7 +1347,8 @@ class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin, TaggableMixin)
                 "iiif_rotations_is": [img["rotation"] for img in images],
                 "has_image_b": len(images) > 0,
                 "people_count_i": self.persondocumentrelation_set.count(),
-                "places_count_i": self.documentplacerelation_set.count(),
+                "places_count_i": len(places),
+                "places_ids_ss": [f"place.{id}" for id in places],
                 "documents_count_i": len(related_document_pks),
             }
         )
@@ -1460,9 +1463,9 @@ class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin, TaggableMixin)
             # instead of indexing separately
             # (may require parasolr datetime conversion support? or implement
             # in local queryset?)
-            index_data[
-                "input_date_dt"
-            ] = last_log_entry.action_time.isoformat().replace("+00:00", "Z")
+            index_data["input_date_dt"] = (
+                last_log_entry.action_time.isoformat().replace("+00:00", "Z")
+            )
         elif self.created:
             # when log entry not available, use created date on document object
             # (will always exist except in some unit tests)

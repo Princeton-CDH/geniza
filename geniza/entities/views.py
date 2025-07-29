@@ -29,6 +29,7 @@ from natsort import natsort_key
 
 from geniza.corpus.dates import DocumentDateMixin, standard_date_display
 from geniza.corpus.models import Dating, Document, DocumentType, TextBlock
+from geniza.corpus.solr_queryset import DocumentSolrQuerySet
 from geniza.corpus.views import SolrDateRangeMixin
 from geniza.entities.forms import (
     PersonDocumentRelationTypeMergeForm,
@@ -972,7 +973,7 @@ class PersonListView(ListView, FormMixin, SolrDateRangeMixin):
         return context_data
 
 
-class PlaceListView(ListView, FormMixin):
+class PlaceListView(ListView, FormMixin, SolrDateRangeMixin):
     """A list view with faceted filtering and sorting using solr."""
 
     model = Place
@@ -1007,6 +1008,19 @@ class PlaceListView(ListView, FormMixin):
 
         kwargs["data"] = form_data
 
+        # get min/max configuration for document date range field
+        # (which is the origin of place dates, filtered by the join query)
+        kwargs["range_minmax"] = self.get_range_stats(
+            queryset_cls=DocumentSolrQuerySet, field_name="date_range"
+        )
+        # for the purposes of rendering a timeline, round to the nearest century
+        dr = kwargs["range_minmax"].get("date_range")
+        if dr and len(dr) == 2:
+            kwargs["range_minmax"]["date_range"] = (
+                dr[0] - (dr[0] % 100),  # round the lower date down
+                dr[1] - (dr[1] % -100),  # round the upper date up
+            )
+
         return kwargs
 
     def get_context_data(self, **kwargs):
@@ -1018,6 +1032,10 @@ class PlaceListView(ListView, FormMixin):
             "form_valid": False,
             "snippets_url": reverse("entities:place-list-snippets"),
         }
+
+        # can replace this with get_filter_labels if additional filters are added,
+        # and/or we need to display the labels themselves
+        applied_filters = []
 
         # get form data to pass to snippet view
         form = self.get_form()
@@ -1035,17 +1053,21 @@ class PlaceListView(ListView, FormMixin):
                 ):
                     order_by = f"-{order_by}"
 
-                # add to context so we can pass to snippet view
                 search_opts.update({"order_by": order_by})
             if form_data.get("q"):
-                # add to context so we can pass to snippet view
                 search_opts.update({"query": form_data.get("q")})
+            date_range = form_data.get("date_range")
+            if date_range:
+                # add to applied_filters to show filter count
+                applied_filters.append(date_range)
+                search_opts.update({"date_range": date_range})
 
         context_data.update(
             {
                 "search_opts": search_opts,
                 "page_title": self.page_title,
                 "page_description": self.page_description,
+                "applied_filters": applied_filters,
                 "total": PlaceSolrQuerySet().count(),
                 "page_type": "places",
                 "maptiler_token": getattr(settings, "MAPTILER_API_TOKEN", ""),
@@ -1070,6 +1092,14 @@ class PlaceListSnippetView(View):
         if query:
             # keyword search query and relevance scoring
             places = places.keyword_search(query.replace("'", "")).also("score")
+
+        # handle date filter
+        date_range = self.request.GET.get("date_range")
+        if date_range:
+            start_date, end_date = date_range.split(",")
+            places = places.filter(
+                f"{{!join from=places_ids_ss to=id}}item_type_s:document AND document_date_dr:[{start_date or '*'} TO {end_date or '*'}]"
+            )
 
         order_by = self.request.GET.get("sort", "slug_s")
         places = places.order_by(order_by)
