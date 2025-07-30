@@ -17,8 +17,10 @@ def make_person():
 
 def make_person_diacritic():
     (official, _) = PersonRole.objects.get_or_create(name_en="State official")
+    (other, _) = PersonRole.objects.get_or_create(name_en="Other")
     person = Person.objects.create(gender=Person.MALE)
     person.roles.add(official)
+    person.roles.add(other)
     Name.objects.create(
         name="Ḥalfon ha-Levi b. Netanʾel", content_object=person, primary=True
     )

@@ -16,6 +16,7 @@ export default class extends Controller {
         "placesMode",
         "peopleMode",
         "radioSort",
+        "socialRoles",
     ];
     static debounces = ["update"];
 
@@ -269,8 +270,16 @@ export default class extends Controller {
     }
 
     autoUpdateRadioSort(event) {
+        // special case: people search, multiple role filtering: allow and switch to relevance
+        let relevanceOverride = false;
+        if (this.hasSocialRolesTarget) {
+            const checkedRoles = this.socialRolesTarget.querySelectorAll(
+                "input[type='checkbox']:checked"
+            );
+            relevanceOverride = checkedRoles.length > 1;
+        }
         // when query is empty, disable sort by relevance
-        if (this.queryTarget.value.trim() == "") {
+        if (this.queryTarget.value.trim() == "" && !relevanceOverride) {
             this.disableRelevanceSort(true);
         } else if (event && this.defaultSortElement.checked) {
             // if this was triggered by an event and not in sortTargetConnected,
