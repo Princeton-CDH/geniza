@@ -77,9 +77,9 @@
                     </label>
                 </fieldset>
             </div>
-            <label for="{{ form.social_role.auto_id }}">
+            <label for="{{ form.social_role.auto_id }}" data-search-target="socialRoles">
                 <span class="fieldname">{{ form.social_role.label }}</span>
-                {% render_field form.social_role data-action="search#update" %}
+                {% render_field form.social_role data-action="input->search#autoUpdateRadioSort search#update" %}
             </label>
             <label for="{{ form.document_relation.auto_id }}">
                 <span class="fieldname">{{ form.document_relation.label }}</span>
@@ -152,6 +152,12 @@
                     {% for person in people %}
                         <tr>
                             <td class="name">
+                                {% if "SHOW_RELEVANCE_SCORES" in FEATURE_FLAGS %}
+                                    {# show relevance score if enabled #}
+                                    <span class="score">
+                                        Relevance: {{ person.score|default:0 }}
+                                    </span>
+                                {% endif %}
                                 {% if person.url %}
                                     <a href="{{ person.url }}">{{ person.name }}</a>
                                 {% else %}

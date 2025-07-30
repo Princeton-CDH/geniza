@@ -147,6 +147,7 @@ main.people {
                 border-radius: 5px;
                 border: 1px solid var(--background-gray);
                 td.name {
+                    position: relative;
                     grid-area: name;
                     font-family: fonts.$primary-bold;
                     font-weight: bold;
@@ -156,6 +157,15 @@ main.people {
                     }
                     @include breakpoints.for-tablet-landscape-up {
                         font-size: typography.$text-size-xl;
+                    }
+                    .score {
+                        @include typography.meta-bold;
+                        display: block;
+                        position: absolute;
+                        right: -1rem;
+                        top: -1rem;
+                        padding: 0.25rem;
+                        font-size: 12px !important;
                     }
                 }
                 td.gender {
