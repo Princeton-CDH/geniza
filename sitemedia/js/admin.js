@@ -41,12 +41,10 @@ window.addEventListener("DOMContentLoaded", () => {
     // Digital Edition + Edition checkboxes
     let existingDocRelations = document.querySelectorAll(
         // ^='footnote' captures both Document and Source footnote inlines
-        //        "div[id^='footnote'] td.field-doc_relation ul"
         "div[id^='footnote'] td.field-doc_relation div"
     );
     if (!existingDocRelations.length) {
         // this means we're on the actual Footnote change form and not inline
-        //        existingDocRelations = document.querySelectorAll("ul#id_doc_relation");
         existingDocRelations = document.querySelectorAll("div#id_doc_relation");
     }
     existingDocRelations.forEach((inputList) => {
@@ -249,7 +247,6 @@ function toggleDisabled(inputList, input) {
                 "footnote_set",
             ].includes(formsetName)
         ) {
-            //            const inputList = $row.find("td.field-doc_relation ul").get()[0];
             const inputList = $row.find("td.field-doc_relation div").get()[0];
             addDocRelationToggle(inputList);
         }
