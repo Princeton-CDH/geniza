@@ -48,7 +48,33 @@
 
                 {# Translators: Search submit button #}
                 {% translate 'Submit search' as search_label %}
-                <button type="submit" aria-label="{{ search_label }}" />
+                <button type="submit" aria-label="{{ search_label }}"></button>
+                <input type="checkbox" id="place-filters" data-search-target="placeFiltersCheckbox" />
+                <label aria-label="{% translate "Filters" %}" for="place-filters" data-action="click->search#toggleFiltersOpen">
+                    <svg><use xlink:href="{% static 'img/ui/all/all/search-filter-icon.svg' %}#filter-icon" /></svg>
+                    {% if applied_filters %}
+                        <span class="filter-count">{{ applied_filters|length }}</span>
+                    {% endif %}
+                </label>
+            </fieldset>
+            <fieldset id="date-filter" aria-expanded="false" data-search-target="filterModal">
+                <label for="{{ form.date_range.auto_id }}" class="date-range-label">
+                    <span class="fieldname">{{ form.date_range.label }}</span>
+                    {% render_field form.date_range data-action="search#update keypress->search#preventEnterKeypress" data-search-target="dateRange" %}
+                </label>
+                {% if form.date_range.value.0 or form.date_range.value.1 %}
+                    {# Translators: label for a button to clear the Places date filter #}
+                    <button type="button" data-action="click->search#clearFilters"><span>{% translate "Clear" %}</span></button>
+                {% endif %}
+                {% with  min_year=form.date_range.field.widget.widgets.0.attrs.placeholder  max_year=form.date_range.field.widget.widgets.1.attrs.placeholder  %}
+                    <div class="timeline" role="group" style="--a: {{ form.date_range.value.0|default:min_year }}; --b: {{ form.date_range.value.1|default:max_year }}; --min: {{ min_year }}; --max: {{ max_year }}">
+                        <input id="a" type="range" min="{{ min_year }}" max="{{ max_year }}" value="{{ form.date_range.value.0|default:min_year }}" aria-label="{% translate "From year" %}" data-search-target="minYear" data-action="input->search#updateTimeline change->search#update">
+                        <input id="b" type="range" min="{{ min_year }}" max="{{ max_year }}" value="{{ form.date_range.value.1|default:max_year }}" aria-label="{% translate "To year" %}" data-search-target="maxYear" data-action="input->search#updateTimeline change->search#update">
+                        <div role="presentation" class="ticks" data-map-target="timelineTicks" data-min="{{ min_year }}" data-max="{{ max_year }}">
+                            <svg width="100%" height="44" overflow="visible" shapeRendering="crispEdges"></svg>
+                        </div>
+                    </div>
+                {% endwith %}
             </fieldset>
             <div class="header-row count-sort">
                 <span data-map-target="count"></span>
