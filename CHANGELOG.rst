@@ -1,6 +1,13 @@
 Change Log
 ==========
 
+4.23.1
+------
+
+- chore: Upgrade the python, Django, wagtail stack for Geniza 
+- chore: resolve attrdict / addict dependency issues
+- chore: Manchester links update
+
 4.23
 ----
 
