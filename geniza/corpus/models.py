@@ -13,6 +13,7 @@ from django.contrib.admin.models import CHANGE, LogEntry
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.fields import GenericRelation
 from django.contrib.contenttypes.models import ContentType
+from django.contrib.humanize.templatetags.humanize import ordinal
 from django.contrib.postgres.fields import ArrayField
 from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
@@ -543,6 +544,24 @@ class PermalinkMixin:
         return absolutize_url(self.get_absolute_url().replace(f"/{lang}/", "/"))
 
 
+class DescriptionAuthorship(models.Model):
+    """Ordered relationship between :class:`Creator` and :class:`Document`."""
+
+    creator = models.ForeignKey(Creator, on_delete=models.CASCADE)
+    document = models.ForeignKey("Document", on_delete=models.CASCADE)
+    sort_order = models.PositiveSmallIntegerField(default=1)
+
+    class Meta:
+        ordering = ("sort_order",)
+
+    def __str__(self) -> str:
+        return '%s, %s description author on "%s"' % (
+            self.creator,
+            ordinal(self.sort_order),
+            "PGPID %d" % self.document.id,
+        )
+
+
 class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin, TaggableMixin):
     """A unified document such as a letter or legal document that
     appears on one or more fragments."""
@@ -616,6 +635,14 @@ class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin, TaggableMixin)
     )
     footnotes = GenericRelation(Footnote, related_query_name="document")
     log_entries = GenericRelation(LogEntry, related_query_name="document")
+    cite_description = models.BooleanField(
+        "Cite description",
+        default=False,
+        help_text="If checked, the authors selected below will appear in the citation at the bottom of the public document page.",
+    )
+    authors = models.ManyToManyField(
+        to=Creator, verbose_name="Description Authors", through=DescriptionAuthorship
+    )
 
     # Placeholder canvas to use when not all IIIF images are available
     PLACEHOLDER_CANVAS = {
@@ -755,7 +782,23 @@ class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin, TaggableMixin)
     @property
     def formatted_citation(self):
         """a formatted citation for display at the bottom of Document detail pages"""
-        available_at = "Available online through the Princeton Geniza Project at"
+        available = "Available"
+        if self.cite_description and self.authors.exists():
+            author = ""
+            author_fullnames = [
+                a.creator.firstname_lastname()
+                for a in self.descriptionauthorship_set.all()
+            ]
+            # combine the last pair with and; combine all others with comma
+            # thanks to https://stackoverflow.com/a/30084022
+            if len(author_fullnames) > 1:
+                author = " and ".join(
+                    [", ".join(author_fullnames[:-1]), author_fullnames[-1]]
+                )
+            else:
+                author = author_fullnames[0]
+            available = "Description by %s available" % author
+        at_pgp = "online through the Princeton Geniza Project at"
         today = datetime.today().strftime("%B %-d, %Y")
         tb_set = self.textblock_set.all()
         long_name = (
@@ -769,8 +812,11 @@ class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin, TaggableMixin)
             if all(block.fragment.collection for block in tb_set)
             else self.shelfmark
         )
+        # Translators: accessibility label for permanent link to a document
+        perma_label = _("Permalink")
+        permalink = f'<a href="{self.permalink}" rel="bookmark" aria-label="{perma_label}">{self.permalink}</a>'
         return mark_safe(
-            f"{long_name}. {available_at} {self.permalink}, accessed {today}."
+            f"{long_name}. {available} {at_pgp} {permalink} (accessed {today})."
         )
 
     def is_public(self):
@@ -1460,9 +1506,9 @@ class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin, TaggableMixin)
             # instead of indexing separately
             # (may require parasolr datetime conversion support? or implement
             # in local queryset?)
-            index_data[
-                "input_date_dt"
-            ] = last_log_entry.action_time.isoformat().replace("+00:00", "Z")
+            index_data["input_date_dt"] = (
+                last_log_entry.action_time.isoformat().replace("+00:00", "Z")
+            )
         elif self.created:
             # when log entry not available, use created date on document object
             # (will always exist except in some unit tests)

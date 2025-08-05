@@ -274,17 +274,5 @@
                 {{ document.formatted_citation }}
             </span>
         </dd>
-        {# Translators: label for permanent link to a document #}
-        {% translate 'Link to this document:' as permalink %}
-        <dt id="permalink" aria-hidden="true"> {# aria hidden because redundant for screen readers #}
-            <i class="ph-link"></i>
-            {{ permalink }}
-        </dt>
-        <dd>
-            {# Translators: accessibility label for permanent link to a document #}
-            <a href="{{ document.permalink }}" rel="bookmark" aria-label="{% translate 'Permalink' %}">
-                {{ document.permalink }}
-            </a>
-        </dd>
     </dl>
 {% endblock main %}

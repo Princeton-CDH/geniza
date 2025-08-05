@@ -36,7 +36,13 @@ from geniza.corpus.models import (
     TextBlock,
 )
 from geniza.entities.models import Event
-from geniza.footnotes.models import Footnote, Source, SourceLanguage, SourceType
+from geniza.footnotes.models import (
+    Creator,
+    Footnote,
+    Source,
+    SourceLanguage,
+    SourceType,
+)
 
 
 class TestCollection:
@@ -485,6 +491,19 @@ class TestDocumentType:
         assert DocumentType.objects_by_label.get("Type2").pk == doc_type_2.pk
 
 
+@pytest.mark.django_db
+class TestDescriptionAuthorship:
+    def test_str(self, document):
+        marina = Creator.objects.create(last_name_en="Rustow", first_name_en="Marina")
+        document.authors.add(marina)
+        authorship = document.descriptionauthorship_set.first()
+        assert str(authorship) == '%s, %s description author on "%s"' % (
+            marina,
+            "1st",
+            "PGPID %d" % document.id,
+        )
+
+
 MockImporter = Mock()
 # as of djiffy 0.7.2, import paths returns a list of objects
 MockImporter.return_value.import_paths.return_value = []
@@ -699,11 +718,19 @@ class TestDocument:
         # none of these fragments have collections, so they will use shelfmark without
         # full collection names
         assert (
-            f"{document.shelfmark}. Available online through the Princeton Geniza Project at {document.permalink}, accessed"
+            f"{document.shelfmark}. Available online through the Princeton Geniza Project at"
             in document.formatted_citation
         )
         assert (
-            f"{join.shelfmark}. Available online through the Princeton Geniza Project at {join.permalink}, accessed"
+            'aria-label="Permalink">%s</a> (accessed' % document.permalink
+            in document.formatted_citation
+        )
+        assert (
+            f"{join.shelfmark}. Available online through the Princeton Geniza Project at"
+            in join.formatted_citation
+        )
+        assert (
+            'aria-label="Permalink">%s</a> (accessed' % join.permalink
             in join.formatted_citation
         )
         # add some collections with names and test again
@@ -724,6 +751,35 @@ class TestDocument:
         )
         assert f"{c.library}, {c.name}" in join.formatted_citation
         assert f"+ {c2.library}, {c2.name}" in join.formatted_citation
+
+        # cite_description = True, but no authorships: same
+        document.cite_description = True
+        assert f"{document.shelfmark}. Available online" in document.formatted_citation
+
+        # cite_description AND authorships: "description by authors available"
+        marina = Creator.objects.create(last_name_en="Rustow", first_name_en="Marina")
+        document.authors.add(marina)
+        assert (
+            f"{document.shelfmark}. Available online" not in document.formatted_citation
+        )
+        assert f"{document.shelfmark}. Description by" in document.formatted_citation
+        assert marina.firstname_lastname() in document.formatted_citation
+        assert "available online" in document.formatted_citation
+
+        # test multi-author
+        amel = Creator.objects.create(last_name_en="Bensalim", first_name_en="Amel")
+        document.authors.add(amel)
+        assert (
+            f"{marina.firstname_lastname()} and {amel.firstname_lastname()}"
+            in document.formatted_citation
+        )
+
+        ksenia = Creator.objects.create(last_name_en="Ryzhova", first_name_en="Ksenia")
+        document.authors.add(ksenia)
+        assert (
+            f"{marina.firstname_lastname()}, {amel.firstname_lastname()} and {ksenia.firstname_lastname()}"
+            in document.formatted_citation
+        )
 
     def test_all_tags(self):
         doc = Document.objects.create()
