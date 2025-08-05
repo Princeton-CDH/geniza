@@ -5,11 +5,12 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Common functionality &#8212; Princeton Geniza Project 4.23.0 documentation</title>
+    <title>Common functionality &#8212; Princeton Geniza Project 4.23.1 documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=5ecbeea2" />
-    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css?v=12dfc556" />
-    <script src="../_static/documentation_options.js?v=37cae72d"></script>
-    <script src="../_static/doctools.js?v=9a2dae69"></script>
+    <link rel="stylesheet" type="text/css" href="../_static/basic.css?v=b08954a9" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css?v=27fed22d" />
+    <script src="../_static/documentation_options.js?v=93b26334"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -40,7 +41,7 @@
 <span id="models"></span><span id="module-geniza.common"></span><h2>models<a class="headerlink" href="#module-geniza.common.models" title="Link to this heading">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="geniza.common.models.DisplayLabelMixin">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geniza.common.models.</span></span><span class="sig-name descname"><span class="pre">DisplayLabelMixin</span></span><a class="reference internal" href="../_modules/geniza/common/models.html#DisplayLabelMixin"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.common.models.DisplayLabelMixin" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geniza.common.models.</span></span><span class="sig-name descname"><span class="pre">DisplayLabelMixin</span></span><a class="reference internal" href="../_modules/geniza/common/models.html#DisplayLabelMixin"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.common.models.DisplayLabelMixin" title="Link to this definition">¶</a></dt>
 <dd><p>Mixin for models with translatable display labels that may differ from names, in
 order to override fallback behavior when a label for the current language is not defined.
 Used for search response handling and display on the public frontend.</p>
@@ -57,7 +58,7 @@ display_label_he is not defined. We also need to ensure that the document type
 
 <dl class="py method">
 <dt class="sig sig-object py" id="geniza.common.models.DisplayLabelMixin.objects_by_label">
-<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">objects_by_label</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/common/models.html#DisplayLabelMixin.objects_by_label"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.common.models.DisplayLabelMixin.objects_by_label" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">objects_by_label</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/common/models.html#DisplayLabelMixin.objects_by_label"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.common.models.DisplayLabelMixin.objects_by_label" title="Link to this definition">¶</a></dt>
 <dd><p>A dict of object instances keyed on English display label, used for search form
 and search results, which should be based on Solr facet and query responses (indexed in
 English).</p>
@@ -67,7 +68,7 @@ English).</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="geniza.common.models.TaggableMixin">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geniza.common.models.</span></span><span class="sig-name descname"><span class="pre">TaggableMixin</span></span><a class="reference internal" href="../_modules/geniza/common/models.html#TaggableMixin"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.common.models.TaggableMixin" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geniza.common.models.</span></span><span class="sig-name descname"><span class="pre">TaggableMixin</span></span><a class="reference internal" href="../_modules/geniza/common/models.html#TaggableMixin"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.common.models.TaggableMixin" title="Link to this definition">¶</a></dt>
 <dd><p>Mixin for taggable models with convenience functions for generating lists of tags</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="geniza.common.models.TaggableMixin.all_tags">
@@ -85,7 +86,7 @@ English).</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="geniza.common.models.TrackChangesModel">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geniza.common.models.</span></span><span class="sig-name descname"><span class="pre">TrackChangesModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/common/models.html#TrackChangesModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.common.models.TrackChangesModel" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geniza.common.models.</span></span><span class="sig-name descname"><span class="pre">TrackChangesModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/common/models.html#TrackChangesModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.common.models.TrackChangesModel" title="Link to this definition">¶</a></dt>
 <dd><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Model</span></code> mixin that keeps a copy of initial
 data in order to check if fields have been changed. Change detection
 only works on the current instance of an object.</p>
@@ -111,15 +112,15 @@ only works on the current instance of an object.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="geniza.common.models.UserProfile">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geniza.common.models.</span></span><span class="sig-name descname"><span class="pre">UserProfile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">user</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">github_coauthor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">creator</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/common/models.html#UserProfile"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.common.models.UserProfile" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geniza.common.models.</span></span><span class="sig-name descname"><span class="pre">UserProfile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">user</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">github_coauthor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">creator</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/common/models.html#UserProfile"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.common.models.UserProfile" title="Link to this definition">¶</a></dt>
 <dd><dl class="py exception">
 <dt class="sig sig-object py" id="geniza.common.models.UserProfile.DoesNotExist">
-<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">DoesNotExist</span></span><a class="headerlink" href="#geniza.common.models.UserProfile.DoesNotExist" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">DoesNotExist</span></span><a class="headerlink" href="#geniza.common.models.UserProfile.DoesNotExist" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py exception">
 <dt class="sig sig-object py" id="geniza.common.models.UserProfile.MultipleObjectsReturned">
-<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">MultipleObjectsReturned</span></span><a class="headerlink" href="#geniza.common.models.UserProfile.MultipleObjectsReturned" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">MultipleObjectsReturned</span></span><a class="headerlink" href="#geniza.common.models.UserProfile.MultipleObjectsReturned" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -136,7 +137,7 @@ from <a class="reference external" href="https://stackoverflow.com/a/71887897">h
 <span id="fields"></span><h2>fields<a class="headerlink" href="#module-geniza.common.fields" title="Link to this heading">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="geniza.common.fields.NaturalSortField">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geniza.common.fields.</span></span><span class="sig-name descname"><span class="pre">NaturalSortField</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">for_field</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/common/fields.html#NaturalSortField"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.common.fields.NaturalSortField" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geniza.common.fields.</span></span><span class="sig-name descname"><span class="pre">NaturalSortField</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">for_field</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/common/fields.html#NaturalSortField"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.common.fields.NaturalSortField" title="Link to this definition">¶</a></dt>
 <dd><p>Natural sort field for Django models.  Takes a field name, and uses
 <code class="xref py py-mod docutils literal notranslate"><span class="pre">natsort</span></code> to generate a natural sort value based on the value of that field.</p>
 <dl class="py method">
@@ -147,8 +148,8 @@ from <a class="reference external" href="https://stackoverflow.com/a/71887897">h
 <div><ul class="simple">
 <li><p>The name of the field on the model, if contribute_to_class() has
 been run.</p></li>
-<li><p>The import path of the field, including the class:e.g.
-django.db.models.IntegerField This should be the most portable
+<li><p>The import path of the field, including the class, e.g.
+django.db.models.IntegerField. This should be the most portable
 version, so less specific may be better.</p></li>
 <li><p>A list of positional arguments.</p></li>
 <li><p>A dict of keyword arguments.</p></li>
@@ -193,7 +194,7 @@ based on the output of <code class="xref py py-meth docutils literal notranslate
 
 <dl class="py class">
 <dt class="sig sig-object py" id="geniza.common.fields.RangeField">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geniza.common.fields.</span></span><span class="sig-name descname"><span class="pre">RangeField</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/common/fields.html#RangeField"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.common.fields.RangeField" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geniza.common.fields.</span></span><span class="sig-name descname"><span class="pre">RangeField</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/common/fields.html#RangeField"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.common.fields.RangeField" title="Link to this definition">¶</a></dt>
 <dd><p>Date range field, for two numeric inputs. Compresses to a tuple of
 two values for the start and end of the range; tuple values set to
 None for no input.</p>
@@ -232,11 +233,11 @@ and placeholders.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="geniza.common.fields.RangeForm">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geniza.common.fields.</span></span><span class="sig-name descname"><span class="pre">RangeForm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/common/fields.html#RangeForm"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.common.fields.RangeForm" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geniza.common.fields.</span></span><span class="sig-name descname"><span class="pre">RangeForm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/common/fields.html#RangeForm"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.common.fields.RangeForm" title="Link to this definition">¶</a></dt>
 <dd><p>Form mixin to initialize min/max values for range fields.</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="geniza.common.fields.RangeForm.media">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">media</span></span><a class="headerlink" href="#geniza.common.fields.RangeForm.media" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">media</span></span><a class="headerlink" href="#geniza.common.fields.RangeForm.media" title="Link to this definition">¶</a></dt>
 <dd><p>Return all media required to render the widgets on this form.</p>
 </dd></dl>
 
@@ -260,7 +261,7 @@ tuples of min and max integers as values.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="geniza.common.fields.RangeWidget">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geniza.common.fields.</span></span><span class="sig-name descname"><span class="pre">RangeWidget</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/common/fields.html#RangeWidget"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.common.fields.RangeWidget" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geniza.common.fields.</span></span><span class="sig-name descname"><span class="pre">RangeWidget</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/common/fields.html#RangeWidget"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.common.fields.RangeWidget" title="Link to this definition">¶</a></dt>
 <dd><p>date range widget, for two numeric inputs</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="geniza.common.fields.RangeWidget.decompress">
@@ -272,7 +273,7 @@ non-empty.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="geniza.common.fields.RangeWidget.media">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">media</span></span><a class="headerlink" href="#geniza.common.fields.RangeWidget.media" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">media</span></span><a class="headerlink" href="#geniza.common.fields.RangeWidget.media" title="Link to this definition">¶</a></dt>
 <dd><p>Media for a multiwidget is the combination of all media of the
 subwidgets.</p>
 </dd></dl>
@@ -284,7 +285,7 @@ subwidgets.</p>
 <span id="middleware"></span><h2>middleware<a class="headerlink" href="#module-geniza.common.middleware" title="Link to this heading">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="geniza.common.middleware.LocaleMiddleware">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geniza.common.middleware.</span></span><span class="sig-name descname"><span class="pre">LocaleMiddleware</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">get_response</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/common/middleware.html#LocaleMiddleware"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.common.middleware.LocaleMiddleware" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geniza.common.middleware.</span></span><span class="sig-name descname"><span class="pre">LocaleMiddleware</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">get_response</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/common/middleware.html#LocaleMiddleware"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.common.middleware.LocaleMiddleware" title="Link to this definition">¶</a></dt>
 <dd><p>“Customize django’s default locale middleware to exempt some urls from redirects</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="geniza.common.middleware.LocaleMiddleware.process_response">
@@ -302,7 +303,7 @@ subwidgets.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="geniza.common.middleware.PublicLocaleMiddleware">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geniza.common.middleware.</span></span><span class="sig-name descname"><span class="pre">PublicLocaleMiddleware</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">get_response</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/common/middleware.html#PublicLocaleMiddleware"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.common.middleware.PublicLocaleMiddleware" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geniza.common.middleware.</span></span><span class="sig-name descname"><span class="pre">PublicLocaleMiddleware</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">get_response</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/common/middleware.html#PublicLocaleMiddleware"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.common.middleware.PublicLocaleMiddleware" title="Link to this definition">¶</a></dt>
 <dd><p>Middleware to redirect anonymous users attempting to access locales that are not in
 the list of public site languages.</p>
 </dd></dl>
@@ -312,7 +313,7 @@ the list of public site languages.</p>
 <span id="metadata-export"></span><h2>metadata export<a class="headerlink" href="#module-geniza.common.metadata_export" title="Link to this heading">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="geniza.common.metadata_export.Exporter">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geniza.common.metadata_export.</span></span><span class="sig-name descname"><span class="pre">Exporter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">queryset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/common/metadata_export.html#Exporter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.common.metadata_export.Exporter" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geniza.common.metadata_export.</span></span><span class="sig-name descname"><span class="pre">Exporter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">queryset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/common/metadata_export.html#Exporter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.common.metadata_export.Exporter" title="Link to this definition">¶</a></dt>
 <dd><p>Base class for data exports. See DocumentExporter <cite>geniza/corpus/metadata_export.py</cite> for an example of a subclass implementation of Exporter.</p>
 <p>For initializing:</p>
 <dl class="field-list simple">
@@ -465,7 +466,7 @@ the list of public site languages.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="geniza.common.metadata_export.LogEntryExporter">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geniza.common.metadata_export.</span></span><span class="sig-name descname"><span class="pre">LogEntryExporter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">queryset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/common/metadata_export.html#LogEntryExporter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.common.metadata_export.LogEntryExporter" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geniza.common.metadata_export.</span></span><span class="sig-name descname"><span class="pre">LogEntryExporter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">queryset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/common/metadata_export.html#LogEntryExporter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.common.metadata_export.LogEntryExporter" title="Link to this definition">¶</a></dt>
 <dd><dl class="py attribute">
 <dt class="sig sig-object py" id="geniza.common.metadata_export.LogEntryExporter.action_label">
 <span class="sig-name descname"><span class="pre">action_label</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{1:</span> <span class="pre">'addition',</span> <span class="pre">2:</span> <span class="pre">'change',</span> <span class="pre">3:</span> <span class="pre">'deletion'}</span></em><a class="headerlink" href="#geniza.common.metadata_export.LogEntryExporter.action_label" title="Link to this definition">¶</a></dt>
@@ -672,8 +673,8 @@ the list of public site languages.</p>
       &#169;2022, Center for Digital Humanities @ Princeton.
       
       |
-      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.4.7</a>
-      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 8.2.3</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
       
       |
       <a href="../_sources/codedocs/common.rst.txt"

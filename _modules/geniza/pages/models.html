@@ -4,11 +4,12 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>geniza.pages.models &#8212; Princeton Geniza Project 4.23.0 documentation</title>
+    <title>geniza.pages.models &#8212; Princeton Geniza Project 4.23.1 documentation</title>
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=5ecbeea2" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=12dfc556" />
-    <script src="../../../_static/documentation_options.js?v=37cae72d"></script>
-    <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+    <link rel="stylesheet" type="text/css" href="../../../_static/basic.css?v=b08954a9" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=27fed22d" />
+    <script src="../../../_static/documentation_options.js?v=93b26334"></script>
+    <script src="../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
@@ -33,12 +34,12 @@
 <span></span><span class="kn">from</span><span class="w"> </span><span class="nn">django.db</span><span class="w"> </span><span class="kn">import</span> <span class="n">models</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">django.http.response</span><span class="w"> </span><span class="kn">import</span> <span class="n">HttpResponseRedirect</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">django.utils.translation</span><span class="w"> </span><span class="kn">import</span> <span class="n">gettext_lazy</span> <span class="k">as</span> <span class="n">_</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">wagtail.admin.edit_handlers</span><span class="w"> </span><span class="kn">import</span> <span class="n">FieldPanel</span><span class="p">,</span> <span class="n">StreamFieldPanel</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">wagtail.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">blocks</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">wagtail.core.fields</span><span class="w"> </span><span class="kn">import</span> <span class="n">StreamField</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">wagtail.core.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">Page</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">wagtail</span><span class="w"> </span><span class="kn">import</span> <span class="n">blocks</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">wagtail.admin.panels</span><span class="w"> </span><span class="kn">import</span> <span class="n">FieldPanel</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">wagtail.documents.blocks</span><span class="w"> </span><span class="kn">import</span> <span class="n">DocumentChooserBlock</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">wagtail.fields</span><span class="w"> </span><span class="kn">import</span> <span class="n">StreamField</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">wagtail.images.blocks</span><span class="w"> </span><span class="kn">import</span> <span class="n">ImageChooserBlock</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">wagtail.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">Page</span>
 
 <span class="c1"># Translators: help text for image alternative text</span>
 <span class="n">ALT_TEXT_HELP</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span>
@@ -50,7 +51,7 @@
 <div class="viewcode-block" id="CaptionedImageBlock">
 <a class="viewcode-back" href="../../../codedocs/pages.html#geniza.pages.models.CaptionedImageBlock">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">CaptionedImageBlock</span><span class="p">(</span><span class="n">blocks</span><span class="o">.</span><span class="n">StructBlock</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;:class:`~wagtail.core.blocks.StructBlock` for an image with</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;:class:`~wagtail.blocks.StructBlock` for an image with</span>
 <span class="sd">    alternative text and optional formatted caption, so</span>
 <span class="sd">    that both caption and alternative text can be context-specific.&quot;&quot;&quot;</span>
 
@@ -72,7 +73,7 @@
 <div class="viewcode-block" id="SVGImageBlock">
 <a class="viewcode-back" href="../../../codedocs/pages.html#geniza.pages.models.SVGImageBlock">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">SVGImageBlock</span><span class="p">(</span><span class="n">blocks</span><span class="o">.</span><span class="n">StructBlock</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;:class:`~wagtail.core.blocks.StructBlock` for an SVG image with</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;:class:`~wagtail.blocks.StructBlock` for an SVG image with</span>
 <span class="sd">    alternative text and optional formatted caption. Separate from</span>
 <span class="sd">    :class:`CaptionedImageBlock` because Wagtail image handling</span>
 <span class="sd">    does not work with SVG.&quot;&quot;&quot;</span>
@@ -105,7 +106,7 @@
 <div class="viewcode-block" id="AccordionBlock">
 <a class="viewcode-back" href="../../../codedocs/pages.html#geniza.pages.models.AccordionBlock">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">AccordionBlock</span><span class="p">(</span><span class="n">blocks</span><span class="o">.</span><span class="n">StructBlock</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Accordion :class:`~wagtail.core.blocks.StructBlock` for collapsible</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Accordion :class:`~wagtail.blocks.StructBlock` for collapsible</span>
 <span class="sd">    sections and/or FAQs&quot;&quot;&quot;</span>
 
     <span class="n">label</span> <span class="o">=</span> <span class="n">blocks</span><span class="o">.</span><span class="n">CharBlock</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="s2">&quot;Heading label/question&quot;</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -167,17 +168,17 @@
 <div class="viewcode-block" id="HomePage">
 <a class="viewcode-back" href="../../../codedocs/pages.html#geniza.pages.models.HomePage">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">HomePage</span><span class="p">(</span><span class="n">Page</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;:class:`wagtail.core.models.Page` model for Geniza home page.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;:class:`wagtail.models.Page` model for Geniza home page.&quot;&quot;&quot;</span>
 
     <span class="c1"># fields</span>
     <span class="n">description</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">TextField</span><span class="p">(</span><span class="n">blank</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-    <span class="n">body</span> <span class="o">=</span> <span class="n">StreamField</span><span class="p">(</span><span class="n">BodyContentBlock</span><span class="p">)</span>
+    <span class="n">body</span> <span class="o">=</span> <span class="n">StreamField</span><span class="p">(</span><span class="n">BodyContentBlock</span><span class="p">,</span> <span class="n">use_json_field</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="c1"># can only be child of Root</span>
     <span class="n">parent_page_types</span> <span class="o">=</span> <span class="p">[</span><span class="n">Page</span><span class="p">]</span>
     <span class="n">subpage_types</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;pages.ContentPage&quot;</span><span class="p">,</span> <span class="s2">&quot;pages.ContainerPage&quot;</span><span class="p">]</span>
     <span class="n">content_panels</span> <span class="o">=</span> <span class="n">Page</span><span class="o">.</span><span class="n">content_panels</span> <span class="o">+</span> <span class="p">[</span>
         <span class="n">FieldPanel</span><span class="p">(</span><span class="s2">&quot;description&quot;</span><span class="p">),</span>
-        <span class="n">StreamFieldPanel</span><span class="p">(</span><span class="s2">&quot;body&quot;</span><span class="p">),</span>
+        <span class="n">FieldPanel</span><span class="p">(</span><span class="s2">&quot;body&quot;</span><span class="p">),</span>
     <span class="p">]</span>
 
     <span class="k">class</span><span class="w"> </span><span class="nc">Meta</span><span class="p">:</span>
@@ -225,12 +226,12 @@
 
     <span class="c1"># fields</span>
     <span class="n">description</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">TextField</span><span class="p">(</span><span class="n">blank</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-    <span class="n">body</span> <span class="o">=</span> <span class="n">StreamField</span><span class="p">(</span><span class="n">BodyContentBlock</span><span class="p">)</span>
+    <span class="n">body</span> <span class="o">=</span> <span class="n">StreamField</span><span class="p">(</span><span class="n">BodyContentBlock</span><span class="p">,</span> <span class="n">use_json_field</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="c1"># can be child of Home or Container page</span>
     <span class="n">parent_page_types</span> <span class="o">=</span> <span class="p">[</span><span class="n">HomePage</span><span class="p">,</span> <span class="n">ContainerPage</span><span class="p">]</span>
     <span class="n">content_panels</span> <span class="o">=</span> <span class="n">Page</span><span class="o">.</span><span class="n">content_panels</span> <span class="o">+</span> <span class="p">[</span>
         <span class="n">FieldPanel</span><span class="p">(</span><span class="s2">&quot;description&quot;</span><span class="p">),</span>
-        <span class="n">StreamFieldPanel</span><span class="p">(</span><span class="s2">&quot;body&quot;</span><span class="p">),</span>
+        <span class="n">FieldPanel</span><span class="p">(</span><span class="s2">&quot;body&quot;</span><span class="p">),</span>
     <span class="p">]</span>
 
     <span class="c1"># show in menu by default</span>
@@ -317,8 +318,8 @@
       &#169;2022, Center for Digital Humanities @ Princeton.
       
       |
-      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.4.7</a>
-      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 8.2.3</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
       
     </div>
 

@@ -5,11 +5,12 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Developer Instructions &#8212; Princeton Geniza Project 4.23.0 documentation</title>
+    <title>Developer Instructions &#8212; Princeton Geniza Project 4.23.1 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=5ecbeea2" />
-    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=12dfc556" />
-    <script src="_static/documentation_options.js?v=37cae72d"></script>
-    <script src="_static/doctools.js?v=9a2dae69"></script>
+    <link rel="stylesheet" type="text/css" href="_static/basic.css?v=b08954a9" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=27fed22d" />
+    <script src="_static/documentation_options.js?v=93b26334"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -177,22 +178,6 @@ current versions of Solr it creates a new core with a <em>copy</em> of the confi
 <p>Python unit tests are written with <a class="reference external" href="http://doc.pytest.org/">py.test</a>
 and should be run with <code class="docutils literal notranslate"><span class="pre">pytest</span></code>.</p>
 </section>
-<section id="end-to-end-tests">
-<h2>End-to-end Tests<a class="headerlink" href="#end-to-end-tests" title="Link to this heading">¶</a></h2>
-<p>Performance, accessibility, SEO and more are audited via <a class="reference external" href="https://developers.google.com/web/tools/lighthouse">Lighthouse</a>. The tool runs in a GitHub actions workflow (<code class="docutils literal notranslate"><span class="pre">lighthouse.yml</span></code>).</p>
-<p>Lighthouse runs several checks by visiting a list of URLs and averaging the results. If new pages are adding to the site, a corresponding URL should be added to the configuration file <code class="docutils literal notranslate"><span class="pre">lighthouserc.js</span></code>.</p>
-<p>If the Lighthouse build is generating errors that need to be temporarily or permanently ignored, the corresponding error code can be set to “off” or “warn” in <code class="docutils literal notranslate"><span class="pre">lighthouserc.js</span></code>.</p>
-</section>
-<section id="visual-tests">
-<h2>Visual Tests<a class="headerlink" href="#visual-tests" title="Link to this heading">¶</a></h2>
-<p>Visual regressions are monitored with <a class="reference external" href="https://percy.io/">Percy</a>. Percy takes screenshots of the web application with different browsers and compares them to a set of base screenshots to find changes.</p>
-<p>In this repository, a GitHub Action is configured to take a set of Percy screenshots when one of the following conditions is met:</p>
-<ol class="arabic simple">
-<li><p>A commit has been pushed to a pull request against the <code class="docutils literal notranslate"><span class="pre">develop</span></code> branch, and the phrase <code class="docutils literal notranslate"><span class="pre">[run</span> <span class="pre">percy]</span></code> is present in the commit message.</p></li>
-<li><p>A commit has been pushed to the <code class="docutils literal notranslate"><span class="pre">develop</span></code> branch, and the phrase <code class="docutils literal notranslate"><span class="pre">[skip</span> <span class="pre">percy]</span></code> is NOT present in the commit message.</p></li>
-</ol>
-<p>Otherwise, the action will be skipped and Percy will not take a set of screenshots to check for visual regressions.</p>
-</section>
 </section>
 
 
@@ -254,8 +239,6 @@ and should be run with <code class="docutils literal notranslate"><span class="p
 </ul>
 </li>
 <li><a class="reference internal" href="#unit-tests">Unit Tests</a></li>
-<li><a class="reference internal" href="#end-to-end-tests">End-to-end Tests</a></li>
-<li><a class="reference internal" href="#visual-tests">Visual Tests</a></li>
 </ul>
 </li>
 </ul>
@@ -285,8 +268,8 @@ and should be run with <code class="docutils literal notranslate"><span class="p
       &#169;2022, Center for Digital Humanities @ Princeton.
       
       |
-      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.4.7</a>
-      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 8.2.3</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
       
       |
       <a href="_sources/devnotes.rst.txt"
