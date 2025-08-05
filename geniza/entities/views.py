@@ -892,8 +892,24 @@ class PersonListView(ListView, FormMixin, SolrDateRangeMixin):
             ]
         if search_opts.get("social_role"):
             roles = literal_eval(search_opts["social_role"])
-            roles = [re.sub(self.qs_regex, r"\\\1", r) for r in roles]
-            people = people.filter(roles__in=roles)
+            roles_escaped = [re.sub(self.qs_regex, r"\\\1", r) for r in roles]
+            people = people.filter(roles__in=roles_escaped)
+            # boost multiple selected values
+            if len(roles) > 1:
+                roles_field = people.field_aliases.get("roles")
+                # if no keyword query entered, need to use the filter values
+                # as an OR query, in order to get any relevance score
+                if not search_opts.get("q"):
+                    roles_q = " OR ".join(roles_escaped)
+                    people = people.search(f"{roles_field}:({roles_q})")
+                # use edismax boost, sum(termfreq) filter query to boost score
+                # when more than one of the selected terms appears
+                term_freq_boosts = ",".join(
+                    [f'termfreq({roles_field},"{role}")' for role in roles]
+                )
+                people = people.raw_query_parameters(
+                    boost=f"sum({term_freq_boosts})"
+                ).also("score")
             self.applied_filter_labels += self.get_applied_filter_labels(
                 form, "social_role", roles
             )
@@ -924,7 +940,8 @@ class PersonListView(ListView, FormMixin, SolrDateRangeMixin):
                 and "date" not in sort_field
             ):
                 order_by = f"-{order_by}"
-            people = people.order_by(order_by)
+            # use name (slug_s ascending) as tiebreaker
+            people = people.order_by(order_by, "slug_s")
 
         self.queryset = people
 

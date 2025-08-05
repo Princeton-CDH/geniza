@@ -561,13 +561,78 @@ class TestPersonListView:
                     "sort_dir": "desc",
                 }
                 personlist_view.get_queryset()
-                mock_order_by.assert_called_with("-end_dating_i")
+                mock_order_by.assert_called_with("-end_dating_i", "slug_s")
                 mock_get_form.return_value.cleaned_data = {
                     "sort": "date",
                     "sort_dir": "asc",
                 }
                 personlist_view.get_queryset()
-                mock_order_by.assert_called_with("start_dating_i")
+                mock_order_by.assert_called_with("start_dating_i", "slug_s")
+
+    def test_multiple_social_roles_filter(
+        self, person, person_diacritic, person_multiname, empty_solr
+    ):
+        # add person's name to person_diacritic so we can check both in a
+        # keyword query
+        Name.objects.create(name=str(person), content_object=person_diacritic)
+        SolrClient().update.index(
+            [
+                person.index_data(),
+                person_diacritic.index_data(),
+                person_multiname.index_data(),
+            ],
+            commit=True,
+        )
+        personlist_view = PersonListView()
+        with patch.object(personlist_view, "get_form") as mock_get_form:
+            # filter by multiple social roles
+            roles = person_diacritic.roles.all()
+            mock_get_form.return_value.cleaned_data = {
+                "social_role": f"['{roles[0].name}', '{roles[1].name}']",
+                "sort": "relevance",
+                "sort_dir": "desc",
+            }
+            # should include people with either role
+            qs = personlist_view.get_queryset()
+            assert qs.count() == 2
+            # person with both roles should be first by relevance
+            assert qs[0].get("slug") == person_diacritic.slug
+
+            # filter by 3 social roles
+            role_3 = person_multiname.roles.first().name
+            mock_get_form.return_value.cleaned_data = {
+                "social_role": f"['{roles[0].name}', '{roles[1].name}', '{role_3}']",
+                "sort": "relevance",
+                "sort_dir": "desc",
+            }
+            qs = personlist_view.get_queryset()
+            # should include everyone
+            assert qs.count() == 3
+            # person with both roles should still be first
+            assert qs[0].get("slug") == person_diacritic.slug
+
+            # filter by 3 social roles AND keyword query
+            role_3 = person_multiname.roles.first().name
+            mock_get_form.return_value.cleaned_data = {
+                "q": str(person),
+                "social_role": f"['{roles[0].name}', '{roles[1].name}', '{role_3}']",
+            }
+            qs = personlist_view.get_queryset()
+            # should include just the two matching the keyword query
+            assert qs.count() == 2
+
+            # person with both roles should be boosted
+            score_with_roles = next(
+                p.get("score") for p in qs if p.get("slug") == person_diacritic.slug
+            )
+            mock_get_form.return_value.cleaned_data = {
+                "q": str(person),
+            }
+            qs = personlist_view.get_queryset()
+            score_without_roles = next(
+                p.get("score") for p in qs if p.get("slug") == person_diacritic.slug
+            )
+            assert score_with_roles > score_without_roles
 
     def test_get_queryset__keyword_query(
         self, person, person_diacritic, person_multiname, empty_solr
