@@ -7,12 +7,13 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path, re_path
 from django.views.generic.base import RedirectView, TemplateView
+from wagtail import urls as wagtail_urls
 from wagtail.admin import urls as wagtailadmin_urls
 from wagtail.contrib.sitemaps import Sitemap as WagtailSitemap
 from wagtail.contrib.sitemaps import views as sitemap_views
-from wagtail.core import urls as wagtail_urls
 from wagtail.documents import urls as wagtaildocs_urls
 
+from geniza.common.views import TagAutocompleteView
 from geniza.corpus.sitemaps import DocumentScholarshipSitemap, DocumentSitemap
 
 SITEMAPS = {
@@ -35,7 +36,7 @@ urlpatterns = [
     path("annotations/", include("geniza.annotations.urls", namespace="annotations")),
     path("accounts/", include("pucas.cas_urls")),
     path("i18n/", include("django.conf.urls.i18n")),
-    path("taggit/", include("taggit_selectize.urls")),
+    path("tag-autocomplete/", TagAutocompleteView.as_view(), name="tag-autocomplete"),
     re_path(
         "sitemap.xml",
         sitemap_views.index,

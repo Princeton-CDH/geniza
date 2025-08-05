@@ -71,9 +71,7 @@ class PartialDate:
 
     def __str__(self):
         # format the date based on known precision
-        return date_format(
-            self.date, format=self.display_format[self.precision], use_l10n=True
-        )
+        return date_format(self.date, format=self.display_format[self.precision])
 
     def __repr__(self) -> str:
         return f"PartialDate({self.isoformat()})"

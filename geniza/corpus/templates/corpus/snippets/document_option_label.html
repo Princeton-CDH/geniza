@@ -66,7 +66,7 @@
                             {% endif %}
                             <div class="form-row">
                                 <label>Footnote relation</label>
-                                <div>{{ fn.doc_relation }}</div>
+                                <div>{{ fn.get_doc_relation_display }}</div>
                             </div>
                             {% if fn.has_transcription %}
                                 <div class="form-row">

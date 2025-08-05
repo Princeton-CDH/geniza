@@ -41,11 +41,11 @@ window.addEventListener("DOMContentLoaded", () => {
     // Digital Edition + Edition checkboxes
     let existingDocRelations = document.querySelectorAll(
         // ^='footnote' captures both Document and Source footnote inlines
-        "div[id^='footnote'] td.field-doc_relation ul"
+        "div[id^='footnote'] td.field-doc_relation > div"
     );
     if (!existingDocRelations.length) {
         // this means we're on the actual Footnote change form and not inline
-        existingDocRelations = document.querySelectorAll("ul#id_doc_relation");
+        existingDocRelations = document.querySelectorAll("div#id_doc_relation");
     }
     existingDocRelations.forEach((inputList) => {
         // add toggle disabled on click
@@ -236,22 +236,18 @@ function toggleDisabled(inputList, input) {
     }
 }
 
-(function ($) {
-    // Apply event listeners to all new rows added to Footnote
-    // formset in Document or Source footnote inlines
-    // (need to use jQuery to listen to event here until Django 4 upgrade)
-    $(document).on("formset:added", function (_, $row, formsetName) {
-        if (
-            [
-                "footnotes-footnote-content_type-object_id",
-                "footnote_set",
-            ].includes(formsetName)
-        ) {
-            const inputList = $row.find("td.field-doc_relation ul").get()[0];
-            addDocRelationToggle(inputList);
-        }
-    });
-})(django.jQuery);
+document.addEventListener("formset:added", (event) => {
+    if (
+        ["footnotes-footnote-content_type-object_id", "footnote_set"].includes(
+            event.detail.formsetName
+        )
+    ) {
+        const inputList = event.target.querySelector(
+            "td.field-doc_relation > div"
+        );
+        addDocRelationToggle(inputList);
+    }
+});
 
 function attachOverrideEventListeners(fromDragEvent) {
     // attach event listeners to images for reorder/rotate functionality.

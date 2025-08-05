@@ -7,6 +7,7 @@ on:
     - cron: "0 16 * * 2"
 
 env:
+  NODE_VERSION: 22
   DB_NAME: geniza
   DB_USER: geniza
   DB_PASSWORD: geniza
@@ -22,7 +23,7 @@ jobs:
     # https://docs.github.com/en/free-pro-team@latest/actions/guides/about-service-containers
     services:
       postgres:
-        image: postgres:12
+        image: postgres:16
         env:
           POSTGRES_DB: ${{ env.DB_NAME }}
           POSTGRES_USER: ${{ env.DB_USER }}
@@ -78,7 +79,7 @@ jobs:
       - name: Install node
         uses: actions/setup-node@v2
         with:
-          node-version: 16
+          node-version: ${{ env.NODE_VERSION }}
 
       - name: Cache node modules
         uses: actions/cache@v4

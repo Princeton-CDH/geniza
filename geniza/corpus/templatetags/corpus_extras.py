@@ -2,7 +2,6 @@ import json
 import re
 
 from django import template
-from django.template.defaultfilters import pluralize
 from django.urls import reverse
 from django.urls import translate_url as django_translate_url
 from django.utils.safestring import mark_safe
@@ -188,7 +187,10 @@ def all_doc_relations(footnotes):
     """For scholarship records list: list doc relations for all footnotes."""
     relations = set()
     for fn in footnotes:
-        relations.update(set([n.strip() for n in str(fn.doc_relation).split(",")]))
+        relations.update(
+            set([n.strip() for n in fn.get_doc_relation_display().split(",")])
+        )
+
     return sorted(relations)
 
 
