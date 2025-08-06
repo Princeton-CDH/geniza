@@ -1558,7 +1558,7 @@ class TestDocument:
         document.delete()
         # get fresh copy of the same log entry
         fresh_log_entry = LogEntry.objects.get(pk=log_entry.pk)
-        assert fresh_log_entry is None or fresh_log_entry.object_id is None
+        assert fresh_log_entry.object_id is None
 
     def test_save_set_standard_date(self, document):
         document.doc_date_original = "493"

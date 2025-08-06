@@ -595,6 +595,21 @@ class TestPerson:
         # should sort alphabetically last
         assert person.all_roles().endswith(pr.display_label)
 
+    def test_delete(self, person):
+        # create a log entry to confirm disassociation
+        log_entry = LogEntry.objects.create(
+            user_id=1,
+            content_type_id=ContentType.objects.get_for_model(person).pk,
+            object_id=person.pk,
+            object_repr="test",
+            action_flag=CHANGE,
+            change_message="test",
+        )
+        person.delete()
+        # get fresh copy of the same log entry
+        fresh_log_entry = LogEntry.objects.get(pk=log_entry.pk)
+        assert fresh_log_entry.object_id is None
+
 
 class TestPersonSolrQuerySet:
     def test_keyword_search(self):

@@ -45,6 +45,7 @@ from geniza.common.models import (
     TrackChangesModel,
     cached_class_property,
 )
+from geniza.common.signals import detach_logentries
 from geniza.common.utils import absolutize_url
 from geniza.corpus.annotation_utils import document_id_from_manifest_uri
 from geniza.corpus.dates import DocumentDateMixin, PartialDate, standard_date_display
@@ -1793,14 +1794,8 @@ class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin, TaggableMixin)
             log_entry.save()
 
 
-@receiver(pre_delete, sender=Document)
-def detach_document_logentries(sender, instance, **kwargs):
-    """:class:`~Document` pre-delete signal handler.
-
-    To avoid deleting log entries caused by the generic relation
-    from document to log entries, clear out object id
-    for associated log entries before deleting the document."""
-    instance.log_entries.update(object_id=None)
+# attach pre-delete for generic relation to log entries
+pre_delete.connect(detach_logentries, sender=Document)
 
 
 class TextBlock(models.Model):
