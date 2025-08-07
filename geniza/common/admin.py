@@ -194,3 +194,30 @@ class LocalLogEntryAdmin(LogEntryAdmin):
 
 admin.site.unregister(LogEntry)
 admin.site.register(LogEntry, LocalLogEntryAdmin)
+
+
+class PreventLogEntryDeleteMixin:
+    """Mixin required for ModelAdmins for all classes with a GenericRelation to LogEntry,
+    to prevent LogEntries from being counted as related objects to be deleted."""
+
+    def get_deleted_objects(self, objs, request):
+        # override to remove log entries from list and permission check
+        (
+            deletable_objects,
+            model_count,
+            perms_needed,
+            protected,
+        ) = super().get_deleted_objects(objs, request)
+
+        if "log entries" in model_count:
+            # remove any counts for log entries
+            del model_count["log entries"]
+            # remove the permission needed for log entry deletion
+            perms_needed.remove("log entry")
+            # filter out Log Entry from the list of items to be displayed for deletion
+            deletable_objects = [
+                obj
+                for obj in deletable_objects
+                if not isinstance(obj, str) or not obj.startswith("Log entry:")
+            ]
+        return deletable_objects, model_count, perms_needed, protected

@@ -18,7 +18,11 @@ from django.utils.html import format_html
 from modeltranslation.admin import TabbedTranslationAdmin
 
 from geniza.annotations.models import Annotation
-from geniza.common.admin import TypedRelationInline, custom_empty_field_list_filter
+from geniza.common.admin import (
+    PreventLogEntryDeleteMixin,
+    TypedRelationInline,
+    custom_empty_field_list_filter,
+)
 from geniza.corpus.dates import DocumentDateMixin, standard_date_display
 from geniza.corpus.forms import (
     DocumentEventWidgetWrapper,
@@ -432,7 +436,12 @@ class DocumentDescriptionAuthorshipInline(
 
 
 @admin.register(Document)
-class DocumentAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin):
+class DocumentAdmin(
+    TabbedTranslationAdmin,
+    SortableAdminBase,
+    PreventLogEntryDeleteMixin,
+    admin.ModelAdmin,
+):
     form = DocumentForm
     # NOTE: columns display for default and needs review display
     # are controlled via admin css; update the css if you change the order here
@@ -598,28 +607,6 @@ class DocumentAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin)
         }
         kwargs.update({"help_texts": help_texts})
         return super().get_form(request, obj, **kwargs)
-
-    def get_deleted_objects(self, objs, request):
-        # override to remove log entries from list and permission check
-        (
-            deletable_objects,
-            model_count,
-            perms_needed,
-            protected,
-        ) = super().get_deleted_objects(objs, request)
-
-        if "log entries" in model_count:
-            # remove any counts for log entries
-            del model_count["log entries"]
-            # remove the permission needed for log entry deletion
-            perms_needed.remove("log entry")
-            # filter out Log Entry from the list of items to be displayed for deletion
-            deletable_objects = [
-                obj
-                for obj in deletable_objects
-                if not isinstance(obj, str) or not obj.startswith("Log entry:")
-            ]
-        return deletable_objects, model_count, perms_needed, protected
 
     def get_queryset(self, request):
         return (

@@ -13,6 +13,8 @@ from django.core.validators import RegexValidator
 from django.db import IntegrityError, models, transaction
 from django.db.models import F, Q, Value
 from django.db.models.query import Prefetch
+from django.db.models.signals import pre_delete
+from django.dispatch import receiver
 from django.forms import ValidationError
 from django.urls import reverse
 from django.utils.html import strip_tags
@@ -25,6 +27,7 @@ from taggit.managers import TaggableManager
 from unidecode import unidecode
 
 from geniza.common.models import TaggableMixin, TrackChangesModel, cached_class_property
+from geniza.common.signals import detach_logentries
 from geniza.corpus.dates import DocumentDateMixin, PartialDate, standard_date_display
 from geniza.corpus.models import (
     Dating,
@@ -1010,6 +1013,10 @@ class Person(
     }
 
 
+# attach pre-delete for generic relation to log entries
+pre_delete.connect(detach_logentries, sender=Person)
+
+
 class EntitySolrQuerySet(AliasedSolrQuerySet):
     """Mixin for shared logic between Person and Place solr queryset.
     Requires class attributes: re_solr_fields, search_aliases"""
@@ -1207,6 +1214,10 @@ class PersonDocumentRelationType(MergeRelationTypesMixin, models.Model):
         return self.persondocumentrelation_set.all()
 
 
+# attach pre-delete for generic relation to log entries
+pre_delete.connect(detach_logentries, sender=PersonDocumentRelationType)
+
+
 class PersonDocumentRelation(models.Model):
     """A relationship between a person and a document."""
 
@@ -1290,6 +1301,10 @@ class PersonPersonRelationType(MergeRelationTypesMixin, models.Model):
     def relation_set(self):
         # own relationships QuerySet as required by MergeRelationTypesMixin
         return self.personpersonrelation_set.all()
+
+
+# attach pre-delete for generic relation to log entries
+pre_delete.connect(detach_logentries, sender=PersonPersonRelationType)
 
 
 class PersonPersonRelation(models.Model):
