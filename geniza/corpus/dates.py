@@ -327,6 +327,7 @@ hebrew_month_aliases = {
     "Tishrei": "Tishri",
     "Adar I": "Adar",
     "Adar II": "Adar Bet",
+    "Marheshvan": "Heshvan",
 }
 
 
