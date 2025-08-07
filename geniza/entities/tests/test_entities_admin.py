@@ -339,6 +339,25 @@ class TestNameInlineFormSet:
         )
         assertNotContains(response, NameInlineFormSet.DISPLAY_NAME_ERROR)
 
+        # should raise validation error if exactly one primary name and DELETE is checked
+        response = admin_client.post(
+            reverse("admin:entities_person_add"),
+            data={
+                "entities-name-content_type-object_id-INITIAL_FORMS": ["0"],
+                "entities-name-content_type-object_id-TOTAL_FORMS": ["2"],
+                "entities-name-content_type-object_id-MAX_NUM_FORMS": ["1000"],
+                "entities-name-content_type-object_id-0-name": "Marina Rustow",
+                "entities-name-content_type-object_id-0-primary": "on",
+                "entities-name-content_type-object_id-0-language": str(english.pk),
+                "entities-name-content_type-object_id-0-transliteration_style": Name.NONE,
+                "entities-name-content_type-object_id-0-DELETE": "on",
+                "entities-name-content_type-object_id-1-name": "S.D. Goitein",
+                "entities-name-content_type-object_id-1-language": str(english.pk),
+                "entities-name-content_type-object_id-1-transliteration_style": Name.NONE,
+            },
+        )
+        assertContains(response, NameInlineFormSet.DISPLAY_NAME_ERROR)
+
 
 @pytest.mark.django_db
 class TestPersonPersonRelationTypeChoiceIterator:

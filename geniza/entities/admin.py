@@ -72,7 +72,11 @@ class NameInlineFormSet(BaseGenericInlineFormSet):
         cleaned_data = [form.cleaned_data for form in self.forms if form.is_valid()]
         if cleaned_data:
             primary_names_count = len(
-                [name for name in cleaned_data if name.get("primary") == True]
+                [
+                    name
+                    for name in cleaned_data
+                    if name.get("primary") == True and not name.get("DELETE")
+                ]
             )
             if primary_names_count == 0 or primary_names_count > 1:
                 raise ValidationError(self.DISPLAY_NAME_ERROR, code="invalid")
@@ -367,7 +371,7 @@ class PersonAdmin(
                 .only("slug")
                 .get_results(rows=10000)
             )
-            slugs = [r["slug"] for r in sqs]
+            slugs = [r.get("slug") for r in sqs if r.get("slug")]
             # filter queryset by slug if there are results
             if sqs:
                 queryset = queryset.filter(slug__in=slugs)
