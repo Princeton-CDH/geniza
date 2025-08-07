@@ -642,6 +642,16 @@ class DocumentManifestView(DocumentDetailView):
 
     viewname = "corpus-uris:document-manifest"
 
+    def format_attribution(self, attribution):
+        """format attribution for local manifests (deprecated)"""
+        (attribution, additional_restrictions, extra_attrs_set) = attribution
+        extra_attrs = "\n".join("<p>%s</p>" % attr for attr in extra_attrs_set)
+        return '<div class="attribution"><p>%s</p><p>%s</p>%s</div>' % (
+            attribution,
+            additional_restrictions,
+            extra_attrs,
+        )
+
     def get(self, request, *args, **kwargs):
         document = self.get_object()
         # should 404 if no images or no transcription
@@ -724,7 +734,7 @@ class DocumentManifestView(DocumentDetailView):
         # (or at least, do not display in Mirador)
         # in 3.0 we can use multiple provider blocks, but no viewer supports it yet
 
-        manifest.attribution = corpus_extras.format_attribution(document.attribution())
+        manifest.attribution = self.format_attribution(document.attribution())
 
         # if transcription is available, add an annotation list to first canvas
         if document.has_transcription():

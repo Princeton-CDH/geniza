@@ -121,18 +121,6 @@ def iiif_info_json(images):
 
 
 @register.filter
-def format_attribution(attribution):
-    """format attribution for local manifests (deprecated)"""
-    (attribution, additional_restrictions, extra_attrs_set) = attribution
-    extra_attrs = "\n".join("<p>%s</p>" % attr for attr in extra_attrs_set)
-    return '<div class="attribution"><p>%s</p><p>%s</p>%s</div>' % (
-        attribution,
-        additional_restrictions,
-        extra_attrs,
-    )
-
-
-@register.filter
 def pgp_urlize(text):
     """Find all instances of \"PGPID #\" in the passed text, and convert
     each to a link to the referenced document."""
