@@ -620,8 +620,8 @@ class PlaceAdmin(SortableAdminBase, admin.ModelAdmin):
         "slug",
         ("latitude", "longitude"),
         "is_region",
-        "notes",
         "containing_region",
+        "notes",
     )
     inlines = (
         NameInline,
