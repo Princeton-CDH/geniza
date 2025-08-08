@@ -12,9 +12,11 @@
             <label>{% if name.primary %}Display n{% else %}N{% endif %}ame ({{ name.language }})</label><div>{{ name }}</div>
         </div>
     {% endfor %}
-    <div class="form-row">
-        <label>Social role</label><div>{{ person.role|default:"[no role]" }}</div>
-    </div>
+    {% for role in person.roles.all %}
+        <div class="form-row">
+            <label>Social role</label><div>{{ role }}</div>
+        </div>
+    {% endfor %}
     <div class="form-row">
         <label>Gender</label><div>{{ person.gender }}</div>
     </div>
@@ -65,6 +67,15 @@
     {% empty %}
         <div class="form-row">
             <label>Related place</label><div>[no related places]</div>
+        </div>
+    {% endfor %}
+    {% for event in person.events.all %}
+        <div class="form-row">
+            <label>Related event</label><div><a target="_blank" href="{% url 'admin:entities_event_change' event.pk %}"> {{ event }}</a></div>
+        </div>
+    {% empty %}
+        <div class="form-row">
+            <label>Related event</label><div>[no related events]</div>
         </div>
     {% endfor %}
     {% for footnote in person.footnotes.all %}

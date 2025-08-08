@@ -732,8 +732,11 @@ class Person(
 
         # collect names as strings (since that's the important part for comparison)
         self_names = [str(name) for name in self.names.all()]
+        merge_people_names = []
 
         for person in merge_people:
+            person_name = str(person)
+            merge_people_names.append(person_name)
             # ensure any has_page overrides are respected
             self.has_page = self.has_page or person.has_page
 
@@ -769,42 +772,33 @@ class Person(
                         "Description from merged entry:\n%s" % (person_description,)
                     )
 
-            # combine person-person relationships
-            # exclude relationships to primary person
-            for to_relationship in person.to_person.exclude(to_person__pk=self.pk):
-                # start with "to" relations (i.e. relationship to a related person was
-                # added on this person's admin form); this person was "from_person"
-                to_relationship.from_person = self
-                to_relationship.save()
-            for from_relationship in person.from_person.exclude(
-                from_person__pk=self.pk
-            ):
-                # repeat for "from" relations (i.e. relationship to this person was added
-                # on a related person's admin form); this person was "to_person"
-                from_relationship.to_person = self
-                from_relationship.save()
-
-            # combine person-document relationhips
-            for doc_relationship in person.persondocumentrelation_set.all():
-                # prevent duplicates (by document and relation type)
-                if not self.persondocumentrelation_set.filter(
-                    document=doc_relationship.document,
-                    type=doc_relationship.type,
-                ).exists():
-                    # reassign to self
-                    doc_relationship.person = self
-                    doc_relationship.save()
-
-            # combine person-place relationhips
-            for place_relationship in person.personplacerelation_set.all():
-                # prevent duplicates (by place and relation type)
-                if not self.personplacerelation_set.filter(
-                    place=place_relationship.place,
-                    type=place_relationship.type,
-                ).exists():
-                    # reassign to self
-                    place_relationship.person = self
-                    place_relationship.save()
+            # combine person-person relationships (self-referential M2M relationship)
+            # to_person = added on the form field of person to be merged in
+            self._merge_related(
+                person,
+                person_name,
+                "to_person",
+                "to_person",
+                reverse_field="from_person",
+                self_referential=True,
+            )
+            # from_person = added on the form field of the person on the other side of the relationship
+            self._merge_related(
+                person,
+                person_name,
+                "from_person",
+                "from_person",
+                reverse_field="to_person",
+                self_referential=True,
+            )
+            # combine person-document, person-place, person-event relationships
+            self._merge_related(
+                person, person_name, "document", "persondocumentrelation_set"
+            )
+            self._merge_related(person, person_name, "place", "personplacerelation_set")
+            self._merge_related(
+                person, person_name, "event", "personeventrelation_set", has_type=False
+            )
 
             # combine footnotes
             for footnote in person.footnotes.all():
@@ -832,7 +826,6 @@ class Person(
 
         # save current person with changes; delete merged people
         self.save()
-        merged_people = ", ".join([str(person) for person in merge_people])
         for person in merge_people:
             person.delete()
         # create log entry documenting the merge; include rationale
@@ -842,7 +835,7 @@ class Person(
             content_type_id=person_contenttype.pk,
             object_id=self.pk,
             object_repr=str(self),
-            change_message="merged with %s" % (merged_people,),
+            change_message="merged with %s" % (", ".join(merge_people_names),),
             action_flag=CHANGE,
         )
 
@@ -875,6 +868,53 @@ class Person(
             log_entry.object_id = self.id
             log_entry.content_type_id = ContentType.objects.get_for_model(Person)
             log_entry.save()
+
+    def _merge_related(
+        self,
+        person,
+        person_name,
+        related_model_name,
+        related_manager_name,
+        reverse_field="person",
+        self_referential=False,
+        has_type=True,
+    ):
+        # reassociate related documents, places, people, and events
+        # (adapted from Document._merge_entities)
+
+        # iterate through the join table to preserve metadata on the joins (type, notes)
+        primary_person_relations = getattr(self, related_manager_name).all()
+        merge_person_relations = getattr(person, related_manager_name).all()
+        if self_referential:
+            # prevent self-self relationship from being created during merge
+            merge_person_relations = merge_person_relations.exclude(
+                **{f"{related_model_name}__pk": self.pk}
+            )
+        for relation in merge_person_relations:
+            # filter existing relationships to find a match
+            filter_kwargs = {related_model_name: getattr(relation, related_model_name)}
+            if has_type:
+                # on person, document, and place, match by relation type as well
+                filter_kwargs.update({"type": relation.type})
+            same_relation = primary_person_relations.filter(**filter_kwargs)
+            if same_relation.exists():
+                # if a relationship already exists, combine the notes
+                existing_rel = same_relation.first()
+                if relation.notes and relation.notes not in existing_rel.notes:
+                    existing_rel.notes = "\n".join(
+                        note
+                        for note in [
+                            existing_rel.notes,
+                            "Notes from merged record %s: %s"
+                            % (person_name, relation.notes),
+                        ]
+                        if note  # filter out empty strings
+                    )
+                    existing_rel.save()
+            else:
+                # otherwise simply reassign the relationship to the primary person
+                setattr(relation, reverse_field, self)
+                relation.save()
 
     @classmethod
     def total_to_index(cls):
