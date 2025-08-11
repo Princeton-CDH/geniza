@@ -12,9 +12,11 @@
             <label>{% if name.primary %}Display n{% else %}N{% endif %}ame ({{ name.language }})</label><div>{{ name }}</div>
         </div>
     {% endfor %}
-    <div class="form-row">
-        <label>Social role</label><div>{{ person.role|default:"[no role]" }}</div>
-    </div>
+    {% for role in person.roles.all %}
+        <div class="form-row">
+            <label>Social role</label><div>{{ role }}</div>
+        </div>
+    {% endfor %}
     <div class="form-row">
         <label>Gender</label><div>{{ person.gender }}</div>
     </div>
@@ -26,10 +28,6 @@
             <label>Related document</label><div>
                 <a target="_blank" href="{% url 'admin:corpus_document_change' rel.document.pk %}">
                     {{ rel.document }}</a> ({{ rel.type }})</div>
-        </div>
-    {% empty %}
-        <div class="form-row">
-            <label>Related document</label><div>[no related documents]</div>
         </div>
     {% endfor %}
     {% for rel in person.to_person.all %}
@@ -51,29 +49,21 @@
             </div>
         </div>
     {% endfor %}
-    {% if not person.from_person.exists and not person.to_person.exists %}
-        <div class="form-row">
-            <label>Related person</label><div>[no related persons]</div>
-        </div>
-    {% endif %}
     {% for rel in person.personplacerelation_set.all %}
         <div class="form-row">
             <label>Related place</label><div>
                 <a target="_blank" href="{% url 'admin:entities_place_change' rel.place.pk %}">
                     {{ rel.place }}</a> ({{ rel.type }})</div>
         </div>
-    {% empty %}
+    {% endfor %}
+    {% for event in person.events.all %}
         <div class="form-row">
-            <label>Related place</label><div>[no related places]</div>
+            <label>Related event</label><div><a target="_blank" href="{% url 'admin:entities_event_change' event.pk %}"> {{ event }}</a></div>
         </div>
     {% endfor %}
     {% for footnote in person.footnotes.all %}
         <div class="form-row">
             <label>Data source (footnote)</label><div>{{ footnote.source.formatted_display|safe }}</div>
-        </div>
-    {% empty %}
-        <div class="form-row">
-            <label>Data source (footnote)</label><div>[no footnotes]</div>
         </div>
     {% endfor %}
 </div>

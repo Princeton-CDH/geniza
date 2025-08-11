@@ -512,7 +512,7 @@ class DocumentMergeForm(forms.Form):
         help_text=(
             "Select the primary document, which will be used as the merged document PGPID. "
             "All other PGPIDs will be added to the list of old PGPIDs. "
-            "All metadata, tags, footnotes, and log entries will be combined on the merged document."
+            "All metadata, authors, tags, footnotes, related entities, and log entries will be combined on the merged document."
         ),
         empty_label=None,
         widget=forms.RadioSelect,

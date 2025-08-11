@@ -35,7 +35,14 @@ from geniza.corpus.models import (
     Provenance,
     TextBlock,
 )
-from geniza.entities.models import Event
+from geniza.entities.models import (
+    DocumentPlaceRelation,
+    DocumentPlaceRelationType,
+    Event,
+    PersonDocumentRelation,
+    PersonDocumentRelationType,
+    Place,
+)
 from geniza.footnotes.models import (
     Creator,
     Footnote,
@@ -2072,6 +2079,108 @@ def test_document_merge_with_dates(document, join):
     assert document.dating_set.count() == 2
     result_pks = [dating.pk for dating in document.dating_set.all()]
     assert dating_1.pk in result_pks and dating_2.pk in result_pks
+
+
+@pytest.mark.django_db
+def test_document_merge_with_description_authors(document, join):
+    # create some creators and add them as description authors on the documents
+    marina = Creator.objects.create(last_name_en="Rustow", first_name_en="Marina")
+    amel = Creator.objects.create(last_name_en="Bensalim", first_name_en="Amel")
+    document.authors.add(marina)
+    join.authors.add(marina, amel)
+    assert document.authors.count() == 1
+
+    # merge join into document
+    document.merge_with([join], "test")
+    # should be two description authors now
+    assert document.authors.count() == 2
+    assert document.descriptionauthorship_set.count() == 2
+    # amel should be added
+    assert document.authors.contains(amel)
+
+
+@pytest.mark.django_db
+def test_document_merge_with_related_entities(
+    document, join, person, person_diacritic, person_multiname
+):
+    # add person-document relationships
+    (mentioned, _) = PersonDocumentRelationType.objects.get_or_create(name="Mentioned")
+    (author, _) = PersonDocumentRelationType.objects.get_or_create(name="Author")
+    (recipient, _) = PersonDocumentRelationType.objects.get_or_create(name="Recipient")
+    # same person and type, different notes
+    mentioned_rel = PersonDocumentRelation.objects.create(
+        document=document, person=person, type=mentioned, notes="Mentioned on line 5."
+    )
+    merged_mentioned_rel = PersonDocumentRelation.objects.create(
+        document=join, person=person, type=mentioned, notes="Sourced from evidence."
+    )
+    # same person, different type
+    PersonDocumentRelation.objects.create(
+        document=document,
+        person=person_diacritic,
+        type=author,
+        notes="Authored similar.",
+    )
+    newtype_rel = PersonDocumentRelation.objects.create(
+        document=join, person=person_diacritic, type=recipient, notes="Address on top."
+    )
+    # different person
+    newperson_rel = PersonDocumentRelation.objects.create(
+        document=join,
+        person=person_multiname,
+        type=recipient,
+        notes="Also address on top.",
+    )
+
+    assert document.persondocumentrelation_set.count() == 2
+
+    # merge into document as primary
+    join_pk = join.pk
+    document.merge_with([join], "test")
+
+    # should have added Recipient relation with person_diacritic, and relationship with person_multiname
+    assert document.persondocumentrelation_set.count() == 4
+
+    # notes should be merged on person + type matches
+    old_notes = mentioned_rel.notes
+    mentioned_rel.refresh_from_db()
+    assert (
+        mentioned_rel.notes
+        == f"{old_notes}\nNotes from PGPID {join_pk}: {merged_mentioned_rel.notes}"
+    )
+
+    # duplicate relation should be cascade-deleted
+    assert not PersonDocumentRelation.objects.filter(
+        pk=merged_mentioned_rel.pk
+    ).exists()
+
+    # otherwise should just reassign relationships to primary document
+    newtype_rel.refresh_from_db()
+    assert newtype_rel.document.pk == document.pk
+    newperson_rel.refresh_from_db()
+    assert newperson_rel.document.pk == document.pk
+
+    # ensure basic merge functionality works for places and events too
+    # (uses the same logic as people so no need to test in depth)
+    doc3 = Document.objects.create()
+    fustat = Place.objects.create()
+    qasr = Place.objects.create()
+    pdr_type = DocumentPlaceRelationType.objects.create()
+    DocumentPlaceRelation.objects.create(document=document, place=fustat, type=pdr_type)
+    DocumentPlaceRelation.objects.create(document=doc3, place=fustat, type=pdr_type)
+    DocumentPlaceRelation.objects.create(document=doc3, place=qasr, type=pdr_type)
+    assert document.documentplacerelation_set.count() == 1
+    document.merge_with([doc3], "test")
+    assert document.documentplacerelation_set.count() == 2
+
+    doc4 = Document.objects.create()
+    publication = Event.objects.create()
+    founding = Event.objects.create()
+    DocumentEventRelation.objects.create(document=document, event=publication)
+    DocumentEventRelation.objects.create(document=doc4, event=founding)
+    assert document.documenteventrelation_set.count() == 1
+    document.merge_with([doc4], "test")
+    assert document.documenteventrelation_set.count() == 2
 
 
 def test_document_get_by_any_pgpid(document):

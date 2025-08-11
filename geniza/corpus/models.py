@@ -21,7 +21,6 @@ from django.db import models
 from django.db.models.functions import Concat
 from django.db.models.query import Prefetch
 from django.db.models.signals import pre_delete
-from django.dispatch import receiver
 from django.templatetags.static import static
 from django.urls import reverse
 from django.utils.html import strip_tags
@@ -1679,8 +1678,22 @@ class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin, TaggableMixin)
                 if textblock.fragment not in self.fragments.all():
                     self.textblock_set.add(textblock)
 
+            # merge description authors
+            self.authors.add(*doc.authors.all())
+
             self._merge_footnotes(doc)
             self._merge_logentries(doc)
+
+            # merge relationships with models from the entities module
+            self._merge_entities(doc, "person", "persondocumentrelation_set")
+            self._merge_entities(doc, "place", "documentplacerelation_set")
+            self._merge_entities(
+                # DocumentEventRelation doens't have a type field
+                doc,
+                "event",
+                "documenteventrelation_set",
+                has_type=False,
+            )
 
         # combine aggregated content for text fields
         for lang_code in language_codes:
@@ -1792,6 +1805,40 @@ class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin, TaggableMixin)
             log_entry.object_id = self.id
             log_entry.content_type_id = ContentType.objects.get_for_model(Document)
             log_entry.save()
+
+    def _merge_entities(
+        self, doc, related_model_name, related_manager_name, has_type=True
+    ):
+        # reassociate related people/places/events; reusable logic for merge_with.
+        # (made reusable by factoring out related manager and entity model names)
+
+        # iterate through the join table to preserve metadata on the joins (type, notes)
+        primary_doc_relations = getattr(self, related_manager_name).all()
+        merge_doc_relations = getattr(doc, related_manager_name).all()
+        for relation in merge_doc_relations:
+            # filter existing relationships to find a match
+            filter_kwargs = {related_model_name: getattr(relation, related_model_name)}
+            if has_type:
+                # on person and place, match by relation type as well
+                filter_kwargs.update({"type": relation.type})
+            same_relation = primary_doc_relations.filter(**filter_kwargs)
+            if same_relation.exists():
+                # if a relationship already exists, combine the notes
+                existing_rel = same_relation.first()
+                if relation.notes and relation.notes not in existing_rel.notes:
+                    existing_rel.notes = "\n".join(
+                        note
+                        for note in [
+                            existing_rel.notes,
+                            "Notes from PGPID %s: %s" % (doc.id, relation.notes),
+                        ]
+                        if note  # filter out empty strings
+                    )
+                    existing_rel.save()
+            else:
+                # otherwise simply reassign the relationship to the primary document
+                relation.document = self
+                relation.save()
 
 
 # attach pre-delete for generic relation to log entries

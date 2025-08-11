@@ -13,6 +13,11 @@
             <label>Description</label><div>{{ document.description }}</div>
         </div>
     {% endif %}
+    {% if document.authors.count %}
+        <div class="form-row">
+            <label>Description Authors</label><div>{{ document.authors.all|join:", " }}</div>
+        </div>
+    {% endif %}
     {% if document.all_languages %}
         <div class="form-row">
             <label>Languages</label><div>{{ document.all_languages }}</div>
@@ -68,16 +73,95 @@
                                 <label>Footnote relation</label>
                                 <div>{{ fn.get_doc_relation_display }}</div>
                             </div>
-                            {% if fn.has_transcription %}
+                            {% if fn.content_html_str %}
                                 <div class="form-row">
-                                    <label>Transcription(s)</label>
+                                    <label>Content</label>
                                     <div class="transcription-container">
-                                        {{ fn.content_html }}
+                                        {{ fn.content_html_str|safe }}
                                     </div>
                                 </div>
                             {% endif %}
                         {% endfor %}
                     </li>
+                {% endfor %}
+            </ol>
+        </div>
+    {% endif %}
+    {% if document.persondocumentrelation_set.count %}
+        <div class="form-row">
+            <label>Related People</label>
+            <ol>
+                {% for person_rel in document.persondocumentrelation_set.all %}
+                    <li>
+                        <div class="form-row">
+                            <label>Person</label>
+                            <div>
+                                {{ person_rel.person }}
+                                <a href="{% url 'admin:entities_person_change' person_rel.person.id %}" title="Go to this person's admin edit page">
+                                    <img src="/static/admin/img/icon-changelink.svg" alt="Change">
+                                </a>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <label>Relationship</label>
+                            <div>{{ person_rel.type }}</div>
+                        </div>
+                        <div class="form-row">
+                            <label>Uncertain</label>
+                            <div>{{ person_rel.uncertain }}</div>
+                        </div>
+                        {% if person_rel.notes %}
+                            <div class="form-row">
+                                <label>Notes</label>
+                                <div>{{ person_rel.notes }}</div>
+                            </div>
+                        {% endif %}
+                    </li>
+                {% endfor %}
+            </ol>
+        </div>
+    {% endif %}
+    {% if document.documentplacerelation_set.count %}
+        <div class="form-row">
+            <label>Related Places</label>
+            <ol>
+                {% for place_rel in document.documentplacerelation_set.all %}
+                    <li>
+                        <div class="form-row">
+                            <label>Place</label>
+                            <div>
+                                {{ place_rel.place }}
+                                <a href="{% url 'admin:entities_place_change' place_rel.place.id %}" title="Go to this place's admin edit page">
+                                    <img src="/static/admin/img/icon-changelink.svg" alt="Change">
+                                </a>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <label>Relationship</label>
+                            <div>{{ place_rel.type }}</div>
+                        </div>
+                        {% if place_rel.notes %}
+                            <div class="form-row">
+                                <label>Notes</label>
+                                <div>{{ place_rel.notes }}</div>
+                            </div>
+                        {% endif %}
+                    </li>
+                {% endfor %}
+            </ol>
+        </div>
+    {% endif %}
+    {% if document.events.count %}
+        <div class="form-row">
+            <label>Related Events</label>
+            <ol>
+                {% for event_rel in document.documenteventrelation_set.all %}
+                    <li>
+                        {{ event_rel.event }}
+                        <a href="{% url 'admin:entities_event_change' event_rel.event.id %}" title="Go to this event's admin edit page">
+                            <img src="/static/admin/img/icon-changelink.svg" alt="Change">
+                        </a>
+                        {% if event_rel.notes %}(notes: {{ event_rel.notes }}){% endif %}</li>
                 {% endfor %}
             </ol>
         </div>
