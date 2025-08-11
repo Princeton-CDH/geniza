@@ -131,6 +131,9 @@ main.places {
         bottom: -7px;
         height: calc(100vh - 10.5rem);
         max-height: calc(100vh - 10.5rem);
+        // use dvh where supported for mobile compatibility
+        height: calc(100dvh - 10.5rem);
+        max-height: calc(100dvh - 10.5rem);
         z-index: 2;
         @include breakpoints.for-tablet-landscape-up {
             position: relative;
@@ -255,6 +258,9 @@ main.places {
         // smaller map if filters open on mobile
         height: calc(100vh - 21.5rem);
         max-height: calc(100vh - 21.5rem);
+        // use dvh where supported for mobile compatibility
+        height: calc(100dvh - 21.5rem);
+        max-height: calc(100dvh - 21.5rem);
         @include breakpoints.for-tablet-landscape-up {
             height: auto;
             max-height: none;
