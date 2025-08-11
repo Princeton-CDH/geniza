@@ -27,7 +27,7 @@ window.addEventListener("DOMContentLoaded", () => {
             "td.field-thumbnail div.admin-thumbnail"
         );
         const selectedImagesField = row.querySelector(
-            "td.original input[name$='selected_images']"
+            "td.field-selected_images input[name$='selected_images']"
         );
         thumbnails.forEach((thumbnailDiv, i) => {
             thumbnailDiv.addEventListener(
