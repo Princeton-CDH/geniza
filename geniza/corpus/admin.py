@@ -35,7 +35,8 @@ from geniza.corpus.models import (
     Fragment,
     LanguageScript,
     Provenance,
-    TextBlock,
+    MaterialSupport,
+    TextBlock
 )
 from geniza.corpus.solr_queryset import DocumentSolrQuerySet
 from geniza.corpus.views import DocumentMerge
@@ -171,6 +172,9 @@ class DocumentTextBlockInline(SortableInlineAdminMixin, admin.TabularInline):
     def fragment_provenance(self, obj):
         return obj.fragment.provenance
 
+    @admin.display(description="MaterialSupport")
+    def fragment_material_support(self, obj):
+        return str(obj.fragment.material_support or "")
 
 class DocumentForm(forms.ModelForm):
     class Meta:
@@ -867,7 +871,7 @@ class ProvenanceAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
     fields = ("name",)
     ordering = ("name",)
 
-@admin.register(Provenance)
+@admin.register(MaterialSupport)
 class MaterialSupportAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
     search_fields = ("name",)
     fields = ("name",)
