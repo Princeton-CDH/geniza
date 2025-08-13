@@ -253,6 +253,9 @@ class FragmentExporter(Exporter):
         "is_multifragment",
         "created",
         "last_modified",
+        "provenance_display",
+        "provenance",
+        "material_support"
     ]
 
     # queryset filter for content types included in this import
@@ -285,6 +288,9 @@ class FragmentExporter(Exporter):
             "is_multifragment": fragment.is_multifragment,
             "created": fragment.created,
             "last_modified": fragment.last_modified,
+            "provenance_display": fragment.provenance_display,
+            "provenance": fragment.provenance,
+            "material_support": fragment.material_support
         }
         # it's possible (although unlikely) for collection to be unset
         if fragment.collection:
