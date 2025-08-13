@@ -184,6 +184,15 @@ class Provenance(models.Model):
         return self.name
 
 
+class MaterialSupport(models.Model):
+    """The physical material of a `Fragment`."""
+
+    name = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.name
+
+
 class FragmentManager(models.Manager):
     """Custom manager for :class:`Fragment` with natural key lookup"""
 
@@ -216,6 +225,15 @@ class Fragment(TrackChangesModel):
         "Multifragment",
         default=False,
         help_text="True if there are multiple fragments in one shelfmark",
+    )
+
+    material_support = models.ForeignKey(
+        MaterialSupport,
+        verbose_name="Material support",
+        blank=True,
+        null=True,
+        on_delete=models.SET_NULL,
+        help_text="The physical material of the fragment",
     )
     provenance_display = models.ForeignKey(
         Provenance,
