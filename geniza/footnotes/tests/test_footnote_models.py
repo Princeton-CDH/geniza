@@ -336,7 +336,7 @@ class TestFootnote:
         )
         assert Footnote.display_multiple(
             [idx_footnote_1, idx_footnote_2]
-        ) == 'S. D. Goitein, unpublished index cards (1950–85), %s and <a href="%s">%s</a>. Princeton Geniza Lab, Princeton University.' % (
+        ) == 'S. D. Goitein, unpublished index cards (1950–85), %s and <a href="%s" data-turbo="false">%s</a>. Princeton Geniza Lab, Princeton University.' % (
             cardno_1,
             idx_footnote_2.url,
             cardno_2,
