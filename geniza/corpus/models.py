@@ -635,11 +635,6 @@ class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin, TaggableMixin)
     )
     footnotes = GenericRelation(Footnote, related_query_name="document")
     log_entries = GenericRelation(LogEntry, related_query_name="document")
-    cite_description = models.BooleanField(
-        "Cite description",
-        default=False,
-        help_text="If checked, the authors selected below will appear in the citation at the bottom of the public document page.",
-    )
     authors = models.ManyToManyField(
         to=Creator, verbose_name="Description Authors", through=DescriptionAuthorship
     )
@@ -783,7 +778,7 @@ class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin, TaggableMixin)
     def formatted_citation(self):
         """a formatted citation for display at the bottom of Document detail pages"""
         available = "Available"
-        if self.cite_description and self.authors.exists():
+        if self.authors.exists():
             author = ""
             author_fullnames = [
                 a.creator.firstname_lastname()
