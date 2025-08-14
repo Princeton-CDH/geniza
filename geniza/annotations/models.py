@@ -221,6 +221,21 @@ class Annotation(TrackChangesModel):
         self.content = data
 
     @classmethod
+    def flatten_html_list(cls, html_string):
+        soup = BeautifulSoup(html_string, 'html.parser')
+        li_elem = soup.find(['li'])
+        if not li_elem:
+            return html_string
+        top_list = soup.find(['ul', 'ol'])
+        start, end = "", ""
+        if str(top_list)[:4] == "<ol>":
+            start, end = "<ol>", "</ol>"
+        else:
+            start, end = "<ul>", "</ul>"
+        needs_closing = html_string.replace("<ol>", "").replace("</ol>", "").replace("<ul>", "").replace("</ul>", "").replace("<li>", f"{start}<li>", 1)
+        return needs_closing[::-1].replace(">il/<", f"{end[::-1]}>il/<", 1)[::-1]
+
+    @classmethod
     def sanitize_html(cls, html):
         """Sanitizes passed HTML according to allowed tags and attributes, stripping out any
         that are not allowed, and spans with no attributes."""
@@ -244,10 +259,8 @@ class Annotation(TrackChangesModel):
                 if not span.attrs:
                     span.unwrap()
             # serialize back out as html without wrapping html/body tags
-            return "".join(str(el) for el in soup.html.body.children)
-
-        else:
-            return cleaned_html
+            cleaned_html = "".join(str(el) for el in soup.html.body.children)
+        return cls.flatten_html_list(cleaned_html)
 
     @property
     def etag(self):
