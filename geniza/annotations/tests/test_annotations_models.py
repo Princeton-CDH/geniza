@@ -150,10 +150,8 @@ class TestAnnotation:
         assert compiled["etag"] == line.etag
         assert "@context" not in compiled
 
-    @pytest.mark.mohamed
     def test_flatten_html_lists(self):
         html_nested_list = '<p></p><ol><li><p>First</p></li><ol><li><p>First.one</p></li><li><p>First.two</p></li></ol><li><p>Second</p></li><ul><li><p>Second.one</p></li><li><p>Second.two</p></li></ul><li><p>Third</p></li><ol><li><p>Third.one</p></li><li><p>Third.two</p></li></ol></ol>'
-        # assert Annotation.flatten_html_list(html_nested_list) == '<p></p><ol><li><p>First</p></li><li><p>First.one</p></li><li><p>First.two</p></li><li><p>Second</p></li><li><p>Second.one</p></li><li><p>Second.two</p></li><li><p>Third</p></li><li><p>Third.one</p></li><li><p>Third.two</p></li></ol>'
         assert Annotation.flatten_html_list(
             html_nested_list) == '<p></p><ol><li><p>First</p></li><li><p>First.one</p></li><li><p>First.two</p></li><li><p>Second</p></li><li><p>Second.one</p></li><li><p>Second.two</p></li><li><p>Third</p></li><li><p>Third.one</p></li><li><p>Third.two</p></li></ol>'
 
