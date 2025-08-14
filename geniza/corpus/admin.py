@@ -467,6 +467,7 @@ class DocumentAdmin(
         "standard_date",
         "admin_thumbnails",
         "fragment_historical_shelfmarks",
+        "cite_description",
     )
     search_fields = (
         "fragments__shelfmark",
@@ -490,6 +491,10 @@ class DocumentAdmin(
     )
     def standard_date(self, obj):
         return standard_date_display(obj.doc_date_standard)
+
+    @admin.display(description="Cite description")
+    def cite_description(self, _):
+        return "The authors selected below will appear in the citation at the bottom of the public document page."
 
     list_filter = (
         "doctype",

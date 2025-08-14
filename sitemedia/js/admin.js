@@ -534,6 +534,26 @@ function toggleImageSelected(image, selectedImagesField) {
     // toggle if this image is selected by adding/removing the "selected" class
     // and adding/removing its index to/from the hidden selected_images form field
     return function (evt) {
+        // if this originated from checking a box in the image/rotation overrides
+        // section, isTrusted is false
+        const fromOverrides = !evt.isTrusted;
+        const overrides = document.querySelector(
+            "div.field-admin_thumbnails div.readonly"
+        );
+        const overrideThumb = overrides.querySelector(
+            `[data-canvas="${evt.currentTarget.dataset.canvas}"]`
+        );
+        // if this did not originate from overrides section, make sure overrides
+        // section state is synchronized
+        if (!fromOverrides) {
+            overrideThumb.classList.toggle("selected");
+            const checkbox = overrideThumb.querySelector(
+                "input[type='checkbox']"
+            );
+            checkbox.checked = !checkbox.checked;
+        }
+
+        // keep hidden field and classlist in sync with selection
         const selectedImages = selectedImagesField.value
             .split(",")
             .filter((v) => v !== ""); // Needed to ensure empty string isn't in array
