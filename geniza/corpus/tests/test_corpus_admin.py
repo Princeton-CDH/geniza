@@ -41,7 +41,8 @@ from geniza.corpus.models import (
     Fragment,
     LanguageScript,
     Provenance,
-    TextBlock,
+    MaterialSupport,
+    TextBlock
 )
 from geniza.entities.models import Event, Person, PersonDocumentRelation
 from geniza.footnotes.models import Footnote, Source, SourceLanguage, SourceType
@@ -454,6 +455,14 @@ class TestDocumentTextBlockInline:
         inline = DocumentTextBlockInline(Document, admin_site=admin.site)
         assert inline.fragment_provenance(textblock) == ""
         assert inline.fragment_provenance_display(textblock) == str(ng)
+
+    def test_fragment_material_support(self):
+        (ng, _) = MaterialSupport.objects.get_or_create(name="Paper")
+        fragment = Fragment.objects.create(shelfmark="CUL 123", material_support=ng)
+        doc = Document.objects.create()
+        textblock = TextBlock.objects.create(fragment=fragment, document=doc)
+        inline = DocumentTextBlockInline(Document, admin_site=admin.site)
+        assert inline.fragment_material_support(textblock) == str(ng)
 
 
 class TestFragmentAdmin:

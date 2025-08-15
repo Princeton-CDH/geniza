@@ -18,11 +18,7 @@ from django.utils.html import format_html
 from modeltranslation.admin import TabbedTranslationAdmin
 
 from geniza.annotations.models import Annotation
-from geniza.common.admin import (
-    PreventLogEntryDeleteMixin,
-    TypedRelationInline,
-    custom_empty_field_list_filter,
-)
+from geniza.common.admin import TypedRelationInline, custom_empty_field_list_filter
 from geniza.corpus.dates import DocumentDateMixin, standard_date_display
 from geniza.corpus.forms import (
     DocumentEventWidgetWrapper,
@@ -33,14 +29,14 @@ from geniza.corpus.metadata_export import AdminDocumentExporter, AdminFragmentEx
 from geniza.corpus.models import (
     Collection,
     Dating,
-    DescriptionAuthorship,
     Document,
     DocumentEventRelation,
     DocumentType,
     Fragment,
     LanguageScript,
     Provenance,
-    TextBlock,
+    MaterialSupport,
+    TextBlock
 )
 from geniza.corpus.solr_queryset import DocumentSolrQuerySet
 from geniza.corpus.views import DocumentMerge
@@ -146,6 +142,7 @@ class DocumentTextBlockInline(SortableInlineAdminMixin, admin.TabularInline):
         "thumbnail",
         "side",
         "fragment_provenance_display",
+        "fragment_material_support",
         "fragment_provenance",
     )
     fields = (
@@ -175,6 +172,9 @@ class DocumentTextBlockInline(SortableInlineAdminMixin, admin.TabularInline):
     def fragment_provenance(self, obj):
         return obj.fragment.provenance
 
+    @admin.display(description="MaterialSupport")
+    def fragment_material_support(self, obj):
+        return str(obj.fragment.material_support or "")
 
 class DocumentForm(forms.ModelForm):
     class Meta:
@@ -426,22 +426,8 @@ class DocumentEventInline(admin.TabularInline):
         return formset
 
 
-class DocumentDescriptionAuthorshipInline(
-    SortableInlineAdminMixin, admin.TabularInline
-):
-    model = DescriptionAuthorship
-    autocomplete_fields = ["creator"]
-    fields = ("creator", "sort_order")
-    extra = 1
-
-
 @admin.register(Document)
-class DocumentAdmin(
-    TabbedTranslationAdmin,
-    SortableAdminBase,
-    PreventLogEntryDeleteMixin,
-    admin.ModelAdmin,
-):
+class DocumentAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin):
     form = DocumentForm
     # NOTE: columns display for default and needs review display
     # are controlled via admin css; update the css if you change the order here
@@ -534,7 +520,6 @@ class DocumentAdmin(
                     ("languages", "secondary_languages"),
                     "language_note",
                     "description",
-                    "cite_description",
                 )
             },
         ),
@@ -568,7 +553,6 @@ class DocumentAdmin(
     autocomplete_fields = ["languages", "secondary_languages"]
     # NOTE: autocomplete does not honor limit_choices_to in model
     inlines = [
-        DocumentDescriptionAuthorshipInline,
         DocumentDatingInline,
         DocumentTextBlockInline,
         DocumentFootnoteInline,
@@ -579,7 +563,6 @@ class DocumentAdmin(
     # mixed fieldsets and inlines: /templates/admin/snippets/mixed_inlines_fieldsets.html
     fieldsets_and_inlines_order = (
         "f",  # shelfmark, languages, description fieldset
-        "i",  # DocumentDescriptionAuthorshipInline
         "f",  # date on document fieldset
         "i",  # DocumentDatingInline
         "f",  # tags, status, order override fieldset
@@ -612,6 +595,28 @@ class DocumentAdmin(
         }
         kwargs.update({"help_texts": help_texts})
         return super().get_form(request, obj, **kwargs)
+
+    def get_deleted_objects(self, objs, request):
+        # override to remove log entries from list and permission check
+        (
+            deletable_objects,
+            model_count,
+            perms_needed,
+            protected,
+        ) = super().get_deleted_objects(objs, request)
+
+        if "log entries" in model_count:
+            # remove any counts for log entries
+            del model_count["log entries"]
+            # remove the permission needed for log entry deletion
+            perms_needed.remove("log entry")
+            # filter out Log Entry from the list of items to be displayed for deletion
+            deletable_objects = [
+                obj
+                for obj in deletable_objects
+                if not isinstance(obj, str) or not obj.startswith("Log entry:")
+            ]
+        return deletable_objects, model_count, perms_needed, protected
 
     def get_queryset(self, request):
         return (
@@ -815,6 +820,7 @@ class FragmentAdmin(admin.ModelAdmin):
         ("url", "iiif_url"),
         "is_multifragment",
         "provenance_display",
+        "material_support",
         "provenance",
         "iiif_provenance",
         "notes",
@@ -864,9 +870,14 @@ class FragmentAdmin(admin.ModelAdmin):
 
     actions = (export_to_csv,)
 
-
 @admin.register(Provenance)
 class ProvenanceAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
+    search_fields = ("name",)
+    fields = ("name",)
+    ordering = ("name",)
+
+@admin.register(MaterialSupport)
+class MaterialSupportAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
     search_fields = ("name",)
     fields = ("name",)
     ordering = ("name",)
