@@ -759,11 +759,7 @@ class TestDocument:
         assert f"{c.library}, {c.name}" in join.formatted_citation
         assert f"+ {c2.library}, {c2.name}" in join.formatted_citation
 
-        # cite_description = True, but no authorships: same
-        document.cite_description = True
-        assert f"{document.shelfmark}. Available online" in document.formatted_citation
-
-        # cite_description AND authorships: "description by authors available"
+        # added authorships: "description by authors available"
         marina = Creator.objects.create(last_name_en="Rustow", first_name_en="Marina")
         document.authors.add(marina)
         assert (
