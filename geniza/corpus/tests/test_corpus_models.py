@@ -32,6 +32,7 @@ from geniza.corpus.models import (
     DocumentType,
     Fragment,
     LanguageScript,
+    MaterialSupport,
     Provenance,
     TextBlock,
 )
@@ -1699,6 +1700,17 @@ class TestDocument:
         assert len(document.fragments_by_provenance) > 0
         TextBlock.objects.create(fragment=f2, document=document)
         assert document.fragments_by_provenance[0].pk == f1.pk
+
+    def test_fragments_by_material_support(self, document):
+        assert not document.fragments_by_material_support
+        (paper, _) = MaterialSupport.objects.get_or_create(name="Paper")
+        (parch, _) = MaterialSupport.objects.get_or_create(name="Parchment")
+        f1 = Fragment.objects.create(shelfmark="CUL 123", material_support=paper)
+        f2 = Fragment.objects.create(shelfmark="CUL 456", material_support=parch)
+        TextBlock.objects.create(fragment=f1, document=document)
+        assert len(document.fragments_by_material_support) > 0
+        TextBlock.objects.create(fragment=f2, document=document)
+        assert document.fragments_by_material_support[0].pk == f1.pk
 
 
 def test_document_merge_with(document, join):
