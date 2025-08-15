@@ -151,9 +151,12 @@ class TestAnnotation:
         assert "@context" not in compiled
 
     def test_flatten_html_lists(self):
-        html_nested_list = '<p></p><ol><li><p>First</p></li><ol><li><p>First.one</p></li><li><p>First.two</p></li></ol><li><p>Second</p></li><ul><li><p>Second.one</p></li><li><p>Second.two</p></li></ul><li><p>Third</p></li><ol><li><p>Third.one</p></li><li><p>Third.two</p></li></ol></ol>'
+        html_nested_ol = '<p></p><ol><li><p>First</p></li><ol><li><p>First.one</p></li><li><p>First.two</p></li></ol><li><p>Second</p></li><ul><li><p>Second.one</p></li><li><p>Second.two</p></li></ul><li><p>Third</p></li><ol><li><p>Third.one</p></li><li><p>Third.two</p></li></ol></ol>'
         assert Annotation.flatten_html_list(
-            html_nested_list) == '<p></p><ol><li><p>First</p></li><li><p>First.one</p></li><li><p>First.two</p></li><li><p>Second</p></li><li><p>Second.one</p></li><li><p>Second.two</p></li><li><p>Third</p></li><li><p>Third.one</p></li><li><p>Third.two</p></li></ol>'
+            html_nested_ol) == '<p></p><ol><li><p>First</p></li><li><p>First.one</p></li><li><p>First.two</p></li><li><p>Second</p></li><li><p>Second.one</p></li><li><p>Second.two</p></li><li><p>Third</p></li><li><p>Third.one</p></li><li><p>Third.two</p></li></ol>'
+        html_nested_ul = '<p></p><ul><li><p>First</p></li><ol><li><p>First.one</p></li><li><p>First.two</p></li></ol><li><p>Second</p></li><ul><li><p>Second.one</p></li><li><p>Second.two</p></li></ul><li><p>Third</p></li><ol><li><p>Third.one</p></li><li><p>Third.two</p></li></ol></ul>'
+        assert Annotation.flatten_html_list(
+            html_nested_ul) == '<p></p><ul><li><p>First</p></li><li><p>First.one</p></li><li><p>First.two</p></li><li><p>Second</p></li><li><p>Second.one</p></li><li><p>Second.two</p></li><li><p>Third</p></li><li><p>Third.one</p></li><li><p>Third.two</p></li></ul>'
 
     def test_sanitize_html(self):
         html = '<table><div><p style="foo:bar;">test</p></div><ol><li>line</li></ol></table>'
