@@ -50,7 +50,7 @@ def populate_material_support_display(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("corpus", "0049_document_cite_description_descriptionauthorship_and_more"),
+        ("corpus", "0050_remove_document_cite_description"),
     ]
 
     operations = [
