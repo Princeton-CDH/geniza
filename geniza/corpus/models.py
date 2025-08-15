@@ -1217,6 +1217,16 @@ class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin, TaggableMixin)
             if frag.provenance_display
         ]
 
+    @property
+    def fragments_by_material_support(self):
+        """Associated fragments ordered by material_support, if set"""
+        return [
+            frag
+            for frag in self.fragments.order_by("material_support__name")
+            if frag.material_support
+        ]
+
+
     @classmethod
     def total_to_index(cls):
         """static method to efficiently count the number of documents to index in Solr"""
