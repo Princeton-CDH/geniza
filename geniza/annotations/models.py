@@ -222,6 +222,9 @@ class Annotation(TrackChangesModel):
 
     @classmethod
     def flatten_html_list(cls, html_string):
+        """If the passed-in html string has nested lists, this method flattens it to a single list of one level of items.
+        The method doesn't drop any item nor sub-item, instead it promotes the sub-items up as many levels as necessary to
+        bring them all as the items of the single list"""
         soup = BeautifulSoup(html_string, 'html.parser')
         li_elem = soup.find(['li'])
         if not li_elem:
