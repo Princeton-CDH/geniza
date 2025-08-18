@@ -225,18 +225,25 @@ class Annotation(TrackChangesModel):
         """If the passed-in html string has nested lists, this method flattens it to a single list of one level of items.
         The method doesn't drop any item nor sub-item, instead it promotes the sub-items up as many levels as necessary to
         bring them all as the items of the single list"""
-        soup = BeautifulSoup(html_string, 'html.parser')
-        li_elem = soup.find(['li'])
+        soup = BeautifulSoup(html_string, "html.parser")
+        li_elem = soup.find(["li"])
         if not li_elem:
             return html_string
-        top_list = soup.find(['ul', 'ol'])
+        top_list = soup.find(["ul", "ol"])
         start, end = "", ""
         if str(top_list)[:4] == "<ol>":
             start, end = "<ol>", "</ol>"
         else:
             start, end = "<ul>", "</ul>"
-        needs_closing = html_string.replace("<ol>", "").replace("</ol>", "").replace("<ul>", "").replace("</ul>", "").replace("<li>", f"{start}<li>", 1)
-        return needs_closing[::-1].replace(">il/<", f"{end[::-1]}>il/<", 1)[::-1]
+        needs_closing = (
+            html_string.replace("<ol>", "")
+            .replace("</ol>", "")
+            .replace("<ul>", "")
+            .replace("</ul>", "")
+            .replace("<li>", f"{start}<li>", 1)
+        )
+        splitted = needs_closing.rsplit("</li>", 1)
+        return f"{splitted[0]}</li>{end}{splitted[1]}"
 
     @classmethod
     def sanitize_html(cls, html):
