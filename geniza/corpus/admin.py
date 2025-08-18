@@ -178,7 +178,7 @@ class DocumentTextBlockInline(SortableInlineAdminMixin, admin.TabularInline):
     def fragment_provenance(self, obj):
         return obj.fragment.provenance
 
-    @admin.display(description="MaterialSupport")
+    @admin.display(description="Material support")
     def fragment_material_support(self, obj):
         return str(obj.fragment.material_support or "")
 
