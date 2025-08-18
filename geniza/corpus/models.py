@@ -157,7 +157,7 @@ class LanguageScript(models.Model):
     class Meta:
         verbose_name = "Language + Script"
         verbose_name_plural = "Languages + Scripts"
-        ordering = ["language"]
+        ordering = ["display_name", "language"]
         constraints = [
             models.UniqueConstraint(
                 fields=["language", "script"], name="unique_language_script"

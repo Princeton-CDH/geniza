@@ -86,9 +86,9 @@ class CollectionAdmin(admin.ModelAdmin):
 @admin.register(LanguageScript)
 class LanguageScriptAdmin(admin.ModelAdmin):
     list_display = (
+        "display_name",
         "language",
         "script",
-        "display_name",
         "documents",
         "secondary_documents",
     )
