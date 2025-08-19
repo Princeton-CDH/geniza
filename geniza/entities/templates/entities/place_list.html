@@ -9,17 +9,18 @@
 {% endblock extrameta %}
 
 {% block main %}
-    <form data-controller="search" data-turbo-frame="main" data-turbo-action="advance" data-page="person">
+    {{ search_opts|json_script:"search-opts" }}
+    <form data-controller="search map" data-turbo-frame="main" data-page="person">
         <section id="map-container">
             <div
                 id="map"
-                data-controller="map"
+                data-map-target="map"
                 data-maptiler-token="{{ maptiler_token }}"
             >
                 <dl class="legend">
                     <dt>
                         {# translators: Accessibility label for regions icon #}
-                        <svg class="marker" aria-label="{% translate 'Map pin icon for regions' %}">
+                        <svg class="marker region" aria-label="{% translate 'Map pin icon for regions' %}">
                             <use href="{% static 'img/ui/all/all/map-pin-region.svg' %}#pin" />
                         </svg>
                     </dt>
@@ -34,92 +35,68 @@
                     {# translators: Label for places icon in map legend #}
                     <dd>{% translate "Place" %}</dd>
                 </dl>
-                {% for place in places %}
-                    {% if place.location %}
-                        <svg
-                            class="marker"
-                            data-map-target="marker"
-                            data-lat="{{ place.location|split:","|first }}"
-                            data-lon="{{ place.location|split:","|last }}"
-                            data-slug="{{ place.slug }}"
-                        >
-                            {% if place.is_region %}
-                                <use class="pin region" href="{% static 'img/ui/all/all/map-pin-region.svg' %}#pin" />
-                                <use class="selected-pin region" href="{% static 'img/ui/all/all/map-pin-region-fill.svg' %}#pin" />
-                            {% else %}
-                                <use class="pin" href="{% static 'img/ui/all/all/map-pin.svg' %}#pin" />
-                                <use class="selected-pin" href="{% static 'img/ui/all/all/map-pin-fill.svg' %}#pin" />
-                            {% endif %}
-                        </svg>
-                    {% endif %}
-                {% endfor %}
+                <ul data-map-target="placeMarkers"></ul>
             </div>
         </section>
         <section id="place-list" data-action="click@document->search#clickCloseDropdown">
             <div class="header-row">
                 <h1>{{ page_title }}</h1>
-                <span>(<span class="mobile-only">{{ paginator.per_page }} of </span>{{ paginator.count|intcomma }})</span>
+                <i data-map-target="loading" class="ph ph-spinner-gap"></i>
+            </div>
+            <fieldset id="query">
+                {% render_field form.q data-search-target="query" data-action="input->search#autoUpdateRadioSort change->search#update" %}
+
+                {# Translators: Search submit button #}
+                {% translate 'Submit search' as search_label %}
+                <button type="submit" aria-label="{{ search_label }}"></button>
+                <input type="checkbox" id="place-filters" data-search-target="placeFiltersCheckbox" />
+                <label aria-label="{% translate "Filters" %}" for="place-filters" data-action="click->search#toggleFiltersOpen">
+                    <svg><use xlink:href="{% static 'img/ui/all/all/search-filter-icon.svg' %}#filter-icon" /></svg>
+                    {% if applied_filters %}
+                        <span class="filter-count">{{ applied_filters|length }}</span>
+                    {% endif %}
+                </label>
+            </fieldset>
+            <fieldset id="date-filter" aria-expanded="false" data-search-target="filterModal">
+                <label for="{{ form.date_range.auto_id }}" class="date-range-label">
+                    <span class="fieldname">{{ form.date_range.label }}</span>
+                    {% render_field form.date_range data-action="search#update keypress->search#preventEnterKeypress" data-search-target="dateRange" %}
+                </label>
+                {% if form.date_range.value.0 or form.date_range.value.1 %}
+                    {# Translators: label for a button to clear the Places date filter #}
+                    <button type="button" data-action="click->search#clearFilters"><span>{% translate "Clear" %}</span></button>
+                {% endif %}
+                {% with  min_year=form.date_range.field.widget.widgets.0.attrs.placeholder  max_year=form.date_range.field.widget.widgets.1.attrs.placeholder  %}
+                    <div class="timeline" role="group" style="--a: {{ form.date_range.value.0|default:min_year }}; --b: {{ form.date_range.value.1|default:max_year }}; --min: {{ min_year }}; --max: {{ max_year }}">
+                        <input id="a" type="range" min="{{ min_year }}" max="{{ max_year }}" value="{{ form.date_range.value.0|default:min_year }}" aria-label="{% translate "From year" %}" data-search-target="minYear" data-action="input->search#updateTimeline change->search#update">
+                        <input id="b" type="range" min="{{ min_year }}" max="{{ max_year }}" value="{{ form.date_range.value.1|default:max_year }}" aria-label="{% translate "To year" %}" data-search-target="maxYear" data-action="input->search#updateTimeline change->search#update">
+                        <div role="presentation" class="ticks" data-map-target="timelineTicks" data-min="{{ min_year }}" data-max="{{ max_year }}">
+                            <svg width="100%" height="44" overflow="visible" shapeRendering="crispEdges"></svg>
+                        </div>
+                    </div>
+                {% endwith %}
+            </fieldset>
+            <div class="header-row count-sort">
+                <span data-map-target="count"></span>
                 <fieldset id="sort-field">
                     <label for="{{ form.sort.auto_id }}">{{ form.sort.label }}</label>
                     <details data-search-target="dropdownDetails">
                         <summary>
                             <span>{{ form.get_sort_label|default:"Name" }}</span>
                         </summary>
-                        <div id="sort-options">
+                        <div id="sort-options" data-search-target="radioSort">
                             {% render_field form.sort data-action="search#update" %}
                             {% render_field form.sort_dir data-action="search#update" %}
                         </div>
                     </details>
                 </fieldset>
             </div>
-            <ul>
-                {% for place in places %}
-                    <li class="place" data-slug-anchor="{{ place.slug }}">
-                        {# Translators: accessible label for section showing place metadata, names #}
-                        <dl class="metadata" aria-label="{% translate 'metadata' %}">
-                            <dt class="sr-only">{% translate "Name" %}</dt>
-                            <dd class="name">
-                                {% if place.url %}
-                                    <a href="{{ place.url }}" data-turbo="false">{{ place.name }}</a>
-                                {% else %}
-                                    <span>{{ place.name }}</span>
-                                {% endif %}
-                            </dd>
-                            {% if place.other_names %}
-                                <dt class="sr-only">{% translate "Other names" %}</dt>
-                                <dd class="other-names">
-                                    {{ place.other_names }}
-                                </dd>
-                            {% endif %}
-                        </dl>
-                        {# Translators: accessible label for section showing counts of entries related to an entity #}
-                        <dl class="relations" aria-label="{% translate 'Related entries' %}">
-                            <dt class="documents">
-                                {% translate "Related Documents" %}</dt>
-                            <dd>
-                                <span>{{ place.documents }}</span>
-                            </dd>
-                            <dt class="people">
-                                {% translate "Related People" %}</dt>
-                            <dd>
-                                <span>{{ place.people }}</span>
-                            </dd>
-                        </dl>
-                    </li>
-                {% endfor %}
-            </ul>
-            <div class="pagination-container">
-                {# Translators: range of search results on the current page, out of total #}
-                {% blocktranslate with start=page_obj.start_index end=page_obj.end_index count_humanized=paginator.count|intcomma %}
-                    <div>{{ start }} – {{ end }} of {{ count_humanized }}</div>
-                {% endblocktranslate %}
-                {% include "corpus/snippets/pagination.html" %}
-            </div>
+            <ul data-map-target="placeList"></ul>
         </section>
         <label id="mobile-mode-toggle" data-search-target="placesMode">
             <input type="checkbox" data-action="search#onToggleMap" />
             {# Translators: label for Places list mode button on mobile devices #}
-            <span id="list-mode-label">{% translate 'List' %}</span>
+            <span id="list-mode-label" data-map-target="countButton">{% translate 'List' %}</span>
             {# Translators: label for Places map mode button on mobile devices #}
             <span id="map-mode-label">{% translate 'Map' %}</span>
         </label>

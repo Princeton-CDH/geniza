@@ -350,7 +350,7 @@ class EventForm(forms.ModelForm):
         }
 
 
-class PlaceListForm(forms.Form):
+class PlaceListForm(RangeForm):
     SORT_CHOICES = [
         # Translators: label for sort by name
         ("name", _("Name")),
@@ -358,6 +358,8 @@ class PlaceListForm(forms.Form):
         ("documents", _("Related Documents")),
         # Translators: label for sort by number of related people
         ("people", _("Related People")),
+        # Translators: label for sort by relevance
+        ("relevance", _("Relevance")),
     ]
 
     sort = forms.ChoiceField(
@@ -379,6 +381,24 @@ class PlaceListForm(forms.Form):
         choices=SORT_DIR_CHOICES,
         required=False,
         widget=forms.RadioSelect,
+    )
+
+    q = forms.CharField(
+        label="Keyword or Phrase",
+        required=False,
+        widget=forms.TextInput(
+            attrs={
+                # Translators: placeholder for place keyword search input
+                "placeholder": _("Search for places by name"),
+                # Translators: accessible label for places keyword search input
+                "aria-label": _("word or phrase"),
+                "type": "search",
+            }
+        ),
+    )
+    # Translators: label for place dates filter
+    date_range = RangeField(
+        label=_("Filter by year"), required=False, widget=YearRangeWidget()
     )
 
     def get_sort_label(self):

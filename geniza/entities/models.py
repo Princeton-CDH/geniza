@@ -13,6 +13,8 @@ from django.core.validators import RegexValidator
 from django.db import IntegrityError, models, transaction
 from django.db.models import F, Q, Value
 from django.db.models.query import Prefetch
+from django.db.models.signals import pre_delete
+from django.dispatch import receiver
 from django.forms import ValidationError
 from django.urls import reverse
 from django.utils.html import strip_tags
@@ -25,6 +27,7 @@ from taggit.managers import TaggableManager
 from unidecode import unidecode
 
 from geniza.common.models import TaggableMixin, TrackChangesModel, cached_class_property
+from geniza.common.signals import detach_logentries
 from geniza.corpus.dates import DocumentDateMixin, PartialDate, standard_date_display
 from geniza.corpus.models import (
     Dating,
@@ -729,8 +732,11 @@ class Person(
 
         # collect names as strings (since that's the important part for comparison)
         self_names = [str(name) for name in self.names.all()]
+        merge_people_names = []
 
         for person in merge_people:
+            person_name = str(person)
+            merge_people_names.append(person_name)
             # ensure any has_page overrides are respected
             self.has_page = self.has_page or person.has_page
 
@@ -766,42 +772,33 @@ class Person(
                         "Description from merged entry:\n%s" % (person_description,)
                     )
 
-            # combine person-person relationships
-            # exclude relationships to primary person
-            for to_relationship in person.to_person.exclude(to_person__pk=self.pk):
-                # start with "to" relations (i.e. relationship to a related person was
-                # added on this person's admin form); this person was "from_person"
-                to_relationship.from_person = self
-                to_relationship.save()
-            for from_relationship in person.from_person.exclude(
-                from_person__pk=self.pk
-            ):
-                # repeat for "from" relations (i.e. relationship to this person was added
-                # on a related person's admin form); this person was "to_person"
-                from_relationship.to_person = self
-                from_relationship.save()
-
-            # combine person-document relationhips
-            for doc_relationship in person.persondocumentrelation_set.all():
-                # prevent duplicates (by document and relation type)
-                if not self.persondocumentrelation_set.filter(
-                    document=doc_relationship.document,
-                    type=doc_relationship.type,
-                ).exists():
-                    # reassign to self
-                    doc_relationship.person = self
-                    doc_relationship.save()
-
-            # combine person-place relationhips
-            for place_relationship in person.personplacerelation_set.all():
-                # prevent duplicates (by place and relation type)
-                if not self.personplacerelation_set.filter(
-                    place=place_relationship.place,
-                    type=place_relationship.type,
-                ).exists():
-                    # reassign to self
-                    place_relationship.person = self
-                    place_relationship.save()
+            # combine person-person relationships (self-referential M2M relationship)
+            # to_person = added on the form field of person to be merged in
+            self._merge_related(
+                person,
+                person_name,
+                "to_person",
+                "to_person",
+                reverse_field="from_person",
+                self_referential=True,
+            )
+            # from_person = added on the form field of the person on the other side of the relationship
+            self._merge_related(
+                person,
+                person_name,
+                "from_person",
+                "from_person",
+                reverse_field="to_person",
+                self_referential=True,
+            )
+            # combine person-document, person-place, person-event relationships
+            self._merge_related(
+                person, person_name, "document", "persondocumentrelation_set"
+            )
+            self._merge_related(person, person_name, "place", "personplacerelation_set")
+            self._merge_related(
+                person, person_name, "event", "personeventrelation_set", has_type=False
+            )
 
             # combine footnotes
             for footnote in person.footnotes.all():
@@ -829,7 +826,6 @@ class Person(
 
         # save current person with changes; delete merged people
         self.save()
-        merged_people = ", ".join([str(person) for person in merge_people])
         for person in merge_people:
             person.delete()
         # create log entry documenting the merge; include rationale
@@ -839,7 +835,7 @@ class Person(
             content_type_id=person_contenttype.pk,
             object_id=self.pk,
             object_repr=str(self),
-            change_message="merged with %s" % (merged_people,),
+            change_message="merged with %s" % (", ".join(merge_people_names),),
             action_flag=CHANGE,
         )
 
@@ -872,6 +868,53 @@ class Person(
             log_entry.object_id = self.id
             log_entry.content_type_id = ContentType.objects.get_for_model(Person)
             log_entry.save()
+
+    def _merge_related(
+        self,
+        person,
+        person_name,
+        related_model_name,
+        related_manager_name,
+        reverse_field="person",
+        self_referential=False,
+        has_type=True,
+    ):
+        # reassociate related documents, places, people, and events
+        # (adapted from Document._merge_entities)
+
+        # iterate through the join table to preserve metadata on the joins (type, notes)
+        primary_person_relations = getattr(self, related_manager_name).all()
+        merge_person_relations = getattr(person, related_manager_name).all()
+        if self_referential:
+            # prevent self-self relationship from being created during merge
+            merge_person_relations = merge_person_relations.exclude(
+                **{f"{related_model_name}__pk": self.pk}
+            )
+        for relation in merge_person_relations:
+            # filter existing relationships to find a match
+            filter_kwargs = {related_model_name: getattr(relation, related_model_name)}
+            if has_type:
+                # on person, document, and place, match by relation type as well
+                filter_kwargs.update({"type": relation.type})
+            same_relation = primary_person_relations.filter(**filter_kwargs)
+            if same_relation.exists():
+                # if a relationship already exists, combine the notes
+                existing_rel = same_relation.first()
+                if relation.notes and relation.notes not in existing_rel.notes:
+                    existing_rel.notes = "\n".join(
+                        note
+                        for note in [
+                            existing_rel.notes,
+                            "Notes from merged record %s: %s"
+                            % (person_name, relation.notes),
+                        ]
+                        if note  # filter out empty strings
+                    )
+                    existing_rel.save()
+            else:
+                # otherwise simply reassign the relationship to the primary person
+                setattr(relation, reverse_field, self)
+                relation.save()
 
     @classmethod
     def total_to_index(cls):
@@ -1010,7 +1053,51 @@ class Person(
     }
 
 
-class PersonSolrQuerySet(AliasedSolrQuerySet):
+# attach pre-delete for generic relation to log entries
+pre_delete.connect(detach_logentries, sender=Person)
+
+
+class EntitySolrQuerySet(AliasedSolrQuerySet):
+    """Mixin for shared logic between Person and Place solr queryset.
+    Requires class attributes: re_solr_fields, search_aliases"""
+
+    keyword_search_qf = (
+        "{!type=edismax qf=$entities_qf pf=$entities_pf v=$keyword_query}"
+    )
+
+    def keyword_search(self, search_term):
+        """Allow searching using keywords with the specified query and phrase match
+        fields, and set the default operator to AND"""
+        if ":" in search_term:
+            # if any of the field aliases occur with a colon, replace with actual solr field
+            search_term = self.re_solr_fields.sub(
+                lambda x: "%s:" % self.search_aliases[x.group(1)], search_term
+            )
+        query_params = {"keyword_query": search_term, "q.op": "AND"}
+        return self.search(self.keyword_search_qf).raw_query_parameters(
+            **query_params,
+        )
+
+    def get_highlighting(self):
+        """dedupe highlights across variant fields (e.g. for other_names)"""
+        highlights = super().get_highlighting()
+        highlights = {k: v for k, v in highlights.items() if v}
+        for result in highlights.keys():
+            other_names = set()
+            # iterate through other_names_* fields to get all matches
+            for hls in [
+                highlights[result][field]
+                for field in highlights[result].keys()
+                if field.startswith("other_names_")
+            ]:
+                # strip highglight tags and whitespace, then add to set
+                cleaned_names = [strip_tags(hl.strip()) for hl in hls]
+                other_names.update(set(cleaned_names))
+            highlights[result]["other_names"] = [n for n in other_names if n]
+        return highlights
+
+
+class PersonSolrQuerySet(EntitySolrQuerySet):
     """':class:`~parasolr.django.AliasedSolrQuerySet` for
     :class:`~geniza.corpus.models.Person`"""
 
@@ -1050,39 +1137,6 @@ class PersonSolrQuerySet(AliasedSolrQuerySet):
         r"(%s):" % "|".join(key for key, val in search_aliases.items() if key != val),
         flags=re.DOTALL,
     )
-
-    keyword_search_qf = "{!type=edismax qf=$people_qf pf=$people_pf v=$keyword_query}"
-
-    def keyword_search(self, search_term):
-        """Allow searching using keywords with the specified query and phrase match
-        fields, and set the default operator to AND"""
-        if ":" in search_term:
-            # if any of the field aliases occur with a colon, replace with actual solr field
-            search_term = self.re_solr_fields.sub(
-                lambda x: "%s:" % self.search_aliases[x.group(1)], search_term
-            )
-        query_params = {"keyword_query": search_term, "q.op": "AND"}
-        return self.search(self.keyword_search_qf).raw_query_parameters(
-            **query_params,
-        )
-
-    def get_highlighting(self):
-        """dedupe highlights across variant fields (e.g. for other_names)"""
-        highlights = super().get_highlighting()
-        highlights = {k: v for k, v in highlights.items() if v}
-        for person in highlights.keys():
-            other_names = set()
-            # iterate through other_names_* fields to get all matches
-            for hls in [
-                highlights[person][field]
-                for field in highlights[person].keys()
-                if field.startswith("other_names_")
-            ]:
-                # strip highglight tags and whitespace, then add to set
-                cleaned_names = [strip_tags(hl.strip()) for hl in hls]
-                other_names.update(set(cleaned_names))
-            highlights[person]["other_names"] = [n for n in other_names if n]
-        return highlights
 
 
 class PastPersonSlug(models.Model):
@@ -1200,6 +1254,10 @@ class PersonDocumentRelationType(MergeRelationTypesMixin, models.Model):
         return self.persondocumentrelation_set.all()
 
 
+# attach pre-delete for generic relation to log entries
+pre_delete.connect(detach_logentries, sender=PersonDocumentRelationType)
+
+
 class PersonDocumentRelation(models.Model):
     """A relationship between a person and a document."""
 
@@ -1285,6 +1343,10 @@ class PersonPersonRelationType(MergeRelationTypesMixin, models.Model):
         return self.personpersonrelation_set.all()
 
 
+# attach pre-delete for generic relation to log entries
+pre_delete.connect(detach_logentries, sender=PersonPersonRelationType)
+
+
 class PersonPersonRelation(models.Model):
     """A relationship between two people."""
 
@@ -1344,6 +1406,10 @@ class Region(models.Model):
     when a map is not available, such as in exports"""
 
     name = models.CharField(max_length=255, unique=True)
+
+    class Meta:
+        verbose_name = "Geographic area"
+        verbose_name_plural = "Geographic areas"
 
     def __str__(self):
         return self.name
@@ -1441,10 +1507,11 @@ class Place(ModelIndexable, SlugMixin, PermalinkMixin):
     )
     containing_region = models.ForeignKey(
         Region,
+        verbose_name="Geographic area",
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        help_text="The geographic region containing this place. For internal use and CSV exports only.",
+        help_text="The geographic area containing this place. For internal use and CSV exports only.",
     )
 
     def __str__(self):
@@ -1610,9 +1677,7 @@ class Place(ModelIndexable, SlugMixin, PermalinkMixin):
                 # basic metadata
                 "slug_s": self.slug,
                 "name_s": str(self),
-                "other_names_s": ", ".join(
-                    sorted([n.name for n in self.names.non_primary()])
-                ),
+                "other_names_ss": sorted([n.name for n in self.names.non_primary()]),
                 "url_s": self.get_absolute_url(),
                 # LatLonPointSpatialField takes lat,lon string
                 "location_p": (
@@ -1645,7 +1710,7 @@ class Place(ModelIndexable, SlugMixin, PermalinkMixin):
     }
 
 
-class PlaceSolrQuerySet(AliasedSolrQuerySet):
+class PlaceSolrQuerySet(EntitySolrQuerySet):
     """':class:`~parasolr.django.AliasedSolrQuerySet` for
     :class:`~geniza.corpus.models.Place`"""
 
@@ -1656,13 +1721,22 @@ class PlaceSolrQuerySet(AliasedSolrQuerySet):
     field_aliases = {
         "slug": "slug_s",
         "name": "name_s",
-        "other_names": "other_names_s",
+        "other_names": "other_names_ss",
+        # copies of other_names for improved search
+        "other_names_nostem": "other_names_nostem",
+        "other_names_bigram": "other_names_bigram",
         "url": "url_s",
         "documents": "documents_i",
         "people": "people_i",
         "location": "location_p",
         "is_region": "is_region_b",
     }
+    search_aliases = field_aliases.copy()
+
+    re_solr_fields = re.compile(
+        r"(%s):" % "|".join(key for key, val in search_aliases.items() if key != val),
+        flags=re.DOTALL,
+    )
 
 
 class PastPlaceSlug(models.Model):

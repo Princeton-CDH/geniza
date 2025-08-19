@@ -8,20 +8,28 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.contrib.postgres.aggregates import ArrayAgg
+from django.core.paginator import EmptyPage, Paginator
 from django.db.models import Count, Prefetch, Q
 from django.forms import ValidationError
-from django.http import Http404, HttpResponsePermanentRedirect, HttpResponseRedirect
+from django.http import (
+    Http404,
+    HttpResponsePermanentRedirect,
+    HttpResponseRedirect,
+    JsonResponse,
+)
+from django.template.loader import render_to_string
 from django.urls import resolve, reverse
 from django.utils.safestring import mark_safe
 from django.utils.text import Truncator
 from django.utils.translation import gettext as _
 from django.utils.translation import ngettext
-from django.views.generic import DetailView, FormView, ListView
+from django.views.generic import DetailView, FormView, ListView, View
 from django.views.generic.edit import FormMixin
 from natsort import natsort_key
 
 from geniza.corpus.dates import DocumentDateMixin, standard_date_display
 from geniza.corpus.models import Dating, Document, DocumentType, TextBlock
+from geniza.corpus.solr_queryset import DocumentSolrQuerySet
 from geniza.corpus.views import SolrDateRangeMixin
 from geniza.entities.forms import (
     PersonDocumentRelationTypeMergeForm,
@@ -884,8 +892,24 @@ class PersonListView(ListView, FormMixin, SolrDateRangeMixin):
             ]
         if search_opts.get("social_role"):
             roles = literal_eval(search_opts["social_role"])
-            roles = [re.sub(self.qs_regex, r"\\\1", r) for r in roles]
-            people = people.filter(roles__in=roles)
+            roles_escaped = [re.sub(self.qs_regex, r"\\\1", r) for r in roles]
+            people = people.filter(roles__in=roles_escaped)
+            # boost multiple selected values
+            if len(roles) > 1:
+                roles_field = people.field_aliases.get("roles")
+                # if no keyword query entered, need to use the filter values
+                # as an OR query, in order to get any relevance score
+                if not search_opts.get("q"):
+                    roles_q = " OR ".join(roles_escaped)
+                    people = people.search(f"{roles_field}:({roles_q})")
+                # use edismax boost, sum(termfreq) filter query to boost score
+                # when more than one of the selected terms appears
+                term_freq_boosts = ",".join(
+                    [f'termfreq({roles_field},"{role}")' for role in roles]
+                )
+                people = people.raw_query_parameters(
+                    boost=f"sum({term_freq_boosts})"
+                ).also("score")
             self.applied_filter_labels += self.get_applied_filter_labels(
                 form, "social_role", roles
             )
@@ -916,7 +940,8 @@ class PersonListView(ListView, FormMixin, SolrDateRangeMixin):
                 and "date" not in sort_field
             ):
                 order_by = f"-{order_by}"
-            people = people.order_by(order_by)
+            # use name (slug_s ascending) as tiebreaker
+            people = people.order_by(order_by, "slug_s")
 
         self.queryset = people
 
@@ -965,7 +990,7 @@ class PersonListView(ListView, FormMixin, SolrDateRangeMixin):
         return context_data
 
 
-class PlaceListView(ListView, FormMixin):
+class PlaceListView(ListView, FormMixin, SolrDateRangeMixin):
     """A list view with faceted filtering and sorting using solr."""
 
     model = Place
@@ -975,42 +1000,17 @@ class PlaceListView(ListView, FormMixin):
     page_title = _("Places")
     # Translators: description of places list/browse page
     page_description = _("Browse places present in Geniza documents.")
-    paginate_by = 300
     form_class = PlaceListForm
+    queryset = PlaceSolrQuerySet().none()
 
     # sort options mapped to solr fields
-    sort_fields = {"name": "slug_s", "documents": "documents_i", "people": "people_i"}
+    sort_fields = {
+        "name": "slug_s",
+        "documents": "documents_i",
+        "people": "people_i",
+        "relevance": "score",
+    }
     initial = {"sort": "name", "sort_dir": "asc"}
-
-    def get_queryset(self, *args, **kwargs):
-        """modify queryset to sort and filter on places in the list"""
-        places = PlaceSolrQuerySet()
-
-        form = self.get_form()
-        # bail out if form is invalid
-        if not form.is_valid():
-            return places.none()
-
-        search_opts = form.cleaned_data
-
-        # TODO: filter by location with solr
-
-        # sort with solr
-        if search_opts.get("sort"):
-            sort_field = search_opts.get("sort")
-            order_by = self.sort_fields[sort_field]
-            # default is ascending; handle descending by appending a - in order_by
-            if (
-                "sort_dir" in search_opts
-                and search_opts["sort_dir"] == "desc"
-                and "date" not in sort_field
-            ):
-                order_by = f"-{order_by}"
-            places = places.order_by(order_by)
-
-        self.queryset = places
-
-        return places
 
     def get_form_kwargs(self):
         """get form arguments from request and configured defaults"""
@@ -1025,18 +1025,141 @@ class PlaceListView(ListView, FormMixin):
 
         kwargs["data"] = form_data
 
+        # get min/max configuration for document date range field
+        # (which is the origin of place dates, filtered by the join query)
+        kwargs["range_minmax"] = self.get_range_stats(
+            queryset_cls=DocumentSolrQuerySet, field_name="date_range"
+        )
+        # for the purposes of rendering a timeline, round to the nearest century
+        dr = kwargs["range_minmax"].get("date_range")
+        if dr and len(dr) == 2:
+            kwargs["range_minmax"]["date_range"] = (
+                dr[0] - (dr[0] % 100),  # round the lower date down
+                dr[1] - (dr[1] % -100),  # round the upper date up
+            )
+
         return kwargs
 
     def get_context_data(self, **kwargs):
         """extend context data to add page metadata, facets"""
         context_data = super().get_context_data(**kwargs)
 
+        # setup config to serialize as json in template and pass to PlaceListSnippetView
+        search_opts = {
+            "form_valid": False,
+            "snippets_url": reverse("entities:place-list-snippets"),
+        }
+
+        # can replace this with get_filter_labels if additional filters are added,
+        # and/or we need to display the labels themselves
+        applied_filters = []
+
+        # get form data to pass to snippet view
+        form = self.get_form()
+        if form.is_valid():
+            search_opts.update({"form_valid": True})
+            form_data = form.cleaned_data
+            if form_data.get("sort"):
+                sort_field = form_data.get("sort")
+                order_by = self.sort_fields[sort_field]
+                # default is ascending; handle descending by appending a - in order_by
+                if (
+                    "sort_dir" in form_data
+                    and form_data["sort_dir"] == "desc"
+                    and "date" not in sort_field
+                ):
+                    order_by = f"-{order_by}"
+
+                search_opts.update({"order_by": order_by})
+            if form_data.get("q"):
+                search_opts.update({"query": form_data.get("q")})
+            date_range = form_data.get("date_range")
+            if date_range:
+                # add to applied_filters to show filter count
+                applied_filters.append(date_range)
+                search_opts.update({"date_range": date_range})
+
         context_data.update(
             {
+                "search_opts": search_opts,
                 "page_title": self.page_title,
                 "page_description": self.page_description,
+                "applied_filters": applied_filters,
+                "total": PlaceSolrQuerySet().count(),
                 "page_type": "places",
                 "maptiler_token": getattr(settings, "MAPTILER_API_TOKEN", ""),
             }
         )
         return context_data
+
+
+class PlaceListSnippetView(View):
+    """A view used in :class:`PlaceListView` to render snippets of paginated
+    place results asynchronously: markers to be displayed on the map, and search
+    results for the list."""
+
+    paginate_by = 100
+
+    def get(self, *args, **kwargs):
+        """Return a JSON response with the rendered snippets, based on the
+        modified queryset and pagination params in the GET request."""
+        # handle sorting and filtering on solr queryset
+        places = PlaceSolrQuerySet()
+        query = self.request.GET.get("q")
+        if query:
+            # keyword search query and relevance scoring
+            places = places.keyword_search(query.replace("'", "")).also("score")
+
+        # handle date filter
+        date_range = self.request.GET.get("date_range")
+        if date_range:
+            start_date, end_date = date_range.split(",")
+            places = places.filter(
+                f"{{!join from=places_ids_ss to=id}}item_type_s:document AND document_date_dr:[{start_date or '*'} TO {end_date or '*'}]"
+            )
+
+        order_by = self.request.GET.get("sort", "slug_s")
+        places = places.order_by(order_by)
+
+        count = places.count()
+        # Translators: number of results
+        count_str = ngettext("%(count)d result", "%(count)d results", count) % {
+            "count": count
+        }
+        # Translators: number of places
+        button_count_str = ngettext("%(count)d place", "%(count)d places", count) % {
+            "count": count
+        }  # different verbiage for the "toggle to list mode" mobile button
+
+        # handle pagination
+        paginator = Paginator(places, self.paginate_by)
+        page_number = self.request.GET.get("page", 1)
+        page = paginator.get_page(page_number)
+
+        # render the snippets to HTML strings so we can asynchronously insert them
+        # with JS
+        markers_snippet = render_to_string(
+            "entities/snippets/place_markers.html",
+            {
+                "places": [p for p in page if "location" in p],
+                "has_next": page.has_next(),
+            },
+        )
+        results_snippet = render_to_string(
+            "entities/snippets/place_results.html", {"places": page}
+        )
+
+        # use JSON response since we don't need any additional template rendering,
+        # and this will allow Stimulus to work with the data easily
+        return JsonResponse(
+            {
+                "markers_snippet": markers_snippet,
+                "results_snippet": results_snippet,
+                "has_next": page.has_next(),
+                "next_page_number": (
+                    page.next_page_number() if page.has_next() else None
+                ),
+                "results_count": count_str,
+                "places_count": button_count_str,
+            }
+        )

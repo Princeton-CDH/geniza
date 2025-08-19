@@ -13,6 +13,7 @@ from django.contrib.admin.models import CHANGE, LogEntry
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.fields import GenericRelation
 from django.contrib.contenttypes.models import ContentType
+from django.contrib.humanize.templatetags.humanize import ordinal
 from django.contrib.postgres.fields import ArrayField
 from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
@@ -20,7 +21,6 @@ from django.db import models
 from django.db.models.functions import Concat
 from django.db.models.query import Prefetch
 from django.db.models.signals import pre_delete
-from django.dispatch import receiver
 from django.templatetags.static import static
 from django.urls import reverse
 from django.utils.html import strip_tags
@@ -44,6 +44,7 @@ from geniza.common.models import (
     TrackChangesModel,
     cached_class_property,
 )
+from geniza.common.signals import detach_logentries
 from geniza.common.utils import absolutize_url
 from geniza.corpus.annotation_utils import document_id_from_manifest_uri
 from geniza.corpus.dates import DocumentDateMixin, PartialDate, standard_date_display
@@ -543,6 +544,24 @@ class PermalinkMixin:
         return absolutize_url(self.get_absolute_url().replace(f"/{lang}/", "/"))
 
 
+class DescriptionAuthorship(models.Model):
+    """Ordered relationship between :class:`Creator` and :class:`Document`."""
+
+    creator = models.ForeignKey(Creator, on_delete=models.CASCADE)
+    document = models.ForeignKey("Document", on_delete=models.CASCADE)
+    sort_order = models.PositiveSmallIntegerField(default=1)
+
+    class Meta:
+        ordering = ("sort_order",)
+
+    def __str__(self) -> str:
+        return '%s, %s description author on "%s"' % (
+            self.creator,
+            ordinal(self.sort_order),
+            "PGPID %d" % self.document.id,
+        )
+
+
 class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin, TaggableMixin):
     """A unified document such as a letter or legal document that
     appears on one or more fragments."""
@@ -616,6 +635,9 @@ class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin, TaggableMixin)
     )
     footnotes = GenericRelation(Footnote, related_query_name="document")
     log_entries = GenericRelation(LogEntry, related_query_name="document")
+    authors = models.ManyToManyField(
+        to=Creator, verbose_name="Description Authors", through=DescriptionAuthorship
+    )
 
     # Placeholder canvas to use when not all IIIF images are available
     PLACEHOLDER_CANVAS = {
@@ -755,7 +777,23 @@ class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin, TaggableMixin)
     @property
     def formatted_citation(self):
         """a formatted citation for display at the bottom of Document detail pages"""
-        available_at = "Available online through the Princeton Geniza Project at"
+        available = "Available"
+        if self.authors.exists():
+            author = ""
+            author_fullnames = [
+                a.creator.firstname_lastname()
+                for a in self.descriptionauthorship_set.all()
+            ]
+            # combine the last pair with and; combine all others with comma
+            # thanks to https://stackoverflow.com/a/30084022
+            if len(author_fullnames) > 1:
+                author = " and ".join(
+                    [", ".join(author_fullnames[:-1]), author_fullnames[-1]]
+                )
+            else:
+                author = author_fullnames[0]
+            available = "Description by %s available" % author
+        at_pgp = "online through the Princeton Geniza Project at"
         today = datetime.today().strftime("%B %-d, %Y")
         tb_set = self.textblock_set.all()
         long_name = (
@@ -769,8 +807,11 @@ class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin, TaggableMixin)
             if all(block.fragment.collection for block in tb_set)
             else self.shelfmark
         )
+        # Translators: accessibility label for permanent link to a document
+        perma_label = _("Permalink")
+        permalink = f'<a href="{self.permalink}" rel="bookmark" aria-label="{perma_label}">{self.permalink}</a>'
         return mark_safe(
-            f"{long_name}. {available_at} {self.permalink}, accessed {today}."
+            f"{long_name}. {available} {at_pgp} {permalink} (accessed {today})."
         )
 
     def is_public(self):
@@ -1269,6 +1310,8 @@ class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin, TaggableMixin)
         related_document_pks = set(itertools.chain.from_iterable(other_textblocks_docs))
         # filter by side so that search results only show the relevant side image(s)
         images = self.iiif_images(filter_side=True).values()
+        # get related place IDs for join query on document dates
+        places = list(self.documentplacerelation_set.values_list("place", flat=True))
         index_data.update(
             {
                 "pgpid_i": self.id,
@@ -1345,7 +1388,8 @@ class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin, TaggableMixin)
                 "iiif_rotations_is": [img["rotation"] for img in images],
                 "has_image_b": len(images) > 0,
                 "people_count_i": self.persondocumentrelation_set.count(),
-                "places_count_i": self.documentplacerelation_set.count(),
+                "places_count_i": len(places),
+                "places_ids_ss": [f"place.{id}" for id in places],
                 "documents_count_i": len(related_document_pks),
             }
         )
@@ -1460,9 +1504,9 @@ class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin, TaggableMixin)
             # instead of indexing separately
             # (may require parasolr datetime conversion support? or implement
             # in local queryset?)
-            index_data[
-                "input_date_dt"
-            ] = last_log_entry.action_time.isoformat().replace("+00:00", "Z")
+            index_data["input_date_dt"] = (
+                last_log_entry.action_time.isoformat().replace("+00:00", "Z")
+            )
         elif self.created:
             # when log entry not available, use created date on document object
             # (will always exist except in some unit tests)
@@ -1629,8 +1673,22 @@ class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin, TaggableMixin)
                 if textblock.fragment not in self.fragments.all():
                     self.textblock_set.add(textblock)
 
+            # merge description authors
+            self.authors.add(*doc.authors.all())
+
             self._merge_footnotes(doc)
             self._merge_logentries(doc)
+
+            # merge relationships with models from the entities module
+            self._merge_entities(doc, "person", "persondocumentrelation_set")
+            self._merge_entities(doc, "place", "documentplacerelation_set")
+            self._merge_entities(
+                # DocumentEventRelation doens't have a type field
+                doc,
+                "event",
+                "documenteventrelation_set",
+                has_type=False,
+            )
 
         # combine aggregated content for text fields
         for lang_code in language_codes:
@@ -1743,15 +1801,43 @@ class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin, TaggableMixin)
             log_entry.content_type_id = ContentType.objects.get_for_model(Document)
             log_entry.save()
 
+    def _merge_entities(
+        self, doc, related_model_name, related_manager_name, has_type=True
+    ):
+        # reassociate related people/places/events; reusable logic for merge_with.
+        # (made reusable by factoring out related manager and entity model names)
 
-@receiver(pre_delete, sender=Document)
-def detach_document_logentries(sender, instance, **kwargs):
-    """:class:`~Document` pre-delete signal handler.
+        # iterate through the join table to preserve metadata on the joins (type, notes)
+        primary_doc_relations = getattr(self, related_manager_name).all()
+        merge_doc_relations = getattr(doc, related_manager_name).all()
+        for relation in merge_doc_relations:
+            # filter existing relationships to find a match
+            filter_kwargs = {related_model_name: getattr(relation, related_model_name)}
+            if has_type:
+                # on person and place, match by relation type as well
+                filter_kwargs.update({"type": relation.type})
+            same_relation = primary_doc_relations.filter(**filter_kwargs)
+            if same_relation.exists():
+                # if a relationship already exists, combine the notes
+                existing_rel = same_relation.first()
+                if relation.notes and relation.notes not in existing_rel.notes:
+                    existing_rel.notes = "\n".join(
+                        note
+                        for note in [
+                            existing_rel.notes,
+                            "Notes from PGPID %s: %s" % (doc.id, relation.notes),
+                        ]
+                        if note  # filter out empty strings
+                    )
+                    existing_rel.save()
+            else:
+                # otherwise simply reassign the relationship to the primary document
+                relation.document = self
+                relation.save()
 
-    To avoid deleting log entries caused by the generic relation
-    from document to log entries, clear out object id
-    for associated log entries before deleting the document."""
-    instance.log_entries.update(object_id=None)
+
+# attach pre-delete for generic relation to log entries
+pre_delete.connect(detach_logentries, sender=Document)
 
 
 class TextBlock(models.Model):

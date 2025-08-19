@@ -14,7 +14,7 @@ from django.http import HttpResponseRedirect
 from django.urls import path, reverse
 from modeltranslation.admin import TabbedTranslationAdmin
 
-from geniza.common.admin import TypedRelationInline
+from geniza.common.admin import PreventLogEntryDeleteMixin, TypedRelationInline
 from geniza.corpus.dates import standard_date_display
 from geniza.corpus.models import DocumentEventRelation
 from geniza.entities.forms import (
@@ -72,7 +72,11 @@ class NameInlineFormSet(BaseGenericInlineFormSet):
         cleaned_data = [form.cleaned_data for form in self.forms if form.is_valid()]
         if cleaned_data:
             primary_names_count = len(
-                [name for name in cleaned_data if name.get("primary") == True]
+                [
+                    name
+                    for name in cleaned_data
+                    if name.get("primary") == True and not name.get("DELETE")
+                ]
             )
             if primary_names_count == 0 or primary_names_count > 1:
                 raise ValidationError(self.DISPLAY_NAME_ERROR, code="invalid")
@@ -284,7 +288,12 @@ class PersonForm(ModelForm):
 
 
 @admin.register(Person)
-class PersonAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin):
+class PersonAdmin(
+    TabbedTranslationAdmin,
+    SortableAdminBase,
+    PreventLogEntryDeleteMixin,
+    admin.ModelAdmin,
+):
     """Admin for Person entities in the PGP"""
 
     form = PersonForm
@@ -362,7 +371,7 @@ class PersonAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin):
                 .only("slug")
                 .get_results(rows=10000)
             )
-            slugs = [r["slug"] for r in sqs]
+            slugs = [r.get("slug") for r in sqs if r.get("slug")]
             # filter queryset by slug if there are results
             if sqs:
                 queryset = queryset.filter(slug__in=slugs)
@@ -485,7 +494,10 @@ class RelationTypeMergeAdminMixin:
 
 @admin.register(PersonDocumentRelationType)
 class PersonDocumentRelationTypeAdmin(
-    RelationTypeMergeAdminMixin, TabbedTranslationAdmin, admin.ModelAdmin
+    RelationTypeMergeAdminMixin,
+    TabbedTranslationAdmin,
+    PreventLogEntryDeleteMixin,
+    admin.ModelAdmin,
 ):
     """Admin for managing the controlled vocabulary of people's relationships to documents"""
 
@@ -498,7 +510,10 @@ class PersonDocumentRelationTypeAdmin(
 
 @admin.register(PersonPersonRelationType)
 class PersonPersonRelationTypeAdmin(
-    RelationTypeMergeAdminMixin, TabbedTranslationAdmin, admin.ModelAdmin
+    RelationTypeMergeAdminMixin,
+    TabbedTranslationAdmin,
+    PreventLogEntryDeleteMixin,
+    admin.ModelAdmin,
 ):
     """Admin for managing the controlled vocabulary of people's relationships to other people"""
 
@@ -605,8 +620,8 @@ class PlaceAdmin(SortableAdminBase, admin.ModelAdmin):
         "slug",
         ("latitude", "longitude"),
         "is_region",
-        "notes",
         "containing_region",
+        "notes",
     )
     inlines = (
         NameInline,

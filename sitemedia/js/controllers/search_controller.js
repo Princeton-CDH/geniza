@@ -10,12 +10,17 @@ export default class extends Controller {
         "sort",
         "filterModal",
         "filtersButton",
+        "dateRange",
         "doctypeFilter",
         "dropdownDetails",
         "helpDialog",
+        "maxYear",
+        "minYear",
+        "placeFiltersCheckbox",
         "placesMode",
         "peopleMode",
         "radioSort",
+        "socialRoles",
     ];
     static debounces = ["update"];
 
@@ -43,8 +48,10 @@ export default class extends Controller {
 
     toggleFiltersOpen(e) {
         // toggle filters modal/panel open and closed
-        e.preventDefault();
-        e.currentTarget.classList.toggle("open");
+        if (!e.currentTarget.closest('label[for="place-filters"]')) {
+            e.preventDefault();
+            e.currentTarget.classList.toggle("open");
+        }
         const filtersOpen =
             this.filterModalTarget.getAttribute("aria-expanded");
         const newFiltersOpen = filtersOpen === "true" ? "false" : "true";
@@ -82,8 +89,12 @@ export default class extends Controller {
                 "aria-expanded",
                 savedFilterState
             );
-            if (this.hasFiltersButtonTarget && savedFilterState === "true") {
-                this.filtersButtonTarget.classList.add("open");
+            if (savedFilterState === "true") {
+                if (this.hasFiltersButtonTarget) {
+                    this.filtersButtonTarget.classList.add("open");
+                } else if (this.hasPlaceFiltersCheckboxTarget) {
+                    this.placeFiltersCheckboxTarget.checked = true;
+                }
             }
         }
     }
@@ -269,8 +280,16 @@ export default class extends Controller {
     }
 
     autoUpdateRadioSort(event) {
+        // special case: people search, multiple role filtering: allow and switch to relevance
+        let relevanceOverride = false;
+        if (this.hasSocialRolesTarget) {
+            const checkedRoles = this.socialRolesTarget.querySelectorAll(
+                "input[type='checkbox']:checked"
+            );
+            relevanceOverride = checkedRoles.length > 1;
+        }
         // when query is empty, disable sort by relevance
-        if (this.queryTarget.value.trim() == "") {
+        if (this.queryTarget.value.trim() == "" && !relevanceOverride) {
             this.disableRelevanceSort(true);
         } else if (event && this.defaultSortElement.checked) {
             // if this was triggered by an event and not in sortTargetConnected,
@@ -310,11 +329,24 @@ export default class extends Controller {
     onToggleMap(e) {
         // for the places list page, handle toggling the map on and off on mobile
         if (!e.currentTarget.checked) {
-            this.placesModeTargetConnected();
+            this.scrollMobilePlaces();
         }
+        window.sessionStorage.setItem("places-list-view", e.target.checked);
     }
 
     placesModeTargetConnected() {
+        // Saved mode state should persist when connected
+        let isPlacesListMode =
+            window.sessionStorage.getItem("places-list-view");
+        if (isPlacesListMode === "true") {
+            this.placesModeTarget.querySelector(
+                "input[type='checkbox']"
+            ).checked = true;
+        }
+        this.scrollMobilePlaces();
+    }
+
+    scrollMobilePlaces() {
         // for the mobile places list page, scroll to the top on load if the map is visible
         const isMobile = window.innerWidth <= 900;
         if (isMobile) {
@@ -334,6 +366,25 @@ export default class extends Controller {
             window.sessionStorage.getItem("people-list-view");
         if (isPeopleListMode === "true") {
             this.peopleModeTarget.checked = true;
+        }
+    }
+
+    updateTimeline(e) {
+        e.target.parentNode.style.setProperty(
+            `--${e.target.id}`,
+            +e.target.value
+        );
+        const val = parseInt(e.target.value);
+        const isMin = e.target === this.minYearTarget;
+        const otherThumbVal = parseInt(
+            isMin ? this.maxYearTarget.value : this.minYearTarget.value
+        );
+        if (val < otherThumbVal) {
+            this.dateRangeTargets[0].value = val;
+            this.dateRangeTargets[1].value = otherThumbVal;
+        } else {
+            this.dateRangeTargets[0].value = otherThumbVal;
+            this.dateRangeTargets[1].value = val;
         }
     }
 }

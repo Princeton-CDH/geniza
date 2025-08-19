@@ -101,7 +101,7 @@
                 <span class="sr-only">{{ close_button }}</span>
             </a>
             <div class="fieldset-left-column">
-                <label for="{{ form.docdate.auto_id }}" class="date-range-label">
+                <label for="{{ form.docdate.auto_id }}" class="docdate-range-label">
                     <span class="fieldname">{{ form.docdate.label }}</span>
                     {# NOTE: stimulus action is configured via django widget attrs #}
                     {{ form.docdate }}
@@ -128,7 +128,7 @@
                         </label>
                     </li>
                     <li>
-                        <label for="{{ form.has_translation.auto_id }}">
+                        <label for="{{ form.has_translation.auto_id }}" class="has-translation-label">
                             {% render_field form.has_translation data-action="search#update" %}
                             {{ form.has_translation.label }}
                         </label>

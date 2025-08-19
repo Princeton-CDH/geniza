@@ -28,6 +28,7 @@ main.search {
             max-width: none;
             width: min(20rem, 100vw);
             height: 100vh;
+            height: 100dvh;
             top: 0;
             right: 0;
             overflow-y: scroll;
@@ -50,16 +51,24 @@ main.search {
             }
         }
         & > legend {
-            // outermost legend should be visible on mobile, sr-only on desktop
-            @include breakpoints.for-tablet-landscape-up {
-                @include a11y.sr-only;
-            }
             // on mobile, should look like header
+            display: contents;
             float: left;
             width: 100%;
             font-family: fonts.$primary-bold;
             font-size: 1.5rem;
             line-height: 1.4166;
+            // outermost legend should be visible on mobile, sr-only on desktop
+            @include breakpoints.for-tablet-landscape-up {
+                display: block;
+                @include a11y.sr-only;
+            }
+        }
+        .fieldset-left-column fieldset legend {
+            display: contents;
+            @include breakpoints.for-tablet-landscape-up {
+                display: block;
+            }
         }
         label,
         fieldset legend {
@@ -71,13 +80,16 @@ main.search {
                 line-height: 1.166;
                 margin-bottom: 0.25rem;
             }
-            &:not(last-of-type) {
-                border-bottom: 1px solid var(--background-gray);
-                padding-bottom: 1rem;
-                @include breakpoints.for-tablet-landscape-up {
-                    border: none;
-                    padding-bottom: 0;
-                }
+        }
+        .fieldset-left-column fieldset,
+        .fieldset-left-column:has(.docdate-range-label),
+        label:not(:last-of-type):not(.has-translation-label):not(.docdate-range-label),
+        .date-range-label {
+            border-bottom: 1px solid var(--background-gray);
+            padding-bottom: 1rem;
+            @include breakpoints.for-tablet-landscape-up {
+                border: none;
+                padding-bottom: 0;
             }
         }
         li label,

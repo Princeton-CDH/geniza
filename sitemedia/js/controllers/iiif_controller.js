@@ -116,9 +116,9 @@ export default class extends Controller {
     }
 
     checkTileSource(url) {
-        // use HEAD request to check that a tilesource doesn't 404 or cause other errors
+        // use GET request to check that a tilesource doesn't 404 or cause other errors
         return new Promise((resolve, reject) => {
-            fetch(url, { method: "HEAD" })
+            fetch(url, { method: "GET" })
                 .then((response) => {
                     if (response.ok) {
                         resolve(url);

@@ -252,9 +252,13 @@ fieldset.transcriptions-field
     max-height: 350px;
     overflow-y: scroll;
 }
-[class^="merge-"] li > label {
+[class^="merge-"] .form-row > div > div > label {
     display: flex;
     justify-content: flex-start;
+    width: 100%;
+}
+#id_primary_document > div > label > input {
+    margin: 0 144px 0 0;
 }
 
 [class^="merge-"] .submit-row {
@@ -273,7 +277,7 @@ fieldset.transcriptions-field
     margin-bottom: 10px;
 }
 
-.aligned ul .merge-document-label label {
+.aligned div .merge-document-label label {
     display: block;
     padding: 4px 10px 0 0;
     float: left;

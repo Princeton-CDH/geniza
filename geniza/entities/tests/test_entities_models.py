@@ -180,9 +180,30 @@ class TestPerson:
         PersonPersonRelation.objects.create(
             from_person=grandchild, to_person=parent_dupe, type=grandchild_type
         )
+        # business partnership on both records
+        business_partner = Person.objects.create()
+        partner_type, _ = PersonPersonRelationType.objects.get_or_create(
+            name_en="partner"
+        )
+        partner_parent_notes = "Found by evidence."
+        partner_dupe_notes = "Seen on documents."
+        partner_parent = PersonPersonRelation.objects.create(
+            from_person=parent,
+            to_person=business_partner,
+            type=partner_type,
+            notes=partner_parent_notes,
+        )
+        PersonPersonRelation.objects.create(
+            from_person=parent_dupe,
+            to_person=business_partner,
+            type=partner_type,
+            notes=partner_dupe_notes,
+        )
+        parent_dupe_str = str(parent_dupe)
         parent.merge_with([parent_dupe])
 
-        # ambiguity relationship should no longer be present
+        # ambiguity relationship should no longer be present; i.e. avoided
+        # self-self relationship
         assert not parent.to_person.filter(type=ambiguity_type).exists()
         assert not parent.from_person.filter(type=ambiguity_type).exists()
 
@@ -195,6 +216,32 @@ class TestPerson:
         assert PersonPersonRelation.objects.filter(
             from_person=grandchild, to_person=parent, type=grandchild_type
         ).exists()
+
+        # only one business partner relationship should exist still
+        partner_relations = PersonPersonRelation.objects.filter(
+            from_person=parent,
+            to_person=business_partner,
+            type=partner_type,
+        )
+        assert partner_relations.count() == 1
+        # its notes should be combined
+        partner_parent.refresh_from_db()
+        assert partner_parent.notes == "\n".join(
+            [
+                partner_parent_notes,
+                "Notes from merged record %s: %s"
+                % (parent_dupe_str, partner_dupe_notes),
+            ]
+        )
+
+    def test_merge_with_related_events(self):
+        person = Person.objects.create()
+        person_dupe = Person.objects.create()
+        event = Event.objects.create()
+        person_dupe.events.add(event)
+        person.merge_with([person_dupe])
+        # event relation should be reassigned to merged result
+        assert person.events.filter(pk=event.pk).exists()
 
     def test_merge_with_related_places(self):
         person = Person.objects.create()
@@ -594,6 +641,21 @@ class TestPerson:
         assert pr.name not in person.all_roles()
         # should sort alphabetically last
         assert person.all_roles().endswith(pr.display_label)
+
+    def test_delete(self, person):
+        # create a log entry to confirm disassociation
+        log_entry = LogEntry.objects.create(
+            user_id=1,
+            content_type_id=ContentType.objects.get_for_model(person).pk,
+            object_id=person.pk,
+            object_repr="test",
+            action_flag=CHANGE,
+            change_message="test",
+        )
+        person.delete()
+        # get fresh copy of the same log entry
+        fresh_log_entry = LogEntry.objects.get(pk=log_entry.pk)
+        assert fresh_log_entry.object_id is None
 
 
 class TestPersonSolrQuerySet:
@@ -1058,7 +1120,7 @@ class TestPlace:
 
         assert index_data["slug_s"] == mosul.slug
         assert index_data["name_s"] == pname.name
-        assert index_data["other_names_s"] == oname.name
+        assert index_data["other_names_ss"] == [oname.name]
         assert index_data["url_s"] == mosul.get_absolute_url()
         assert index_data["location_p"] == "36.34,43.13"
         assert index_data["documents_i"] == 2

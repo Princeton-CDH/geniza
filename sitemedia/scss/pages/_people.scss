@@ -15,17 +15,17 @@ main.people {
     // header row
     .topheader-row {
         display: flex;
-        flex-flow: row nowrap;
-        align-items: center;
-        justify-content: space-between;
+        flex-flow: column;
         width: 100%;
         gap: 0.75rem;
         @include breakpoints.for-tablet-landscape-up {
+            flex-flow: row nowrap;
+            justify-content: space-between;
+            align-items: center;
             gap: 2rem;
         }
         fieldset#query {
             flex-grow: 1;
-            margin-right: 5.75rem;
             @include breakpoints.for-tablet-landscape-up {
                 margin-left: 8rem;
                 margin-right: 0;
@@ -147,6 +147,7 @@ main.people {
                 border-radius: 5px;
                 border: 1px solid var(--background-gray);
                 td.name {
+                    position: relative;
                     grid-area: name;
                     font-family: fonts.$primary-bold;
                     font-weight: bold;
@@ -156,6 +157,15 @@ main.people {
                     }
                     @include breakpoints.for-tablet-landscape-up {
                         font-size: typography.$text-size-xl;
+                    }
+                    .score {
+                        @include typography.meta-bold;
+                        display: block;
+                        position: absolute;
+                        right: -1rem;
+                        top: -1rem;
+                        padding: 0.25rem;
+                        font-size: 12px !important;
                     }
                 }
                 td.gender {

@@ -650,7 +650,7 @@ class Footnote(TrackChangesModel):
                 card_str = ""
                 # add URL if present
                 if loc and fn.url:
-                    card_str = f'<a href="{fn.url}">{loc}</a>'
+                    card_str = f'<a href="{fn.url}" data-turbo="false">{loc}</a>'
                 elif loc:
                     card_str = str(loc)
                 if card_str:

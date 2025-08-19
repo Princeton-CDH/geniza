@@ -308,6 +308,11 @@ main.people {
         width: 100%;
         padding: 0;
     }
+}
+
+main.search,
+main.people,
+main.places {
     fieldset#query {
         display: flex;
         align-items: center;
@@ -561,6 +566,7 @@ main.people {
     form fieldset#filters {
         div.fieldset-left-column label[for="id_exclude_inferred"],
         label[for="id_exclude_uncertain"] {
+            display: block;
             position: relative;
             cursor: pointer;
             input[type="checkbox"] + span::before {

@@ -359,7 +359,7 @@
   <!-- copy description and translation to regex fields -->
   <copyField source="description_en_bigram" dest="description_regex" maxChars="30000" />
 
-  <!-- copy people name fields to text fields -->
+  <!-- copy entity name fields to text fields -->
   <copyField source="name_s" dest="name_bigram" maxChars="30000" />
   <copyField source="name_s" dest="name_nostem" maxChars="30000" />
   <copyField source="other_names_ss" dest="other_names_bigram" maxChars="30000" />

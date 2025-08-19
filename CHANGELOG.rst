@@ -1,6 +1,32 @@
 Change Log
 ==========
 
+4.24
+----
+
+- public site
+    - As a public site user, I want individual places on the places map to auto load so that no matter how many entries we have at a time, I can see them all.
+    - As a frontend user, I would like to use a sliding timeline to filter which places show up on the map, so that I can easily find places by the dates they appear in Geniza documents.
+    - As a frontend user, I'd like citations at the bottom of the page to include description citations, so that I can easily cite PGP SRA's contributions
+    - As a frontend user, I would like People filtering for multiple social roles to show results stacked by relevance, so that I can see people with the most relevant set of roles at a glance
+    - As a public site user, I want to be able to use keyword search on the places map to find specific locations easily.
+    - bugfix: On mobile: People search horizontal overflow, filter button in the wrong place
+    - bugfix: Toggle for "Exclude uncertain identification" on People filter appears disjointed on Safari/Firefox
+    - bugfix: JRL Image thumbnails broken in person/place Related Documents pages
+    - bugfix: Goitein notecard links do not open with left-clicks, and have to be right-clicked to be opened
+
+- admin
+    - As a content admin/editor, I would like the "Containing region" field in the admin site to appear higher up on the page, so that it is easier to find.
+    - As an content editor/admin, I want to be able to select authors when a description needs its own citation that appears at the bottom of the Document Detail page, so that public site users can easily cite the work in descriptions
+    - As a content editor/admin, I want Marheshvan added as alias for Heshvan in date conversions, so that I can accurately type the month name as it appears on documents when entering dates.
+    - As a content editor/admin, I want the "Region" model and "Containing region" field renamed to "Geographic area", so it is less confusing with the existing Region checkbox.
+    - bugfix: Placeholders for broken IIIF in transcription editor too aggressive (replacing working IIIF images)
+    - bugfix: Person with no slug breaks admin search; person was indexed with no name
+    - bugfix: "Selected images" UI does not work
+    - bugfix: Superusers cannot delete Person entities due to GenericRelation on LogEntry
+    - bugfix: Related people and places are not merged when documents are merged
+    - chore: clean up unnecessary attribution formatting code and methods
+
 4.23.1
 ------
 

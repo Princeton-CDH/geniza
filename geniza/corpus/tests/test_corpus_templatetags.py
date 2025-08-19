@@ -121,7 +121,9 @@ class TestCorpusExtrasTemplateTags:
             reverse("corpus:document-scholarship", args=[document.pk])
         )
         assertContains(
-            response, '<a href="https://fake.goitein.card/">#1234</a>', html=True
+            response,
+            '<a href="https://fake.goitein.card/" data-turbo="false">#1234</a>',
+            html=True,
         )
 
 
