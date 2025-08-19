@@ -5,11 +5,11 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Documents and Fragments &#8212; Princeton Geniza Project 4.23.1 documentation</title>
+    <title>Documents and Fragments &#8212; Princeton Geniza Project 4.24.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=5ecbeea2" />
     <link rel="stylesheet" type="text/css" href="../_static/basic.css?v=b08954a9" />
     <link rel="stylesheet" type="text/css" href="../_static/alabaster.css?v=27fed22d" />
-    <script src="../_static/documentation_options.js?v=93b26334"></script>
+    <script src="../_static/documentation_options.js?v=b99116e3"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="../genindex.html" />
@@ -102,6 +102,22 @@ to track the source of the fragment, document type, languages and scripts used i
 <em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">standard_date_display</span></span><a class="headerlink" href="#geniza.corpus.models.Dating.standard_date_display" title="Link to this definition">¶</a></dt>
 <dd><p>Standard date in human-readable format for document details pages</p>
 </dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="geniza.corpus.models.DescriptionAuthorship">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geniza.corpus.models.</span></span><span class="sig-name descname"><span class="pre">DescriptionAuthorship</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/corpus/models.html#DescriptionAuthorship"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.corpus.models.DescriptionAuthorship" title="Link to this definition">¶</a></dt>
+<dd><p>Ordered relationship between <code class="xref py py-class docutils literal notranslate"><span class="pre">Creator</span></code> and <a class="reference internal" href="#geniza.corpus.models.Document" title="geniza.corpus.models.Document"><code class="xref py py-class docutils literal notranslate"><span class="pre">Document</span></code></a>.</p>
+<dl class="py exception">
+<dt class="sig sig-object py" id="geniza.corpus.models.DescriptionAuthorship.DoesNotExist">
+<em class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">DoesNotExist</span></span><a class="headerlink" href="#geniza.corpus.models.DescriptionAuthorship.DoesNotExist" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="geniza.corpus.models.DescriptionAuthorship.MultipleObjectsReturned">
+<em class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">MultipleObjectsReturned</span></span><a class="headerlink" href="#geniza.corpus.models.DescriptionAuthorship.MultipleObjectsReturned" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
 
 </dd></dl>
 
@@ -795,15 +811,6 @@ list of tags is pulled from the database, on any tag change.</p>
 
 </dd></dl>
 
-<dl class="py function">
-<dt class="sig sig-object py" id="geniza.corpus.models.detach_document_logentries">
-<span class="sig-prename descclassname"><span class="pre">geniza.corpus.models.</span></span><span class="sig-name descname"><span class="pre">detach_document_logentries</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sender</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">instance</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/corpus/models.html#detach_document_logentries"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.corpus.models.detach_document_logentries" title="Link to this definition">¶</a></dt>
-<dd><p><a class="reference internal" href="#geniza.corpus.models.Document" title="geniza.corpus.models.Document"><code class="xref py py-class docutils literal notranslate"><span class="pre">Document</span></code></a> pre-delete signal handler.</p>
-<p>To avoid deleting log entries caused by the generic relation
-from document to log entries, clear out object id
-for associated log entries before deleting the document.</p>
-</dd></dl>
-
 </section>
 <section id="module-geniza.corpus.dates">
 <span id="dates"></span><h2>dates<a class="headerlink" href="#module-geniza.corpus.dates" title="Link to this heading">¶</a></h2>
@@ -1345,6 +1352,12 @@ with current PGPID.</p>
 incorporating available canvases and attaching transcription
 content via annotation.</p>
 <dl class="py method">
+<dt class="sig sig-object py" id="geniza.corpus.views.DocumentManifestView.format_attribution">
+<span class="sig-name descname"><span class="pre">format_attribution</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">attribution</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/corpus/views.html#DocumentManifestView.format_attribution"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.corpus.views.DocumentManifestView.format_attribution" title="Link to this definition">¶</a></dt>
+<dd><p>format attribution for local manifests (deprecated)</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="geniza.corpus.views.DocumentManifestView.get">
 <span class="sig-name descname"><span class="pre">get</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">request</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/corpus/views.html#DocumentManifestView.get"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.corpus.views.DocumentManifestView.get" title="Link to this definition">¶</a></dt>
 <dd><p>extend GET to check for old pgpid and redirect on 404</p>
@@ -1716,12 +1729,6 @@ Example use:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{{</span> <span class="n">mydict</span><span class="o">|</span><span class="n">dict_item</span><span class="p">:</span><span class="n">keyvar</span> <span class="p">}}</span>
 </pre></div>
 </div>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="geniza.corpus.templatetags.corpus_extras.format_attribution">
-<span class="sig-prename descclassname"><span class="pre">geniza.corpus.templatetags.corpus_extras.</span></span><span class="sig-name descname"><span class="pre">format_attribution</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">attribution</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/corpus/templatetags/corpus_extras.html#format_attribution"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.corpus.templatetags.corpus_extras.format_attribution" title="Link to this definition">¶</a></dt>
-<dd><p>format attribution for local manifests (deprecated)</p>
 </dd></dl>
 
 <dl class="py function">
@@ -2191,6 +2198,11 @@ for the set of users who associated with any of the log entries.</p>
 <li><a class="reference internal" href="#geniza.corpus.models.Dating.standard_date_display"><code class="docutils literal notranslate"><span class="pre">Dating.standard_date_display</span></code></a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#geniza.corpus.models.DescriptionAuthorship"><code class="docutils literal notranslate"><span class="pre">DescriptionAuthorship</span></code></a><ul>
+<li><a class="reference internal" href="#geniza.corpus.models.DescriptionAuthorship.DoesNotExist"><code class="docutils literal notranslate"><span class="pre">DescriptionAuthorship.DoesNotExist</span></code></a></li>
+<li><a class="reference internal" href="#geniza.corpus.models.DescriptionAuthorship.MultipleObjectsReturned"><code class="docutils literal notranslate"><span class="pre">DescriptionAuthorship.MultipleObjectsReturned</span></code></a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#geniza.corpus.models.Document"><code class="docutils literal notranslate"><span class="pre">Document</span></code></a><ul>
 <li><a class="reference internal" href="#geniza.corpus.models.Document.DoesNotExist"><code class="docutils literal notranslate"><span class="pre">Document.DoesNotExist</span></code></a></li>
 <li><a class="reference internal" href="#geniza.corpus.models.Document.MultipleObjectsReturned"><code class="docutils literal notranslate"><span class="pre">Document.MultipleObjectsReturned</span></code></a></li>
@@ -2321,7 +2333,6 @@ for the set of users who associated with any of the log entries.</p>
 <li><a class="reference internal" href="#geniza.corpus.models.TextBlock.thumbnail"><code class="docutils literal notranslate"><span class="pre">TextBlock.thumbnail()</span></code></a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#geniza.corpus.models.detach_document_logentries"><code class="docutils literal notranslate"><span class="pre">detach_document_logentries()</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#module-geniza.corpus.dates">dates</a><ul>
@@ -2429,6 +2440,7 @@ for the set of users who associated with any of the log entries.</p>
 </ul>
 </li>
 <li><a class="reference internal" href="#geniza.corpus.views.DocumentManifestView"><code class="docutils literal notranslate"><span class="pre">DocumentManifestView</span></code></a><ul>
+<li><a class="reference internal" href="#geniza.corpus.views.DocumentManifestView.format_attribution"><code class="docutils literal notranslate"><span class="pre">DocumentManifestView.format_attribution()</span></code></a></li>
 <li><a class="reference internal" href="#geniza.corpus.views.DocumentManifestView.get"><code class="docutils literal notranslate"><span class="pre">DocumentManifestView.get()</span></code></a></li>
 <li><a class="reference internal" href="#geniza.corpus.views.DocumentManifestView.viewname"><code class="docutils literal notranslate"><span class="pre">DocumentManifestView.viewname</span></code></a></li>
 </ul>
@@ -2509,7 +2521,6 @@ for the set of users who associated with any of the log entries.</p>
 <li><a class="reference internal" href="#geniza.corpus.templatetags.corpus_extras.all_doc_relations"><code class="docutils literal notranslate"><span class="pre">all_doc_relations()</span></code></a></li>
 <li><a class="reference internal" href="#geniza.corpus.templatetags.corpus_extras.alphabetize"><code class="docutils literal notranslate"><span class="pre">alphabetize()</span></code></a></li>
 <li><a class="reference internal" href="#geniza.corpus.templatetags.corpus_extras.dict_item"><code class="docutils literal notranslate"><span class="pre">dict_item()</span></code></a></li>
-<li><a class="reference internal" href="#geniza.corpus.templatetags.corpus_extras.format_attribution"><code class="docutils literal notranslate"><span class="pre">format_attribution()</span></code></a></li>
 <li><a class="reference internal" href="#geniza.corpus.templatetags.corpus_extras.get_document_label"><code class="docutils literal notranslate"><span class="pre">get_document_label()</span></code></a></li>
 <li><a class="reference internal" href="#geniza.corpus.templatetags.corpus_extras.has_location_or_url"><code class="docutils literal notranslate"><span class="pre">has_location_or_url()</span></code></a></li>
 <li><a class="reference internal" href="#geniza.corpus.templatetags.corpus_extras.iiif_image"><code class="docutils literal notranslate"><span class="pre">iiif_image()</span></code></a></li>
