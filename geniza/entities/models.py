@@ -1407,6 +1407,10 @@ class Region(models.Model):
 
     name = models.CharField(max_length=255, unique=True)
 
+    class Meta:
+        verbose_name = "Geographic area"
+        verbose_name_plural = "Geographic areas"
+
     def __str__(self):
         return self.name
 
@@ -1503,10 +1507,11 @@ class Place(ModelIndexable, SlugMixin, PermalinkMixin):
     )
     containing_region = models.ForeignKey(
         Region,
+        verbose_name="Geographic area",
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        help_text="The geographic region containing this place. For internal use and CSV exports only.",
+        help_text="The geographic area containing this place. For internal use and CSV exports only.",
     )
 
     def __str__(self):

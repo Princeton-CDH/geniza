@@ -160,9 +160,9 @@ class AdminPersonExporter(PublicPersonExporter):
         """
 
         outd = super().get_export_data_dict(person)
-        outd[
-            "url_admin"
-        ] = f"{self.url_scheme}{self.site_domain}/admin/entities/person/{person.id}/change/"
+        outd["url_admin"] = (
+            f"{self.url_scheme}{self.site_domain}/admin/entities/person/{person.id}/change/"
+        )
 
         return outd
 
@@ -489,7 +489,7 @@ class PublicPlaceExporter(Exporter):
         "name_variants",
         "is_region",
         "coordinates",
-        "containing_region",
+        "geographic_area",
         "notes",
         "related_documents_count",
         "related_people_count",
@@ -565,7 +565,7 @@ class PublicPlaceExporter(Exporter):
             ),
             "is_region": place.is_region,
             "coordinates": place.coordinates,
-            "containing_region": place.containing_region,
+            "geographic_area": place.containing_region,
             "notes": place.notes,
             "related_documents_count": related_docs_count,
             "related_people_count": related_people_count,
@@ -588,9 +588,9 @@ class AdminPlaceExporter(PublicPlaceExporter):
         outd = super().get_export_data_dict(place)
 
         # add admin url
-        outd[
-            "url_admin"
-        ] = f"{self.url_scheme}{self.site_domain}/admin/entities/place/{place.id}/change/"
+        outd["url_admin"] = (
+            f"{self.url_scheme}{self.site_domain}/admin/entities/place/{place.id}/change/"
+        )
 
         return outd
 
