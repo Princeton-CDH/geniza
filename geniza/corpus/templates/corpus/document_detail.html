@@ -225,8 +225,8 @@
                     {% endif %}
                 </dd>
             {% endif %}
-            {% if document.material_support %}
-                {% regroup document.material_support by material_support as ms_list %}
+            {% if document.fragments_by_material_support %}
+                {% regroup document.fragments_by_material_support by material_support as ms_list %}
                 {# Translators: label for the material support of document fragments #}
                 <dt>{% translate "Material support" %}</dt>
                 <dd>
