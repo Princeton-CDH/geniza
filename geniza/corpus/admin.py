@@ -39,6 +39,7 @@ from geniza.corpus.models import (
     DocumentType,
     Fragment,
     LanguageScript,
+    MaterialSupport,
     Provenance,
     TextBlock,
 )
@@ -146,6 +147,7 @@ class DocumentTextBlockInline(SortableInlineAdminMixin, admin.TabularInline):
         "thumbnail",
         "side",
         "fragment_provenance_display",
+        "fragment_material_support",
         "fragment_provenance",
     )
     fields = (
@@ -156,6 +158,7 @@ class DocumentTextBlockInline(SortableInlineAdminMixin, admin.TabularInline):
         "order",
         "certain",
         "fragment_provenance_display",
+        "fragment_material_support",
         "fragment_provenance",
         "thumbnail",
         "selected_images",
@@ -174,6 +177,10 @@ class DocumentTextBlockInline(SortableInlineAdminMixin, admin.TabularInline):
     @admin.display(description="Provenance notes")
     def fragment_provenance(self, obj):
         return obj.fragment.provenance
+
+    @admin.display(description="Material support")
+    def fragment_material_support(self, obj):
+        return str(obj.fragment.material_support or "")
 
 
 class DocumentForm(forms.ModelForm):
@@ -815,6 +822,7 @@ class FragmentAdmin(admin.ModelAdmin):
         ("url", "iiif_url"),
         "is_multifragment",
         "provenance_display",
+        "material_support",
         "provenance",
         "iiif_provenance",
         "notes",
@@ -867,6 +875,13 @@ class FragmentAdmin(admin.ModelAdmin):
 
 @admin.register(Provenance)
 class ProvenanceAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
+    search_fields = ("name",)
+    fields = ("name",)
+    ordering = ("name",)
+
+
+@admin.register(MaterialSupport)
+class MaterialSupportAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
     search_fields = ("name",)
     fields = ("name",)
     ordering = ("name",)
