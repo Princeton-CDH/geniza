@@ -1,6 +1,6 @@
 {% load i18n corpus_extras %}
 {% spaceless %}
-    <li class="search-result">
+    <li class="search-result" data-turbo-prefetch="false">
         {% if "SHOW_RELEVANCE_SCORES" in FEATURE_FLAGS %}
             {# show relevance score if enabled #}
             <span class="score">
@@ -222,7 +222,7 @@
 
             {# Translators: screen-reader label for "view document details" link #}
         {% blocktranslate asvar aria_view_details with document_label=document|get_document_label %}View details for {{ document_label }}{% endblocktranslate %}
-        <a class="view-link" href='{% url "corpus:document" document.pgpid %}?q={{ search_query }}' data-turbo-frame="main" aria-label="{{ aria_view_details }}">
+        <a class="view-link" href='{% url "corpus:document" document.pgpid %}{% if search_query %}?q={{ search_query }}{% endif %}{% if search_query and regex %}&regex={{ regex }}{% endif %}' data-turbo-frame="main" aria-label="{{ aria_view_details }}">
             <span class="sr-only">{% translate 'View document details' %}</span>
             {{ tag }}
         </a>

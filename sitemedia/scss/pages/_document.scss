@@ -185,6 +185,11 @@ main.document {
             p {
                 white-space: pre-line;
                 padding-left: 1.25rem;
+                em {
+                    color: var(--secondary);
+                    font-weight: bold;
+                    font-style: normal;
+                }
             }
         }
         // related entities

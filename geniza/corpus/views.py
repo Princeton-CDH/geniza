@@ -2,6 +2,7 @@ import re
 from ast import literal_eval
 from copy import deepcopy
 from random import randint
+from tabnanny import verbose
 
 from dal import autocomplete
 from django.conf import settings
@@ -86,6 +87,7 @@ class DocumentSearchView(
     solr_lastmodified_filters = {"item_type_s": "document"}
     applied_filter_labels = []
     search_query = ""
+    regex = ""
 
     # map form sort to solr sort field
     solr_sort = {
@@ -213,6 +215,7 @@ class DocumentSearchView(
 
             if search_opts["q"] and search_opts["mode"] == "regex":
                 regex_field = f"{search_opts['regex_field'] or 'transcription'}_regex"
+                self.regex = regex_field
                 # use regex search if "mode" is "regex"
                 documents = documents.regex_search(regex_field, search_opts["q"])
 
@@ -415,6 +418,7 @@ class DocumentSearchView(
                 "applied_filters": self.applied_filter_labels,
                 "apd_link": self.get_apd_link(context_data["form"].data.get("q", None)),
                 "search_query": self.search_query,
+                "regex": self.regex,
             }
         )
 
@@ -430,7 +434,6 @@ class DocumentDetailBase(SolrLastModifiedMixin):
     def get(self, request, *args, **kwargs):
         """extend GET to check for old pgpid and redirect on 404"""
         try:
-            search_query = request.GET.get("q", "")
             return super().get(request, *args, **kwargs)
         except Http404:
             # if not found, check for a match on a past PGPID
@@ -472,6 +475,21 @@ class DocumentDetailView(DocumentDetailBase, DetailView):
 
     def get_context_data(self, **kwargs):
         """extend context data to add page metadata"""
+
+        search_query = self.request.GET.get("q", "")
+        regex_field = self.request.GET.get("regex", "")
+        regex = regex_field and len(regex_field) > 0
+        highlighted_desc = ""
+        verbose = False
+        # print(f"Query[V] is {search_query} and regex is {regex}")
+        if search_query:
+            doc = self.get_object()
+            highlighted_desc = doc.highlight_desc(
+                search_query, regex=regex, verbose=verbose
+            )
+            if verbose:
+                print(f"Highlighted desc: {highlighted_desc}")
+
         context_data = super().get_context_data(**kwargs)
         images = self.object.iiif_images(with_placeholders=True)
 
@@ -522,6 +540,9 @@ class DocumentDetailView(DocumentDetailBase, DetailView):
                 ),
             }
         )
+        if highlighted_desc:
+            # print(f"Highlighted description: {highlighted_desc}")
+            context_data.update({"highlighted_desc": highlighted_desc})
         return context_data
 
     def get_absolute_url(self):

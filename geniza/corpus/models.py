@@ -29,6 +29,8 @@ from django.utils.translation import get_language
 from django.utils.translation import gettext as _
 from djiffy.models import Manifest
 from modeltranslation.manager import MultilingualQuerySet
+from nltk.stem import PorterStemmer
+from nltk.tokenize import word_tokenize
 from parasolr.django.indexing import ModelIndexable
 from piffle.image import IIIFImageClient
 from piffle.presentation import IIIFException, IIIFPresentation
@@ -51,6 +53,8 @@ from geniza.corpus.dates import DocumentDateMixin, PartialDate, standard_date_di
 from geniza.corpus.iiif_utils import GenizaManifestImporter, get_iiif_string
 from geniza.corpus.solr_queryset import DocumentSolrQuerySet
 from geniza.footnotes.models import Creator, Footnote
+
+porter_stemmer = PorterStemmer()
 
 logger = logging.getLogger(__name__)
 
@@ -1244,7 +1248,6 @@ class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin, TaggableMixin)
             if frag.material_support
         ]
 
-
     @classmethod
     def total_to_index(cls):
         """static method to efficiently count the number of documents to index in Solr"""
@@ -1862,6 +1865,99 @@ class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin, TaggableMixin)
                 # otherwise simply reassign the relationship to the primary document
                 relation.document = self
                 relation.save()
+
+    def is_english(self, text):
+        try:
+            text.encode(encoding="utf-8").decode("ascii")
+        except UnicodeDecodeError:
+            return False
+        else:
+            return True
+
+    #
+    # Matching and highlighting
+    #
+
+    # highlighting matches
+    def highlight_words(self, text, highlights, verbose=False):
+        if verbose:
+            print(f"References: {text}\nMatches: {highlights}")
+        highlighted_text = text
+        for matched_word in highlights:
+            if not highlights[matched_word] and len(matched_word.strip()) > 0:
+                highlighted_text = highlighted_text.replace(
+                    matched_word, f"<em>{matched_word}</em>"
+                )
+                highlights[matched_word] = True
+        return highlighted_text
+
+    # keyword matching (O(n^2))
+    def find_highlight_keywords(self, query, reference, english=True, verbose=False):
+        if verbose:
+            print(f"Query: {query}")
+            print(f"Reference: {reference}")
+        # thresh = ENG_MATCH_THRESH if english else ARA_MATCH_THRESH
+        highlights = {}
+        for word1 in word_tokenize(query):
+            for word2 in word_tokenize(reference):
+                if english:
+                    stemmed1 = porter_stemmer.stem(word1)
+                    stemmed2 = porter_stemmer.stem(word2)
+                else:
+                    return []
+                # if verbose:
+                #     print(f"{stemmed1} vs {stemmed2}: {fuzz.partial_ratio(stemmed1, stemmed2)}")
+                # if fuzz.partial_ratio(stemmed1, stemmed2) > thresh:
+                if stemmed1 == stemmed2:
+                    if verbose:
+                        print(f"Highlight '{word2}'")
+                    highlights[word2] = False
+        return self.highlight_words(text=reference, highlights=highlights)
+
+    # regex matching
+    def find_highlight_regex(self, query, reference, verbose=False):
+        matches = []
+        try:
+            matches = re.findall(query, reference)
+        except:
+            print(f"Please, revise the syntax of the input regex")
+        if verbose:
+            print(f"Query:{query}\nReference:{reference}\nMatches:{matches}")
+        return self.highlight_words(
+            text=reference, highlights=dict.fromkeys(matches, False)
+        )
+
+    def search_geniza_doc(self, query, regex=False, verbose=False):
+        if self.is_english(query):
+            if verbose:
+                print("English! Need to search both description and translation")
+            if regex:
+                if verbose:
+                    print("Description:")
+                return self.find_highlight_regex(
+                    query=query, reference=self.description, verbose=verbose
+                )
+                # if verbose:
+                #     print("Translation:")
+                # self.translation = self.find_highlight_regex(query=query, reference=self.translation, verbose=verbose)
+            else:
+                if verbose:
+                    print("Description:")
+                return self.find_highlight_keywords(
+                    query=query,
+                    reference=self.description,
+                    english=True,
+                    verbose=verbose,
+                )
+                # if verbose:
+                #     print("Translation:")
+                # doc_highlighted_translation = self.find_highlight_keywords(query=query, reference=self.translation,
+                #                                                       english=True, verbose=verbose)
+                # self.translation = doc_highlighted_translation
+
+    def highlight_desc(self, search_query, regex=False, verbose=False):
+        # print(f"Query[M]: {search_query}")
+        return self.search_geniza_doc(query=search_query, regex=regex, verbose=verbose)
 
 
 # attach pre-delete for generic relation to log entries

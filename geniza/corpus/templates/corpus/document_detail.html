@@ -142,7 +142,7 @@
         <section class="description">
             {# Translators: label for document description #}
             <h2>{% translate 'Description' %}</h2>
-            <p>{{ document.description|pgp_urlize }}</p>
+            <p>"{% if highlighted_desc %} {{highlighted_desc|pgp_urlize}} {% else %} {{ document.description|pgp_urlize }} {% endif %}"</p>
         </section>
 
         {# related people #}
