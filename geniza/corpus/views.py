@@ -12,7 +12,6 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.postgres.aggregates import ArrayAgg
 from django.contrib.postgres.search import SearchVector
 from django.core.exceptions import ValidationError
-from django.db.models import Q
 from django.db.models.query import Prefetch
 from django.http import Http404, HttpResponse, JsonResponse
 from django.http.response import HttpResponsePermanentRedirect, HttpResponseRedirect
@@ -37,7 +36,6 @@ from geniza.corpus.forms import DocumentMergeForm, DocumentSearchForm, TagMergeF
 from geniza.corpus.ja import contains_arabic, contains_hebrew, ja_arabic_chars
 from geniza.corpus.models import Document, TextBlock
 from geniza.corpus.solr_queryset import DocumentSolrQuerySet
-from geniza.corpus.templatetags import corpus_extras
 from geniza.footnotes.forms import SourceChoiceForm
 from geniza.footnotes.models import Footnote, Source
 
@@ -87,6 +85,7 @@ class DocumentSearchView(
     # NOTE: does not filter on status, since changing status could modify the page
     solr_lastmodified_filters = {"item_type_s": "document"}
     applied_filter_labels = []
+    search_query = ""
 
     # map form sort to solr sort field
     solr_sort = {
@@ -210,6 +209,7 @@ class DocumentSearchView(
         # when form is valid, check for search term and filter queryset
         else:
             search_opts = form.cleaned_data
+            self.search_query = search_opts["q"]
 
             if search_opts["q"] and search_opts["mode"] == "regex":
                 regex_field = f"{search_opts['regex_field'] or 'transcription'}_regex"
@@ -415,6 +415,7 @@ class DocumentSearchView(
                 "highlighting": highlights,
                 "applied_filters": self.applied_filter_labels,
                 "apd_link": self.get_apd_link(context_data["form"].data.get("q", None)),
+                "search_query": self.search_query,
             }
         )
 
@@ -430,6 +431,7 @@ class DocumentDetailBase(SolrLastModifiedMixin):
     def get(self, request, *args, **kwargs):
         """extend GET to check for old pgpid and redirect on 404"""
         try:
+            search_query = request.GET.get("q", "")
             return super().get(request, *args, **kwargs)
         except Http404:
             # if not found, check for a match on a past PGPID
