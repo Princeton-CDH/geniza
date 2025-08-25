@@ -2,7 +2,6 @@ import re
 from ast import literal_eval
 from copy import deepcopy
 from random import randint
-from tabnanny import verbose
 
 from dal import autocomplete
 from django.conf import settings
