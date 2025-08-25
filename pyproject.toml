@@ -43,7 +43,8 @@ dependencies = [
     "addict",
     "beautifulsoup4",
     "bleach",
-    "python-slugify"
+    "python-slugify",
+    "nltk"
 ]
 dynamic = ["version", "readme"]
 
@@ -70,8 +71,7 @@ dev = [
     "google_auth_oauthlib",
     "django-debug-toolbar",
     "pre-commit",
-    "black",
-    "nltk"
+    "black"
 ]
 test = [
     "pytest>=4.6",# required for pytest-cov
