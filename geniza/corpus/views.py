@@ -412,7 +412,6 @@ class DocumentSearchView(
                 "page_title": self.page_title,
                 "page_type": "search",
                 "page_includes_transcriptions": True,  # preload transcription font
-                "highlighting": highlights,
                 "applied_filters": self.applied_filter_labels,
                 "apd_link": self.get_apd_link(context_data["form"].data.get("q", None)),
                 "search_query": self.search_query,
