@@ -747,7 +747,7 @@ class TestRelatedDocumentsTemplate:
         assertContains(response, "<ol>")
 
         # list should have at least one item
-        assertContains(response, '<li class="search-result">')
+        assertContains(response, '<li class="search-result"')
 
         # "join" fixture should be in list
         assertContains(response, f"<dd>{join.id}</dd>")
