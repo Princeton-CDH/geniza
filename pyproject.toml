@@ -70,7 +70,8 @@ dev = [
     "google_auth_oauthlib",
     "django-debug-toolbar",
     "pre-commit",
-    "black"
+    "black",
+    "nltk"
 ]
 test = [
     "pytest>=4.6",# required for pytest-cov

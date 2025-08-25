@@ -481,7 +481,6 @@ class DocumentDetailView(DocumentDetailBase, DetailView):
         regex = regex_field and len(regex_field) > 0
         highlighted_desc = ""
         verbose = False
-        # print(f"Query[V] is {search_query} and regex is {regex}")
         if search_query:
             doc = self.get_object()
             highlighted_desc = doc.highlight_desc(
@@ -541,7 +540,8 @@ class DocumentDetailView(DocumentDetailBase, DetailView):
             }
         )
         if highlighted_desc:
-            # print(f"Highlighted description: {highlighted_desc}")
+            if verbose:
+                print(f"Highlighted description: {highlighted_desc}")
             context_data.update({"highlighted_desc": highlighted_desc})
         return context_data
 

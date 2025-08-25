@@ -54,8 +54,6 @@ from geniza.corpus.iiif_utils import GenizaManifestImporter, get_iiif_string
 from geniza.corpus.solr_queryset import DocumentSolrQuerySet
 from geniza.footnotes.models import Creator, Footnote
 
-porter_stemmer = PorterStemmer()
-
 logger = logging.getLogger(__name__)
 
 
@@ -1874,10 +1872,6 @@ class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin, TaggableMixin)
         else:
             return True
 
-    #
-    # Matching and highlighting
-    #
-
     # highlighting matches
     def highlight_words(self, text, highlights, verbose=False):
         if verbose:
@@ -1891,13 +1885,14 @@ class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin, TaggableMixin)
                 highlights[matched_word] = True
         return highlighted_text
 
-    # keyword matching (O(n^2))
+    # keyword matching
     def find_highlight_keywords(self, query, reference, english=True, verbose=False):
         if verbose:
             print(f"Query: {query}")
             print(f"Reference: {reference}")
         # thresh = ENG_MATCH_THRESH if english else ARA_MATCH_THRESH
         highlights = {}
+        porter_stemmer = PorterStemmer()
         for word1 in word_tokenize(query):
             for word2 in word_tokenize(reference):
                 if english:
@@ -1905,9 +1900,6 @@ class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin, TaggableMixin)
                     stemmed2 = porter_stemmer.stem(word2)
                 else:
                     return []
-                # if verbose:
-                #     print(f"{stemmed1} vs {stemmed2}: {fuzz.partial_ratio(stemmed1, stemmed2)}")
-                # if fuzz.partial_ratio(stemmed1, stemmed2) > thresh:
                 if stemmed1 == stemmed2:
                     if verbose:
                         print(f"Highlight '{word2}'")
@@ -1920,7 +1912,9 @@ class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin, TaggableMixin)
         try:
             matches = re.findall(query, reference)
         except:
-            print(f"Please, revise the syntax of the input regex")
+            logger.error(f"Please, revise the syntax of the input regex {query}")
+            if verbose:
+                print(f"Please, revise the syntax of the input regex {query}")
         if verbose:
             print(f"Query:{query}\nReference:{reference}\nMatches:{matches}")
         return self.highlight_words(
@@ -1937,9 +1931,6 @@ class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin, TaggableMixin)
                 return self.find_highlight_regex(
                     query=query, reference=self.description, verbose=verbose
                 )
-                # if verbose:
-                #     print("Translation:")
-                # self.translation = self.find_highlight_regex(query=query, reference=self.translation, verbose=verbose)
             else:
                 if verbose:
                     print("Description:")
@@ -1949,14 +1940,8 @@ class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin, TaggableMixin)
                     english=True,
                     verbose=verbose,
                 )
-                # if verbose:
-                #     print("Translation:")
-                # doc_highlighted_translation = self.find_highlight_keywords(query=query, reference=self.translation,
-                #                                                       english=True, verbose=verbose)
-                # self.translation = doc_highlighted_translation
 
     def highlight_desc(self, search_query, regex=False, verbose=False):
-        # print(f"Query[M]: {search_query}")
         return self.search_geniza_doc(query=search_query, regex=regex, verbose=verbose)
 
 
