@@ -1934,15 +1934,36 @@ class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin, TaggableMixin)
             else:
                 if verbose:
                     print("Description:")
-                return self.find_highlight_keywords(
+                highlighted_desc = self.find_highlight_keywords(
                     query=query,
                     reference=self.description,
                     english=True,
                     verbose=verbose,
                 )
 
-    def highlight_desc(self, search_query, regex=False, verbose=False):
-        return self.search_geniza_doc(query=search_query, regex=regex, verbose=verbose)
+                dig_eds = self.digital_editions()
+                highlighted_eds = []
+                for dig_ed in dig_eds:
+                    for ed_img, ed_transcription in dig_ed.content_html.items():
+                        highlighted_transcription = []
+                        for transcription_line in ed_transcription:
+                            highlighted_line = self.find_highlight_keywords(
+                                query=query,
+                                reference=transcription_line,
+                                english=True,
+                                verbose=verbose,
+                            )
+                            highlighted_transcription.append(highlighted_line)
+                        highlighted_ed = defaultdict(list)
+                        highlighted_ed[ed_img] = highlighted_transcription
+                        highlighted_eds.append(highlighted_ed)
+                return highlighted_desc, highlighted_eds
+
+    def highlight_desc_transcription(self, search_query, regex=False, verbose=False):
+        highlighted_desc, highlighted_eds = self.search_geniza_doc(
+            query=search_query, regex=regex, verbose=verbose
+        )
+        return highlighted_desc, highlighted_eds
 
 
 # attach pre-delete for generic relation to log entries
