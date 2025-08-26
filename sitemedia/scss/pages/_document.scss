@@ -186,9 +186,10 @@ main.document {
                 white-space: pre-line;
                 padding-left: 1.25rem;
                 em {
-                    color: var(--secondary);
+                    color: var(--primary);
                     font-weight: bold;
                     font-style: normal;
+                    background-color: LightGreen;
                 }
             }
         }

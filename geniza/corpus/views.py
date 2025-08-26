@@ -2,6 +2,7 @@ import re
 from ast import literal_eval
 from copy import deepcopy
 from random import randint
+from urllib.parse import unquote
 
 from dal import autocomplete
 from django.conf import settings
@@ -211,6 +212,7 @@ class DocumentSearchView(
         else:
             search_opts = form.cleaned_data
             self.search_query = search_opts["q"]
+            print(f"In DocumentSearchView, query: {self.search_query}")
 
             if search_opts["q"] and search_opts["mode"] == "regex":
                 regex_field = f"{search_opts['regex_field'] or 'transcription'}_regex"
@@ -475,11 +477,13 @@ class DocumentDetailView(DocumentDetailBase, DetailView):
     def get_context_data(self, **kwargs):
         """extend context data to add page metadata"""
 
-        search_query = self.request.GET.get("q", "")
+        verbose = True
+        search_query = unquote(self.request.GET.get("q", ""))
         regex_field = self.request.GET.get("regex", "")
+        if verbose:
+            print(f"In DocumentDetailView, query: {search_query}")
         regex = regex_field and len(regex_field) > 0
         highlighted_desc = ""
-        verbose = False
         if search_query:
             doc = self.get_object()
             highlighted_desc = doc.highlight_desc(

@@ -224,7 +224,6 @@
         {% blocktranslate asvar aria_view_details with document_label=document|get_document_label %}View details for {{ document_label }}{% endblocktranslate %}
         <a class="view-link" href='{% url "corpus:document" document.pgpid %}{% if search_query %}?q={{ search_query }}{% endif %}{% if search_query and regex %}&regex={{ regex }}{% endif %}' data-turbo-frame="main" aria-label="{{ aria_view_details }}">
             <span class="sr-only">{% translate 'View document details' %}</span>
-            {{ tag }}
         </a>
     </li>
 {% endspaceless %}

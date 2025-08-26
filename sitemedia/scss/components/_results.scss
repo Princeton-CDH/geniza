@@ -159,9 +159,10 @@ section#document-list {
 
             // keywords in context
             em {
-                color: var(--secondary);
+                color: var(--primary);
                 font-weight: bold;
                 font-style: normal;
+                background-color: LightGreen;
             }
         }
 
