@@ -2,6 +2,7 @@ import re
 from ast import literal_eval
 from copy import deepcopy
 from random import randint
+from re import search
 
 from dal import autocomplete
 from django.conf import settings
@@ -212,8 +213,8 @@ class DocumentSearchView(
         else:
             search_opts = form.cleaned_data
             self.search_query = search_opts["q"]
-            if verbose:
-                print(f"In DocumentSearchView, query: {self.search_query}")
+            # if verbose:
+            #     print(f"In DocumentSearchView, query: {self.search_query}")
 
             if search_opts["q"] and search_opts["mode"] == "regex":
                 regex_field = f"{search_opts['regex_field'] or 'transcription'}_regex"
@@ -478,23 +479,11 @@ class DocumentDetailView(DocumentDetailBase, DetailView):
     def get_context_data(self, **kwargs):
         """extend context data to add page metadata"""
 
-        verbose = True
-        search_query = self.request.GET.get("q", "")
-        regex_field = self.request.GET.get("regex", "")
-        if verbose:
-            print(f"In DocumentDetailView, query: {search_query}")
-        regex = regex_field and len(regex_field) > 0
-        highlighted_desc, highlighted_eds = "", ""
-        if search_query:
-            doc = self.get_object()
-            highlighted_desc, highlighted_eds = doc.highlight_desc_transcription(
-                search_query, regex=regex, verbose=verbose
-            )
-            if verbose:
-                print(f"Highlighted desc: {highlighted_desc}")
-                print(f"Highlighted transcription: {highlighted_eds}")
-
         context_data = super().get_context_data(**kwargs)
+        search_query = self.request.GET.get("q", "")
+        # if search_query:
+        context_data.update({"search_query": search_query})
+
         images = self.object.iiif_images(with_placeholders=True)
 
         # collect available panels
@@ -544,14 +533,6 @@ class DocumentDetailView(DocumentDetailBase, DetailView):
                 ),
             }
         )
-        if highlighted_desc:
-            if verbose:
-                print(f"Highlighted description: {highlighted_desc}")
-            context_data.update({"highlighted_desc": highlighted_desc})
-        if highlighted_eds:
-            if verbose:
-                print(f"Highlighted transcription: {highlighted_eds}")
-            context_data.update({"highlighted_eds": highlighted_eds})
         return context_data
 
     def get_absolute_url(self):

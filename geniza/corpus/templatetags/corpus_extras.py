@@ -5,7 +5,15 @@ from django import template
 from django.urls import reverse
 from django.urls import translate_url as django_translate_url
 from django.utils.safestring import mark_safe
+
+# Mini-search and highlight
+from nltk.stem import PorterStemmer
+from nltk.tokenize import RegexpTokenizer, word_tokenize
 from piffle.image import IIIFImageClientException
+from thefuzz import fuzz
+
+ENG_MATCH_THRESH = 99
+ARA_MATCH_THRESH = 99
 
 from geniza.common.utils import absolutize_url
 from geniza.footnotes.models import Footnote
@@ -196,3 +204,39 @@ def process_citation(source):
     """For scholarship records list: handle grouped citations by passing to
     Footnote.display_multiple class method."""
     return mark_safe(Footnote.display_multiple(source.list))
+
+
+# highlighting matches
+def highlight_words(text, highlights):
+    highlighted_text = text
+    for matched_word in highlights:
+        if not highlights[matched_word] and len(matched_word.strip()) > 0:
+            highlighted_text = highlighted_text.replace(
+                matched_word, f"<em class='search-match'>{matched_word}</em>"
+            )
+            highlights[matched_word] = True
+    return highlighted_text
+
+
+def find_highlight_keywords(query, reference, english=True):
+    thresh = ENG_MATCH_THRESH if english else ARA_MATCH_THRESH
+    highlights = {}
+    porter_stemmer = PorterStemmer()
+    tokenizer = RegexpTokenizer(r"\w+")
+    for word1 in word_tokenize(query):
+        for word2 in tokenizer.tokenize(reference):
+            if english:
+                stemmed1 = porter_stemmer.stem(word1)
+                stemmed2 = porter_stemmer.stem(word2)
+            else:
+                return []
+            if fuzz.partial_ratio(stemmed1, stemmed2) > thresh and len(word2) >= len(
+                word1
+            ):
+                highlights[word2] = False
+    return highlight_words(text=reference, highlights=highlights)
+
+
+@register.filter
+def highlight(html, query):
+    return find_highlight_keywords(query=query, reference=html, english=True)

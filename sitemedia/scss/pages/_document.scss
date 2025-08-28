@@ -185,7 +185,7 @@ main.document {
             p {
                 white-space: pre-line;
                 padding-left: 1.25rem;
-                em {
+                em.search-match {
                     color: var(--primary);
                     font-weight: bold;
                     font-style: normal;

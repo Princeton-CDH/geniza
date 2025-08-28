@@ -29,8 +29,6 @@ from django.utils.translation import get_language
 from django.utils.translation import gettext as _
 from djiffy.models import Manifest
 from modeltranslation.manager import MultilingualQuerySet
-from nltk.stem import PorterStemmer
-from nltk.tokenize import word_tokenize
 from parasolr.django.indexing import ModelIndexable
 from piffle.image import IIIFImageClient
 from piffle.presentation import IIIFException, IIIFPresentation
@@ -1863,107 +1861,6 @@ class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin, TaggableMixin)
                 # otherwise simply reassign the relationship to the primary document
                 relation.document = self
                 relation.save()
-
-    def is_english(self, text):
-        try:
-            text.encode(encoding="utf-8").decode("ascii")
-        except UnicodeDecodeError:
-            return False
-        else:
-            return True
-
-    # highlighting matches
-    def highlight_words(self, text, highlights, verbose=False):
-        if verbose:
-            print(f"References: {text}\nMatches: {highlights}")
-        highlighted_text = text
-        for matched_word in highlights:
-            if not highlights[matched_word] and len(matched_word.strip()) > 0:
-                highlighted_text = highlighted_text.replace(
-                    matched_word, f"<em>{matched_word}</em>"
-                )
-                highlights[matched_word] = True
-        return highlighted_text
-
-    # keyword matching
-    def find_highlight_keywords(self, query, reference, english=True, verbose=False):
-        if verbose:
-            print(f"Query: {query}")
-            print(f"Reference: {reference}")
-        # thresh = ENG_MATCH_THRESH if english else ARA_MATCH_THRESH
-        highlights = {}
-        porter_stemmer = PorterStemmer()
-        for word1 in word_tokenize(query):
-            for word2 in word_tokenize(reference):
-                if english:
-                    stemmed1 = porter_stemmer.stem(word1)
-                    stemmed2 = porter_stemmer.stem(word2)
-                else:
-                    return []
-                if stemmed1 == stemmed2:
-                    if verbose:
-                        print(f"Highlight '{word2}'")
-                    highlights[word2] = False
-        return self.highlight_words(text=reference, highlights=highlights)
-
-    # regex matching
-    def find_highlight_regex(self, query, reference, verbose=False):
-        matches = []
-        try:
-            matches = re.findall(query, reference)
-        except:
-            logger.error(f"Please, revise the syntax of the input regex {query}")
-            if verbose:
-                print(f"Please, revise the syntax of the input regex {query}")
-        if verbose:
-            print(f"Query:{query}\nReference:{reference}\nMatches:{matches}")
-        return self.highlight_words(
-            text=reference, highlights=dict.fromkeys(matches, False)
-        )
-
-    def search_geniza_doc(self, query, regex=False, verbose=False):
-        if self.is_english(query):
-            if verbose:
-                print("English! Need to search both description and translation")
-            if regex:
-                if verbose:
-                    print("Description:")
-                return self.find_highlight_regex(
-                    query=query, reference=self.description, verbose=verbose
-                )
-            else:
-                if verbose:
-                    print("Description:")
-                highlighted_desc = self.find_highlight_keywords(
-                    query=query,
-                    reference=self.description,
-                    english=True,
-                    verbose=verbose,
-                )
-
-                dig_eds = self.digital_editions()
-                highlighted_eds = []
-                for dig_ed in dig_eds:
-                    for ed_img, ed_transcription in dig_ed.content_html.items():
-                        highlighted_transcription = []
-                        for transcription_line in ed_transcription:
-                            highlighted_line = self.find_highlight_keywords(
-                                query=query,
-                                reference=transcription_line,
-                                english=True,
-                                verbose=verbose,
-                            )
-                            highlighted_transcription.append(highlighted_line)
-                        highlighted_ed = defaultdict(list)
-                        highlighted_ed[ed_img] = highlighted_transcription
-                        highlighted_eds.append(highlighted_ed)
-                return highlighted_desc, highlighted_eds
-
-    def highlight_desc_transcription(self, search_query, regex=False, verbose=False):
-        highlighted_desc, highlighted_eds = self.search_geniza_doc(
-            query=search_query, regex=regex, verbose=verbose
-        )
-        return highlighted_desc, highlighted_eds
 
 
 # attach pre-delete for generic relation to log entries

@@ -503,6 +503,12 @@
                 max-width: 640px;
                 overflow: visible;
             }
+            em.search-match {
+                color: var(--primary);
+                font-weight: bold;
+                font-style: normal;
+                background-color: LightGreen;
+            }
         }
     }
 
