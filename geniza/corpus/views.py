@@ -2,7 +2,6 @@ import re
 from ast import literal_eval
 from copy import deepcopy
 from random import randint
-from re import search
 
 from dal import autocomplete
 from django.conf import settings
@@ -202,7 +201,6 @@ class DocumentSearchView(
             .facet_field("type", exclude="type", sort="value")
         )
         self.applied_filter_labels = []
-        verbose = True
 
         form = self.get_form()
         # return empty queryset if not valid
@@ -213,8 +211,6 @@ class DocumentSearchView(
         else:
             search_opts = form.cleaned_data
             self.search_query = search_opts["q"]
-            # if verbose:
-            #     print(f"In DocumentSearchView, query: {self.search_query}")
 
             if search_opts["q"] and search_opts["mode"] == "regex":
                 regex_field = f"{search_opts['regex_field'] or 'transcription'}_regex"
@@ -478,7 +474,6 @@ class DocumentDetailView(DocumentDetailBase, DetailView):
 
     def get_context_data(self, **kwargs):
         """extend context data to add page metadata"""
-
         context_data = super().get_context_data(**kwargs)
         search_query = self.request.GET.get("q", "")
         # if search_query:
