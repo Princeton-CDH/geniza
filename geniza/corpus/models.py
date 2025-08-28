@@ -448,6 +448,9 @@ class DocumentType(DisplayLabelMixin, models.Model):
     def objects_by_label(cls):
         return super().objects_by_label()
 
+    class Meta:
+        ordering = ["display_label", "name"]
+
 
 class DocumentSignalHandlers:
     """Signal handlers for indexing :class:`Document` records when
@@ -1243,7 +1246,6 @@ class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin, TaggableMixin)
             for frag in self.fragments.order_by("material_support__name")
             if frag.material_support
         ]
-
 
     @classmethod
     def total_to_index(cls):

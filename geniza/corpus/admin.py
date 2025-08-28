@@ -485,6 +485,8 @@ class DocumentAdmin(
     save_as = True
     # display unset document type as Unknown
     empty_value_display = "Unknown"
+    # django admin facet counts do not work with solr queryset
+    show_facets = admin.ShowFacets.NEVER
 
     # customize old pgpid display so unset does not show up as "Unknown"
     @admin.display(
