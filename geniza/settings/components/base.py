@@ -64,7 +64,7 @@ INSTALLED_APPS = [
     "wagtail_localize",
     "wagtail_localize.locales",
     "modelcluster",
-    "django_admin_inline_paginator",
+    "django_admin_inline_paginator_plus",
     "geniza.common",
     "geniza.corpus.apps.CorpusAppConfig",
     "geniza.footnotes.apps.FootnotesConfig",
