@@ -1,13 +1,10 @@
 import json
 import re
 
-import nltk.data
 from django import template
 from django.urls import reverse
 from django.urls import translate_url as django_translate_url
 from django.utils.safestring import mark_safe
-
-# Mini-search and highlight
 from piffle.image import IIIFImageClientException
 from thefuzz import fuzz
 
@@ -218,6 +215,7 @@ def highlight_words(text, highlights):
 
 @register.filter
 def find_highlight_keywords(reference, query, english=True):
+    import nltk
     from nltk.corpus import stopwords
     from nltk.stem import PorterStemmer
     from nltk.tokenize import RegexpTokenizer

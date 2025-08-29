@@ -8,7 +8,6 @@ from pytest_django.asserts import assertContains
 
 from geniza.common.utils import absolutize_url
 from geniza.corpus.templatetags import admin_extras, corpus_extras
-from geniza.corpus.templatetags.corpus_extras import highlight_words
 from geniza.footnotes.models import Footnote
 
 
