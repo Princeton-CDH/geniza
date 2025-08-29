@@ -176,7 +176,7 @@ def all_doc_relations(footnotes):
     relations = set()
     for fn in footnotes:
         relations.update(
-            set([n.strip() for n in fn.get_doc_relation_display().split(",")])
+            set([n.strip() for n in fn.get_doc_relation_display().split(",") if n])
         )
 
     return sorted(relations)
