@@ -7,8 +7,6 @@ from django.urls import translate_url as django_translate_url
 from django.utils.safestring import mark_safe
 
 # Mini-search and highlight
-from nltk.stem import PorterStemmer
-from nltk.tokenize import RegexpTokenizer, word_tokenize
 from piffle.image import IIIFImageClientException
 from thefuzz import fuzz
 
@@ -219,11 +217,14 @@ def highlight_words(text, highlights):
 
 
 def find_highlight_keywords(query, reference, english=True):
+    from nltk.stem import PorterStemmer
+    from nltk.tokenize import RegexpTokenizer
+
     thresh = ENG_MATCH_THRESH if english else ARA_MATCH_THRESH
     highlights = {}
     porter_stemmer = PorterStemmer()
     tokenizer = RegexpTokenizer(r"\w+")
-    for word1 in word_tokenize(query):
+    for word1 in tokenizer.tokenize(query):
         for word2 in tokenizer.tokenize(reference):
             if english:
                 stemmed1 = porter_stemmer.stem(word1)

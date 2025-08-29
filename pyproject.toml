@@ -96,5 +96,3 @@ markers = ["last", "second_to_last"]
 [tool.black]
 line-length = 88
 target-version = ['py312']
-# include = ''
-# extend-exclude = ''
