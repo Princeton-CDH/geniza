@@ -126,7 +126,6 @@ class TestCorpusExtrasTemplateTags:
             html=True,
         )
 
-    @pytest.mark.mohamed
     def test_find_highlight_keywords(self):
         refrence = """
         <!DOCTYPE html>
