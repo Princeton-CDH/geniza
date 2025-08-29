@@ -1,6 +1,7 @@
 import json
 import re
 
+import nltk.data
 from django import template
 from django.urls import reverse
 from django.urls import translate_url as django_translate_url
@@ -204,7 +205,6 @@ def process_citation(source):
     return mark_safe(Footnote.display_multiple(source.list))
 
 
-# highlighting matches
 def highlight_words(text, highlights):
     highlighted_text = text
     for matched_word in highlights:
@@ -216,16 +216,32 @@ def highlight_words(text, highlights):
     return highlighted_text
 
 
-def find_highlight_keywords(query, reference, english=True):
+@register.filter
+def find_highlight_keywords(reference, query, english=True):
+    from nltk.corpus import stopwords
     from nltk.stem import PorterStemmer
     from nltk.tokenize import RegexpTokenizer
 
+    from geniza.settings.components.base import NLTK_DATA
+
+    nltk.data.path = [NLTK_DATA]
+
     thresh = ENG_MATCH_THRESH if english else ARA_MATCH_THRESH
     highlights = {}
-    porter_stemmer = PorterStemmer()
     tokenizer = RegexpTokenizer(r"\w+")
-    for word1 in tokenizer.tokenize(query):
-        for word2 in tokenizer.tokenize(reference):
+    porter_stemmer = PorterStemmer()
+    query_words = tokenizer.tokenize(query)
+    refined_query_words = [
+        word for word in query_words if word not in stopwords.words("english")
+    ]
+    ref_words = tokenizer.tokenize(reference)
+    refined_ref_words = [
+        word for word in ref_words if word not in stopwords.words("english")
+    ]
+    for word1 in refined_query_words:
+        if len(word1) < 3:
+            continue
+        for word2 in refined_ref_words:
             if english:
                 stemmed1 = porter_stemmer.stem(word1)
                 stemmed2 = porter_stemmer.stem(word2)
@@ -236,8 +252,3 @@ def find_highlight_keywords(query, reference, english=True):
             ):
                 highlights[word2] = False
     return highlight_words(text=reference, highlights=highlights)
-
-
-@register.filter
-def highlight(html, query):
-    return find_highlight_keywords(query=query, reference=html, english=True)

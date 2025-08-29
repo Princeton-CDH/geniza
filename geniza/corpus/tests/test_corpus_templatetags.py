@@ -8,6 +8,7 @@ from pytest_django.asserts import assertContains
 
 from geniza.common.utils import absolutize_url
 from geniza.corpus.templatetags import admin_extras, corpus_extras
+from geniza.corpus.templatetags.corpus_extras import highlight_words
 from geniza.footnotes.models import Footnote
 
 
@@ -124,6 +125,52 @@ class TestCorpusExtrasTemplateTags:
             response,
             '<a href="https://fake.goitein.card/" data-turbo="false">#1234</a>',
             html=True,
+        )
+
+    @pytest.mark.mohamed
+    def test_find_highlight_keywords(self):
+        refrence = """
+        <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HTML List</title>
+</head>
+<body>
+    <h2>Sample List</h2>
+    <ul>
+        <li>Walking dead</li>
+        <li>Men in black</li>
+        <li>Lord of the rings</li>
+        <li>Star wars</li>
+    </ul>
+</body>
+</html>
+        """
+        query = "I walked around wearing a ring"
+        highlighted = corpus_extras.find_highlight_keywords(refrence, query)
+        assert (
+            highlighted
+            == """
+        <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HTML List</title>
+</head>
+<body>
+    <h2>Sample List</h2>
+    <ul>
+        <li><em class='search-match'>Walking</em> dead</li>
+        <li>Men in black</li>
+        <li>Lord of the <em class='search-match'>rings</em></li>
+        <li>Star wars</li>
+    </ul>
+</body>
+</html>
+        """
         )
 
 

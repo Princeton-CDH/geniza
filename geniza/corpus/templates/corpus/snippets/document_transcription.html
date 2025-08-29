@@ -283,7 +283,7 @@
                                              data-lang-script="{{ document.primary_script|lower }}"{% endif %}
                                     >
                                         {% for html_section in edition.content_html|dict_item:canvas_uri %}
-                                            {{ html_section|highlight:search_query|safe }}
+                                            {{ html_section|find_highlight_keywords:search_query|safe }}
                                         {% endfor %}
                                     </div>
                                 {% endfor %}
@@ -318,7 +318,7 @@
                                          {% if translation.source.languages.exists %}lang="{{ translation.source.languages.all.0.code }}" dir="{{ translation.source.languages.all.0.direction }}"{% else %}dir="ltr"{% endif %}
                                     >
                                         {% for html_section in translation.content_html|dict_item:canvas_uri %}
-                                            {{ html_section | highlight:search_query | safe }}
+                                            {{ html_section | find_highlight_keywords:search_query | safe }}
                                         {% endfor %}
                                     </div>
                                 {% endfor %}
