@@ -126,8 +126,19 @@ class TestCorpusExtrasTemplateTags:
             html=True,
         )
 
+    def test_highlight_words(self):
+        text = "<p>One two three four</p>"
+        highlights = {"two": False, "four": False}
+        highlighted_text = corpus_extras.highlight_words(
+            text=text, highlights=highlights
+        )
+        assert (
+            highlighted_text
+            == "<p>One <em class='search-match'>two</em> three <em class='search-match'>four</em></p>"
+        )
+
     def test_find_highlight_keywords(self):
-        refrence = """
+        reference = """
         <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -147,7 +158,8 @@ class TestCorpusExtrasTemplateTags:
 </html>
         """
         query = "I walked around wearing a ring"
-        highlighted = corpus_extras.find_highlight_keywords(refrence, query)
+        highlighted = corpus_extras.find_highlight_keywords(reference, query)
+        print(highlighted)
         assert (
             highlighted
             == """
@@ -170,6 +182,62 @@ class TestCorpusExtrasTemplateTags:
 </html>
         """
         )
+
+    def test_find_highlight_regex(self):
+        reference = """
+        <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HTML List</title>
+</head>
+<body>
+    <h2>Sample List</h2>
+    <ul>
+        <li>Walking dead</li>
+        <li>Men in black</li>
+        <li>Lord of the rings</li>
+        <li>Star wars</li>
+    </ul>
+</body>
+</html>
+        """
+        query = "(Walking|ring)+"
+        highlighted = corpus_extras.find_highlight_regex(reference, query)
+        assert (
+            highlighted
+            == """
+        <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HTML List</title>
+</head>
+<body>
+    <h2>Sample List</h2>
+    <ul>
+        <li><em class='search-match'>Walking</em> dead</li>
+        <li>Men in black</li>
+        <li>Lord of the <em class='search-match'>ring</em>s</li>
+        <li>Star wars</li>
+    </ul>
+</body>
+</html>
+        """
+        )
+
+    def test_find_highlight_keywords_failed(self):
+        query = "foo"
+        reference = "bar"
+        import pathlib
+
+        import geniza
+
+        geniza.settings.components.base.NLTK_DATA = pathlib.Path("nonexisting")
+        highlighted = corpus_extras.find_highlight_keywords(reference, query)
+        assert highlighted == reference
 
 
 def test_dict_item():

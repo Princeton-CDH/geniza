@@ -11,9 +11,12 @@ from thefuzz import fuzz
 ENG_MATCH_THRESH = 99
 ARA_MATCH_THRESH = 99
 
+import logging
+
 from geniza.common.utils import absolutize_url
 from geniza.footnotes.models import Footnote
 
+logger = logging.getLogger(__name__)
 register = template.Library()
 
 
@@ -214,15 +217,34 @@ def highlight_words(text, highlights):
 
 
 @register.filter
+def find_highlight_regex(reference, query):
+    matches = []
+    try:
+        matches = re.findall(query, reference)
+    except:
+        logger.warning(f"Bad regex")
+        return reference
+    return highlight_words(text=reference, highlights=dict.fromkeys(matches, False))
+
+
+@register.filter
 def find_highlight_keywords(reference, query, english=True):
     import nltk
-    from nltk.corpus import stopwords
-    from nltk.stem import PorterStemmer
-    from nltk.tokenize import RegexpTokenizer
 
     from geniza.settings.components.base import NLTK_DATA
 
     nltk.data.path = [NLTK_DATA]
+    import os.path
+
+    english_stopwords_path = str(
+        nltk.data.path[0] / "corpora" / "stopwords" / "english"
+    )
+    if not os.path.isfile(english_stopwords_path):
+        logger.warning(f"Can't find nltk stopwords in {english_stopwords_path}!")
+        return reference
+    from nltk.corpus import stopwords
+    from nltk.stem import PorterStemmer
+    from nltk.tokenize import RegexpTokenizer
 
     thresh = ENG_MATCH_THRESH if english else ARA_MATCH_THRESH
     highlights = {}

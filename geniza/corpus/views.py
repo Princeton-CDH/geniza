@@ -86,7 +86,7 @@ class DocumentSearchView(
     solr_lastmodified_filters = {"item_type_s": "document"}
     applied_filter_labels = []
     search_query = ""
-    regex = ""
+    regex = "0"
 
     # map form sort to solr sort field
     solr_sort = {
@@ -214,7 +214,11 @@ class DocumentSearchView(
 
             if search_opts["q"] and search_opts["mode"] == "regex":
                 regex_field = f"{search_opts['regex_field'] or 'transcription'}_regex"
-                self.regex = regex_field
+                self.regex = "1"
+                if regex_field == "transcription_regex":
+                    self.regex = "2"
+                elif regex_field == "translation_regex":
+                    self.regex = "3"
                 # use regex search if "mode" is "regex"
                 documents = documents.regex_search(regex_field, search_opts["q"])
 
@@ -476,8 +480,11 @@ class DocumentDetailView(DocumentDetailBase, DetailView):
         """extend context data to add page metadata"""
         context_data = super().get_context_data(**kwargs)
         search_query = self.request.GET.get("q", "")
-        # if search_query:
+        regex = self.request.GET.get("regex", "")
+
         context_data.update({"search_query": search_query})
+        if regex and int(regex) > 0:
+            context_data.update({"regex": regex})
 
         images = self.object.iiif_images(with_placeholders=True)
 
