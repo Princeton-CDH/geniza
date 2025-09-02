@@ -215,8 +215,8 @@ class Source(models.Model):
 
     def formatted_display(self, extra_fields=True, format_index_cards=False):
         """Format source for display; used on document scholarship page.
-        To omit publisher, place_published, and page_range fields,
-        specify `extra_fields=False`."""
+        To omit publisher and page_range fields, specify `extra_fields=False`.
+        """
 
         author = ""
         if len(self.authorship_set.all()):
@@ -337,13 +337,11 @@ class Source(models.Model):
                 parts.append("no. %d" % self.issue)
 
         if extra_fields and not "model" in self.source_type.type:
-            # Location, publisher, and date (omit for unpublished, unless it has a year)
+            # Publisher and date (omit for unpublished, unless it has a year)
             # examples:
             #   (n.p., n.d.)
             #   (n.p., 2013)
-            #   (Oxford: n.p., 2013)
-            #   (n.p.: Oxford University Press, 2013)
-            #   (Oxford: Oxford University Press, 2013)
+            #   (Oxford University Press, 2013)
             #   (PhD diss., n.p., n.d.)
             #   (PhD diss., n.p., 2013)
             #   (PhD diss., Oxford University, 2013)
@@ -354,14 +352,8 @@ class Source(models.Model):
                     # Add "PhD diss." and degree granting institution for dissertation
                     # (do not include place published here)
                     pub_data = "PhD diss., %s" % pub_name
-                elif self.place_published or self.publisher:
-                    # Add publisher information for all other works, if available
-                    if self.place_published:
-                        pub_data = "%s: %s" % (self.place_published, pub_name)
-                    else:
-                        pub_data = "n.p.: %s" % pub_name
                 else:
-                    # If not a dissertation and no publisher info, then just use n.p.
+                    # If not a dissertation, then just use publisher name or n.p.
                     pub_data = pub_name
 
                 pub_year = "n.d." if not self.year else str(self.year)
