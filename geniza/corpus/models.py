@@ -157,7 +157,7 @@ class LanguageScript(models.Model):
     class Meta:
         verbose_name = "Language + Script"
         verbose_name_plural = "Languages + Scripts"
-        ordering = ["language"]
+        ordering = ["display_name", "language"]
         constraints = [
             models.UniqueConstraint(
                 fields=["language", "script"], name="unique_language_script"
@@ -447,6 +447,9 @@ class DocumentType(DisplayLabelMixin, models.Model):
     @cached_class_property
     def objects_by_label(cls):
         return super().objects_by_label()
+
+    class Meta:
+        ordering = ["display_label", "name"]
 
 
 class DocumentSignalHandlers:
@@ -1243,7 +1246,6 @@ class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin, TaggableMixin)
             for frag in self.fragments.order_by("material_support__name")
             if frag.material_support
         ]
-
 
     @classmethod
     def total_to_index(cls):
