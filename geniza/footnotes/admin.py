@@ -13,7 +13,7 @@ from django.forms.models import BaseInlineFormSet
 from django.forms.widgets import Textarea, TextInput
 from django.urls import path, reverse
 from django.utils.html import format_html
-from django_admin_inline_paginator.admin import TabularInlinePaginated
+from django_admin_inline_paginator_plus.admin import TabularInlinePaginated
 from modeltranslation.admin import TabbedTranslationAdmin
 
 from geniza.common.admin import custom_empty_field_list_filter

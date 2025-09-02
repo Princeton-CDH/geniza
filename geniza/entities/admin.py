@@ -12,6 +12,7 @@ from django.forms.models import ModelChoiceIterator
 from django.forms.widgets import Textarea, TextInput
 from django.http import HttpResponseRedirect
 from django.urls import path, reverse
+from django_admin_inline_paginator_plus.admin import TabularInlinePaginated
 from modeltranslation.admin import TabbedTranslationAdmin
 
 from geniza.common.admin import PreventLogEntryDeleteMixin, TypedRelationInline
@@ -136,7 +137,7 @@ class FootnoteInline(GenericTabularInline):
     show_change_link = True
 
 
-class DocumentInline(admin.TabularInline):
+class DocumentInline(TabularInlinePaginated):
     """Generic related documents inline"""
 
     verbose_name = "Related Document"
@@ -149,11 +150,14 @@ class DocumentInline(admin.TabularInline):
         "type",
         "notes",
     )
+    ordering = ("document",)
     readonly_fields = ("document_description", "dating_range")
     formfield_overrides = {
         TextField: {"widget": Textarea(attrs={"rows": 4})},
     }
     extra = 1
+    per_page = 20
+    pagination_key = "related-documents"
 
     def document_description(self, obj):
         return obj.document.description
@@ -221,7 +225,7 @@ class PersonPersonRelationTypeChoiceField(ModelChoiceField):
     iterator = PersonPersonRelationTypeChoiceIterator
 
 
-class PersonPersonInline(admin.TabularInline):
+class PersonPersonInline(TabularInlinePaginated):
     """Person-Person relationships inline for the Person admin"""
 
     model = PersonPersonRelation
@@ -230,6 +234,8 @@ class PersonPersonInline(admin.TabularInline):
     form = PersonPersonForm
     fk_name = "from_person"
     extra = 1
+    per_page = 20
+    pagination_key = "related-people"
 
     def get_formset(self, request, obj=None, **kwargs):
         """Override 'type' field for PersonPersonRelation, change ModelChoiceField
@@ -241,7 +247,7 @@ class PersonPersonInline(admin.TabularInline):
         return formset
 
 
-class PersonPersonReverseInline(admin.TabularInline):
+class PersonPersonReverseInline(TabularInlinePaginated):
     """Person-Person reverse relationships inline for the Person admin"""
 
     model = PersonPersonRelation
@@ -256,6 +262,8 @@ class PersonPersonReverseInline(admin.TabularInline):
     readonly_fields = ("from_person", "relation", "notes")
     extra = 0
     max_num = 0
+    per_page = 20
+    pagination_key = "related-people-reverse"
 
     def relation(self, obj=None):
         """Get the relationship type's converse name, if it exists, or else the type name"""

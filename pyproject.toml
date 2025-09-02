@@ -37,7 +37,7 @@ dependencies = [
     "django-widget-tweaks",
     "django-csp-helpers",
     "django-fullurl",
-    "django-admin-inline-paginator",
+    "django-admin-inline-paginator-plus",
     "convertdate",
     "unidecode",
     "addict",
