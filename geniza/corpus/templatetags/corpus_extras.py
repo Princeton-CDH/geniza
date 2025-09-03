@@ -266,7 +266,8 @@ def find_highlight_keywords(reference, query, english=True):
                 stemmed1 = porter_stemmer.stem(word1)
                 stemmed2 = porter_stemmer.stem(word2)
             else:
-                return []
+                logger.warning(f"Non-English search not supported yet!")
+                return reference
             if fuzz.partial_ratio(stemmed1, stemmed2) > thresh and len(word2) >= len(
                 word1
             ):

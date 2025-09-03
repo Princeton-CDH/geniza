@@ -3,6 +3,8 @@ from unittest.mock import MagicMock, Mock
 import pytest
 from django.http.request import HttpRequest, QueryDict
 from django.urls import reverse
+from docutils.nodes import reference
+from nltk.corpus.europarl_raw import english
 from piffle.image import IIIFImageClient
 from pytest_django.asserts import assertContains
 
@@ -183,6 +185,25 @@ class TestCorpusExtrasTemplateTags:
         """
         )
 
+    def test_find_highlight_keywords_failed(self):
+        query = "foo"
+        reference = "bar"
+        import pathlib
+
+        import geniza
+
+        geniza.settings.components.base.NLTK_DATA = pathlib.Path("nonexisting")
+        highlighted = corpus_extras.find_highlight_keywords(reference, query)
+        assert highlighted == reference
+
+    def test_find_highlight_keywords_nonenglish(self):
+        reference = "non English ref"
+        query = "English"
+        highlighted = corpus_extras.find_highlight_keywords(
+            reference, query, english=False
+        )
+        assert highlighted == reference
+
     def test_find_highlight_regex(self):
         reference = """
         <!DOCTYPE html>
@@ -228,15 +249,10 @@ class TestCorpusExtrasTemplateTags:
         """
         )
 
-    def test_find_highlight_keywords_failed(self):
-        query = "foo"
-        reference = "bar"
-        import pathlib
-
-        import geniza
-
-        geniza.settings.components.base.NLTK_DATA = pathlib.Path("nonexisting")
-        highlighted = corpus_extras.find_highlight_keywords(reference, query)
+    def test_find_highlight_regex_failed(self):
+        reference = "whatever"
+        query = "*"
+        highlighted = corpus_extras.find_highlight_regex(reference, query)
         assert highlighted == reference
 
 

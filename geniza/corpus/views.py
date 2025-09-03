@@ -86,7 +86,7 @@ class DocumentSearchView(
     solr_lastmodified_filters = {"item_type_s": "document"}
     applied_filter_labels = []
     search_query = ""
-    regex = "0"
+    regex = "none"
 
     # map form sort to solr sort field
     solr_sort = {
@@ -214,11 +214,7 @@ class DocumentSearchView(
 
             if search_opts["q"] and search_opts["mode"] == "regex":
                 regex_field = f"{search_opts['regex_field'] or 'transcription'}_regex"
-                self.regex = "1"
-                if regex_field == "transcription_regex":
-                    self.regex = "2"
-                elif regex_field == "translation_regex":
-                    self.regex = "3"
+                self.regex = regex_field
                 # use regex search if "mode" is "regex"
                 documents = documents.regex_search(regex_field, search_opts["q"])
 
@@ -483,7 +479,7 @@ class DocumentDetailView(DocumentDetailBase, DetailView):
         regex = self.request.GET.get("regex", "")
 
         context_data.update({"search_query": search_query})
-        if regex and int(regex) > 0:
+        if regex != "none":
             context_data.update({"regex": regex})
 
         images = self.object.iiif_images(with_placeholders=True)
