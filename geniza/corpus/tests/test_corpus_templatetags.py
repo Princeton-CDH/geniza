@@ -3,8 +3,6 @@ from unittest.mock import MagicMock, Mock
 import pytest
 from django.http.request import HttpRequest, QueryDict
 from django.urls import reverse
-from docutils.nodes import reference
-from nltk.corpus.europarl_raw import english
 from piffle.image import IIIFImageClient
 from pytest_django.asserts import assertContains
 
