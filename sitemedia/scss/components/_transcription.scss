@@ -1454,12 +1454,13 @@
             padding-right: 0;
         }
 
+        // line number dot cover
         ol li:not([value])::before {
             /* make font larger than list number font to cover completely;
             shrink line height to adjust placement */
             right: -35.75px;
             font-size: 37px;
-            line-height: 22px;
+            line-height: 19px;
 
             @include breakpoints.for-tablet-landscape-up {
                 font-size: 45px;
@@ -1490,11 +1491,13 @@
             margin-left: 0;
             padding-left: 0;
         }
+
+        // line number dot cover
         ol li:not([value])::before {
             /* make font larger than list number font to cover completely;
                    shrink line height to adjust placement */
             font-size: 37px;
-            line-height: 18px;
+            line-height: 13px;
             left: -9.5px;
 
             @include breakpoints.for-tablet-landscape-up {
@@ -1505,6 +1508,65 @@
         }
     }
 }
+
+// line number dot cover: handle spacing differences from transcription-translation alignment
+#toggles:has(#transcription-on:checked ~ #translation-on:not(:checked))
+    ~ .panel-container
+    .transcription,
+#toggles:has(#transcription-on:not(:checked) ~ #translation-on:checked)
+    ~ .panel-container
+    .translation {
+    @include breakpoints.for-tablet-landscape-up {
+        &[dir="rtl"] ol li:not([value])::before {
+            line-height: 19px;
+        }
+        &[dir="ltr"] ol li:not([value])::before {
+            line-height: 12px;
+        }
+    }
+}
+
+// line number dot cover: handle safari-only spacing differences, including both
+// aligned and unaligned transcription (rtl) and translation (ltr and rtl)
+// (safari-only selector from https://stackoverflow.com/a/74381245/394067)
+@supports (font: -apple-system-body) and (-webkit-appearance: none) {
+    .transcription,
+    .translation {
+        &[dir="rtl"] ol li:not([value])::before {
+            right: -41px;
+            line-height: 21px;
+            @include breakpoints.for-tablet-landscape-up {
+                line-height: 24px;
+            }
+        }
+    }
+    .translation {
+        &[dir="ltr"] ol li:not([value])::before {
+            left: -14px;
+            line-height: 12px;
+            @include breakpoints.for-tablet-landscape-up {
+                left: -17px;
+                line-height: 17px;
+            }
+        }
+    }
+    #toggles:has(#transcription-on:not(:checked) ~ #translation-on:checked)
+        ~ .panel-container
+        .translation,
+    #toggles:has(#transcription-on:checked ~ #translation-on:not(:checked))
+        ~ .panel-container
+        .transcription {
+        @include breakpoints.for-tablet-landscape-up {
+            &[dir="rtl"] ol li:not([value])::before {
+                line-height: 21px;
+            }
+            &[dir="ltr"] ol li:not([value])::before {
+                line-height: 11px;
+            }
+        }
+    }
+}
+
 .transcription {
     @include typography.transcription;
 }
