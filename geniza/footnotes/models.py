@@ -671,10 +671,17 @@ class Footnote(TrackChangesModel):
                             fn.get_doc_relation_display(),
                         )
                         for fn in footnotes
+                        if fn.doc_relation
                     ]
                 )
             else:
-                relation_set = set([fn.get_doc_relation_display() for fn in footnotes])
+                relation_set = set(
+                    [
+                        fn.get_doc_relation_display()
+                        for fn in footnotes
+                        if fn.doc_relation
+                    ]
+                )
             relation_display = list_to_string(sorted(list(relation_set)))
             if relation_display:
                 citation += f"'s {relation_display.lower()}"

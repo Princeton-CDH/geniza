@@ -30,7 +30,7 @@ dependencies = [
     "gitpython",
     "neuxml",
     "rich",
-    "wagtail>=7.0,<8",
+    "wagtail>=7.1,<7.2",
     "wagtail-localize>=1.12,<1.13",
     "djiffy>=1.0.1,<1.1",
     "natsort",

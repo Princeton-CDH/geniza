@@ -572,6 +572,18 @@ class TestDocumentSearchView:
             # should not highlight with parasolr
             mock_sqs.regex_search.return_value.highlight.assert_not_called()
 
+            # no_transcription filter
+            mock_sqs.reset_mock()
+            docsearch_view.request = Mock()
+            docsearch_view.request.GET = {
+                "no_transcription": "on",
+            }
+            qs = docsearch_view.get_queryset()
+            mock_sqs = mock_queryset_cls.return_value
+            mock_sqs.order_by.return_value.filter.assert_called_with(
+                has_digital_edition=False
+            )
+
     @pytest.mark.usefixtures("mock_solr_queryset")
     def test_get_range_stats(self, mock_solr_queryset):
         with patch(
