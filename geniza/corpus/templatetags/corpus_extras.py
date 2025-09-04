@@ -181,7 +181,13 @@ def all_doc_relations(footnotes):
     relations = set()
     for fn in footnotes:
         relations.update(
-            set([n.strip() for n in fn.get_doc_relation_display().split(",")])
+            set(
+                [
+                    doc_relation.strip()
+                    for doc_relation in fn.get_doc_relation_display().split(",")
+                    if doc_relation
+                ]
+            )
         )
 
     return sorted(relations)

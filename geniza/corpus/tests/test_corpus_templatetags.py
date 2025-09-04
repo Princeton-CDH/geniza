@@ -73,6 +73,13 @@ class TestCorpusExtrasTemplateTags:
             doc_relation=Footnote.EDITION,
             location="other place",
         )
+        # should not include empty doc relation in list
+        Footnote.objects.create(
+            object_id=document.pk,
+            content_type=footnote.content_type,
+            source=footnote.source,
+            doc_relation=[],
+        )
         assert corpus_extras.all_doc_relations(list(document.footnotes.all())) == [
             "Digital Edition",
             "Edition",
