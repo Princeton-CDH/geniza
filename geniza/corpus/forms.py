@@ -326,6 +326,12 @@ class DocumentSearchForm(RangeForm):
         # Translators: label for "has discussion" search form filter
         label=_("Discussion"),
     )
+    no_transcription = forms.BooleanField(
+        # translators: label for "has no transcription" search form filter
+        label=_("No transcription"),
+        widget=forms.HiddenInput,
+        required=False,
+    )
     translation_language = FacetChoiceSelectField(
         # Translators: label for document translation language search form filter
         label=_("Translation language"),

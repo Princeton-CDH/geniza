@@ -149,6 +149,11 @@
                 <span class="fieldname">{{ form.doctype.label }}</span>
                 {% render_field form.doctype data-action="search#update" %}
             </label>
+            {# hidden input, accessible from admin or by URL params #}
+            {% if form.no_transcription.value %}
+                {# only render if set to prevent polluting params #}
+                {% render_field form.no_transcription %}
+            {% endif %}
         </fieldset>
 
         {% if form.errors %}

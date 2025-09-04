@@ -317,6 +317,11 @@ class DocumentSearchView(
                 self.applied_filter_labels.append(
                     self.get_boolfield_label(form, "has_translation")
                 )
+            if search_opts["no_transcription"] == True:
+                documents = documents.filter(has_digital_edition=False)
+                self.applied_filter_labels.append(
+                    self.get_boolfield_label(form, "no_transcription")
+                )
             if search_opts["docdate"]:
                 # date range filter; returns tuple of value or None for open-ended range
                 start, end = search_opts["docdate"]

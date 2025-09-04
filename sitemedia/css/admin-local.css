@@ -412,3 +412,8 @@ div.form-row.field-doc_date_original .inline-group {
     cursor: pointer;
     margin-top: 0.5rem;
 }
+
+/* "documents needing transcription" link styling */
+.object-tools a.addlink.needs-transcription {
+    background-image: url("/static/img/icons/arrow-square-out.svg");
+}
