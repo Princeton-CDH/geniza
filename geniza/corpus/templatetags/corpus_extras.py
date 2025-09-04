@@ -144,7 +144,12 @@ def shelfmark_wrap(shelfmark):
     """Wrap individual shelfmarks in a span within a combined shelfmark,
     to avoid wrapping mid-shelfmark"""
     return mark_safe(
-        " + ".join(["<span>%s</span>" % m for m in shelfmark.split(" + ")])
+        " + ".join(
+            [
+                f"<span>{fragment}</span>" if len(fragment) < 60 else fragment
+                for fragment in shelfmark.split(" + ")
+            ]
+        )
     )
 
 

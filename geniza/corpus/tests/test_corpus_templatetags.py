@@ -248,6 +248,13 @@ def test_shelfmark_wrap():
         corpus_extras.shelfmark_wrap("foo + bar + baz")
         == "<span>foo</span> + <span>bar</span> + <span>baz</span>"
     )
+    # long shelfmarks >= 60 characters should wrap and not get spans
+    assert (
+        corpus_extras.shelfmark_wrap(
+            "foo + PUL Islamic Manuscripts, Third Series no. 584e.22a (Michaelides 22a) + baz"
+        )
+        == "<span>foo</span> + PUL Islamic Manuscripts, Third Series no. 584e.22a (Michaelides 22a) + <span>baz</span>"
+    )
 
 
 def test_get_document_label():
