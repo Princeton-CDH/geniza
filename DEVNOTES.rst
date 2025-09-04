@@ -69,6 +69,15 @@ Or configure your git to always ignore the black revision commit::
 
     git config blame.ignoreRevsFile .git-blame-ignore-revs
 
+NLTK
+~~~~
+NLTK is used for in-document highlighting of search results.
+
+
+``mkdir nlp``
+
+``python -m nltk.downloader stopwords -d nlp``
+
 Fonts
 ~~~~~
 
