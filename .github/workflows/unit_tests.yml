@@ -73,6 +73,9 @@ jobs:
       - name: Setup local_settings.py
         run: python -c "import uuid; print('SECRET_KEY = \'%s\'' % uuid.uuid4())" >> geniza/settings/local_settings.py
 
+      - name: Create nltk resources directory
+        run: mkdir -p nlp
+
       - name: Download nltk resources
         run: python -m nltk.downloader stopwords -d nlp
 

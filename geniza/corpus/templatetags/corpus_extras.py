@@ -241,7 +241,7 @@ def find_highlight_keywords(reference, query, english=True):
     )
     if not os.path.isfile(english_stopwords_path):
         logger.warning(f"Can't find nltk stopwords in {english_stopwords_path}!")
-        return reference
+        return reference  # TODO mkdir, download, and resume operation
     from nltk.corpus import stopwords
     from nltk.stem import PorterStemmer
     from nltk.tokenize import RegexpTokenizer

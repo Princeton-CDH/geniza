@@ -2,6 +2,7 @@
 local_settings.py
 db.sqlite3
 data/
+nlp
 
 # Media ignores
 static
@@ -161,6 +162,3 @@ node_modules/
 
 # local lighthouse runs
 .lighthouseci
-
-# exception to the rule
-!nlp/.gitkeep
