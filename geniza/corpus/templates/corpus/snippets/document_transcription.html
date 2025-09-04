@@ -283,10 +283,12 @@
                                              data-lang-script="{{ document.primary_script|lower }}"{% endif %}
                                     >
                                         {% for html_section in edition.content_html|dict_item:canvas_uri %}
-                                            {% if regex %}
-                                                {{ html_section|find_highlight_regex:search_query|safe }}
+                                            {% if request.GET.mode == 'regex' and request.GET.q %}
+                                                {{ html_section|find_highlight_regex:request.GET.q|safe }}
+                                            {% elif request.GET.q %}
+                                                {{ html_section|find_highlight_keywords:request.GET.q|safe }}
                                             {% else %}
-                                                {{ html_section|find_highlight_keywords:search_query|safe }}
+                                                {{ html_section|safe }}
                                             {% endif %}
                                         {% endfor %}
                                     </div>
@@ -322,10 +324,12 @@
                                          {% if translation.source.languages.exists %}lang="{{ translation.source.languages.all.0.code }}" dir="{{ translation.source.languages.all.0.direction }}"{% else %}dir="ltr"{% endif %}
                                     >
                                         {% for html_section in translation.content_html|dict_item:canvas_uri %}
-                                            {% if regex %}
-                                                {{ html_section | find_highlight_regex:search_query | safe }}
+                                            {% if request.GET.mode == 'regex' and request.GET.q %}
+                                                {{ html_section | find_highlight_regex:request.GET.q | safe }}
+                                            {% elif request.GET.q %}
+                                                {{ html_section | find_highlight_keywords:request.GET.q | safe }}
                                             {% else %}
-                                                {{ html_section | find_highlight_keywords:search_query | safe }}
+                                                {{ html_section | safe }}
                                             {% endif %}
                                         {% endfor %}
                                     </div>

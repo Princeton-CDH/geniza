@@ -475,12 +475,6 @@ class DocumentDetailView(DocumentDetailBase, DetailView):
     def get_context_data(self, **kwargs):
         """extend context data to add page metadata"""
         context_data = super().get_context_data(**kwargs)
-        search_query = self.request.GET.get("q", "")
-        regex = self.request.GET.get("regex", "")
-
-        context_data.update({"search_query": search_query})
-        if regex != "none":
-            context_data.update({"regex": regex})
 
         images = self.object.iiif_images(with_placeholders=True)
 

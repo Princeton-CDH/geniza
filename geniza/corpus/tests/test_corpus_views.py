@@ -144,9 +144,7 @@ class TestDocumentDetailView:
 
     def test_get_context_data(self, client, document, source):
         # test default shown/disabled behavior in context data
-        response = client.get(
-            reverse("corpus:document", args=(document.pk,)), kwargs={"regex": "notnone"}
-        )
+        response = client.get(reverse("corpus:document", args=(document.pk,)))
 
         # document has image (via fragment.iiif_url) but no transcription or translation
         assert response.context["default_shown"] == ["images"]

@@ -142,10 +142,12 @@
         <section class="description">
             {# Translators: label for document description #}
             <h2>{% translate 'Description' %}</h2>
-            {% if regex %}
-                <p>{{ document.description | find_highlight_regex:search_query | pgp_urlize }}</p>
+            {% if request.GET.mode == 'regex' and request.GET.q %}
+                <p>{{ document.description | find_highlight_regex:request.GET.q | pgp_urlize }}</p>
+            {% elif request.GET.q %}
+                <p>{{ document.description | find_highlight_keywords:request.GET.q | pgp_urlize }}</p>
             {% else %}
-                <p>{{ document.description | find_highlight_keywords:search_query | pgp_urlize }}</p>
+                <p>{{ document.description | pgp_urlize }}</p>
             {% endif %}
         </section>
 
