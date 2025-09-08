@@ -289,6 +289,12 @@ def test_translate_url(document):
     ctx["request"].path = "https://example.com"
     assert corpus_extras.translate_url(ctx, "he") == "https://example.com"
 
+    # current_path context variable (via async request on turbo load); should
+    # take precedence over request path
+    ctx["request"].path = "https://example.com"
+    ctx["current_path"] = document.get_absolute_url()
+    assert corpus_extras.translate_url(ctx, "he").startswith("/he/")
+
 
 class TestAdminExtrasTemplateTags:
     def test_get_fieldsets_and_inlines(self):
