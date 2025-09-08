@@ -1416,6 +1416,11 @@
         // color: yellow;
     }
 
+    // padding to handle Arabic characters that overflow container vertically
+    ol:last-of-type {
+        padding-bottom: 4px;
+    }
+
     // NOTE: Broken in stable Safari for now, but fixed in Safari preview release.
     li::marker {
         @include typography.transcription-numerals;
