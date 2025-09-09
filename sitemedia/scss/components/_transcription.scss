@@ -1549,6 +1549,13 @@
                 line-height: 17px;
             }
         }
+        // handle LTR line numbers cut off horizontally
+        &[dir="ltr"] ol {
+            margin-left: 5px;
+            @include breakpoints.for-tablet-landscape-up {
+                margin-left: 10px;
+            }
+        }
     }
     #toggles:has(#transcription-on:not(:checked) ~ #translation-on:checked)
         ~ .panel-container
