@@ -1,6 +1,6 @@
 from modeltranslation.translator import TranslationOptions, register
 
-from geniza.corpus.models import Document, DocumentType, Provenance
+from geniza.corpus.models import Document, DocumentType, MaterialSupport, Provenance
 
 
 @register(Document)
@@ -18,5 +18,11 @@ class DocumentTypeTranslationOption(TranslationOptions):
 
 @register(Provenance)
 class ProvenanceTranslationOption(TranslationOptions):
+    fields = ("name",)
+    required_languages = {"en": ("name",)}
+
+
+@register(MaterialSupport)
+class MaterialSupportTranslationOption(TranslationOptions):
     fields = ("name",)
     required_languages = {"en": ("name",)}

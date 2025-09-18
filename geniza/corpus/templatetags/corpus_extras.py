@@ -144,7 +144,12 @@ def shelfmark_wrap(shelfmark):
     """Wrap individual shelfmarks in a span within a combined shelfmark,
     to avoid wrapping mid-shelfmark"""
     return mark_safe(
-        " + ".join(["<span>%s</span>" % m for m in shelfmark.split(" + ")])
+        " + ".join(
+            [
+                f"<span>{fragment}</span>" if len(fragment) < 60 else fragment
+                for fragment in shelfmark.split(" + ")
+            ]
+        )
     )
 
 
@@ -176,7 +181,13 @@ def all_doc_relations(footnotes):
     relations = set()
     for fn in footnotes:
         relations.update(
-            set([n.strip() for n in fn.get_doc_relation_display().split(",")])
+            set(
+                [
+                    doc_relation.strip()
+                    for doc_relation in fn.get_doc_relation_display().split(",")
+                    if doc_relation
+                ]
+            )
         )
 
     return sorted(relations)

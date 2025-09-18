@@ -157,7 +157,7 @@ class LanguageScript(models.Model):
     class Meta:
         verbose_name = "Language + Script"
         verbose_name_plural = "Languages + Scripts"
-        ordering = ["language"]
+        ordering = ["display_name", "language"]
         constraints = [
             models.UniqueConstraint(
                 fields=["language", "script"], name="unique_language_script"
@@ -177,6 +177,15 @@ class LanguageScript(models.Model):
 
 class Provenance(models.Model):
     """A provenance designation for a :class:`Fragment`."""
+
+    name = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.name
+
+
+class MaterialSupport(models.Model):
+    """The physical material of a `Fragment`."""
 
     name = models.CharField(max_length=255)
 
@@ -216,6 +225,15 @@ class Fragment(TrackChangesModel):
         "Multifragment",
         default=False,
         help_text="True if there are multiple fragments in one shelfmark",
+    )
+
+    material_support = models.ForeignKey(
+        MaterialSupport,
+        verbose_name="Material support",
+        blank=True,
+        null=True,
+        on_delete=models.SET_NULL,
+        help_text="The physical material of the fragment",
     )
     provenance_display = models.ForeignKey(
         Provenance,
@@ -429,6 +447,9 @@ class DocumentType(DisplayLabelMixin, models.Model):
     @cached_class_property
     def objects_by_label(cls):
         return super().objects_by_label()
+
+    class Meta:
+        ordering = ["display_label", "name"]
 
 
 class DocumentSignalHandlers:
@@ -1215,6 +1236,15 @@ class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin, TaggableMixin)
             frag
             for frag in self.fragments.order_by("provenance_display__name")
             if frag.provenance_display
+        ]
+
+    @property
+    def fragments_by_material_support(self):
+        """Associated fragments ordered by material_support, if set"""
+        return [
+            frag
+            for frag in self.fragments.order_by("material_support__name")
+            if frag.material_support
         ]
 
     @classmethod

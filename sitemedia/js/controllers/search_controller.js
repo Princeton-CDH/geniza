@@ -104,7 +104,13 @@ export default class extends Controller {
         const filterName = e.currentTarget.dataset.field;
         const filterValue = e.currentTarget.value;
         const searchParams = new URLSearchParams(window.location.search);
-        if (searchParams.has(filterName, filterValue)) {
+        if (filterName === "no_transcription" && filterValue === "on") {
+            // special handling for hidden input
+            const appliedFilter = this.filterModalTarget.querySelector(
+                `input[type="hidden"][name="${filterName}"]`
+            );
+            appliedFilter.removeAttribute("value");
+        } else if (searchParams.has(filterName, filterValue)) {
             let selector = `value*="${filterValue}"`;
             if (filterValue === "on") {
                 selector = "checked";
@@ -145,6 +151,10 @@ export default class extends Controller {
             "input[type='number']"
         );
         dateFilters.forEach((f) => (f.value = ""));
+        const hiddenFilters = this.filterModalTarget.querySelectorAll(
+            "input[type='hidden']"
+        );
+        hiddenFilters.forEach((f) => f.removeAttribute("value"));
         this.element.requestSubmit();
     }
 

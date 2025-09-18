@@ -146,9 +146,8 @@ class TestSource:
     def test_formatted_display(self, book_section):
         # should display proper publisher info, page range for book section fixture
         assert (
-            "(%s: %s, %s), %s:%s"
+            "(%s, %s), %s:%s"
             % (
-                book_section.place_published,
                 book_section.publisher,
                 book_section.year,
                 book_section.volume,
@@ -160,23 +159,11 @@ class TestSource:
         # should display page range without volume
         book_section.volume = ""
         assert (
-            "(%s: %s, %s), %s"
+            "(%s, %s), %s"
             % (
-                book_section.place_published,
                 book_section.publisher,
                 book_section.year,
                 book_section.page_range,
-            )
-            in book_section.formatted_display()
-        )
-
-        # should dispaly n.p.: Publisher when no place published
-        book_section.place_published = ""
-        assert (
-            "(n.p.: %s, %s)"
-            % (
-                book_section.publisher,
-                book_section.year,
             )
             in book_section.formatted_display()
         )

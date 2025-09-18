@@ -73,6 +73,13 @@ class TestCorpusExtrasTemplateTags:
             doc_relation=Footnote.EDITION,
             location="other place",
         )
+        # should not include empty doc relation in list
+        Footnote.objects.create(
+            object_id=document.pk,
+            content_type=footnote.content_type,
+            source=footnote.source,
+            doc_relation=[],
+        )
         assert corpus_extras.all_doc_relations(list(document.footnotes.all())) == [
             "Digital Edition",
             "Edition",
@@ -247,6 +254,13 @@ def test_shelfmark_wrap():
     assert (
         corpus_extras.shelfmark_wrap("foo + bar + baz")
         == "<span>foo</span> + <span>bar</span> + <span>baz</span>"
+    )
+    # long shelfmarks >= 60 characters should wrap and not get spans
+    assert (
+        corpus_extras.shelfmark_wrap(
+            "foo + PUL Islamic Manuscripts, Third Series no. 584e.22a (Michaelides 22a) + baz"
+        )
+        == "<span>foo</span> + PUL Islamic Manuscripts, Third Series no. 584e.22a (Michaelides 22a) + <span>baz</span>"
     )
 
 
