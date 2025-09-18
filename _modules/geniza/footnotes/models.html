@@ -4,11 +4,11 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>geniza.footnotes.models &#8212; Princeton Geniza Project 4.24.0 documentation</title>
+    <title>geniza.footnotes.models &#8212; Princeton Geniza Project 4.25.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=5ecbeea2" />
     <link rel="stylesheet" type="text/css" href="../../../_static/basic.css?v=b08954a9" />
     <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=27fed22d" />
-    <script src="../../../_static/documentation_options.js?v=b99116e3"></script>
+    <script src="../../../_static/documentation_options.js?v=c8445cba"></script>
     <script src="../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
@@ -291,8 +291,8 @@
 <a class="viewcode-back" href="../../../codedocs/footnotes.html#geniza.footnotes.models.Source.formatted_display">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">formatted_display</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">extra_fields</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">format_index_cards</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Format source for display; used on document scholarship page.</span>
-<span class="sd">        To omit publisher, place_published, and page_range fields,</span>
-<span class="sd">        specify `extra_fields=False`.&quot;&quot;&quot;</span>
+<span class="sd">        To omit publisher and page_range fields, specify `extra_fields=False`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="n">author</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">authorship_set</span><span class="o">.</span><span class="n">all</span><span class="p">()):</span>
@@ -413,13 +413,11 @@
                 <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;no. </span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">issue</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">extra_fields</span> <span class="ow">and</span> <span class="ow">not</span> <span class="s2">&quot;model&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">source_type</span><span class="o">.</span><span class="n">type</span><span class="p">:</span>
-            <span class="c1"># Location, publisher, and date (omit for unpublished, unless it has a year)</span>
+            <span class="c1"># Publisher and date (omit for unpublished, unless it has a year)</span>
             <span class="c1"># examples:</span>
             <span class="c1">#   (n.p., n.d.)</span>
             <span class="c1">#   (n.p., 2013)</span>
-            <span class="c1">#   (Oxford: n.p., 2013)</span>
-            <span class="c1">#   (n.p.: Oxford University Press, 2013)</span>
-            <span class="c1">#   (Oxford: Oxford University Press, 2013)</span>
+            <span class="c1">#   (Oxford University Press, 2013)</span>
             <span class="c1">#   (PhD diss., n.p., n.d.)</span>
             <span class="c1">#   (PhD diss., n.p., 2013)</span>
             <span class="c1">#   (PhD diss., Oxford University, 2013)</span>
@@ -430,14 +428,8 @@
                     <span class="c1"># Add &quot;PhD diss.&quot; and degree granting institution for dissertation</span>
                     <span class="c1"># (do not include place published here)</span>
                     <span class="n">pub_data</span> <span class="o">=</span> <span class="s2">&quot;PhD diss., </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">pub_name</span>
-                <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">place_published</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">publisher</span><span class="p">:</span>
-                    <span class="c1"># Add publisher information for all other works, if available</span>
-                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">place_published</span><span class="p">:</span>
-                        <span class="n">pub_data</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">place_published</span><span class="p">,</span> <span class="n">pub_name</span><span class="p">)</span>
-                    <span class="k">else</span><span class="p">:</span>
-                        <span class="n">pub_data</span> <span class="o">=</span> <span class="s2">&quot;n.p.: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">pub_name</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="c1"># If not a dissertation and no publisher info, then just use n.p.</span>
+                    <span class="c1"># If not a dissertation, then just use publisher name or n.p.</span>
                     <span class="n">pub_data</span> <span class="o">=</span> <span class="n">pub_name</span>
 
                 <span class="n">pub_year</span> <span class="o">=</span> <span class="s2">&quot;n.d.&quot;</span> <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">year</span> <span class="k">else</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">year</span><span class="p">)</span>
@@ -788,10 +780,17 @@
                             <span class="n">fn</span><span class="o">.</span><span class="n">get_doc_relation_display</span><span class="p">(),</span>
                         <span class="p">)</span>
                         <span class="k">for</span> <span class="n">fn</span> <span class="ow">in</span> <span class="n">footnotes</span>
+                        <span class="k">if</span> <span class="n">fn</span><span class="o">.</span><span class="n">doc_relation</span>
                     <span class="p">]</span>
                 <span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">relation_set</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span><span class="n">fn</span><span class="o">.</span><span class="n">get_doc_relation_display</span><span class="p">()</span> <span class="k">for</span> <span class="n">fn</span> <span class="ow">in</span> <span class="n">footnotes</span><span class="p">])</span>
+                <span class="n">relation_set</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span>
+                    <span class="p">[</span>
+                        <span class="n">fn</span><span class="o">.</span><span class="n">get_doc_relation_display</span><span class="p">()</span>
+                        <span class="k">for</span> <span class="n">fn</span> <span class="ow">in</span> <span class="n">footnotes</span>
+                        <span class="k">if</span> <span class="n">fn</span><span class="o">.</span><span class="n">doc_relation</span>
+                    <span class="p">]</span>
+                <span class="p">)</span>
             <span class="n">relation_display</span> <span class="o">=</span> <span class="n">list_to_string</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">relation_set</span><span class="p">)))</span>
             <span class="k">if</span> <span class="n">relation_display</span><span class="p">:</span>
                 <span class="n">citation</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;&#39;s </span><span class="si">{</span><span class="n">relation_display</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span>

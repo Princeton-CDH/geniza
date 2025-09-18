@@ -4,11 +4,11 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>geniza.corpus.models &#8212; Princeton Geniza Project 4.24.0 documentation</title>
+    <title>geniza.corpus.models &#8212; Princeton Geniza Project 4.25.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=5ecbeea2" />
     <link rel="stylesheet" type="text/css" href="../../../_static/basic.css?v=b08954a9" />
     <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=27fed22d" />
-    <script src="../../../_static/documentation_options.js?v=b99116e3"></script>
+    <script src="../../../_static/documentation_options.js?v=c8445cba"></script>
     <script src="../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
@@ -210,7 +210,7 @@
     <span class="k">class</span><span class="w"> </span><span class="nc">Meta</span><span class="p">:</span>
         <span class="n">verbose_name</span> <span class="o">=</span> <span class="s2">&quot;Language + Script&quot;</span>
         <span class="n">verbose_name_plural</span> <span class="o">=</span> <span class="s2">&quot;Languages + Scripts&quot;</span>
-        <span class="n">ordering</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;language&quot;</span><span class="p">]</span>
+        <span class="n">ordering</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;display_name&quot;</span><span class="p">,</span> <span class="s2">&quot;language&quot;</span><span class="p">]</span>
         <span class="n">constraints</span> <span class="o">=</span> <span class="p">[</span>
             <span class="n">models</span><span class="o">.</span><span class="n">UniqueConstraint</span><span class="p">(</span>
                 <span class="n">fields</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;language&quot;</span><span class="p">,</span> <span class="s2">&quot;script&quot;</span><span class="p">],</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;unique_language_script&quot;</span>
@@ -236,6 +236,18 @@
 <a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.models.Provenance">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">Provenance</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;A provenance designation for a :class:`Fragment`.&quot;&quot;&quot;</span>
+
+    <span class="n">name</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">255</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span></div>
+
+
+
+<div class="viewcode-block" id="MaterialSupport">
+<a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.models.MaterialSupport">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">MaterialSupport</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The physical material of a `Fragment`.&quot;&quot;&quot;</span>
 
     <span class="n">name</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">255</span><span class="p">)</span>
 
@@ -284,6 +296,15 @@
         <span class="s2">&quot;Multifragment&quot;</span><span class="p">,</span>
         <span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
         <span class="n">help_text</span><span class="o">=</span><span class="s2">&quot;True if there are multiple fragments in one shelfmark&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">material_support</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">ForeignKey</span><span class="p">(</span>
+        <span class="n">MaterialSupport</span><span class="p">,</span>
+        <span class="n">verbose_name</span><span class="o">=</span><span class="s2">&quot;Material support&quot;</span><span class="p">,</span>
+        <span class="n">blank</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">null</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">on_delete</span><span class="o">=</span><span class="n">models</span><span class="o">.</span><span class="n">SET_NULL</span><span class="p">,</span>
+        <span class="n">help_text</span><span class="o">=</span><span class="s2">&quot;The physical material of the fragment&quot;</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="n">provenance_display</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">ForeignKey</span><span class="p">(</span>
         <span class="n">Provenance</span><span class="p">,</span>
@@ -526,7 +547,10 @@
 
     <span class="nd">@cached_class_property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">objects_by_label</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
-        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">objects_by_label</span><span class="p">()</span></div>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">objects_by_label</span><span class="p">()</span>
+
+    <span class="k">class</span><span class="w"> </span><span class="nc">Meta</span><span class="p">:</span>
+        <span class="n">ordering</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;display_label&quot;</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">]</span></div>
 
 
 
@@ -1427,6 +1451,15 @@
             <span class="n">frag</span>
             <span class="k">for</span> <span class="n">frag</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">fragments</span><span class="o">.</span><span class="n">order_by</span><span class="p">(</span><span class="s2">&quot;provenance_display__name&quot;</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">frag</span><span class="o">.</span><span class="n">provenance_display</span>
+        <span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">fragments_by_material_support</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Associated fragments ordered by material_support, if set&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">[</span>
+            <span class="n">frag</span>
+            <span class="k">for</span> <span class="n">frag</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">fragments</span><span class="o">.</span><span class="n">order_by</span><span class="p">(</span><span class="s2">&quot;material_support__name&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">frag</span><span class="o">.</span><span class="n">material_support</span>
         <span class="p">]</span>
 
 <div class="viewcode-block" id="Document.total_to_index">

@@ -5,11 +5,11 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Annotations &#8212; Princeton Geniza Project 4.24.0 documentation</title>
+    <title>Annotations &#8212; Princeton Geniza Project 4.25.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=5ecbeea2" />
     <link rel="stylesheet" type="text/css" href="../_static/basic.css?v=b08954a9" />
     <link rel="stylesheet" type="text/css" href="../_static/alabaster.css?v=27fed22d" />
-    <script src="../_static/documentation_options.js?v=b99116e3"></script>
+    <script src="../_static/documentation_options.js?v=c8445cba"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="../genindex.html" />
@@ -121,6 +121,14 @@ is a block- or line-level annotation</p>
 <p>NOTE: Only <a class="reference internal" href="#geniza.annotations.models.Annotation.content" title="geniza.annotations.models.Annotation.content"><code class="xref py py-attr docutils literal notranslate"><span class="pre">content</span></code></a> can be modified in the editor, so it is the only hashed
 attribute. If other attributes become mutable, modify this function to include them in
 the ETag computation.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geniza.annotations.models.Annotation.flatten_html_list">
+<em class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">flatten_html_list</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">html_string</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/annotations/models.html#Annotation.flatten_html_list"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.annotations.models.Annotation.flatten_html_list" title="Link to this definition">¶</a></dt>
+<dd><p>If the passed-in html string has nested lists, this method flattens it to a single list of one level of items.
+The method doesn’t drop any item nor sub-item, instead it promotes the sub-items up as many levels as necessary to
+bring them all as the items of the single list</p>
 </dd></dl>
 
 <dl class="py attribute">
@@ -430,6 +438,7 @@ to set/update associated footnote. Returns content dict and footnote object.</p>
 <li><a class="reference internal" href="#geniza.annotations.models.Annotation.content"><code class="docutils literal notranslate"><span class="pre">Annotation.content</span></code></a></li>
 <li><a class="reference internal" href="#geniza.annotations.models.Annotation.created"><code class="docutils literal notranslate"><span class="pre">Annotation.created</span></code></a></li>
 <li><a class="reference internal" href="#geniza.annotations.models.Annotation.etag"><code class="docutils literal notranslate"><span class="pre">Annotation.etag</span></code></a></li>
+<li><a class="reference internal" href="#geniza.annotations.models.Annotation.flatten_html_list"><code class="docutils literal notranslate"><span class="pre">Annotation.flatten_html_list()</span></code></a></li>
 <li><a class="reference internal" href="#geniza.annotations.models.Annotation.footnote"><code class="docutils literal notranslate"><span class="pre">Annotation.footnote</span></code></a></li>
 <li><a class="reference internal" href="#geniza.annotations.models.Annotation.get_absolute_url"><code class="docutils literal notranslate"><span class="pre">Annotation.get_absolute_url()</span></code></a></li>
 <li><a class="reference internal" href="#geniza.annotations.models.Annotation.has_lines"><code class="docutils literal notranslate"><span class="pre">Annotation.has_lines</span></code></a></li>

@@ -5,11 +5,11 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Documents and Fragments &#8212; Princeton Geniza Project 4.24.0 documentation</title>
+    <title>Documents and Fragments &#8212; Princeton Geniza Project 4.25.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=5ecbeea2" />
     <link rel="stylesheet" type="text/css" href="../_static/basic.css?v=b08954a9" />
     <link rel="stylesheet" type="text/css" href="../_static/alabaster.css?v=27fed22d" />
-    <script src="../_static/documentation_options.js?v=b99116e3"></script>
+    <script src="../_static/documentation_options.js?v=c8445cba"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="../genindex.html" />
@@ -251,6 +251,12 @@ edition.</p>
 <dt class="sig sig-object py" id="geniza.corpus.models.Document.fragment_urls">
 <span class="sig-name descname"><span class="pre">fragment_urls</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/corpus/models.html#Document.fragment_urls"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.corpus.models.Document.fragment_urls" title="Link to this definition">¶</a></dt>
 <dd><p>List of external URLs to view the Document’s Fragments.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="geniza.corpus.models.Document.fragments_by_material_support">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">fragments_by_material_support</span></span><a class="headerlink" href="#geniza.corpus.models.Document.fragments_by_material_support" title="Link to this definition">¶</a></dt>
+<dd><p>Associated fragments ordered by material_support, if set</p>
 </dd></dl>
 
 <dl class="py property">
@@ -710,6 +716,49 @@ in the old_shelfmarks field</p>
 <dt class="sig sig-object py" id="geniza.corpus.models.LanguageScriptManager.get_by_natural_key">
 <span class="sig-name descname"><span class="pre">get_by_natural_key</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">language</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">script</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/corpus/models.html#LanguageScriptManager.get_by_natural_key"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.corpus.models.LanguageScriptManager.get_by_natural_key" title="Link to this definition">¶</a></dt>
 <dd><p>get by natural key: combination of language and script</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="geniza.corpus.models.MaterialSupport">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geniza.corpus.models.</span></span><span class="sig-name descname"><span class="pre">MaterialSupport</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/corpus/models.html#MaterialSupport"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.corpus.models.MaterialSupport" title="Link to this definition">¶</a></dt>
+<dd><p>The physical material of a <cite>Fragment</cite>.</p>
+<dl class="py exception">
+<dt class="sig sig-object py" id="geniza.corpus.models.MaterialSupport.DoesNotExist">
+<em class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">DoesNotExist</span></span><a class="headerlink" href="#geniza.corpus.models.MaterialSupport.DoesNotExist" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="geniza.corpus.models.MaterialSupport.MultipleObjectsReturned">
+<em class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">MultipleObjectsReturned</span></span><a class="headerlink" href="#geniza.corpus.models.MaterialSupport.MultipleObjectsReturned" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geniza.corpus.models.MaterialSupport.clean_fields">
+<span class="sig-name descname"><span class="pre">clean_fields</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">exclude</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Collection" title="(in Python v3.13)"><span class="pre">Collection</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#geniza.corpus.models.MaterialSupport.clean_fields" title="Link to this definition">¶</a></dt>
+<dd><p>Clean all fields and raise a ValidationError containing a dict
+of all validation errors if any occur.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geniza.corpus.models.MaterialSupport.get_deferred_fields">
+<span class="sig-name descname"><span class="pre">get_deferred_fields</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#set" title="(in Python v3.13)"><span class="pre">set</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#geniza.corpus.models.MaterialSupport.get_deferred_fields" title="Link to this definition">¶</a></dt>
+<dd><p>Return a set containing names of deferred fields for this instance.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geniza.corpus.models.MaterialSupport.refresh_from_db">
+<span class="sig-name descname"><span class="pre">refresh_from_db</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">using</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fields</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">from_queryset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">QuerySet</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#geniza.corpus.models.MaterialSupport.refresh_from_db" title="Link to this definition">¶</a></dt>
+<dd><p>Reload field values from the database.</p>
+<p>By default, the reloading happens from the database this instance was
+loaded from, or by the read router if this instance wasn’t loaded from
+any database. The using parameter will override the default.</p>
+<p>Fields can be used to specify which fields to reload. The fields
+should be an iterable of field attnames. If fields is None, then
+all non-deferred fields are reloaded.</p>
+<p>When accessing deferred fields of an instance, the deferred loading
+of the field will call this method.</p>
 </dd></dl>
 
 </dd></dl>
@@ -2224,6 +2273,7 @@ for the set of users who associated with any of the log entries.</p>
 <li><a class="reference internal" href="#geniza.corpus.models.Document.formatted_citation"><code class="docutils literal notranslate"><span class="pre">Document.formatted_citation</span></code></a></li>
 <li><a class="reference internal" href="#geniza.corpus.models.Document.fragment_historical_shelfmarks"><code class="docutils literal notranslate"><span class="pre">Document.fragment_historical_shelfmarks</span></code></a></li>
 <li><a class="reference internal" href="#geniza.corpus.models.Document.fragment_urls"><code class="docutils literal notranslate"><span class="pre">Document.fragment_urls()</span></code></a></li>
+<li><a class="reference internal" href="#geniza.corpus.models.Document.fragments_by_material_support"><code class="docutils literal notranslate"><span class="pre">Document.fragments_by_material_support</span></code></a></li>
 <li><a class="reference internal" href="#geniza.corpus.models.Document.fragments_by_provenance"><code class="docutils literal notranslate"><span class="pre">Document.fragments_by_provenance</span></code></a></li>
 <li><a class="reference internal" href="#geniza.corpus.models.Document.fragments_other_docs"><code class="docutils literal notranslate"><span class="pre">Document.fragments_other_docs()</span></code></a></li>
 <li><a class="reference internal" href="#geniza.corpus.models.Document.from_manifest_uri"><code class="docutils literal notranslate"><span class="pre">Document.from_manifest_uri()</span></code></a></li>
@@ -2310,6 +2360,14 @@ for the set of users who associated with any of the log entries.</p>
 </li>
 <li><a class="reference internal" href="#geniza.corpus.models.LanguageScriptManager"><code class="docutils literal notranslate"><span class="pre">LanguageScriptManager</span></code></a><ul>
 <li><a class="reference internal" href="#geniza.corpus.models.LanguageScriptManager.get_by_natural_key"><code class="docutils literal notranslate"><span class="pre">LanguageScriptManager.get_by_natural_key()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#geniza.corpus.models.MaterialSupport"><code class="docutils literal notranslate"><span class="pre">MaterialSupport</span></code></a><ul>
+<li><a class="reference internal" href="#geniza.corpus.models.MaterialSupport.DoesNotExist"><code class="docutils literal notranslate"><span class="pre">MaterialSupport.DoesNotExist</span></code></a></li>
+<li><a class="reference internal" href="#geniza.corpus.models.MaterialSupport.MultipleObjectsReturned"><code class="docutils literal notranslate"><span class="pre">MaterialSupport.MultipleObjectsReturned</span></code></a></li>
+<li><a class="reference internal" href="#geniza.corpus.models.MaterialSupport.clean_fields"><code class="docutils literal notranslate"><span class="pre">MaterialSupport.clean_fields()</span></code></a></li>
+<li><a class="reference internal" href="#geniza.corpus.models.MaterialSupport.get_deferred_fields"><code class="docutils literal notranslate"><span class="pre">MaterialSupport.get_deferred_fields()</span></code></a></li>
+<li><a class="reference internal" href="#geniza.corpus.models.MaterialSupport.refresh_from_db"><code class="docutils literal notranslate"><span class="pre">MaterialSupport.refresh_from_db()</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#geniza.corpus.models.PermalinkMixin"><code class="docutils literal notranslate"><span class="pre">PermalinkMixin</span></code></a></li>
