@@ -1539,6 +1539,12 @@
                 line-height: 24px;
             }
         }
+        // handle RTL line numbers cut off horizontally
+        &[dir="rtl"] ol {
+            @include breakpoints.for-tablet-landscape-up {
+                margin-right: 10px;
+            }
+        }
     }
     .translation {
         &[dir="ltr"] ol li:not([value])::before {
@@ -1547,6 +1553,13 @@
             @include breakpoints.for-tablet-landscape-up {
                 left: -17px;
                 line-height: 17px;
+            }
+        }
+        // handle LTR line numbers cut off horizontally
+        &[dir="ltr"] ol {
+            margin-left: 5px;
+            @include breakpoints.for-tablet-landscape-up {
+                margin-left: 10px;
             }
         }
     }
