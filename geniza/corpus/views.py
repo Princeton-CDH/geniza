@@ -257,6 +257,38 @@ class DocumentSearchView(
                         requireFieldMatch=False,
                         **{"bs.type": "SEPARATOR", "bs.separator": "\n"},
                     )
+                    .highlight(
+                        "description_he",
+                        snippets=3,
+                        method="unified",
+                        fragsize=150,
+                        requireFieldMatch=True,
+                        **{"bs.type": "SEPARATOR", "bs.separator": "\n"},
+                    )
+                    .highlight(
+                        "description_he_nostem",
+                        snippets=3,
+                        method="unified",
+                        fragsize=150,
+                        requireFieldMatch=True,
+                        **{"bs.type": "SEPARATOR", "bs.separator": "\n"},
+                    )
+                    .highlight(
+                        "description_ar",
+                        snippets=3,
+                        method="unified",
+                        fragsize=150,
+                        requireFieldMatch=True,
+                        **{"bs.type": "SEPARATOR", "bs.separator": "\n"},
+                    )
+                    .highlight(
+                        "description_ar_nostem",
+                        snippets=3,
+                        method="unified",
+                        fragsize=150,
+                        requireFieldMatch=True,
+                        **{"bs.type": "SEPARATOR", "bs.separator": "\n"},
+                    )
                     # highlight old shelfmark so we can show match in results
                     .highlight("old_shelfmark", requireFieldMatch=True)
                     .highlight("old_shelfmark_t", requireFieldMatch=True)

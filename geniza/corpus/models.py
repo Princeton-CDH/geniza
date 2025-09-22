@@ -1356,8 +1356,9 @@ class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin, TaggableMixin)
                     if self.doctype
                     else "Unknown type"
                 ),
-                # use english description for now
                 "description_en_bigram": strip_tags(self.description_en),
+                "description_he_bigram": strip_tags(self.description_he),
+                "description_ar_bigram": strip_tags(self.description_ar),
                 "notes_t": self.notes or None,
                 "needs_review_t": self.needs_review or None,
                 # index shelfmark label as a string (combined shelfmark OR shelfmark override)

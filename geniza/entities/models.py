@@ -1111,7 +1111,7 @@ class PersonSolrQuerySet(EntitySolrQuerySet):
         "name": "name_s",
         # need access to these other_names fields for highlighting
         "other_names_nostem": "other_names_nostem",
-        "other_names_bigram": "other_names_bigram",
+        "other_names_bigram": "other_names_bigrams",
         "description": "description_txt",
         "gender": "gender_s",
         "roles": "role_ss",
@@ -1724,7 +1724,7 @@ class PlaceSolrQuerySet(EntitySolrQuerySet):
         "other_names": "other_names_ss",
         # copies of other_names for improved search
         "other_names_nostem": "other_names_nostem",
-        "other_names_bigram": "other_names_bigram",
+        "other_names_bigram": "other_names_bigrams",
         "url": "url_s",
         "documents": "documents_i",
         "people": "people_i",

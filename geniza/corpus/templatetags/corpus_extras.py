@@ -5,6 +5,7 @@ from django import template
 from django.urls import reverse
 from django.urls import translate_url as django_translate_url
 from django.utils.safestring import mark_safe
+from django.utils.translation import get_language
 from piffle.image import IIIFImageClientException
 
 from geniza.common.utils import absolutize_url
@@ -207,3 +208,49 @@ def process_citation(source):
     """For scholarship records list: handle grouped citations by passing to
     Footnote.display_multiple class method."""
     return mark_safe(Footnote.display_multiple(source.list))
+
+
+DIR_MAP = {"en": "ltr", "he": "rtl", "ar": "rtl"}
+
+
+@register.filter
+def translate_highlight(highlights):
+    """Find a highlight in the description of a solr Document result,
+    preferring the user's current language, then English, then any match."""
+    if highlights:
+        hl_map = {
+            "en": highlights.get("description"),
+            "he": highlights.get("description_he"),
+            "ar": highlights.get("description_ar"),
+        }
+
+        # prefer current language if a match was found in it
+        lang = get_language()
+        if hl_map.get(lang):
+            return {"snippets": hl_map[lang], "lang": lang, "dir": DIR_MAP[lang]}
+
+        # then English or any other match
+        for code in hl_map.keys():
+            if hl_map.get(code):
+                return {"snippets": hl_map[code], "lang": code, "dir": DIR_MAP[code]}
+
+    return None
+
+
+@register.filter
+def translate_description(result_document):
+    """In solr Document search results, use the description in the current
+    language if available, and fallback to English"""
+    desc_map = {
+        "en": result_document.get("description"),
+        "he": result_document.get("description_he"),
+        "ar": result_document.get("description_ar"),
+    }
+
+    # prefer current language if a description exists in it
+    lang = get_language()
+    if desc_map.get(lang):
+        return {"text": desc_map[lang], "lang": lang, "dir": DIR_MAP[lang]}
+
+    # then English
+    return {"text": desc_map["en"], "lang": "en", "dir": DIR_MAP["en"]}

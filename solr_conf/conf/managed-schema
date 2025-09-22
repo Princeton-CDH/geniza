@@ -334,19 +334,19 @@
   <!-- local fields -->
   <field name="last_modified" type="pdate" multiValued="false" indexed="true" required="true" stored="true" default="NOW"/>
 
-  <copyField source="shelfmark_s" dest="shelfmark_bigram" maxChars="30000" />
+  <copyField source="shelfmark_s" dest="shelfmark_bigrams" maxChars="30000" />
   <copyField source="shelfmark_s" dest="shelfmark_textnum" maxChars="30000" />
   <copyField source="shelfmark_s" dest="shelfmark_natsort" maxChars="30000" />
   <copyField source="shelfmark_s" dest="shelfmark_regex" maxChars="30000" />
   <!-- individual shelfmarks -->
   <copyField source="fragment_shelfmark_ss" dest="shelfmark_t" maxChars="30000" />
   <copyField source="fragment_shelfmark_ss" dest="shelfmark_textnum" maxChars="30000" />
-  <copyField source="fragment_shelfmark_ss" dest="shelfmark_bigram" maxChars="30000" />  
+  <copyField source="fragment_shelfmark_ss" dest="shelfmark_bigrams" maxChars="30000" />  
   <copyField source="fragment_shelfmark_ss" dest="shelfmark_regex" maxChars="30000" />
   <!-- old / historic shelfmarks -->
   <copyField source="fragment_old_shelfmark_ss" dest="old_shelfmark_t" maxChars="30000" />
   <copyField source="fragment_old_shelfmark_ss" dest="old_shelfmark_textnum" maxChars="30000" />
-  <copyField source="fragment_old_shelfmark_ss" dest="old_shelfmark_bigram" maxChars="30000" />
+  <copyField source="fragment_old_shelfmark_ss" dest="old_shelfmark_bigrams" maxChars="30000" />
   <copyField source="fragment_old_shelfmark_ss" dest="old_shelfmark_regex" maxChars="30000" />
   
   <copyField source="tags_ss_lower" dest="tags_t" maxChars="30000" />
@@ -354,15 +354,19 @@
 
   <!-- copy description and transcription to nostem fields for exact matches -->
   <copyField source="description_en_bigram" dest="description_nostem" maxChars="30000" />
+  <copyField source="description_he_bigram" dest="description_he_nostem" maxChars="30000" />
+  <copyField source="description_ar_bigram" dest="description_ar_nostem" maxChars="30000" />
   <copyField source="text_transcription" dest="transcription_nostem" maxChars="30000" />
 
   <!-- copy description and translation to regex fields -->
   <copyField source="description_en_bigram" dest="description_regex" maxChars="30000" />
+  <copyField source="description_he_bigram" dest="description_he_regex" maxChars="30000" />
+  <copyField source="description_ar_bigram" dest="description_ar_regex" maxChars="30000" />
 
   <!-- copy entity name fields to text fields -->
-  <copyField source="name_s" dest="name_bigram" maxChars="30000" />
+  <copyField source="name_s" dest="name_bigrams" maxChars="30000" />
   <copyField source="name_s" dest="name_nostem" maxChars="30000" />
-  <copyField source="other_names_ss" dest="other_names_bigram" maxChars="30000" />
+  <copyField source="other_names_ss" dest="other_names_bigrams" maxChars="30000" />
   <copyField source="other_names_ss" dest="other_names_nostem" maxChars="30000" />
 
   <dynamicField name="*_descendent_path" type="descendent_path" indexed="true" stored="true"/>
@@ -406,7 +410,8 @@
   <dynamicField name="*_td" type="tdouble" indexed="true" stored="true"/>
   <dynamicField name="*_ws" type="text_ws" indexed="true" stored="true"/>
   <dynamicField name="*_textnum" type="text_lettersnumbers" indexed="true" stored="true" multiValued="true"/>
-  <dynamicField name="*_bigram" type="text_bigram" indexed="true" stored="true" multiValued="true"/>
+  <dynamicField name="*_bigram" type="text_bigram" indexed="true" stored="true" />
+  <dynamicField name="*_bigrams" type="text_bigram" indexed="true" stored="true" multiValued="true"/>
 
   <dynamicField name="*_i" type="int" indexed="true" stored="true"/>
   <dynamicField name="*_s" type="string" indexed="true" stored="true"/>

@@ -60,6 +60,8 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
         "collection": "collection_ss",
         "tags": "tags_ss_lower",
         "description": "description_en_bigram",  # use stemmed version for field search & highlight
+        "description_he": "description_he_bigram",
+        "description_ar": "description_ar_bigram",
         "notes": "notes_t",
         "needs_review": "needs_review_t",
         "pgpid": "pgpid_i",
@@ -86,17 +88,21 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
         "has_digital_edition": "has_digital_edition_b",
         "has_digital_translation": "has_digital_translation_b",
         "has_discussion": "has_discussion_b",
-        "old_shelfmark": "old_shelfmark_bigram",
+        "old_shelfmark": "old_shelfmark_bigrams",
         "old_shelfmark_t": "old_shelfmark_t",
         "old_shelfmark_regex": "old_shelfmark_regex",
         "transcription_nostem": "transcription_nostem",
         "description_nostem": "description_nostem",
+        "description_he_nostem": "description_he_nostem",
+        "description_ar_nostem": "description_ar_nostem",
         "related_people": "people_count_i",
         "related_places": "places_count_i",
         "related_documents": "documents_count_i",
         "transcription_regex": "transcription_regex",
         "transcription_regex_names": "transcription_regex_names_ss",
         "description_regex": "description_regex",
+        "description_he_regex": "description_he_regex",
+        "description_ar_regex": "description_ar_regex",
         "translation_regex": "translation_regex",
         "translation_regex_names": "translation_regex_names_ss",
     }
@@ -195,7 +201,7 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
             self.highlight_query = search_term
             # limit any exact phrase searches to non-stemmed field
             exact_phrases = [
-                f"(description_nostem:{m} OR transcription_nostem:{m})"
+                f"(description_nostem:{m} OR transcription_nostem:{m} OR description_he_nostem:{m} OR description_ar_nostem:{m})"
                 for m in self.re_exact_match.findall(search_term)
             ]
             # add in judaeo-arabic conversion for the rest (double-quoted phrase should NOT be
@@ -450,6 +456,22 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
                         )
                         if hl
                     ],
+                    "description_he": [
+                        hl
+                        for hl in (
+                            self.get_regex_highlight("description_he_regex", block)
+                            for block in doc.get("description_he_regex", [])
+                        )
+                        if hl
+                    ],
+                    "description_ar": [
+                        hl
+                        for hl in (
+                            self.get_regex_highlight("description_ar_regex", block)
+                            for block in doc.get("description_ar_regex", [])
+                        )
+                        if hl
+                    ],
                     "old_shelfmark": self.get_old_shelfmark_regex_highlight(
                         doc, self.search_qs[0]
                     ),
@@ -464,6 +486,14 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
                 if is_exact_search and "description_nostem" in highlights[doc]:
                     highlights[doc]["description"] = highlights[doc][
                         "description_nostem"
+                    ]
+                if is_exact_search and "description_he_nostem" in highlights[doc]:
+                    highlights[doc]["description_he"] = highlights[doc][
+                        "description_he_nostem"
+                    ]
+                if is_exact_search and "description_ar_nostem" in highlights[doc]:
+                    highlights[doc]["description_ar"] = highlights[doc][
+                        "description_ar_nostem"
                     ]
                 if is_exact_search and "transcription_nostem" in highlights[doc]:
                     highlights[doc]["transcription"] = [
