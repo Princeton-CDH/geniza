@@ -1,6 +1,6 @@
 # Deploy Notes
 
-## 4.25
+## 4.26
 
 -   Solr configuration has changed. Ensure Solr configset has been updated
     and then reindex all content: `python manage.py index`
