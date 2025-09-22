@@ -424,7 +424,7 @@
             /* enlarge button and enlarge functionality */
             @include breakpoints.for-tablet-landscape-up {
                 transition: max-width 0.3s ease-in-out;
-                & > div {
+                & > div:not(.popout-container) {
                     max-width: 640px;
                     margin: 0 auto;
                     transition: max-width 0.3s ease-in-out;
