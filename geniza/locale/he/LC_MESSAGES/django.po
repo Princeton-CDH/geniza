@@ -3,15 +3,14 @@ msgstr ""
 "Project-Id-Version: princeton-geniza-project\n"
 "Report-Msgid-Bugs-To: cdhdevteam@princeton.edu\n"
 "POT-Creation-Date: 2025-08-28 15:27-0400\n"
-"PO-Revision-Date: 2025-08-05 18:43\n"
+"PO-Revision-Date: 2025-09-04 22:20\n"
 "Last-Translator: \n"
 "Language-Team: Hebrew\n"
 "Language: he_IL\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=4; plural=n%100==1 ? 0 : n%100==2 ? 1 : n%100==3 || "
-"n%100==4 ? 2 : 3;\n"
+"Plural-Forms: nplurals=4; plural=n%100==1 ? 0 : n%100==2 ? 1 : n%100==3 || n%100==4 ? 2 : 3;\n"
 "X-Crowdin-Project: princeton-geniza-project\n"
 "X-Crowdin-Project-ID: 520356\n"
 "X-Crowdin-Language: he\n"
@@ -142,6 +141,7 @@ msgstr ""
 
 #. Translators: label for document type search form filter
 #: corpus/forms.py:311
+#| msgid "Input date"
 msgid "Document type"
 msgstr ""
 
@@ -157,10 +157,8 @@ msgid "Discussion"
 msgstr "דיון"
 
 #: corpus/forms.py:331
-#, fuzzy
-#| msgid "show transcription"
 msgid "No transcription"
-msgstr "הצג תעתוק"
+msgstr ""
 
 #. Translators: label for document translation language search form filter
 #: corpus/forms.py:337
@@ -173,6 +171,7 @@ msgstr ""
 
 #. Translators: label for "search mode" (general or regex)
 #: corpus/forms.py:344
+#| msgid "Search Documents"
 msgid "Search mode"
 msgstr ""
 
@@ -198,36 +197,27 @@ msgstr "מיון על פי רלוונטיות אינו זמין ללא מילת 
 
 #: corpus/forms.py:457
 #, python-format
-msgid ""
-"Regular expression cannot contain { without a preceding character, without "
-"an integer afterwards, or without a closing }. %s"
+msgid "Regular expression cannot contain { without a preceding character, without an integer afterwards, or without a closing }. %s"
 msgstr ""
 
 #: corpus/forms.py:466
 #, python-format
-msgid ""
-"Regular expression cannot contain * without a preceding character, or "
-"multiple times in a row. %s"
+msgid "Regular expression cannot contain * without a preceding character, or multiple times in a row. %s"
 msgstr ""
 
 #: corpus/forms.py:475
 #, python-format
-msgid ""
-"Regular expression cannot contain + without a preceding character, or "
-"multiple times in a row. %s"
+msgid "Regular expression cannot contain + without a preceding character, or multiple times in a row. %s"
 msgstr ""
 
 #: corpus/forms.py:484
 #, python-format
-msgid ""
-"Regular expression cannot contain < or use a negative lookbehind query. %s"
+msgid "Regular expression cannot contain < or use a negative lookbehind query. %s"
 msgstr ""
 
 #: corpus/forms.py:494
 #, python-format
-msgid ""
-"Regular expression cannot contain the escape character \\ followed by an "
-"alphanumeric character other than one of DdSsWw, or at the end of a query. %s"
+msgid "Regular expression cannot contain the escape character \\ followed by an alphanumeric character other than one of DdSsWw, or at the end of a query. %s"
 msgstr ""
 
 #. Translators: accessibility label for permanent link to a document
@@ -417,8 +407,7 @@ msgstr "תאריך קלט"
 #. Translators: Date document was first added to the PGP
 #: corpus/templates/corpus/document_detail.html:273
 #, python-format
-msgid ""
-"\n"
+msgid "\n"
 "                    In PGP since %(date)s\n"
 "                "
 msgstr ""
@@ -461,10 +450,8 @@ msgid "in"
 msgstr ""
 
 #: corpus/templates/corpus/document_list.html:59
-msgid ""
-"\n"
-"                            Case sensitive, must match entire shelfmark. "
-"Type one shelfmark,\n"
+msgid "\n"
+"                            Case sensitive, must match entire shelfmark. Type one shelfmark,\n"
 "                            even if part of a join, for best results.\n"
 "                        "
 msgstr ""
@@ -552,11 +539,13 @@ msgid "Jewish Theological Seminary logo"
 msgstr "סמל Jewish Theological Seminary"
 
 #: corpus/templates/corpus/snippets/document_result.html:23
+#| msgid "Input date"
 msgid "Document date"
 msgstr ""
 
 #. Translators: label for inferred date on a document
 #: corpus/templates/corpus/snippets/document_result.html:33
+#| msgid "Input date"
 msgid "Inferred date"
 msgstr ""
 
@@ -574,6 +563,7 @@ msgstr[3] ""
 #: entities/forms.py:221 entities/forms.py:358
 #: entities/templates/entities/person_list.html:211
 #: entities/templates/entities/snippets/place_results.html:27
+#| msgid "Search Documents"
 msgid "Related Documents"
 msgstr ""
 
@@ -654,10 +644,8 @@ msgstr ""
 
 #. Translators: general search help text
 #: corpus/templates/corpus/snippets/document_search_helptext.html:7
-msgid ""
-"\n"
-"        Use keywords or phrases in any language to return matching or "
-"similar\n"
+msgid "\n"
+"        Use keywords or phrases in any language to return matching or similar\n"
 "        results across all fields. Arabic script searches will return both\n"
 "        Arabic and Judaeo-Arabic transcription content.\n"
 "    "
@@ -671,8 +659,7 @@ msgstr ""
 #. Translators: regular expressions search mode help text
 #: corpus/templates/corpus/snippets/document_search_helptext.html:18
 #, python-format
-msgid ""
-"\n"
+msgid "\n"
 "        Use Hebrew or Arabic script to find precise matches in the\n"
 "        transcriptions. See\n"
 "        <a data-turbo=\"false\" href=\"%(howto_url)s\">How to Search</a>\n"
@@ -687,13 +674,10 @@ msgstr ""
 
 #. Translators: regular expression tip 1
 #: corpus/templates/corpus/snippets/document_search_helptext.html:31
-msgid ""
-"\n"
+msgid "\n"
 "            If you're looking for a word with one missing letter, use a\n"
-"            period. Two missing letters, use two periods or <code>{2}</"
-"code>.\n"
-"            Increase the number in the curly brackets to increase the number "
-"of\n"
+"            period. Two missing letters, use two periods or <code>{2}</code>.\n"
+"            Increase the number in the curly brackets to increase the number of\n"
 "            characters, or insert a range with a comma in between, ex.\n"
 "            <code>{0,5}</code>.\n"
 "        "
@@ -701,8 +685,7 @@ msgstr ""
 
 #. Translators: regular expression tip 2
 #: corpus/templates/corpus/snippets/document_search_helptext.html:41
-msgid ""
-"\n"
+msgid "\n"
 "            If you don't know how many characters are missing, use\n"
 "            <code>.*</code>.\n"
 "        "
@@ -710,10 +693,8 @@ msgstr ""
 
 #. Translators: regular expression tip 3
 #: corpus/templates/corpus/snippets/document_search_helptext.html:48
-msgid ""
-"\n"
-"            If you know which characters you want, use square brackets to "
-"find\n"
+msgid "\n"
+"            If you know which characters you want, use square brackets to find\n"
 "            multiple spellings, ex. <code>[יו]</code> for yud or vav.\n"
 "        "
 msgstr ""
@@ -826,6 +807,7 @@ msgstr "הבא"
 #. Translators: title of document search page
 #. Translators: label for link to document search page in main navigation
 #: corpus/views.py:82 templates/snippets/menu.html:11
+#| msgid "Input date"
 msgid "Documents"
 msgstr "מסמכים"
 
@@ -845,9 +827,7 @@ msgid "Before %s"
 msgstr ""
 
 #: corpus/views.py:410
-msgid ""
-"Error retrieving search results. Check regular expression for errors such as "
-"unescaped or unclosed brackets or parentheses."
+msgid "Error retrieving search results. Check regular expression for errors such as unescaped or unclosed brackets or parentheses."
 msgstr ""
 
 #. Translators: title of document scholarship page
@@ -958,10 +938,8 @@ msgid "Search for places by name"
 msgstr ""
 
 #: entities/forms.py:401
-#, fuzzy
-#| msgid "From year"
 msgid "Filter by year"
-msgstr "משנת"
+msgstr ""
 
 #: entities/models.py:380
 msgid "Male"
@@ -1083,8 +1061,7 @@ msgstr ""
 #. Translators: range of search results on the current page, out of total
 #: entities/templates/entities/person_list.html:230
 #, python-format
-msgid ""
-"\n"
+msgid "\n"
 "            <div>%(start)s – %(end)s of %(count_humanized)s</div>\n"
 "        "
 msgstr ""
@@ -1194,6 +1171,7 @@ msgstr ""
 
 #. Translators: table header for document name (shelfmark)
 #: entities/templates/entities/snippets/related_documents_table.html:10
+#| msgid "Input date"
 msgid "Document"
 msgstr ""
 
@@ -1285,21 +1263,13 @@ msgid "Edition"
 msgstr "מהדורה"
 
 #: pages/models.py:13
-msgid ""
-"Alternative text for visually impaired users to\n"
+msgid "Alternative text for visually impaired users to\n"
 "briefly communicate the intended message of the image in this context."
-msgstr ""
-"טקסט אלטרנטיבי למשתמשים כבדי ראייה שמטרתו להעביר בתמצית את המסר של התצלום "
-"בהקשר זה."
+msgstr "טקסט אלטרנטיבי למשתמשים כבדי ראייה שמטרתו להעביר בתמצית את המסר של התצלום בהקשר זה."
 
 #: pages/models.py:44
-msgid ""
-"This text will only be read to     non-sighted users and should describe the "
-"major insights or     takeaways from the graphic. Multiple paragraphs are "
-"allowed."
-msgstr ""
-"טקסט זה יוקרא למשתמשים עיוורים בלבד ותכליתו לתאר את התובנות והמסרים המרכזיים "
-"שעולים מהתוכן הגרפי. ניתן לכלול מספר פסקאות."
+msgid "This text will only be read to     non-sighted users and should describe the major insights or     takeaways from the graphic. Multiple paragraphs are allowed."
+msgstr "טקסט זה יוקרא למשתמשים עיוורים בלבד ותכליתו לתאר את התובנות והמסרים המרכזיים שעולים מהתוכן הגרפי. ניתן לכלול מספר פסקאות."
 
 #. Translators: title for Not Found (404) error page
 #: templates/404.html:5 templates/404.html:13
@@ -1429,3 +1399,4 @@ msgstr "חזרה לתפריט הראשי"
 #: templates/snippets/theme_toggle.html:5
 msgid "Enable dark mode"
 msgstr "הפעלת מצב כהה"
+

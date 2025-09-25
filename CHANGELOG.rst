@@ -1,6 +1,22 @@
 Change Log
 ==========
 
+4.25
+----
+
+- As a content editor, I want to be able to filter the public site search by documents that do NOT have transcriptions, so I can see the ones that need transcribing (with big thumbnails)
+- As a content editor, I want a field in the fragment/document sections that indicates material support (paper vs parchment) in order to aid later join finders
+- As an admin user, I would like the autocomplete for "Primary Languages" to appear alphabetical by display name, so that inputting languages is more intuitive
+- As a public site user, I would like "place of publication" removed from citations, so that it matches expectations set by the new Chicago Manual of Style guidelines
+- As a front end user, I want to see fragment material support on the document detail page, so that I can find out the material support of the associated fragment(s)
+- bugfix: Navigation bar on document search in admin (right hand side) not alphabetized for languages or document type
+- bugfix: Line number dot cover positioning is wrong in Safari only
+- bugfix: Long shelfmarks appear misaligned on document detail page
+- bugfix: Transcription/translation paste from Google Docs can result in invalid HTML
+- bugfix: Admin people pages with more than 100 documents loading slowly
+- bugfix: Footnotes without doc relations can display incorrectly
+- chore: test geniza site errors with revised PUL load balancer configuration error handling
+
 4.24
 ----
 
