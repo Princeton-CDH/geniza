@@ -164,7 +164,7 @@ def get_document_label(result_doc):
 def translate_url(context, lang_code):
     """Translate current full path into requested language by code."""
     # thanks to https://stackoverflow.com/a/51974042
-    path = context.get("request").get_full_path()
+    path = context.get("current_path") or context.get("request").get_full_path()
     return django_translate_url(path, lang_code)
 
 
