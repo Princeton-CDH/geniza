@@ -380,9 +380,17 @@ def test_pgp_metadata_for_old_site():
 
 
 class TestDocumentSearchView:
-    def test_solr_down_mixin(self):
-        docsearch_view = DocumentSearchView()
-        SolrDownError
+    @pytest.mark.django_db
+    def test_solr_down_mixin(self, client):
+        # SolrDownError should redirect to solr error template w/ 503 response
+        docsearch_url = reverse("corpus:document-search")
+        with patch(
+            "geniza.corpus.views.DocumentSearchView.get_range_stats",
+            side_effect=SolrDownError,
+        ):
+            response = client.get(docsearch_url)
+            assert response.status_code == 503
+            assert "unable to reach the Solr service" in response.content.decode()
 
     def test_ignore_suppressed_documents(self, document, empty_solr):
         suppressed_document = Document.objects.create(status=Document.SUPPRESSED)

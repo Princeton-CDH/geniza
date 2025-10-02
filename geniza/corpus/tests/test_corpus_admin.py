@@ -17,15 +17,15 @@ from django.http import HttpResponseRedirect, StreamingHttpResponse
 from django.test import RequestFactory
 from django.urls import reverse
 from django.utils import timezone
-from django.utils.timezone import now
 from pytest_django.asserts import assertContains, assertNotContains
+from requests.exceptions import ConnectionError
 
+from geniza.common.views import SolrDownError
 from geniza.corpus.admin import (
     DateAfterListFilter,
     DateBeforeListFilter,
     DocumentAdmin,
     DocumentForm,
-    DocumentPersonInline,
     DocumentTextBlockInline,
     FragmentAdmin,
     FragmentTextBlockInline,
@@ -40,11 +40,11 @@ from geniza.corpus.models import (
     DocumentType,
     Fragment,
     LanguageScript,
-    Provenance,
     MaterialSupport,
-    TextBlock
+    Provenance,
+    TextBlock,
 )
-from geniza.entities.models import Event, Person, PersonDocumentRelation
+from geniza.entities.models import Event
 from geniza.footnotes.models import Footnote, Source, SourceLanguage, SourceType
 
 
@@ -114,6 +114,30 @@ class TestLanguageScriptAdmin:
 
 
 class TestDocumentAdmin:
+    @pytest.mark.django_db
+    def test_solr_down_raised(self):
+        # ConnectionError on solr queryset should raise SolrDownError
+        with patch(
+            "geniza.corpus.admin.DocumentSolrQuerySet", side_effect=ConnectionError
+        ):
+            doc_admin = DocumentAdmin(model=Document, admin_site=admin.site)
+            with pytest.raises(SolrDownError):
+                doc_admin.get_search_results(
+                    Mock(), Document.objects.all(), "deed of sale"
+                )
+
+    @pytest.mark.django_db
+    def test_solr_down_admin_mixin(self, admin_client):
+        # SolrDownError should redirect to solr error template w/ 503 response
+        changelist_url = reverse("admin:corpus_document_changelist")
+        with patch(
+            "geniza.corpus.admin.DocumentAdmin.get_search_results",
+            side_effect=SolrDownError,
+        ):
+            response = admin_client.get(changelist_url)
+            assert response.status_code == 503
+            assert "unable to reach the Solr service" in response.content.decode()
+
     def test_rev_dates(self, db, admin_client):
         """Document change form should display first entry/last revision date"""
         # create a testing doc, user, and some log entries
