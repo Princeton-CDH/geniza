@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: princeton-geniza-project\n"
 "Report-Msgid-Bugs-To: cdhdevteam@princeton.edu\n"
-"POT-Creation-Date: 2025-08-28 15:27-0400\n"
+"POT-Creation-Date: 2025-10-02 13:30-0400\n"
 "PO-Revision-Date: 2025-08-05 18:43\n"
 "Last-Translator: \n"
 "Language-Team: Arabic\n"
@@ -112,7 +112,7 @@ msgstr "الوصف"
 #. Translators: label for "has translation" search form filter
 #: corpus/forms.py:277 corpus/forms.py:323
 #: corpus/templates/corpus/snippets/document_transcription.html:71
-#: footnotes/models.py:508
+#: footnotes/models.py:500
 msgid "Translation"
 msgstr "الترجمة"
 
@@ -152,7 +152,7 @@ msgid "Image"
 msgstr ""
 
 #. Translators: label for "has discussion" search form filter
-#: corpus/forms.py:327 footnotes/models.py:509
+#: corpus/forms.py:327 footnotes/models.py:501
 msgid "Discussion"
 msgstr "المناقشة"
 
@@ -180,80 +180,95 @@ msgstr ""
 msgid "RegEx search field"
 msgstr ""
 
-#: corpus/forms.py:386
+#: corpus/forms.py:367
+msgid ""
+"Error retrieving search results. Check regular expression for errors such as "
+"unescaped or unclosed brackets or parentheses. Regular expression may also "
+"be too complex to compute. If using numeric ranges such as {0,19}, consider "
+"using * (match 0 or more times) or + (match one or more times) instead."
+msgstr ""
+
+#: corpus/forms.py:394
 msgid "Search by regular expression"
 msgstr ""
 
 #. Translators: Default label when document does not have a type
-#: corpus/forms.py:394 corpus/models.py:1089 corpus/solr_queryset.py:342
+#: corpus/forms.py:402 corpus/models.py:1092 corpus/solr_queryset.py:342
 #: corpus/templates/corpus/snippets/document_header.html:17
 #: corpus/templates/corpus/snippets/document_transcription.html:243
-#: entities/views.py:425
+#: entities/views.py:426
 msgid "Unknown type"
 msgstr "نوع غير معروف"
 
-#: corpus/forms.py:441
+#: corpus/forms.py:449
 msgid "Relevance sort is not available without a keyword search term."
 msgstr "ترتيب الصلة غير متوفر بدون مصطلح البحث بواسطة كلمة مفتاحية."
 
-#: corpus/forms.py:457
+#: corpus/forms.py:464
 #, python-format
 msgid ""
 "Regular expression cannot contain { without a preceding character, without "
 "an integer afterwards, or without a closing }. %s"
 msgstr ""
 
-#: corpus/forms.py:466
+#: corpus/forms.py:473
 #, python-format
 msgid ""
 "Regular expression cannot contain * without a preceding character, or "
 "multiple times in a row. %s"
 msgstr ""
 
-#: corpus/forms.py:475
+#: corpus/forms.py:482
 #, python-format
 msgid ""
 "Regular expression cannot contain + without a preceding character, or "
 "multiple times in a row. %s"
 msgstr ""
 
-#: corpus/forms.py:484
+#: corpus/forms.py:491
 #, python-format
 msgid ""
 "Regular expression cannot contain < or use a negative lookbehind query. %s"
 msgstr ""
 
-#: corpus/forms.py:494
+#: corpus/forms.py:501
 #, python-format
 msgid ""
 "Regular expression cannot contain the escape character \\ followed by an "
 "alphanumeric character other than one of DdSsWw, or at the end of a query. %s"
 msgstr ""
 
+#: corpus/forms.py:514
+#, python-format
+msgid ""
+"Regular expression cannot contain nested quantifiers, such as *{0,1} or +*. "
+"%s (or \\*, \\?, \\{, \\} for those characters)"
+msgstr ""
+
 #. Translators: accessibility label for permanent link to a document
 #. Translators: accessibility label for permanent link to a person
-#: corpus/models.py:829 entities/templates/entities/person_detail.html:150
+#: corpus/models.py:832 entities/templates/entities/person_detail.html:150
 msgid "Permalink"
 msgstr "رابط دائم"
 
-#: corpus/models.py:1214 templates/base.html:21
+#: corpus/models.py:1217 templates/base.html:21
 msgid "Princeton Geniza Project"
 msgstr "Princeton Geniza Project"
 
 #. Translators: attribution for local IIIF manifests
-#: corpus/models.py:1216
+#: corpus/models.py:1219
 #, python-format
 msgid "Compilation by %(pgp)s."
 msgstr "تجميع بواسطة %(pgp)s."
 
 #. Translators: attribution for local IIIF manifests that include transcription
-#: corpus/models.py:1219
+#: corpus/models.py:1222
 #, python-format
 msgid "Compilation and transcription by %(pgp)s."
 msgstr "التجميع والنسخ بواسطة %(pgp)s."
 
 #. Translators: manifest attribution note that content from other institutions may have restrictions
-#: corpus/models.py:1221
+#: corpus/models.py:1224
 msgid "Additional restrictions may apply."
 msgstr "قد تطبق قيود إضافية."
 
@@ -855,38 +870,32 @@ msgstr "التالي"
 
 #. Translators: title of document search page
 #. Translators: label for link to document search page in main navigation
-#: corpus/views.py:82 templates/snippets/menu.html:11
+#: corpus/views.py:87 templates/snippets/menu.html:11
 msgid "Documents"
 msgstr "وثائق"
 
 #. Translators: description of document search page, for search engines
-#: corpus/views.py:84
+#: corpus/views.py:89
 msgid "Search and browse Geniza documents."
 msgstr "البحث في وثائق جنيزا وتصفحها."
 
-#: corpus/views.py:337 entities/views.py:874
+#: corpus/views.py:342 entities/views.py:875
 #, python-format
 msgid "After %s"
 msgstr ""
 
-#: corpus/views.py:339 entities/views.py:876
+#: corpus/views.py:344 entities/views.py:877
 #, python-format
 msgid "Before %s"
 msgstr ""
 
-#: corpus/views.py:410
-msgid ""
-"Error retrieving search results. Check regular expression for errors such as "
-"unescaped or unclosed brackets or parentheses."
-msgstr ""
-
 #. Translators: title of document scholarship page
-#: corpus/views.py:545
+#: corpus/views.py:546
 #, python-format
 msgid "Scholarship on %(doc)s"
 msgstr "منحة في %(doc)s"
 
-#: corpus/views.py:552
+#: corpus/views.py:553
 #, python-format
 msgid "%(count)d scholarship record"
 msgid_plural "%(count)d scholarship records"
@@ -898,12 +907,12 @@ msgstr[4] "%(count)d سجلات منح دراسية"
 msgstr[5] "%(count)d سجلات منح دراسية"
 
 #. Translators: title of related documents page
-#: corpus/views.py:593
+#: corpus/views.py:594
 #, python-format
 msgid "Related documents for %(doc)s"
 msgstr "المستندات ذات الصلة لـ %(doc)s"
 
-#: corpus/views.py:600 entities/views.py:347
+#: corpus/views.py:601 entities/views.py:348
 #, python-format
 msgid "%(count)d related document"
 msgid_plural "%(count)d related documents"
@@ -932,7 +941,7 @@ msgstr ""
 msgid "Gender"
 msgstr ""
 
-#: entities/forms.py:206 entities/views.py:890
+#: entities/forms.py:206 entities/views.py:891
 msgid "Detail page available"
 msgstr ""
 
@@ -1241,18 +1250,18 @@ msgid "Type"
 msgstr ""
 
 #. Translators: title of entity "related documents" page
-#: entities/views.py:341
+#: entities/views.py:342
 #, python-format
 msgid "Related documents for %(p)s"
 msgstr ""
 
 #. Translators: title of entity "related people" page
-#: entities/views.py:547
+#: entities/views.py:548
 #, python-format
 msgid "Related people for %(p)s"
 msgstr ""
 
-#: entities/views.py:555 entities/views.py:626
+#: entities/views.py:556 entities/views.py:627
 #, python-format
 msgid "%(count)d related person"
 msgid_plural "%(count)d related people"
@@ -1264,12 +1273,12 @@ msgstr[4] ""
 msgstr[5] ""
 
 #. Translators: title of person "related places" page
-#: entities/views.py:685
+#: entities/views.py:686
 #, python-format
 msgid "Related places for %(p)s"
 msgstr ""
 
-#: entities/views.py:693
+#: entities/views.py:694
 #, python-format
 msgid "%(count)d related place"
 msgid_plural "%(count)d related places"
@@ -1282,28 +1291,28 @@ msgstr[5] ""
 
 #. Translators: title of people list/browse page
 #. Translators: label for link to people browse page in main navigation
-#: entities/views.py:799 templates/snippets/menu.html:19
+#: entities/views.py:800 templates/snippets/menu.html:19
 msgid "People"
 msgstr "اشخاص"
 
 #. Translators: description of people list/browse page
-#: entities/views.py:801
+#: entities/views.py:802
 msgid "Browse people present in Geniza documents."
 msgstr ""
 
 #. Translators: title of places list/browse page
 #. Translators: label for link to places browse page in main navigation
-#: entities/views.py:1000 templates/snippets/menu.html:26
+#: entities/views.py:1001 templates/snippets/menu.html:26
 msgid "Places"
 msgstr "أَماكِن"
 
 #. Translators: description of places list/browse page
-#: entities/views.py:1002
+#: entities/views.py:1003
 msgid "Browse places present in Geniza documents."
 msgstr ""
 
 #. Translators: number of results
-#: entities/views.py:1126
+#: entities/views.py:1127
 #, python-format
 msgid "%(count)d result"
 msgid_plural "%(count)d results"
@@ -1315,7 +1324,7 @@ msgstr[4] ""
 msgstr[5] ""
 
 #. Translators: number of places
-#: entities/views.py:1130
+#: entities/views.py:1131
 #, python-format
 msgid "%(count)d place"
 msgid_plural "%(count)d places"
@@ -1326,7 +1335,7 @@ msgstr[3] ""
 msgstr[4] ""
 msgstr[5] ""
 
-#: footnotes/models.py:507
+#: footnotes/models.py:499
 msgid "Edition"
 msgstr "الطبعة"
 
@@ -1461,7 +1470,7 @@ msgid "Princeton Center for Digital Humanities homepage"
 msgstr "الصفحة الرئيسية لـ Princeton Center for Digital Humanities"
 
 #. Translators: label for language choices in navigation
-#: templates/snippets/language_switcher.html:11
+#: templates/snippets/language_switcher.html:9
 #, python-format
 msgid "read this page in %(language_name)s (%(language_code)s)"
 msgstr "قراءة هذه الصفحة في %(language_name)s (%(language_code)s)"
@@ -1475,3 +1484,15 @@ msgstr "العودة إلى القائمة الرئيسية"
 #: templates/snippets/theme_toggle.html:5
 msgid "Enable dark mode"
 msgstr "تفعيل الوضع المظلم"
+
+#. Translators: title for solr Service Outage (503) error page
+#: templates/solr_error.html:5 templates/solr_error.html:19
+msgid "Service Outage"
+msgstr ""
+
+#. Translators: description for solr Service Outage (503) error page
+#: templates/solr_error.html:7 templates/solr_error.html:20
+msgid ""
+"The application server was unable to reach the Solr service. This is a "
+"temporary service disruption, and site administrators are working on a fix."
+msgstr ""
