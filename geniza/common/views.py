@@ -41,3 +41,19 @@ def language_switcher(request):
             "current_path": current_path,
         },
     )
+
+
+class SolrDownError(Exception):
+    """Custom exception to indicate Solr is unreachable"""
+
+    pass
+
+
+class SolrDownMixin:
+    """Mixin to use the solr_error template with a 503 status code when a view encounters a solr error"""
+
+    def dispatch(self, request, *args, **kwargs):
+        try:
+            return super().dispatch(request, *args, **kwargs)
+        except SolrDownError:
+            return render(request, "solr_error.html", {}, status=503)
