@@ -50,7 +50,8 @@ class SolrDownError(Exception):
 
 
 class SolrDownMixin:
-    """Mixin to use the solr_error template with a 503 status code when a view encounters a solr error"""
+    """Mixin to use the solr_error template with a 503 status code when a view
+    encounters a solr error"""
 
     def dispatch(self, request, *args, **kwargs):
         try:

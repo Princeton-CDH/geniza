@@ -16,13 +16,16 @@ from django.urls import path, resolve, reverse
 from django.utils import timezone
 from django.utils.html import format_html
 from modeltranslation.admin import TabbedTranslationAdmin
+from requests.exceptions import ConnectionError
 
 from geniza.annotations.models import Annotation
 from geniza.common.admin import (
     PreventLogEntryDeleteMixin,
+    SolrDownAdminMixin,
     TypedRelationInline,
     custom_empty_field_list_filter,
 )
+from geniza.common.views import SolrDownError
 from geniza.corpus.dates import DocumentDateMixin, standard_date_display
 from geniza.corpus.forms import (
     DocumentEventWidgetWrapper,
@@ -447,6 +450,7 @@ class DocumentAdmin(
     TabbedTranslationAdmin,
     SortableAdminBase,
     PreventLogEntryDeleteMixin,
+    SolrDownAdminMixin,
     admin.ModelAdmin,
 ):
     form = DocumentForm
@@ -643,12 +647,15 @@ class DocumentAdmin(
             # - use AND instead of OR to get smaller result sets, more
             #  similar to default admin search behavior
             # - return pks for all matching records
-            sqs = (
-                DocumentSolrQuerySet()
-                .admin_search(search_term)
-                .only("pgpid")
-                .get_results(rows=100000)
-            )
+            try:
+                sqs = (
+                    DocumentSolrQuerySet()
+                    .admin_search(search_term)
+                    .only("pgpid")
+                    .get_results(rows=100000)
+                )
+            except ConnectionError:
+                raise SolrDownError
             pks = [r["pgpid"] for r in sqs]
             # filter queryset by id if there are results
             if sqs:
