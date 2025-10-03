@@ -1,4 +1,4 @@
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
 import pytest
 from django.contrib import admin
@@ -21,7 +21,7 @@ from geniza.footnotes.admin import (
     SourceFootnoteInline,
 )
 from geniza.footnotes.metadata_export import FootnoteExporter
-from geniza.footnotes.models import Footnote, Source, SourceType
+from geniza.footnotes.models import Authorship, Creator, Footnote, Source, SourceType
 
 
 class TestDocumentRelationTypesFilter:
@@ -96,6 +96,41 @@ class TestDocumentRelationTypesFilter:
 
 
 class TestSourceAdmin:
+    @pytest.mark.django_db
+    def test_save_related(self, source):
+        # if a source does not have a slug, the form should generate one after related_save
+        new_source = Source.objects.create(title="test", source_type=source.source_type)
+        assert not new_source.slug
+
+        # mock all arguments to admin method; form.instance should be our source
+        mockform = Mock()
+        mockform.instance = new_source
+        with patch.object(admin.ModelAdmin, "save_related"):
+            SourceAdmin(Source, Mock()).save_related(Mock(), mockform, Mock(), Mock())
+        assert new_source.slug
+
+        # should generate slug only after new related creators are saved
+        creator_source = Source.objects.create(
+            title="test", source_type=source.source_type
+        )
+
+        mockform = Mock()
+        mockform.instance = creator_source
+
+        with patch.object(admin.ModelAdmin, "save_related") as super_save_related:
+
+            def save_related(obj, request, form, formsets):
+                # simulate django saving the related objects and relationships
+                creator = Creator.objects.create(first_name="SD", last_name="Goitein")
+                Authorship.objects.create(creator=creator, source=creator_source)
+
+            super_save_related.side_effect = save_related
+
+            SourceAdmin(Source, Mock()).save_related(Mock(), mockform, Mock(), Mock())
+
+        # the slug should reflect that the Creator exists
+        assert "goitein" in creator_source.slug
+
     @pytest.mark.django_db
     def test_get_queryset(self, twoauthor_source):
         # source with no author
