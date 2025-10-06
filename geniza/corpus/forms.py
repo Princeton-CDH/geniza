@@ -362,6 +362,14 @@ class DocumentSearchForm(RangeForm):
         "has_discussion": "has_discussion",
     }
 
+    # Translators: General error text for regular expression errors
+    GENERIC_REGEX_ERROR = _(
+        "Error retrieving search results. "
+        + "Check regular expression for errors such as unescaped or unclosed brackets or parentheses. "
+        + "Regular expression may also be too complex to compute. If using numeric ranges such as "
+        + "{0,19}, consider using * (match 0 or more times) or + (match one or more times) instead."
+    )
+
     def __init__(self, data=None, *args, **kwargs):
         """
         Override to set choices dynamically based on form kwargs.
@@ -449,7 +457,6 @@ class DocumentSearchForm(RangeForm):
             )
             # see error messages for explanations of each regex here
             if re.search(r"((?<!\\)\{[^0-9])|(^\{)|((?<!\\)\{[^\}]*$)", q):
-                print(q)
                 self.add_error(
                     "q",
                     # Translators: error message for malformed curly brace in regular expression
@@ -495,6 +502,22 @@ class DocumentSearchForm(RangeForm):
                         % needs_escape("\\")
                     ),
                 )
+            try:
+                re.compile(q)
+            except re.error as e:
+                # use python regex error to catch nested quantifiers
+                if "multiple repeat" in e.msg:
+                    self.add_error(
+                        "q",
+                        # Translators: error message for nested quantifiers in regular expression
+                        _(
+                            "Regular expression cannot contain nested quantifiers, such as *{0,1} or +*. %s (or \*, \?, \{, \} for those characters)"
+                            % needs_escape("+")
+                        ),
+                    )
+                else:
+                    # other python regex errors get the generic regex error msg
+                    self.add_error("q", self.GENERIC_REGEX_ERROR)
 
 
 class DocumentChoiceField(forms.ModelChoiceField):

@@ -35,7 +35,12 @@
             </li>
             {% include "snippets/menu.html" with in_header="true" %}
         </ul>
-        {% include "snippets/language_switcher.html" %}
+
+        {% if LANGUAGES|length > 1 and user.is_authenticated or PUBLIC_SITE_LANGUAGES|length > 1  %}
+            <ul id="language-switcher" data-controller="langswitcher" data-langswitcher-url-value="{% url 'common:language-switcher' %}">
+                {% include "snippets/language_switcher.html" %}
+            </ul>
+        {% endif %}
         {% include "snippets/theme_toggle.html" %}
     {% endspaceless %}
 </nav>

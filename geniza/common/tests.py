@@ -14,6 +14,7 @@ from django.db.migrations.executor import MigrationExecutor
 from django.http import HttpResponseRedirect, StreamingHttpResponse
 from django.test import RequestFactory, TestCase, TransactionTestCase, override_settings
 from django.urls import reverse
+from pytest_django.asserts import assertContains
 from taggit.models import Tag
 
 from geniza.common.admin import (
@@ -529,3 +530,16 @@ class TestTagAutocompleteView:
         # should always return empty list
         view = TagAutocompleteView()
         assert view.get_create_option(Mock(), "Tag") == []
+
+
+@pytest.mark.django_db
+def test_language_switcher(client):
+    # fake url with /en/
+    current_path = "/en/documents/100/"
+    response = client.get(
+        reverse("common:language-switcher"), {"current_path": current_path}
+    )
+
+    # should translate the url passed via current_path query param
+    assert response.status_code == 200
+    assertContains(response, 'href="/ar/documents/100/"')

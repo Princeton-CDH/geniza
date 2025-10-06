@@ -1,5 +1,4 @@
-"""geniza URL Configuration
-"""
+"""geniza URL Configuration"""
 
 from django.conf import settings
 from django.conf.urls.i18n import i18n_patterns
@@ -57,6 +56,7 @@ urlpatterns = [
 
 # urls that should be available in multiple languages
 urlpatterns += i18n_patterns(
+    path("", include("geniza.common.urls", namespace="common")),
     path("", include("geniza.corpus.urls", namespace="corpus")),
     path("", include("geniza.entities.urls", namespace="entities")),
     path("", include(wagtail_urls)),

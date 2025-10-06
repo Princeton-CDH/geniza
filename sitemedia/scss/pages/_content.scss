@@ -175,11 +175,6 @@ main.homepage {
         // Paragraph spacing unique to content pages
         margin-bottom: spacing.$spacing-md;
         // Mark for underilne
-        mark.underline {
-            // Prevent user agent stylesheet from treating all marks like highlights
-            background-color: transparent;
-            text-decoration: underline;
-        }
         // Wagtail rich text editor uses b tag for bold
         b {
             @include typography.body-bold;
@@ -188,6 +183,12 @@ main.homepage {
         i {
             @include typography.body-italic;
         }
+    }
+
+    mark.underline {
+        // Prevent user agent stylesheet from treating all marks like highlights
+        background-color: transparent;
+        text-decoration: underline;
     }
 
     // Image handling unique to content pages

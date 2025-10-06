@@ -417,3 +417,17 @@ div.form-row.field-doc_date_original .inline-group {
 .object-tools a.addlink.needs-transcription {
     background-image: url("/static/img/icons/arrow-square-out.svg");
 }
+
+/* related documents: vertical alignment */
+.inline-group .tabular tr[id^="persondocumentrelation_set"] td,
+.inline-group .tabular tr[id^="documentplacerelation_set"] td {
+    vertical-align: top;
+}
+/* related documents: document description section */
+td.field-document_description {
+    min-width: 200px;
+}
+td.field-document_description p {
+    max-height: 200px;
+    overflow-y: auto;
+}

@@ -348,6 +348,9 @@ class PersonAdmin(
     )
     own_pk = None
 
+    class Media:
+        css = {"all": ("css/admin-local.css",)}
+
     def save_related(self, request, form, formsets, change):
         """Override save to ensure slug is generated if empty. Adapted from mep-django"""
         super().save_related(request, form, formsets, change)
@@ -650,6 +653,9 @@ class PlaceAdmin(SortableAdminBase, admin.ModelAdmin):
         "i",  # PlaceEventInline
         "i",  # FootnoteInline
     )
+
+    class Media:
+        css = {"all": ("css/admin-local.css",)}
 
     def save_related(self, request, form, formsets, change):
         """Override save to ensure slug is generated if empty. Adapted from mep-django"""
