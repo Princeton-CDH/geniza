@@ -511,6 +511,20 @@ class DocumentSignalHandlers:
         # delegate to common method
         DocumentSignalHandlers.related_change(instance, raw, "delete")
 
+    @staticmethod
+    def related_save_doctype(
+        sender, instance=None, raw=False, update_fields=None, **_kwargs
+    ):
+        """reindex associated documents when a related DocumentType is saved"""
+        # for document type, if updating, only reindex docs if name_en or display_label_en updated
+        if (
+            not update_fields
+            or "name_en" in update_fields
+            or "display_label_en" in update_fields
+        ):
+            # delegate to common method
+            DocumentSignalHandlers.related_change(instance, raw, "save")
+
 
 class TagSignalHandlers:
     """Signal handlers for :class:`taggit.Tag` records."""
@@ -1559,7 +1573,7 @@ class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin, TaggableMixin)
             "pre_delete": DocumentSignalHandlers.related_delete,
         },
         "doctype": {
-            "post_save": DocumentSignalHandlers.related_save,
+            "post_save": DocumentSignalHandlers.related_save_doctype,
             "pre_delete": DocumentSignalHandlers.related_delete,
         },
         "textblock_set": {
