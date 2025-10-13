@@ -392,14 +392,25 @@ class Fragment(TrackChangesModel):
         """Generate IIIF Manifest URL based on view url, if it can
         be determined automatically"""
 
-        # cambridge iiif manifest links use the same id as view links
-        # NOTE: should exclude search link like this one:
-        # https://cudl.lib.cam.ac.uk/search?fileID=&keyword=T-s%2013J33.12&page=1&x=0&y=
-        if "cudl.lib.cam.ac.uk/view/" in url:
+        if (
+            "cudl.lib.cam.ac.uk/view/" in url
+            or "digitalcollections.manchester.ac.uk/view/" in url
+        ):
+            # cambridge (and manchester digital collections) iiif manifest
+            # links use the same id as view links
+            # NOTE: should exclude search link like this one:
+            # https://cudl.lib.cam.ac.uk/search?fileID=&keyword=T-s%2013J33.12
             iiif_link = url.replace("/view/", "/iiif/")
             # view links end with /1 or /2 but iiif link does not include it
             return re.sub(r"/\d$", "", iiif_link)
-
+        elif "colenda.library.upenn.edu/catalog/" in url:
+            # UPenn view links are /catalog/81431-p3891287r
+            # and iiif links are /items/ark:/81431/p3891287r
+            return re.sub(
+                r"/catalog/([A-Za-z0-9]+)-([A-Za-z0-9]+)$",
+                r"/items/ark:/\1/\2/manifest",
+                url,
+            )
         return ""
 
     def save(self, *args, **kwargs):

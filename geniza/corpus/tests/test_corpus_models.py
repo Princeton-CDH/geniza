@@ -382,6 +382,25 @@ class TestFragment(TestCase):
         frag.save()
         assert frag.iiif_url == ""
 
+        # test manchester digital collections
+        frag.url = (
+            "https://www.digitalcollections.manchester.ac.uk/view/MS-GENIZAH-A-00897/1"
+        )
+        frag.save()
+        assert (
+            frag.iiif_url
+            == "https://www.digitalcollections.manchester.ac.uk/iiif/MS-GENIZAH-A-00897"
+        )
+
+        # test upenn
+        frag.iiif_url = ""
+        frag.url = "https://colenda.library.upenn.edu/catalog/81431-p3891287r"
+        frag.save()
+        assert (
+            frag.iiif_url
+            == "https://colenda.library.upenn.edu/items/ark:/81431/p3891287r/manifest"
+        )
+
     @pytest.mark.django_db
     @patch("geniza.corpus.models.GenizaManifestImporter")
     def test_save_import_manifest(self, mock_manifestimporter):
