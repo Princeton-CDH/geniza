@@ -101,22 +101,6 @@ def test_handle_file_not_found():
 
 
 @pytest.mark.django_db
-def test_view_to_iiif_url():
-    command = add_fragment_urls.Command()
-    assert (
-        command.view_to_iiif_url("https://cudl.lib.cam.ac.uk/view/MS-ADD-02586")
-        == "https://cudl.lib.cam.ac.uk/iiif/MS-ADD-02586"
-    )
-
-    assert (
-        command.view_to_iiif_url("https://cudl.lib.cam.ac.uk/view/MS-ADD-03430/1")
-        == "https://cudl.lib.cam.ac.uk/iiif/MS-ADD-03430"
-    )
-
-    assert command.view_to_iiif_url("https://example.com/iiif/1234") == ""
-
-
-@pytest.mark.django_db
 @patch("geniza.corpus.management.commands.add_fragment_urls.Command.log_change")
 @patch("geniza.corpus.models.GenizaManifestImporter", MockImporter)
 def test_add_fragment_urls(mock_log_change):

@@ -387,6 +387,21 @@ class Fragment(TrackChangesModel):
         # url in a query string; strip that out if it's there
         self.iiif_url = self.iiif_url.split("?manifest=")[0]
 
+    @classmethod
+    def view_to_iiif_url(cls, url):
+        """Generate IIIF Manifest URL based on view url, if it can
+        be determined automatically"""
+
+        # cambridge iiif manifest links use the same id as view links
+        # NOTE: should exclude search link like this one:
+        # https://cudl.lib.cam.ac.uk/search?fileID=&keyword=T-s%2013J33.12&page=1&x=0&y=
+        if "cudl.lib.cam.ac.uk/view/" in url:
+            iiif_link = url.replace("/view/", "/iiif/")
+            # view links end with /1 or /2 but iiif link does not include it
+            return re.sub(r"/\d$", "", iiif_link)
+
+        return ""
+
     def save(self, *args, **kwargs):
         """Remember how shelfmarks have changed by keeping a semi-colon list
         in the old_shelfmarks field"""
@@ -397,6 +412,9 @@ class Fragment(TrackChangesModel):
                 self.old_shelfmarks = ";".join(old_shelfmarks - {self.shelfmark})
             else:
                 self.old_shelfmarks = self.initial_value("shelfmark")
+
+        if self.url and not self.iiif_url:
+            self.iiif_url = Fragment.view_to_iiif_url(self.url)
 
         # if iiif url is set and manifest is not available, or iiif url has changed,
         # import the manifest
