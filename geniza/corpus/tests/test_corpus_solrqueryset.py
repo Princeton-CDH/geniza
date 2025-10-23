@@ -168,7 +168,7 @@ class TestDocumentSolrQuerySet:
         # confirm arabic to judaeo-arabic does not run here
         assert (
             dqs._search_term_cleanup('"دي[نا]ر"')
-            == '(description_nostem:"دي[نا]ر" OR transcription_nostem:"دي[نا]ر")'
+            == '(description_nostem:"دي[نا]ر" OR transcription_nostem:"دي[نا]ر" OR description_he_nostem:"دي[نا]ر" OR description_ar_nostem:"دي[نا]ر")'
         )
 
     def test_search_term_cleanup__exact_match_regex(self):
@@ -189,7 +189,7 @@ class TestDocumentSolrQuerySet:
         # as repeated as an unscoped query)
         assert (
             dqs._search_term_cleanup('"he divorced"')
-            == '(description_nostem:"he divorced" OR transcription_nostem:"he divorced")'
+            == '(description_nostem:"he divorced" OR transcription_nostem:"he divorced" OR description_he_nostem:"he divorced" OR description_ar_nostem:"he divorced")'
         )
 
         assert 'description_nostem:"he divorced"' in dqs._search_term_cleanup(
@@ -199,7 +199,7 @@ class TestDocumentSolrQuerySet:
         # should preserve order for e.g. boolean searches with exact matches
         assert (
             dqs._search_term_cleanup('"מרכב אלצלטאן" AND "אלמרכב אלצלטאן"')
-            == '(description_nostem:"מרכב אלצלטאן" OR transcription_nostem:"מרכב אלצלטאן") AND (description_nostem:"אלמרכב אלצלטאן" OR transcription_nostem:"אלמרכב אלצלטאן")'
+            == '(description_nostem:"מרכב אלצלטאן" OR transcription_nostem:"מרכב אלצלטאן" OR description_he_nostem:"מרכב אלצלטאן" OR description_ar_nostem:"מרכב אלצלטאן") AND (description_nostem:"אלמרכב אלצלטאן" OR transcription_nostem:"אלמרכב אלצלטאן" OR description_he_nostem:"אלמרכב אלצלטאן" OR description_ar_nostem:"אלמרכב אלצלטאן")'
         )
 
     def test_search_term_cleanup__quoted_shelfmark_only(self):
@@ -344,6 +344,23 @@ class TestDocumentSolrQuerySet:
             assert dqs.get_highlighting()["doc.1"]["transcription"][0][
                 "text"
             ] == clean_html("exact match")
+
+            # description_he_nostem and description_ar_nostem should be preferred for exact search
+            test_highlight = {
+                "doc.1": {
+                    "description": ["matched"],
+                    "description_nostem": ["exactly matched"],
+                    "description_he": ["something"],
+                    "description_he_nostem": ["תואם בדיוק"],
+                    "description_ar": ["something else"],
+                    "description_ar_nostem": ["تطابق تماماً"],
+                }
+            }
+            mock_get_highlighting.return_value = test_highlight
+            dqs.raw_params["hl_query"] = "תואם בדיוק"
+            assert dqs.get_highlighting()["doc.1"]["description_he"] == ["תואם בדיוק"]
+            dqs.raw_params["hl_query"] = "تطابق تماماً"
+            assert dqs.get_highlighting()["doc.1"]["description_ar"] == ["تطابق تماماً"]
 
     def test_get_highlighting__old_shelfmark(self):
         dqs = DocumentSolrQuerySet()

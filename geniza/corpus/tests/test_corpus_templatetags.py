@@ -3,6 +3,7 @@ from unittest.mock import MagicMock, Mock
 import pytest
 from django.http.request import HttpRequest, QueryDict
 from django.urls import reverse
+from django.utils.translation import activate, get_language
 from piffle.image import IIIFImageClient
 from pytest_django.asserts import assertContains
 
@@ -294,6 +295,78 @@ def test_translate_url(document):
     ctx["request"].path = "https://example.com"
     ctx["current_path"] = document.get_absolute_url()
     assert corpus_extras.translate_url(ctx, "he").startswith("/he/")
+
+
+def test_translate_highlight():
+    current_lang = get_language()
+
+    # no highlights: return None
+    assert corpus_extras.translate_highlight({}) is None
+
+    # language is english, highlight is in english
+    activate("en")
+    en_highlights = ["example highlight"]
+    highlights = {"description": en_highlights}
+    assert corpus_extras.translate_highlight(highlights)["snippets"] == en_highlights
+    assert corpus_extras.translate_highlight(highlights)["lang"] == "en"
+    assert corpus_extras.translate_highlight(highlights)["dir"] == "ltr"
+
+    # language is hebrew, highlight is in english
+    activate("he")
+    assert corpus_extras.translate_highlight(highlights)["snippets"] == en_highlights
+    assert corpus_extras.translate_highlight(highlights)["lang"] == "en"
+    assert corpus_extras.translate_highlight(highlights)["dir"] == "ltr"
+
+    # language is hebrew, highlight is in english and hebrew: should prefer hebrew
+    he_highlights = ["דוגמאות עיקריות"]
+    highlights = {"description": en_highlights, "description_he": he_highlights}
+    assert corpus_extras.translate_highlight(highlights)["lang"] == "he"
+    assert corpus_extras.translate_highlight(highlights)["dir"] == "rtl"
+
+    # language is arabic, highlight is in english and hebrew: should prefer english
+    activate("ar")
+    assert corpus_extras.translate_highlight(highlights)["lang"] == "en"
+    assert corpus_extras.translate_highlight(highlights)["dir"] == "ltr"
+
+    # reactivate previous default (in case it matters for other tests)
+    activate(current_lang)
+
+
+def test_translate_description():
+    current_lang = get_language()
+
+    # no highlights: empty description
+    assert corpus_extras.translate_description({})["text"] is None
+
+    # language is english, description is in english
+    activate("en")
+    en_desc = "An example document description"
+    document = {"description": en_desc}
+    assert corpus_extras.translate_description(document)["text"] == en_desc
+    assert corpus_extras.translate_description(document)["lang"] == "en"
+    assert corpus_extras.translate_description(document)["dir"] == "ltr"
+
+    # language is hebrew, description is in english
+    activate("he")
+    assert corpus_extras.translate_description(document)["text"] == en_desc
+    assert corpus_extras.translate_description(document)["lang"] == "en"
+    assert corpus_extras.translate_description(document)["dir"] == "ltr"
+
+    # language is hebrew, description is in english and hebrew: should prefer hebrew
+    he_desc = "תיאור מסמך לדוגמה"
+    document = {"description": en_desc, "description_he": he_desc}
+    assert corpus_extras.translate_description(document)["text"] == he_desc
+    assert corpus_extras.translate_description(document)["lang"] == "he"
+    assert corpus_extras.translate_description(document)["dir"] == "rtl"
+
+    # language is arabic, description is in english and hebrew: should prefer english
+    activate("ar")
+    assert corpus_extras.translate_description(document)["text"] == en_desc
+    assert corpus_extras.translate_description(document)["lang"] == "en"
+    assert corpus_extras.translate_description(document)["dir"] == "ltr"
+
+    # reactivate previous default (in case it matters for other tests)
+    activate(current_lang)
 
 
 class TestAdminExtrasTemplateTags:
