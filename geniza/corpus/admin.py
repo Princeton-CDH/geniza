@@ -801,6 +801,15 @@ class DocumentTypeAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
     class Media:
         css = {"all": ("css/admin-local.css",)}
 
+    def save_model(self, request, obj, form, change):
+        """Override to pass update_fields along to signal handlers, for control over
+        related document indexing"""
+        if change:
+            update_fields = form.changed_data
+            obj.save(update_fields=update_fields)
+        else:
+            obj.save()
+
 
 @admin.register(Fragment)
 class FragmentAdmin(admin.ModelAdmin):
