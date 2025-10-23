@@ -359,7 +359,7 @@ class TestPerson:
         # reassociated log entry should include dupe's primary name, id
         moved_log = person.log_entries.all()[1]
         assert (
-            " [merged person %s (id = %s)]" % (dupe_str, dupe_pk)
+            " [merged Person %s (id = %s)]" % (dupe_str, dupe_pk)
             in moved_log.change_message
         )
 
@@ -1069,6 +1069,271 @@ class TestPlace:
         primary_name.save()
         # __str__ should use the primary name
         assert str(place) == primary_name.name
+
+    def test_merge_with(self):
+        # create two places
+        place = Place.objects.create(notes="a place")
+        place_2 = Place.objects.create(
+            notes="testing notes", latitude=40.0, longitude=30.0
+        )
+        region = Region.objects.create(name="test region")
+        place_2.containing_region = region
+        place_2.save()
+        p2_str = str(place_2)
+        place.merge_with([place_2])
+        # migrated missing info
+        place.refresh_from_db()
+        assert place.containing_region.pk == region.pk
+        assert place.latitude == 40.0 and place.longitude == 30.0
+        # combined notes
+        assert "a place" in place.notes
+        assert "\n\nNotes from merged entry:" in place.notes
+        assert "testing notes" in place.notes
+        # should delete and create merge log entry
+        assert not place_2.pk
+        assert LogEntry.objects.filter(
+            object_id=place.pk, change_message__contains=f"merged with {p2_str}"
+        ).exists()
+
+    def test_merge_with_no_notes(self):
+        # create two places
+        place = Place.objects.create()
+        place_2 = Place.objects.create(notes="testing notes")
+        place.merge_with([place_2])
+        # should not error; should set notes on merged record
+        assert "Notes from merged entry:" in place.notes
+        assert "testing notes" in place.notes
+
+    def test_merge_with_conflicts(self):
+        # should raise ValidationError on conflicting is_region
+        place = Place.objects.create(is_region=True)
+        place_2 = Place.objects.create(is_region=False)
+        with pytest.raises(ValidationError):
+            place.merge_with([place_2])
+
+    def test_merge_with_names(self):
+        place = Place.objects.create()
+        Name.objects.create(name="Cairo", content_object=place, primary=True)
+        Name.objects.create(name="Qāhira", content_object=place)
+        place_dupe = Place.objects.create()
+        dupe_name = Name.objects.create(name="Qāhira", content_object=place_dupe)
+        dupe_primary_name = Name.objects.create(
+            name="Le Caire", content_object=place_dupe, primary=True
+        )
+        place.merge_with([place_dupe])
+        # identical name should not get added
+        assert not place.names.filter(pk=dupe_name.pk).exists()
+        # dupe's primary name should be added since it's unique, but should not be primary anymore
+        assert place.names.filter(pk=dupe_primary_name.pk, primary=False).exists()
+
+    def test_merge_with_related_places(self):
+        cairo = Place.objects.create()
+        cairo_dupe = Place.objects.create()
+        zamalek = Place.objects.create()
+        cairo_illinois = Place.objects.create()
+        # "possible same" relation between place and dupe
+        ambiguity_type, _ = PlacePlaceRelationType.objects.get_or_create(
+            name_en="possibly the same as"
+        )
+        PlacePlaceRelation.objects.create(
+            place_a=cairo, place_b=cairo_dupe, type=ambiguity_type
+        )
+        # neighborhood relation between dupe and Zamalek
+        neighborhood_type, _ = PlacePlaceRelationType.objects.get_or_create(
+            name_en="Neighborhood of", converse_name_en="Contains neighborhood"
+        )
+        PlacePlaceRelation.objects.create(
+            place_a=zamalek, place_b=cairo_dupe, type=neighborhood_type
+        )
+        # "not to be confused" between Cairo Illinois and dupe Cairo Egypt
+        confused_type, _ = PlacePlaceRelationType.objects.get_or_create(
+            name_en="Not to be confused with"
+        )
+        PlacePlaceRelation.objects.create(
+            place_a=cairo_dupe, place_b=cairo_illinois, type=confused_type
+        )
+        # maadi neighborhood relationship on both records
+        maadi = Place.objects.create()
+        neighrborhood_notes = "Found by evidence."
+        neighborhood_dupe_notes = "Seen on documents."
+        maadi_cairo = PlacePlaceRelation.objects.create(
+            place_a=maadi,
+            place_b=cairo,
+            type=neighborhood_type,
+            notes=neighrborhood_notes,
+        )
+        PlacePlaceRelation.objects.create(
+            place_a=maadi,
+            place_b=cairo_dupe,
+            type=neighborhood_type,
+            notes=neighborhood_dupe_notes,
+        )
+        cairo_dupe_str = str(cairo_dupe)
+        cairo.merge_with([cairo_dupe])
+
+        # ambiguity relationship should no longer be present; i.e. avoided
+        # self-self relationship
+        assert not cairo.place_b.filter(type=ambiguity_type).exists()
+        assert not cairo.place_a.filter(type=ambiguity_type).exists()
+
+        # neighborhood relation should be reassigned with non-dupe cairo as place_b
+        assert PlacePlaceRelation.objects.filter(
+            place_a=zamalek, place_b=cairo, type=neighborhood_type
+        ).exists()
+
+        # "not to be confused" relation should be reassigned as well
+        assert PlacePlaceRelation.objects.filter(
+            place_a=cairo, place_b=cairo_illinois, type=confused_type
+        ).exists()
+
+        # only one neighborhood relationship with Maadi should exist still
+        neighborhood_relations = PlacePlaceRelation.objects.filter(
+            place_a=maadi,
+            place_b=cairo,
+            type=neighborhood_type,
+        )
+        assert neighborhood_relations.count() == 1
+        # its notes should be combined
+        maadi_cairo.refresh_from_db()
+        assert maadi_cairo.notes == "\n".join(
+            [
+                neighrborhood_notes,
+                "Notes from merged record %s: %s"
+                % (cairo_dupe_str, neighborhood_dupe_notes),
+            ]
+        )
+
+    def test_merge_with_related_events(self):
+        place = Place.objects.create()
+        place_dupe = Place.objects.create()
+        event = Event.objects.create()
+        place_dupe.events.add(event)
+        place.merge_with([place_dupe])
+        # event relation should be reassigned to merged result
+        assert place.events.filter(pk=event.pk).exists()
+
+    def test_merge_with_related_people(self):
+        person = Person.objects.create()
+        other_person = Person.objects.create()
+        fustat = Place.objects.create()
+        fustat_dupe = Place.objects.create()
+        home_base, _ = PersonPlaceRelationType.objects.get_or_create(
+            name_en="Home base"
+        )
+        family_roots, _ = PersonPlaceRelationType.objects.get_or_create(
+            name_en="Family traces roots to"
+        )
+        # person has both fustat and dupe as home base (same place and type)
+        PersonPlaceRelation.objects.create(person=person, place=fustat, type=home_base)
+        PersonPlaceRelation.objects.create(
+            person=person, place=fustat_dupe, type=home_base
+        )
+        # other_person has dupe as family origin
+        PersonPlaceRelation.objects.create(
+            person=other_person, place=fustat_dupe, type=family_roots
+        )
+        fustat.merge_with([fustat_dupe])
+        # merged should have two relations, not three (dupe skipped)
+        assert fustat.personplacerelation_set.count() == 2
+        # merged should get other_person family origin relationship from dupe
+        assert fustat.personplacerelation_set.filter(
+            person=other_person, type=family_roots
+        ).exists()
+
+    def test_merge_with_related_documents(self, document):
+        place = Place.objects.create()
+        place_dupe = Place.objects.create()
+        origin, _ = DocumentPlaceRelationType.objects.get_or_create(name_en="Origin")
+        DocumentPlaceRelation.objects.create(
+            document=document, place=place_dupe, type=origin
+        )
+        place.merge_with([place_dupe])
+        # document relation should be reassigned to merged result
+        assert DocumentPlaceRelation.objects.filter(
+            document=document, place=place, type=origin
+        ).exists()
+
+    def test_merge_with_footnotes(self, source, twoauthor_source):
+        place = Place.objects.create()
+        place_dupe = Place.objects.create()
+        Footnote.objects.create(
+            source=source, doc_relation=Footnote.EDITION, content_object=place_dupe
+        )
+        Footnote.objects.create(source=twoauthor_source, content_object=place)
+        Footnote.objects.create(source=twoauthor_source, content_object=place_dupe)
+        place.merge_with([place_dupe])
+        # should have two footnotes, not three (dupe skipped)
+        assert place.footnotes.count() == 2
+        # first footnote should have been migrated, but had its doc relation removed
+        assert place.footnotes.filter(source=source).exists()
+        assert not place.footnotes.filter(doc_relation=Footnote.EDITION).exists()
+
+    def test_merge_with_log_entries(self):
+        # heavily adapted from person merge test
+        place = Place.objects.create()
+        Name.objects.create(name="Cairo", content_object=place, primary=True)
+        place_dupe = Place.objects.create()
+        Name.objects.create(name="Qāhira", content_object=place_dupe, primary=True)
+
+        # create some log entries
+        place_contenttype = ContentType.objects.get_for_model(Place)
+        # creation
+        creation_date = timezone.make_aware(datetime(2023, 10, 12))
+        creator = User.objects.get_or_create(username="editor")[0]
+        LogEntry.objects.bulk_create(
+            [
+                LogEntry(
+                    user_id=creator.id,
+                    content_type_id=place_contenttype.pk,
+                    object_id=place.id,
+                    object_repr=str(place),
+                    change_message="first input",
+                    action_flag=ADDITION,
+                    action_time=creation_date,
+                ),
+                LogEntry(
+                    user_id=creator.id,
+                    content_type_id=place_contenttype.pk,
+                    object_id=place_dupe.id,
+                    object_repr=str(place_dupe),
+                    change_message="first input",
+                    action_flag=ADDITION,
+                    action_time=creation_date,
+                ),
+                LogEntry(
+                    user_id=creator.id,
+                    content_type_id=place_contenttype.pk,
+                    object_id=place_dupe.id,
+                    object_repr=str(place_dupe),
+                    change_message="major revision",
+                    action_flag=CHANGE,
+                    action_time=timezone.now(),
+                ),
+            ]
+        )
+
+        assert place.log_entries.count() == 1
+        assert place_dupe.log_entries.count() == 2
+        dupe_pk = place_dupe.pk
+        dupe_str = str(place_dupe)
+        place.merge_with([place_dupe], user=creator)
+        # should have 3 log entries after the merge:
+        # 1 of the two duplicates, 1 unique from dupe,
+        # and 1 documenting the merge
+        assert place.log_entries.count() == 3
+        # based on default sorting, most recent log entry will be first
+        # - should document the merge event
+        merge_log = place.log_entries.first()
+        # log action with specified user
+        assert creator.id == merge_log.user_id
+        assert merge_log.action_flag == CHANGE
+
+        # reassociated log entry should include dupe's primary name, id
+        moved_log = place.log_entries.all()[1]
+        assert (
+            " [merged Place %s (id = %s)]" % (dupe_str, dupe_pk)
+            in moved_log.change_message
+        )
 
     def test_save(self):
         # test past slugs are recorded on save
