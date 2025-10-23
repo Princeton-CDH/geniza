@@ -1737,10 +1737,10 @@ class Place(ModelIndexable, EntityMergeMixin, SlugMixin, PermalinkMixin):
                 self.containing_region = place.containing_region
 
             # add notes if set and not duplicated
-            person_notes = place.notes
+            place_notes = place.notes
             current_notes = self.notes or ""
-            if person_notes and person_notes not in current_notes:
-                self.notes += "\n\nNotes from merged entry:\n%s" % (person_notes,)
+            if place_notes and place_notes not in current_notes:
+                self.notes += "\n\nNotes from merged entry:\n%s" % (place_notes,)
 
             # combine place-place relationships (self-referential M2M relationship)
             # place_b = added on the form field of place to be merged in
