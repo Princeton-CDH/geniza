@@ -13,6 +13,7 @@ from geniza.entities.models import (
     PersonPersonRelationType,
     PersonPlaceRelation,
     PersonRole,
+    Place,
     PlaceEventRelation,
     PlacePlaceRelation,
 )
@@ -55,6 +56,42 @@ class PersonMergeForm(forms.Form):
         )
 
 
+class PlaceChoiceField(forms.ModelChoiceField):
+    """Add a summary of each place to a form (used for place merging)"""
+
+    label_template = get_template("entities/snippets/place_option_label.html")
+
+    def label_from_instance(self, place):
+        return self.label_template.render({"place": place})
+
+
+class PlaceMergeForm(forms.Form):
+    primary_place = PlaceChoiceField(
+        label="Select primary place",
+        queryset=None,
+        help_text=(
+            "Select the primary place, which will be used as the canonical place entry. "
+            "All metadata, relationships (people/places/documents), footnotes, and log "
+            "entries will be combined on the primary place. The display name and coordinates "
+            "from the primary place will be used."
+        ),
+        empty_label=None,
+        widget=forms.RadioSelect,
+    )
+
+    def __init__(self, *args, **kwargs):
+        place_ids = kwargs.get("place_ids", [])
+
+        # Remove the added kwarg so that the super method doesn't error
+        try:
+            del kwargs["place_ids"]
+        except KeyError:
+            pass
+
+        super().__init__(*args, **kwargs)
+        self.fields["primary_place"].queryset = Place.objects.filter(id__in=place_ids)
+
+
 class RelationTypeMergeFormMixin:
     def __init__(self, *args, **kwargs):
         ids = kwargs.get("ids", [])
@@ -66,9 +103,9 @@ class RelationTypeMergeFormMixin:
             pass
 
         super().__init__(*args, **kwargs)
-        self.fields[
-            "primary_relation_type"
-        ].queryset = self.reltype_model.objects.filter(id__in=ids)
+        self.fields["primary_relation_type"].queryset = (
+            self.reltype_model.objects.filter(id__in=ids)
+        )
 
 
 class PersonDocumentRelationTypeChoiceField(forms.ModelChoiceField):

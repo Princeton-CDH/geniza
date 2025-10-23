@@ -323,8 +323,95 @@ class PersonSignalHandlers:
         PersonSignalHandlers.related_change(instance, raw, "delete")
 
 
+class EntityMergeMixin:
+    """Reusable mixin for merging entities"""
+
+    def _merge_related(
+        self,
+        entity,
+        entity_name,
+        related_model_name,
+        related_manager_name,
+        reverse_field,
+        self_referential=False,
+        has_type=True,
+    ):
+        # reassociate related documents, places, people, and events
+        # (originally Person._merge_related)
+
+        # iterate through the join table to preserve metadata on the joins (type, notes)
+        primary_entity_relations = getattr(self, related_manager_name).all()
+        merge_entity_relations = getattr(entity, related_manager_name).all()
+        if self_referential:
+            # prevent self-self relationship from being created during merge
+            merge_entity_relations = merge_entity_relations.exclude(
+                **{f"{related_model_name}__pk": self.pk}
+            )
+        for relation in merge_entity_relations:
+            # filter existing relationships to find a match
+            filter_kwargs = {related_model_name: getattr(relation, related_model_name)}
+            if has_type:
+                # on person, document, and place, match by relation type as well
+                filter_kwargs.update({"type": relation.type})
+            same_relation = primary_entity_relations.filter(**filter_kwargs)
+            if same_relation.exists():
+                # if a relationship already exists, combine the notes
+                existing_rel = same_relation.first()
+                if relation.notes and relation.notes not in existing_rel.notes:
+                    existing_rel.notes = "\n".join(
+                        note
+                        for note in [
+                            existing_rel.notes,
+                            "Notes from merged record %s: %s"
+                            % (entity_name, relation.notes),
+                        ]
+                        if note  # filter out empty strings
+                    )
+                    existing_rel.save()
+            else:
+                # otherwise simply reassign the relationship to the primary entity
+                setattr(relation, reverse_field, self)
+                relation.save()
+
+    def _merge_logentries(self, entity, entity_type):
+        # reassociate log entries; logic for merge_with
+        # make a list of currently associated log entries to skip duplicates
+        current_logs = [
+            "%s_%s" % (le.user_id, le.action_time.isoformat())
+            for le in self.log_entries.all()
+        ]
+        for log_entry in entity.log_entries.all():
+            # check duplicate log entries, based on user id and time
+            # (likely only applies to historic input & revision)
+            if (
+                "%s_%s" % (log_entry.user_id, log_entry.action_time.isoformat())
+                in current_logs
+            ):
+                # skip if it's a duplicate
+                continue
+
+            # otherwise annotate and reassociate
+            # - modify change message to entity which object this event applied to
+            log_entry.change_message = "%s [merged %s %s (id = %d)]" % (
+                log_entry.change_message,
+                entity_type.__name__,
+                str(entity),
+                entity.pk,
+            )
+
+            # - associate with the primary entity
+            log_entry.object_id = self.id
+            log_entry.content_type_id = ContentType.objects.get_for_model(entity_type)
+            log_entry.save()
+
+
 class Person(
-    ModelIndexable, SlugMixin, DocumentDatableMixin, PermalinkMixin, TaggableMixin
+    ModelIndexable,
+    EntityMergeMixin,
+    SlugMixin,
+    DocumentDatableMixin,
+    PermalinkMixin,
+    TaggableMixin,
 ):
     """A person entity that appears within the PGP corpus."""
 
@@ -368,7 +455,7 @@ class Person(
     # sources for the information gathered here
     footnotes = GenericRelation(Footnote, blank=True, related_name="people")
 
-    log_entries = GenericRelation(LogEntry, related_query_name="document")
+    log_entries = GenericRelation(LogEntry, related_query_name="person")
 
     tags = TaggableManager(blank=True, related_name="tagged_person")
 
@@ -751,7 +838,7 @@ class Person(
                 )
 
             # combine log entries (before name, since name used in log entries)
-            self._merge_logentries(person)
+            self._merge_logentries(person, Person)
 
             # combine names
             for name in person.names.all():
@@ -793,11 +880,26 @@ class Person(
             )
             # combine person-document, person-place, person-event relationships
             self._merge_related(
-                person, person_name, "document", "persondocumentrelation_set"
+                person,
+                person_name,
+                "document",
+                "persondocumentrelation_set",
+                reverse_field="person",
             )
-            self._merge_related(person, person_name, "place", "personplacerelation_set")
             self._merge_related(
-                person, person_name, "event", "personeventrelation_set", has_type=False
+                person,
+                person_name,
+                "place",
+                "personplacerelation_set",
+                reverse_field="person",
+            )
+            self._merge_related(
+                person,
+                person_name,
+                "event",
+                "personeventrelation_set",
+                reverse_field="person",
+                has_type=False,
             )
 
             # combine footnotes
@@ -838,83 +940,6 @@ class Person(
             change_message="merged with %s" % (", ".join(merge_people_names),),
             action_flag=CHANGE,
         )
-
-    def _merge_logentries(self, person):
-        # reassociate log entries; logic for merge_with
-        # make a list of currently associated log entries to skip duplicates
-        current_logs = [
-            "%s_%s" % (le.user_id, le.action_time.isoformat())
-            for le in self.log_entries.all()
-        ]
-        for log_entry in person.log_entries.all():
-            # check duplicate log entries, based on user id and time
-            # (likely only applies to historic input & revision)
-            if (
-                "%s_%s" % (log_entry.user_id, log_entry.action_time.isoformat())
-                in current_logs
-            ):
-                # skip if it's a duplicate
-                continue
-
-            # otherwise annotate and reassociate
-            # - modify change message to person which object this event applied to
-            log_entry.change_message = "%s [merged person %s (id = %d)]" % (
-                log_entry.change_message,
-                str(person),
-                person.pk,
-            )
-
-            # - associate with the primary person
-            log_entry.object_id = self.id
-            log_entry.content_type_id = ContentType.objects.get_for_model(Person)
-            log_entry.save()
-
-    def _merge_related(
-        self,
-        person,
-        person_name,
-        related_model_name,
-        related_manager_name,
-        reverse_field="person",
-        self_referential=False,
-        has_type=True,
-    ):
-        # reassociate related documents, places, people, and events
-        # (adapted from Document._merge_entities)
-
-        # iterate through the join table to preserve metadata on the joins (type, notes)
-        primary_person_relations = getattr(self, related_manager_name).all()
-        merge_person_relations = getattr(person, related_manager_name).all()
-        if self_referential:
-            # prevent self-self relationship from being created during merge
-            merge_person_relations = merge_person_relations.exclude(
-                **{f"{related_model_name}__pk": self.pk}
-            )
-        for relation in merge_person_relations:
-            # filter existing relationships to find a match
-            filter_kwargs = {related_model_name: getattr(relation, related_model_name)}
-            if has_type:
-                # on person, document, and place, match by relation type as well
-                filter_kwargs.update({"type": relation.type})
-            same_relation = primary_person_relations.filter(**filter_kwargs)
-            if same_relation.exists():
-                # if a relationship already exists, combine the notes
-                existing_rel = same_relation.first()
-                if relation.notes and relation.notes not in existing_rel.notes:
-                    existing_rel.notes = "\n".join(
-                        note
-                        for note in [
-                            existing_rel.notes,
-                            "Notes from merged record %s: %s"
-                            % (person_name, relation.notes),
-                        ]
-                        if note  # filter out empty strings
-                    )
-                    existing_rel.save()
-            else:
-                # otherwise simply reassign the relationship to the primary person
-                setattr(relation, reverse_field, self)
-                relation.save()
 
     @classmethod
     def total_to_index(cls):
@@ -1469,7 +1494,7 @@ class PlaceSignalHandlers:
         PlaceSignalHandlers.related_change(instance, raw, "delete")
 
 
-class Place(ModelIndexable, SlugMixin, PermalinkMixin):
+class Place(ModelIndexable, EntityMergeMixin, SlugMixin, PermalinkMixin):
     """A named geographical location, which may be associated with documents or people."""
 
     names = GenericRelation(Name, related_query_name="place")
@@ -1513,6 +1538,7 @@ class Place(ModelIndexable, SlugMixin, PermalinkMixin):
         blank=True,
         help_text="The geographic area containing this place. For internal use and CSV exports only.",
     )
+    log_entries = GenericRelation(LogEntry, related_query_name="place")
 
     def __str__(self):
         """
@@ -1669,6 +1695,125 @@ class Place(ModelIndexable, SlugMixin, PermalinkMixin):
 
         return relation_list
 
+    def merge_with(self, merge_places, user=None):
+        """Merge the specified places into this one. Combines all metadata
+        into this place and creates a log entry documenting the merge.
+
+        Closely adapted from :class:`Person` merge."""
+
+        # if user is not specified, log entry will be associated with script
+        if user is None:
+            user = User.objects.get(username=settings.SCRIPT_USERNAME)
+
+        # collect names as strings (since that's the important part for comparison)
+        self_names = [str(name) for name in self.names.all()]
+        merge_places_names = []
+
+        for place in merge_places:
+            place_name = str(place)
+            merge_places_names.append(place_name)
+            # check for conflicts in is_region
+            if self.is_region != place.is_region:
+                raise ValidationError(
+                    "Merged places must not have conflicting values for 'is region'; resolve before merge"
+                )
+
+            # combine log entries (before name, since name used in log entries)
+            self._merge_logentries(place, Place)
+
+            # combine names
+            for name in place.names.all():
+                if str(name) not in self_names:
+                    # if not duplicated, make non-primary and add
+                    name.primary = False
+                    name.save()
+                    self.names.add(name)
+
+            # if coordinates and containing region unset on primary record, use merged
+            if not self.coordinates and place.coordinates:
+                self.latitude = place.latitude
+                self.longitude = place.longitude
+            if not self.containing_region and place.containing_region:
+                self.containing_region = place.containing_region
+
+            # add notes if set and not duplicated
+            place_notes = place.notes
+            current_notes = self.notes or ""
+            if place_notes and place_notes not in current_notes:
+                self.notes += "\n\nNotes from merged entry:\n%s" % (place_notes,)
+
+            # combine place-place relationships (self-referential M2M relationship)
+            # place_b = added on the form field of place to be merged in
+            self._merge_related(
+                place,
+                place_name,
+                "place_b",
+                "place_b",
+                reverse_field="place_a",
+                self_referential=True,
+            )
+            # place_a = added on the form field of the place on the other side of the relationship
+            self._merge_related(
+                place,
+                place_name,
+                "place_a",
+                "place_a",
+                reverse_field="place_b",
+                self_referential=True,
+            )
+            # combine place-document, place-place, place-event relationships
+            self._merge_related(
+                place,
+                place_name,
+                "document",
+                "documentplacerelation_set",
+                reverse_field="place",
+            )
+            self._merge_related(
+                place,
+                place_name,
+                "person",
+                "personplacerelation_set",
+                reverse_field="place",
+            )
+            self._merge_related(
+                place,
+                place_name,
+                "event",
+                "placeeventrelation_set",
+                reverse_field="place",
+                has_type=False,
+            )
+
+            # combine footnotes
+            for footnote in place.footnotes.all():
+                if not self.footnotes.includes_footnote(footnote):
+                    # if there is not a matching one on this place, can add footnote
+
+                    # first remove any doc relations; place footnotes should not have
+                    # doc_relation anyway, but just in case...
+                    if footnote.doc_relation:
+                        footnote.doc_relation = ""
+                        footnote.save()
+
+                    # then add to this place
+                    self.footnotes.add(footnote)
+
+        # save current place with changes; delete merged places
+        self.save()
+        for place in merge_places:
+            place.delete()
+        # create log entry documenting the merge; include rationale
+        place_contenttype = ContentType.objects.get_for_model(Place)
+        LogEntry.objects.log_action(
+            user_id=user.id,
+            content_type_id=place_contenttype.pk,
+            object_id=self.pk,
+            object_repr=str(self),
+            change_message="merged with %s" % (", ".join(merge_places_names),),
+            action_flag=CHANGE,
+        )
+
     def index_data(self):
         """data for indexing in Solr"""
         index_data = super().index_data()
@@ -1708,6 +1853,10 @@ class Place(ModelIndexable, SlugMixin, PermalinkMixin):
             "pre_delete": PlaceSignalHandlers.related_delete,
         },
     }
+
+
+# attach pre-delete for generic relation to log entries
+pre_delete.connect(detach_logentries, sender=Place)
 
 
 class PlaceSolrQuerySet(EntitySolrQuerySet):

@@ -536,6 +536,23 @@ class TestPlaceAdmin:
         assert str(person) in content
         assert "Home base" in content
 
+    def test_merge_places(self):
+        mockrequest = Mock()
+        test_ids = ["50344", "33003", "10100"]
+        mockrequest.POST.getlist.return_value = test_ids
+        resp = PlaceAdmin(Place, Mock()).merge_places(mockrequest, Mock())
+        assert isinstance(resp, HttpResponseRedirect)
+        assert resp.status_code == 303
+        assert resp["location"].startswith(reverse("admin:place-merge"))
+        assert resp["location"].endswith("?ids=%s" % ",".join(test_ids))
+
+        test_ids = ["50344"]
+        mockrequest.POST.getlist.return_value = test_ids
+        resp = PlaceAdmin(Place, Mock()).merge_places(mockrequest, Mock())
+        assert isinstance(resp, HttpResponseRedirect)
+        assert resp.status_code == 302
+        assert resp["location"] == reverse("admin:entities_place_changelist")
+
 
 class TestPersonDocumentRelationTypeAdmin:
     def test_merge_person_document_relation_types(self):
