@@ -26,6 +26,7 @@ class SourceExporter(Exporter):
         "url",
         "notes",
         "citation",
+        "slug",
         "num_footnotes",
     ]
 
@@ -65,6 +66,7 @@ class SourceExporter(Exporter):
             "url": source.url,
             "notes": source.notes,
             "citation": str(source),
+            "slug": source.slug,
             # count via annotated queryset
             "num_footnotes": source.footnote__count,
         }
@@ -88,9 +90,9 @@ class AdminSourceExporter(SourceExporter):
     def get_export_data_dict(self, source):
         data = super().get_export_data_dict(source)
         # construct directly to avoid extra db calls
-        data[
-            "url_admin"
-        ] = f"{self.url_scheme}{self.site_domain}/admin/footnotes/source/{source.id}/change/"
+        data["url_admin"] = (
+            f"{self.url_scheme}{self.site_domain}/admin/footnotes/source/{source.id}/change/"
+        )
         return data
 
 
@@ -105,6 +107,7 @@ class FootnoteExporter(Exporter):
         "document",  # ~ content object
         "document_id",
         "source",
+        "source_slug",
         "location",
         "doc_relation",
         "emendations",
@@ -131,10 +134,13 @@ class FootnoteExporter(Exporter):
     def get_export_data_dict(self, footnote):
         return {
             "document": footnote.content_object,
-            "document_id": footnote.content_object.pk
-            if footnote.content_object is not None
-            else None,
+            "document_id": (
+                footnote.content_object.pk
+                if footnote.content_object is not None
+                else None
+            ),
             "source": footnote.source,
+            "source_slug": footnote.source.slug,
             "location": footnote.location,
             "emendations": footnote.emendations,
             "doc_relation": footnote.get_doc_relation_list(),
@@ -161,7 +167,7 @@ class AdminFootnoteExporter(FootnoteExporter):
 
     def get_export_data_dict(self, footnote):
         data = super().get_export_data_dict(footnote)
-        data[
-            "url_admin"
-        ] = f"{self.url_scheme}{self.site_domain}/admin/footnotes/footnote/{footnote.id}/change/"
+        data["url_admin"] = (
+            f"{self.url_scheme}{self.site_domain}/admin/footnotes/footnote/{footnote.id}/change/"
+        )
         return data

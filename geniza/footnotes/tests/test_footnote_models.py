@@ -7,6 +7,7 @@ from django.utils.html import strip_tags
 from geniza.annotations.models import Annotation
 from geniza.corpus.models import Document
 from geniza.footnotes.models import (
+    Authorship,
     Creator,
     Footnote,
     Source,
@@ -28,6 +29,54 @@ class TestSourceLanguage:
 
 
 class TestSource:
+    def test_generate_slug(self, source, twoauthor_source, multiauthor_untitledsource):
+        source.year = 1946
+        source.generate_slug()
+        # should include author, name, and year if available
+        assert source.slug == "orwell-george-a-nice-cup-of-tea-1946"
+        twoauthor_source.generate_slug()
+        assert (
+            twoauthor_source.slug
+            == "kernighan-brian-ritchie-dennis-the-c-programming-language"
+        )
+        # should fallback to SourceType if untitled
+        multiauthor_untitledsource.generate_slug()
+        assert (
+            multiauthor_untitledsource.slug
+            == "khan-el-leithy-rustow-vanthieghem-unpublished"
+        )
+        # should only use first five words of authors' names
+        # (el-Leithy counts as one word)
+        fifth_creator = Creator.objects.create(first_name="Test", last_name="Person")
+        Authorship.objects.create(
+            creator=fifth_creator, source=multiauthor_untitledsource, sort_order=4
+        )
+        sixth_creator = Creator.objects.create(first_name="Sixth", last_name="Author")
+        Authorship.objects.create(
+            creator=sixth_creator, source=multiauthor_untitledsource, sort_order=5
+        )
+        multiauthor_untitledsource.generate_slug()
+        assert (
+            multiauthor_untitledsource.slug
+            == "khan-el-leithy-rustow-vanthieghem-person-unpublished"
+        )
+        # should only use first five words of title;
+        # should strip leading dash if no author
+        s = Source.objects.create(
+            source_type=source.source_type,
+            title="A Long Title Four Five Six Seven Eight",
+        )
+        s.generate_slug()
+        assert s.slug == "a-long-title-four-five"
+        s.save()
+
+        # should dedupe
+        s2 = Source.objects.create(
+            source_type=source.source_type, title="A Long Title Four Five Same Slug"
+        )
+        s2.generate_slug()
+        assert s2.slug == "a-long-title-four-five-2"
+
     @pytest.mark.django_db
     def test_str(self, source, twoauthor_source, multiauthor_untitledsource):
         # source has no year; str should be creator lastname, title, (n.p., n.d.)
