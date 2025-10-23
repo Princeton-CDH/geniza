@@ -547,10 +547,10 @@ class DocumentDetailView(DocumentDetailBase, DetailView):
                 ],
                 # related entities: sorted by type for grouping, and slug for alphabetization
                 "related_people": self.object.persondocumentrelation_set.order_by(
-                    "type__name", "person__slug"
+                    "type__order", "type__name", "person__slug"
                 ),
                 "related_places": self.object.documentplacerelation_set.order_by(
-                    "type__name", "place__slug"
+                    "type__order", "type__name", "place__slug"
                 ),
             }
         )

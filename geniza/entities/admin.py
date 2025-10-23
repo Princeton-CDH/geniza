@@ -1,6 +1,6 @@
 from itertools import groupby
 
-from adminsortable2.admin import SortableAdminBase
+from adminsortable2.admin import SortableAdminBase, SortableAdminMixin
 from dal import autocomplete
 from django.contrib import admin, messages
 from django.contrib.contenttypes.admin import GenericTabularInline
@@ -505,6 +505,7 @@ class RelationTypeMergeAdminMixin:
 
 @admin.register(PersonDocumentRelationType)
 class PersonDocumentRelationTypeAdmin(
+    SortableAdminMixin,
     RelationTypeMergeAdminMixin,
     TabbedTranslationAdmin,
     PreventLogEntryDeleteMixin,
@@ -514,7 +515,8 @@ class PersonDocumentRelationTypeAdmin(
 
     fields = ("name",)
     search_fields = ("name",)
-    ordering = ("name",)
+    ordering = ("order",)
+    list_display = ("order", "name")
     merge_path_name = "person-document-relation-type-merge"
     view_class = PersonDocumentRelationTypeMerge
 
@@ -545,12 +547,15 @@ class PersonPlaceRelationTypeAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
 
 
 @admin.register(DocumentPlaceRelationType)
-class DocumentPlaceRelationTypeAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
+class DocumentPlaceRelationTypeAdmin(
+    SortableAdminMixin, TabbedTranslationAdmin, admin.ModelAdmin
+):
     """Admin for managing the controlled vocabulary of documents' relationships to places"""
 
     fields = ("name",)
     search_fields = ("name",)
-    ordering = ("name",)
+    ordering = ("order",)
+    list_display = ("order", "name")
 
 
 class DocumentPlaceInline(TypedRelationInline, DocumentInline):

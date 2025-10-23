@@ -1190,10 +1190,17 @@ class PersonDocumentRelationType(MergeRelationTypesMixin, models.Model):
     log_entries = GenericRelation(
         LogEntry, related_query_name="persondocumentrelationtype"
     )
+    order = models.IntegerField(
+        default=0,
+        blank=False,
+        null=False,
+        db_index=True,
+    )
 
     class Meta:
         verbose_name = "Person-Document relationship"
         verbose_name_plural = "Person-Document relationships"
+        ordering = ("order",)
 
     def __str__(self):
         return self.name
@@ -1761,10 +1768,17 @@ class DocumentPlaceRelationType(models.Model):
 
     name = models.CharField(max_length=255, unique=True)
     objects = DocumentPlaceRelationTypeManager()
+    order = models.IntegerField(
+        default=0,
+        blank=False,
+        null=False,
+        db_index=True,
+    )
 
     class Meta:
         verbose_name = "Document-Place relationship"
         verbose_name_plural = "Document-Place relationships"
+        ordering = ("order",)
 
     def __str__(self):
         return self.name
