@@ -363,6 +363,44 @@ class TestFragment(TestCase):
             frag.old_shelfmarks.split(";")
         )
 
+        # mock a real manifest import; test view_to_iiif_url
+        mock_manifestimporter.return_value.import_paths.return_value = [
+            Manifest.objects.create(
+                uri="https://iiif.example.com/TS16.377", short_id="m2"
+            )
+        ]
+        frag.iiif_url = ""
+        frag.url = "https://cudl.lib.cam.ac.uk/view/MS-ADD-02586"
+        frag.save()
+        assert frag.iiif_url == "https://cudl.lib.cam.ac.uk/iiif/MS-ADD-02586"
+        frag.iiif_url = ""
+        frag.url = "https://cudl.lib.cam.ac.uk/view/MS-ADD-03430/1"
+        frag.save()
+        assert frag.iiif_url == "https://cudl.lib.cam.ac.uk/iiif/MS-ADD-03430"
+        frag.iiif_url = ""
+        frag.url = "https://example.com/iiif/1234"
+        frag.save()
+        assert frag.iiif_url == ""
+
+        # test manchester digital collections
+        frag.url = (
+            "https://www.digitalcollections.manchester.ac.uk/view/MS-GENIZAH-A-00897/1"
+        )
+        frag.save()
+        assert (
+            frag.iiif_url
+            == "https://www.digitalcollections.manchester.ac.uk/iiif/MS-GENIZAH-A-00897"
+        )
+
+        # test upenn
+        frag.iiif_url = ""
+        frag.url = "https://colenda.library.upenn.edu/catalog/81431-p3891287r"
+        frag.save()
+        assert (
+            frag.iiif_url
+            == "https://colenda.library.upenn.edu/items/ark:/81431/p3891287r/manifest"
+        )
+
     @pytest.mark.django_db
     @patch("geniza.corpus.models.GenizaManifestImporter")
     def test_save_import_manifest(self, mock_manifestimporter):
@@ -1097,6 +1135,7 @@ class TestDocument:
         assert document.has_image()
 
         # remove IIIF url from fragment; doc should no longer have image
+        fragment.url = ""
         fragment.iiif_url = ""
         fragment.save()
         assert not document.has_image()

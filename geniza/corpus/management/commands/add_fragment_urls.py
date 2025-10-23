@@ -68,21 +68,6 @@ class Command(BaseCommand):
         self.stdout.write(f"Fragments not found: {self.stats['not_found']}")
         self.stdout.write(f"Fragments skipped: {self.stats['skipped']}")
 
-    def view_to_iiif_url(self, url):
-        """Generate IIIF Manifest URL based on view url, if it can
-        be determined automatically"""
-
-        # cambridge iiif manifest links use the same id as view links
-        # NOTE: should exclude search link like this one:
-        # https://cudl.lib.cam.ac.uk/search?fileID=&keyword=T-s%2013J33.12&page=1&x=0&y=
-        if "cudl.lib.cam.ac.uk/view/" in url:
-            iiif_link = url.replace("/view/", "/iiif/")
-            # view links end with /1 or /2 but iiif link does not include it
-            iiif_link = re.sub(r"/\d$", "", iiif_link)
-            return iiif_link
-
-        return ""
-
     def add_fragment_urls(self, row):
         """add view and iiif urls to fragment and save if a match is found for the shelfmark"""
         try:
@@ -101,7 +86,7 @@ class Command(BaseCommand):
             return
 
         url = row.get("url")
-        iiif_url = row.get("iiif_url") or self.view_to_iiif_url(row["url"])
+        iiif_url = row.get("iiif_url") or Fragment.view_to_iiif_url(row["url"])
         save_needed = False
         log_message = []
 

@@ -1521,6 +1521,7 @@ class TestDocumentManifestView:
         fragment,
     ):
         # fixture document fragment has iiif, so remove it to test
+        fragment.url = ""
         fragment.iiif_url = ""
         fragment.save()
         # no iiif or transcription; should 404
@@ -1632,6 +1633,7 @@ class TestDocumentManifestView:
         fragment,
     ):
         # remove iiif url from fixture document fragment has iiif
+        fragment.url = ""
         fragment.iiif_url = ""
         fragment.save()
         # add a footnote with transcription content
@@ -1708,6 +1710,7 @@ class TestDocumentAnnotationListView:
         self, mockiifpres, client, document, source, fragment
     ):
         # remove iiif url from fixture document fragment has iiif
+        fragment.url = ""
         fragment.iiif_url = ""
         fragment.save()
         # add a footnote with transcription content
