@@ -222,9 +222,20 @@ class TestDocumentSearchForm:
             ["<a>", "<a", "<", ".*<", "(?<!a)b"],
             # malformed "invalid character class" queries
             ["\\a", "\\b", "\\B", "\\r", "\\t", "\\3"],
+            # nested quantifiers
+            [".+*", ".*+", ".{0,2}*", ".*{0,2}", ".?*"],
         ]
         for q in itertools.chain.from_iterable(bad_queries):
             form.cleaned_data = {"mode": "regex", "q": q}
+            form.clean()
+            assert len(form.errors) == 1
+
+        # test raising a generic regex error
+        with patch("geniza.corpus.forms.re") as mock_re:
+            # mock re module to always raise re.error on compile
+            mock_re.compile = Mock()
+            mock_re.compile.side_effect = mock_re.error
+            form.cleaned_data = {"mode": "regex", "q": "pretend this is bad regex"}
             form.clean()
             assert len(form.errors) == 1
 

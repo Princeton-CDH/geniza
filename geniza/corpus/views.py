@@ -404,11 +404,7 @@ class DocumentSearchView(
             context_data["form"].set_choices_from_facets(facet_dict.facet_fields)
             if self.request.GET.get("mode") == "regex":
                 context_data["form"].add_error(
-                    "q",
-                    # Translators: General error text for regular expression errors
-                    _(
-                        "Error retrieving search results. Check regular expression for errors such as unescaped or unclosed brackets or parentheses."
-                    ),
+                    "q", DocumentSearchForm.GENERIC_REGEX_ERROR
                 )
         context_data.update(
             {

@@ -424,7 +424,7 @@
             /* enlarge button and enlarge functionality */
             @include breakpoints.for-tablet-landscape-up {
                 transition: max-width 0.3s ease-in-out;
-                & > div {
+                & > div:not(.popout-container) {
                     max-width: 640px;
                     margin: 0 auto;
                     transition: max-width 0.3s ease-in-out;
@@ -1414,6 +1414,11 @@
         color: var(--background-light);
         /* uncomment to debug positioning */
         // color: yellow;
+    }
+
+    // padding to handle Arabic characters that overflow container vertically
+    ol:last-of-type {
+        padding-bottom: 4px;
     }
 
     // NOTE: Broken in stable Safari for now, but fixed in Safari preview release.
