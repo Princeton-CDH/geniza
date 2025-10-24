@@ -647,6 +647,11 @@ class TestDateListFilter:
         all_option = next(filter.choices(changelist))
         assert all_option["display"] == "All"
 
+        # should handle list from get_filters_params appropriately
+        changelist.get_filters_params.return_value = {"date__lte": ["1200"]}
+        all_option = next(filter.choices(changelist))
+        assert dict(all_option["query_parts"])["date__lte"] == "1200"
+
     @patch("geniza.corpus.admin.DocumentSolrQuerySet")
     def test_get_queryset_date_after(self, mock_dqs):
         Document.objects.create(doc_date_standard="2000")
