@@ -8,7 +8,9 @@ from django.http import HttpResponseRedirect, StreamingHttpResponse
 from django.test import RequestFactory
 from django.urls import reverse
 from pytest_django.asserts import assertContains, assertNotContains
+from requests.exceptions import ConnectionError
 
+from geniza.common.views import SolrDownError
 from geniza.corpus.dates import standard_date_display
 from geniza.corpus.models import Dating, Document, LanguageScript
 from geniza.entities.admin import (
@@ -106,6 +108,28 @@ class TestPersonPersonReverseInline:
 
 @pytest.mark.django_db
 class TestPersonAdmin:
+    @pytest.mark.django_db
+    def test_solr_down_raised(self):
+        # ConnectionError on solr queryset should raise SolrDownError
+        with patch(
+            "geniza.entities.admin.PersonSolrQuerySet", side_effect=ConnectionError
+        ):
+            person_admin = PersonAdmin(model=Person, admin_site=admin.site)
+            with pytest.raises(SolrDownError):
+                person_admin.get_search_results(Mock(), Person.objects.all(), "nahray")
+
+    @pytest.mark.django_db
+    def test_solr_down_admin_mixin(self, admin_client):
+        # SolrDownError should redirect to solr error template w/ 503 response
+        changelist_url = reverse("admin:entities_person_changelist")
+        with patch(
+            "geniza.entities.admin.PersonAdmin.get_search_results",
+            side_effect=SolrDownError,
+        ):
+            response = admin_client.get(changelist_url)
+            assert response.status_code == 503
+            assert "unable to reach the Solr service" in response.content.decode()
+
     def test_get_form(self):
         # should set own_pk property if obj exists
         goitein = Person.objects.create()

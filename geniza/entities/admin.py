@@ -14,8 +14,14 @@ from django.http import HttpResponseRedirect
 from django.urls import path, reverse
 from django_admin_inline_paginator_plus.admin import TabularInlinePaginated
 from modeltranslation.admin import TabbedTranslationAdmin
+from requests.exceptions import ConnectionError
 
-from geniza.common.admin import PreventLogEntryDeleteMixin, TypedRelationInline
+from geniza.common.admin import (
+    PreventLogEntryDeleteMixin,
+    SolrDownAdminMixin,
+    TypedRelationInline,
+)
+from geniza.common.views import SolrDownError
 from geniza.corpus.dates import standard_date_display
 from geniza.corpus.models import DocumentEventRelation
 from geniza.entities.forms import (
@@ -300,6 +306,7 @@ class PersonAdmin(
     TabbedTranslationAdmin,
     SortableAdminBase,
     PreventLogEntryDeleteMixin,
+    SolrDownAdminMixin,
     admin.ModelAdmin,
 ):
     """Admin for Person entities in the PGP"""
@@ -376,12 +383,15 @@ class PersonAdmin(
         Adapted from :meth:`DocumentAdmin.get_search_results`."""
         if search_term:
             # - return slugs for all matching records
-            sqs = (
-                PersonSolrQuerySet()
-                .keyword_search(search_term)
-                .only("slug")
-                .get_results(rows=10000)
-            )
+            try:
+                sqs = (
+                    PersonSolrQuerySet()
+                    .keyword_search(search_term)
+                    .only("slug")
+                    .get_results(rows=10000)
+                )
+            except ConnectionError:
+                raise SolrDownError
             slugs = [r.get("slug") for r in sqs if r.get("slug")]
             # filter queryset by slug if there are results
             if sqs:

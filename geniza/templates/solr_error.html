@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% load i18n static %}
+
+{# Translators: title for solr Service Outage (503) error page #}
+{% block meta_title %}{% translate "Service Outage" %}{% endblock meta_title %}
+{# Translators: description for solr Service Outage (503) error page #}
+{% block meta_description %}{% translate "The application server was unable to reach the Solr service. This is a temporary service disruption, and site administrators are working on a fix." %}{% endblock meta_description %}
+
+{% block page_type %}error{% endblock %}
+
+{% block body %}
+    {% with skip_nav=1 %}
+        {{ block.super }}
+    {% endwith %}
+{% endblock %}
+
+{# "translate" tags need to be duplicated since these are in separate blocks #}
+{% block main %}
+    <h1 class="e500">{% translate "Service Outage" %}</h1>
+    <p>{% translate "The application server was unable to reach the Solr service. This is a temporary service disruption, and site administrators are working on a fix." %}</p>
+{% endblock %}

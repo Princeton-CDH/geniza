@@ -6,12 +6,14 @@ from django.contrib.auth.models import User
 from django.db.models import Count
 from django.forms import ModelForm, ValidationError
 from django.http import HttpResponseRedirect
+from django.shortcuts import render
 from django.urls import path, reverse
 from taggit.admin import TagAdmin
 from taggit.models import Tag
 
 from geniza.common.metadata_export import LogEntryExporter
 from geniza.common.models import UserProfile
+from geniza.common.views import SolrDownError
 from geniza.corpus.views import TagMerge
 
 
@@ -221,3 +223,14 @@ class PreventLogEntryDeleteMixin:
                 if not isinstance(obj, str) or not obj.startswith("Log entry:")
             ]
         return deletable_objects, model_count, perms_needed, protected
+
+
+class SolrDownAdminMixin:
+    """Admin mixin to use the solr_error template with a 503 status code when a
+    changelist view encounters a solr error"""
+
+    def changelist_view(self, request, extra_context=None):
+        try:
+            return super().changelist_view(request, extra_context)
+        except SolrDownError:
+            return render(request, "solr_error.html", {}, status=503)
