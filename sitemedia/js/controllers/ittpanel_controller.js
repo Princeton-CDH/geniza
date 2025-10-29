@@ -165,16 +165,16 @@ export default class extends Controller {
 
     getListHeader(listElement) {
         // given a list, find the nearest H3 before it (and after any prior list)
-        const siblings = [];
         let sibling = listElement.previousElementSibling;
         // iterate through all non-list previous siblings
         while (sibling && sibling.tagName !== "OL") {
-            siblings.push(sibling);
+            if (sibling.tagName === "H3") {
+                // return when we find an H3
+                return sibling;
+            }
             sibling = sibling.previousElementSibling;
         }
-        // get the first H3 in the list (i.e. the nearest previous one)
-        const h3s = siblings.filter((el) => el.tagName === "H3");
-        return h3s.length > 0 ? h3s[0] : null;
+        return null;
     }
 
     alignTops(edElement, trElement) {
