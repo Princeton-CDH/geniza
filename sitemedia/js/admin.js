@@ -147,6 +147,30 @@ window.addEventListener("DOMContentLoaded", () => {
             }
         });
     }
+
+    // hook into django-autocomplete-light initialization event
+    // and monkey-patch select2 allowClear bug. more info:
+    // https://github.com/select2/select2/issues/3335#issuecomment-1218072422
+    // https://github.com/yourlabs/django-autocomplete-light/issues/1398
+    document.addEventListener("dal-init-function", function () {
+        if (window.django?.jQuery) {
+            const AllowClear = window.django.jQuery.fn.select2.amd.require(
+                "select2/selection/allowClear"
+            );
+            const handleKeyboardClear =
+                AllowClear.prototype._handleKeyboardClear;
+            AllowClear.prototype._handleKeyboardClear = function (
+                _,
+                evt,
+                container
+            ) {
+                if (this.$element?.prop("multiple")) {
+                    return;
+                }
+                return handleKeyboardClear.call(this, _, evt, container);
+            };
+        }
+    });
 });
 
 function onLatLonInput(evt, marker, map) {
