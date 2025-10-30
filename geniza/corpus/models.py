@@ -909,6 +909,9 @@ class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin, TaggableMixin)
         iiif_images = {}
         textblocks = self.textblock_set.all()
 
+        # map textblock pks to their order for sorting
+        tb_order_map = {tb.pk: tb.order for tb in textblocks}
+
         for b in textblocks:
             frag_images = b.fragment.iiif_images(allow_network_reqs=not thumbnail)
             if frag_images is not None:
@@ -928,6 +931,7 @@ class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin, TaggableMixin)
                             "rotation": 0,  # rotation to 0 by default; will change if overridden
                             "excluded": len(b.selected_images)
                             and i not in b.selected_images,
+                            "tb_order": tb_order_map.get(b.pk, float("inf")),
                         }
 
         # when requested, include any placeholder canvas URIs referenced by any associated
@@ -956,10 +960,9 @@ class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin, TaggableMixin)
                     if uri_match:
                         # if this was created using placeholders in the transcription editor,
                         # try to ascertain and display the right fragment shelfmark and label
+                        tb_pk = int(uri_match.group("tb_pk"))
                         tb_match_shelfmarks = [
-                            tb.fragment.shelfmark
-                            for tb in textblocks
-                            if tb.pk == int(uri_match.group("tb_pk"))
+                            tb.fragment.shelfmark for tb in textblocks if tb.pk == tb_pk
                         ]
                         if tb_match_shelfmarks:
                             iiif_images[canvas_uri]["shelfmark"] = tb_match_shelfmarks[
@@ -968,10 +971,19 @@ class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin, TaggableMixin)
                         iiif_images[canvas_uri]["label"] = (
                             "recto" if int(uri_match.group("canvas")) == 1 else "verso"
                         )
+                        # keep track of textblock order for later sort
+                        iiif_images[canvas_uri]["tb_order"] = tb_order_map.get(
+                            tb_pk, float("inf")
+                        )
 
-        # if image_overrides not present, return list, in original order
+        # if image_overrides not present, return list, sorted by TextBlock order
         if not self.image_overrides:
-            return iiif_images
+            return dict(
+                sorted(
+                    iiif_images.items(),
+                    key=lambda item: item[1].get("tb_order", float("inf")),
+                )
+            )
 
         # sort canvases by "order" value
         sorted_overrides = sorted(

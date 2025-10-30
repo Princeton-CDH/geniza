@@ -947,7 +947,9 @@ class TestDocument:
         # Create a document and fragment and a TextBlock to associate them
         doc = Document.objects.create()
         frag = Fragment.objects.create(shelfmark="T-S 8J22.21")
-        tb = TextBlock.objects.create(document=doc, fragment=frag, selected_images=[0])
+        tb = TextBlock.objects.create(
+            document=doc, fragment=frag, selected_images=[0], order=1
+        )
         # create a digital edition footnote with an associated annotation
         fn = Footnote.objects.create(
             source=source,
@@ -982,6 +984,36 @@ class TestDocument:
         assert len(images) == 2
         # second image should get verso because of /2/
         assert images[bad_canvas_str]["label"] == "verso"
+
+        # create a second textblock, joining with a fragment with a locally cached manifest
+        # (one image)
+        frag_2 = Fragment(shelfmark="TS 1")
+        frag_2.save()
+        TextBlock.objects.create(document=doc, fragment=frag_2, order=2)
+
+        # patch frag_2.iiif_images() to return (images, labels, canvases);
+        # use conditional mock based on pk to avoid instance mock overwritten
+        # by ORM when calling via Document.textblock_set --> TextBlock.fragment
+        real_iiif_images = Fragment.iiif_images
+
+        def conditional_mock_iiif_images(self, *args, **kwargs):
+            if self.pk == frag_2.pk:
+                return ([Mock()], ["real image"], ["http://example.co/iiif/ts-1/00001"])
+            return real_iiif_images(self, *args, **kwargs)
+
+        with patch.object(Fragment, "iiif_images", conditional_mock_iiif_images):
+            # should include all three images: two placeholders and 1 "real" iiif image
+            images = doc.iiif_images(with_placeholders=True)
+            assert len(images) == 3
+            # the placeholder on the textblock with order=1 should be first, even though it's a placeholder
+            ordered_images = list(images.items())
+            first_image = ordered_images[0]
+            assert first_image[0] == canvas_str
+            # the first two images should have tb_order 1 and 2 respectively
+            assert first_image[1]["tb_order"] == 1
+            assert ordered_images[1][1]["tb_order"] == 2
+            # the last image didn't have a textblock connecting it to the doc, so ordered last
+            assert ordered_images[-1][1]["tb_order"] == float("inf")
 
     def test_iiif_images_with_rotation(self, source):
         # Create a document and fragment and a TextBlock to associate them
