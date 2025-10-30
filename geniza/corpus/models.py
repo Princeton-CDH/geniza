@@ -981,7 +981,8 @@ class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin, TaggableMixin)
             return dict(
                 sorted(
                     iiif_images.items(),
-                    key=lambda item: item[1].get("tb_order", float("inf")),
+                    key=lambda item: item[1].get("tb_order", float("inf"))
+                    or float("inf"),
                 )
             )
 
