@@ -470,13 +470,39 @@ class TestPlaceAdmin:
 
     def test_get_queryset(self):
         # create a place
-        place = Place.objects.create()
-        Name.objects.create(name="Fusṭāṭ", content_object=place, primary=True)
+        fustat = Place.objects.create()
+        Name.objects.create(name="Fusṭāṭ", content_object=fustat, primary=True)
         place_admin = PlaceAdmin(Place, admin_site=admin.site)
 
         # queryset should include name_unaccented field without diacritics
         qs = place_admin.get_queryset(Mock())
         assert qs.filter(name_unaccented__icontains="fustat").exists()
+
+        # should include primary_name field
+        mosul = Place.objects.create()
+        Name.objects.create(name="Mosul", content_object=mosul, primary=True)
+        Name.objects.create(name="الموصل", content_object=mosul)
+
+        qs = place_admin.get_queryset(Mock())
+        assert qs.filter(primary_name__icontains="mosul").exists()
+
+        # should order by primary_name by default (Fustat before Mosul)
+        assert qs.first().pk == fustat.pk
+
+    def test_display_name(self):
+        place_admin = PlaceAdmin(Place, admin_site=admin.site)
+
+        place = Place.objects.create()
+        # should fallback to default string representation
+        assert place_admin.display_name(place) == str(place)
+        # should be primary nmae
+        Name.objects.create(name="Fusṭāṭ", content_object=place, primary=True)
+        assert place_admin.display_name(place) == "Fusṭāṭ"
+        # which should still be str() (but avoids an additional join query)
+        assert place_admin.display_name(place) == str(place)
+        # should still be primary name
+        Name.objects.create(name="Other", content_object=place)
+        assert place_admin.display_name(place) == "Fusṭāṭ"
 
     @pytest.mark.django_db
     def test_export_to_csv(self):
