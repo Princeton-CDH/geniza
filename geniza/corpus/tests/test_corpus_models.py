@@ -985,8 +985,7 @@ class TestDocument:
         # second image should get verso because of /2/
         assert images[bad_canvas_str]["label"] == "verso"
 
-        # create a second textblock, joining with a fragment with a locally cached manifest
-        # (one image)
+        # create a second textblock on a new fragment
         frag_2 = Fragment(shelfmark="TS 1")
         frag_2.save()
         TextBlock.objects.create(document=doc, fragment=frag_2, order=2)
