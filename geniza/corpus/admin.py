@@ -286,9 +286,12 @@ class TextInputListFilter(admin.SimpleListFilter):
     def choices(self, changelist):
         # Grab only the "all" option.
         all_choice = next(super().choices(changelist))
+        # handle django 5 changes to get_filters_params, from:
+        # https://gist.github.com/hakib/1491a848e71078dae81fca48c46cc258?permalink_comment_id=5035675#gistcomment-5035675
         all_choice["query_parts"] = (
             (k, v)
-            for k, v in changelist.get_filters_params().items()
+            for k, values in changelist.get_filters_params().items()
+            for v in values
             if k != self.parameter_name
         )
         yield all_choice

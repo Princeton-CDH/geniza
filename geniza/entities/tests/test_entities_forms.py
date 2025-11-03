@@ -12,7 +12,9 @@ from geniza.entities.forms import (
     PersonListForm,
     PersonMergeForm,
     PersonPersonRelationTypeChoiceField,
+    PlaceChoiceField,
     PlaceListForm,
+    PlaceMergeForm,
 )
 from geniza.entities.models import (
     Name,
@@ -22,6 +24,7 @@ from geniza.entities.models import (
     PersonPersonRelation,
     PersonPersonRelationType,
     PersonRole,
+    Place,
 )
 
 
@@ -61,6 +64,41 @@ class TestPersonMergeForm:
         assert mergeform.fields["primary_person"].queryset.count() == people.count() - 1
         # last person should not be an available choice
         assert people.last() not in mergeform.fields["primary_person"].queryset
+
+
+class TestPlaceChoiceField:
+    @pytest.mark.django_db
+    def test_label_from_instance(self):
+        choicefield = PlaceChoiceField(Mock())
+
+        # Should not error on a place with the most minimal information
+        minimal = Place.objects.create()
+        label = choicefield.label_from_instance(minimal)
+        assert str(minimal.id) in label
+
+        # Check that the attributes of a place are in label
+        place = Place.objects.create()
+        Name.objects.create(name="Cairo", content_object=place, primary=True)
+        label = choicefield.label_from_instance(place)
+        assert "Cairo" in label
+
+
+class TestPlaceMergeForm:
+    @pytest.mark.django_db
+    def test_init(self):
+        # no error if place ids not specified
+        PlaceMergeForm()
+
+        # create test place records
+        Place.objects.bulk_create([Place(), Place(), Place(), Place()])
+        # initialize with ids for all but the last
+        places = Place.objects.all().order_by("pk")
+        pids = list(places.values_list("id", flat=True))
+        mergeform = PlaceMergeForm(place_ids=pids[:-1])
+        # total should have all but one place
+        assert mergeform.fields["primary_place"].queryset.count() == places.count() - 1
+        # last place should not be an available choice
+        assert places.last() not in mergeform.fields["primary_place"].queryset
 
 
 class TestPersonDocumentRelationTypeChoiceField:

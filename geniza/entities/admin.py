@@ -61,6 +61,7 @@ from geniza.entities.views import (
     PersonDocumentRelationTypeMerge,
     PersonMerge,
     PersonPersonRelationTypeMerge,
+    PlaceMerge,
 )
 from geniza.footnotes.models import Footnote
 
@@ -659,7 +660,9 @@ class PlaceEventInline(admin.TabularInline):
 
 
 @admin.register(Place)
-class PlaceAdmin(SortableAdminBase, NamedAdminMixin, admin.ModelAdmin):
+class PlaceAdmin(
+    SortableAdminBase, PreventLogEntryDeleteMixin, NamedAdminMixin, admin.ModelAdmin
+):
     """Admin for Place entities in the PGP"""
 
     list_display = (
@@ -725,6 +728,24 @@ class PlaceAdmin(SortableAdminBase, NamedAdminMixin, admin.ModelAdmin):
         exporter = PlaceRelationsExporter(queryset=queryset, progress=False)
         return exporter.http_export_data_csv()
 
+    @admin.display(description="Merge selected places")
+    def merge_places(self, request, queryset=None):
+        """Admin action to merge selected places. This action redirects to an intermediate
+        page, which displays a form to review for confirmation and choose the primary place before merging.
+        """
+        # Functionality almost identical to Document merge
+
+        # NOTE: using selected ids from form and ignoring queryset
+        # because we can't pass the queryset via redirect
+        selected = request.POST.getlist("_selected_action")
+        if len(selected) < 2:
+            messages.error(request, "You must select at least two places to merge")
+            return HttpResponseRedirect(reverse("admin:entities_place_changelist"))
+        return HttpResponseRedirect(
+            "%s?ids=%s" % (reverse("admin:place-merge"), ",".join(selected)),
+            status=303,
+        )  # status code 303 means "See Other"
+
     def get_urls(self):
         """Return admin urls; adds custom URL for exporting as CSV"""
         urls = [
@@ -738,10 +759,15 @@ class PlaceAdmin(SortableAdminBase, NamedAdminMixin, admin.ModelAdmin):
                 self.admin_site.admin_view(self.export_relations_to_csv),
                 name="place-relations-csv",
             ),
+            path(
+                "merge/",
+                PlaceMerge.as_view(),
+                name="place-merge",
+            ),
         ]
         return urls + super().get_urls()
 
-    actions = (export_to_csv,)
+    actions = (export_to_csv, merge_places)
 
 
 @admin.register(PlacePlaceRelationType)
