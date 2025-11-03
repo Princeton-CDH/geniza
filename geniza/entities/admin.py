@@ -5,8 +5,11 @@ from dal import autocomplete
 from django.contrib import admin, messages
 from django.contrib.contenttypes.admin import GenericTabularInline
 from django.contrib.contenttypes.forms import BaseGenericInlineFormSet
+from django.contrib.contenttypes.models import ContentType
 from django.contrib.postgres.aggregates import ArrayAgg
+from django.db.models import OuterRef, Subquery, Value
 from django.db.models.fields import CharField, TextField
+from django.db.models.functions import Coalesce
 from django.forms import ModelChoiceField, ModelForm, ValidationError
 from django.forms.models import ModelChoiceIterator
 from django.forms.widgets import Textarea, TextInput
@@ -296,9 +299,37 @@ class PersonForm(ModelForm):
         widgets = {"tags": autocomplete.TaggitSelect2("tag-autocomplete")}
 
 
+class NamedAdminMixin:
+    def get_queryset(self, request):
+        """Override get_queryset to annotate with primary_name for list view sorting,
+        and with name_unaccented, so that places can be searched from admin list view
+        without entering diacritics"""
+        qs = super().get_queryset(request)
+
+        # pull content type
+        contenttype = ContentType.objects.get_for_model(self.model)
+        # get the first primary name, or the first non-primary name if none exists
+        primary_name_subquery = (
+            Name.objects.filter(content_type=contenttype, object_id=OuterRef("pk"))
+            .order_by("-primary", "id")
+            .values("name")[:1]
+        )
+        # annotate primary name, fallback to empty string; order by primary name by default
+        return qs.annotate(
+            primary_name=Coalesce(Subquery(primary_name_subquery), Value("")),
+            name_unaccented=ArrayAgg("names__name__unaccent", distinct=True),
+        ).order_by("primary_name")
+
+    @admin.display(ordering="primary_name", description="Display name")
+    def display_name(self, obj):
+        """Use the annotated primary name if found, otherwise use __str__"""
+        return getattr(obj, "primary_name", None) or str(obj)
+
+
 @admin.register(Person)
 class PersonAdmin(
     TabbedTranslationAdmin,
+    NamedAdminMixin,
     SortableAdminBase,
     PreventLogEntryDeleteMixin,
     admin.ModelAdmin,
@@ -307,7 +338,7 @@ class PersonAdmin(
 
     form = PersonForm
     list_display = (
-        "__str__",
+        "display_name",
         "slug",
         "gender",
         "all_roles",
@@ -629,9 +660,19 @@ class PlaceEventInline(admin.TabularInline):
 
 
 @admin.register(Place)
-class PlaceAdmin(SortableAdminBase, PreventLogEntryDeleteMixin, admin.ModelAdmin):
+class PlaceAdmin(
+    SortableAdminBase, PreventLogEntryDeleteMixin, NamedAdminMixin, admin.ModelAdmin
+):
     """Admin for Place entities in the PGP"""
 
+    list_display = (
+        "display_name",
+        "slug",
+        "latitude",
+        "longitude",
+        "containing_region",
+        "is_region",
+    )
     search_fields = ("name_unaccented", "names__name")
     fields = (
         "slug",
@@ -673,18 +714,6 @@ class PlaceAdmin(SortableAdminBase, PreventLogEntryDeleteMixin, admin.ModelAdmin
         if not place.slug:
             place.generate_slug()
             place.save()
-
-    def get_queryset(self, request):
-        """Modify queryset to add unaccented name annotation field, so that places
-        can be searched from admin list view without entering diacritics"""
-        return (
-            super()
-            .get_queryset(request)
-            .annotate(
-                # ArrayAgg to group together related values from related model instances
-                name_unaccented=ArrayAgg("names__name__unaccent", distinct=True),
-            )
-        )
 
     @admin.display(description="Export selected places to CSV")
     def export_to_csv(self, request, queryset=None):
