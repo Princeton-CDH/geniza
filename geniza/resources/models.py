@@ -6,3 +6,7 @@ class Manual(models.Model):
 
     name = models.CharField(max_length=255, blank=False)
     url = models.URLField("URL", blank=False)
+
+    def __str__(self):
+        """Use the name of the manual as its string representation"""
+        return self.name
