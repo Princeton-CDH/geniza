@@ -27,6 +27,7 @@ from django.views.generic import DetailView, FormView, ListView, View
 from django.views.generic.edit import FormMixin
 from natsort import natsort_key
 
+from geniza.common.views import SolrDownMixin
 from geniza.corpus.dates import DocumentDateMixin, standard_date_display
 from geniza.corpus.models import Dating, Document, DocumentType, TextBlock
 from geniza.corpus.solr_queryset import DocumentSolrQuerySet
@@ -854,7 +855,7 @@ class PlacePeopleView(RelatedPeopleMixin, PlaceDetailView):
     relation_field = "personplacerelation_set"
 
 
-class PersonListView(ListView, FormMixin, SolrDateRangeMixin):
+class PersonListView(ListView, SolrDownMixin, FormMixin, SolrDateRangeMixin):
     """A list view with faceted filtering and sorting using only the Django ORM/database."""
 
     model = Person
@@ -1055,7 +1056,7 @@ class PersonListView(ListView, FormMixin, SolrDateRangeMixin):
         return context_data
 
 
-class PlaceListView(ListView, FormMixin, SolrDateRangeMixin):
+class PlaceListView(ListView, SolrDownMixin, FormMixin, SolrDateRangeMixin):
     """A list view with faceted filtering and sorting using solr."""
 
     model = Place

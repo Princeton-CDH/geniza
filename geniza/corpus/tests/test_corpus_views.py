@@ -15,10 +15,12 @@ from django.utils.text import Truncator, slugify
 from django.utils.timezone import get_current_timezone, make_aware
 from parasolr.django import SolrClient
 from pytest_django.asserts import assertContains, assertNotContains
+from requests.exceptions import ConnectionError
 from taggit.models import Tag
 
 from geniza.annotations.models import Annotation
 from geniza.common.utils import absolutize_url
+from geniza.common.views import SolrDownError
 from geniza.corpus.iiif_utils import EMPTY_CANVAS_ID, new_iiif_canvas
 from geniza.corpus.models import Document, DocumentType, Fragment, TextBlock
 from geniza.corpus.solr_queryset import DocumentSolrQuerySet, clean_html
@@ -30,6 +32,7 @@ from geniza.corpus.views import (
     DocumentScholarshipView,
     DocumentSearchView,
     DocumentTranscriptionText,
+    SolrDateRangeMixin,
     SourceAutocompleteView,
     TagMerge,
     old_pgp_edition,
@@ -45,6 +48,16 @@ from geniza.entities.models import (
 )
 from geniza.footnotes.forms import SourceChoiceForm
 from geniza.footnotes.models import Creator, Footnote, Source, SourceType
+
+
+class TestSolrDateRangeMixin:
+    def test_get_range_stats(self):
+        # simulate solr being down to test raising solr error
+        queryset_cls = Mock()
+        queryset_cls.side_effect = ConnectionError
+        mixin = SolrDateRangeMixin()
+        with pytest.raises(SolrDownError):
+            mixin.get_range_stats(queryset_cls, "test")
 
 
 class TestDocumentDetailView:
@@ -367,6 +380,18 @@ def test_pgp_metadata_for_old_site():
 
 
 class TestDocumentSearchView:
+    @pytest.mark.django_db
+    def test_solr_down_mixin(self, client):
+        # SolrDownError should redirect to solr error template w/ 503 response
+        docsearch_url = reverse("corpus:document-search")
+        with patch(
+            "geniza.corpus.views.DocumentSearchView.get_range_stats",
+            side_effect=SolrDownError,
+        ):
+            response = client.get(docsearch_url)
+            assert response.status_code == 503
+            assert "unable to reach the Solr service" in response.content.decode()
+
     def test_ignore_suppressed_documents(self, document, empty_solr):
         suppressed_document = Document.objects.create(status=Document.SUPPRESSED)
         Document.index_items([document, suppressed_document])
