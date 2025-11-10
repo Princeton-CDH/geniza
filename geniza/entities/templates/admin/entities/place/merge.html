@@ -1,0 +1,53 @@
+{% extends 'admin/base_site.html' %}
+
+{% load admin_urls static %}
+
+{% block extrastyle %}
+    {{ block.super }}
+    <link rel="stylesheet" href="{% static "admin/css/forms.css" %}">
+    <link rel="stylesheet" href="{% static "css/admin-local.css" %}">
+{% endblock %}
+
+{% block title %} Merge selected places {% endblock %}
+
+{% block breadcrumbs %}
+    {% if not is_popup %}
+        <div class="breadcrumbs">
+            <a href="{% url 'admin:index' %}">Home</a>
+            &rsaquo;
+            <a href="{% url 'admin:app_list' app_label='entities' %}">Entities</a>
+            &rsaquo;
+            <a href="{% url 'admin:entities_place_changelist'%}">Places</a>
+            &rsaquo;
+            Merge selected places
+        </div>
+    {% endif %}
+{% endblock %}
+
+
+{% block content_title %}
+    <h1>Merge selected places</h1>
+    <h2>Note: there is no automated way to unmerge places! Please review to make sure these places should be merged before submitting the form.</h2>
+{% endblock %}
+
+{% block content %}
+    <form method="post" class="merge-document">
+        {% csrf_token %}
+        {% if form.errors|length > 0 %}
+            <p class="errornote">
+                Please correct the error below.
+            </p>
+        {% endif %}
+        <fieldset class="module aligned">
+            <div class="form-row">
+                {{ form.primary_place.label_tag }}
+                {{ form.primary_place }}
+                <p class="help">{{ form.primary_place.help_text|safe }}</p>
+            </div>
+
+            <div class="submit-row">
+                <input type="submit" value="Submit">
+            </div>
+        </field>
+    </form>
+{% endblock %}

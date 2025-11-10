@@ -1,0 +1,87 @@
+{# template snippet for displaying place label on a form #}
+{# used on place merge form to provide enough information to merge accurately #}
+
+{% load admin_urls static %}
+
+<div class="merge-document-label">
+    <h2>{{ place }}
+        <a target="_blank" href="{% url 'admin:entities_place_change' place.pk %}"
+           title="Go to this place's admin edit page">
+            <img src="/static/admin/img/icon-changelink.svg" alt="Change"></a>
+    </h2>
+    {% for name in place.names.all %}
+        <div class="form-row">
+            <label>{% if name.primary %}Display n{% else %}N{% endif %}ame ({{ name.language }})</label><div>{{ name }}</div>
+        </div>
+    {% endfor %}
+    <div class="form-row">
+        <label>Is region</label>
+        <div>
+            <img src="
+                      {% if place.is_region %}
+                          {% static 'admin/img/icon-yes.svg' %}
+                      {% else %}
+                          {% static 'admin/img/icon-no.svg' %}
+                      {% endif %}
+                     ">
+        </div>
+    </div>
+    {% if place.coordinates %}
+        <div class="form-row">
+            <label>Coordinates</label><div>{{ place.coordinates }}</div>
+        </div>
+    {% endif %}
+    {% if place.notes %}
+        <div class="form-row">
+            <label>Notes</label><div>{{ place.notes }}</div>
+        </div>
+    {% endif %}
+    {% if place.containing_region %}
+        <div class="form-row">
+            <label>Geographic area</label><div>{{ place.containing_region }}</div>
+        </div>
+    {% endif %}
+    {% for rel in place.documentplacerelation_set.all %}
+        <div class="form-row">
+            <label>Related document</label><div>
+                <a target="_blank" href="{% url 'admin:corpus_document_change' rel.document.pk %}">
+                    {{ rel.document }}</a> ({{ rel.type }})</div>
+        </div>
+    {% endfor %}
+    {% for rel in place.place_a.all %}
+        <div class="form-row">
+            <label>Related place</label>
+            <div>
+                <a target="_blank" href="{% url 'admin:entities_place_change' rel.place_a.pk %}">
+                    {{ rel.place_a }}</a> ({{ rel.type }})
+            </div>
+        </div>
+    {% endfor %}
+    {% for rel in place.place_b.all %}
+        <div class="form-row">
+            {# these should use converse_name, if one exists for the relationship type #}
+            <label>Related place</label>
+            <div>
+                <a target="_blank" href="{% url 'admin:entities_place_change' rel.place_b.pk %}">
+                    {{ rel.place_b }}</a> ({{ rel.type.converse_name|default:rel.type }})
+            </div>
+        </div>
+    {% endfor %}
+    {% for rel in place.personplacerelation_set.all %}
+        <div class="form-row">
+            <label>Related person</label><div>
+                <a target="_blank" href="{% url 'admin:entities_person_change' rel.person.pk %}">
+                    {{ rel.person }}</a> ({{ rel.type }})</div>
+        </div>
+    {% endfor %}
+    {% for event in place.events.all %}
+        <div class="form-row">
+            <label>Related event</label><div><a target="_blank" href="{% url 'admin:entities_event_change' event.pk %}"> {{ event }}</a></div>
+        </div>
+    {% endfor %}
+    {% for footnote in place.footnotes.all %}
+        <div class="form-row">
+            <label>Data source (footnote)</label><div>{{ footnote.source.formatted_display|safe }}</div>
+        </div>
+    {% endfor %}
+</div>

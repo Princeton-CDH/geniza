@@ -16,13 +16,16 @@ from django.urls import path, resolve, reverse
 from django.utils import timezone
 from django.utils.html import format_html
 from modeltranslation.admin import TabbedTranslationAdmin
+from requests.exceptions import ConnectionError
 
 from geniza.annotations.models import Annotation
 from geniza.common.admin import (
     PreventLogEntryDeleteMixin,
+    SolrDownAdminMixin,
     TypedRelationInline,
     custom_empty_field_list_filter,
 )
+from geniza.common.views import SolrDownError
 from geniza.corpus.dates import DocumentDateMixin, standard_date_display
 from geniza.corpus.forms import (
     DocumentEventWidgetWrapper,
@@ -286,9 +289,12 @@ class TextInputListFilter(admin.SimpleListFilter):
     def choices(self, changelist):
         # Grab only the "all" option.
         all_choice = next(super().choices(changelist))
+        # handle django 5 changes to get_filters_params, from:
+        # https://gist.github.com/hakib/1491a848e71078dae81fca48c46cc258?permalink_comment_id=5035675#gistcomment-5035675
         all_choice["query_parts"] = (
             (k, v)
-            for k, v in changelist.get_filters_params().items()
+            for k, values in changelist.get_filters_params().items()
+            for v in values
             if k != self.parameter_name
         )
         yield all_choice
@@ -447,6 +453,7 @@ class DocumentAdmin(
     TabbedTranslationAdmin,
     SortableAdminBase,
     PreventLogEntryDeleteMixin,
+    SolrDownAdminMixin,
     admin.ModelAdmin,
 ):
     form = DocumentForm
@@ -643,12 +650,15 @@ class DocumentAdmin(
             # - use AND instead of OR to get smaller result sets, more
             #  similar to default admin search behavior
             # - return pks for all matching records
-            sqs = (
-                DocumentSolrQuerySet()
-                .admin_search(search_term)
-                .only("pgpid")
-                .get_results(rows=100000)
-            )
+            try:
+                sqs = (
+                    DocumentSolrQuerySet()
+                    .admin_search(search_term)
+                    .only("pgpid")
+                    .get_results(rows=100000)
+                )
+            except ConnectionError:
+                raise SolrDownError
             pks = [r["pgpid"] for r in sqs]
             # filter queryset by id if there are results
             if sqs:
@@ -800,6 +810,15 @@ class DocumentTypeAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
 
     class Media:
         css = {"all": ("css/admin-local.css",)}
+
+    def save_model(self, request, obj, form, change):
+        """Override to pass update_fields along to signal handlers, for control over
+        related document indexing"""
+        if change:
+            update_fields = form.changed_data
+            obj.save(update_fields=update_fields)
+        else:
+            obj.save()
 
 
 @admin.register(Fragment)

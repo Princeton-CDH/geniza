@@ -1,6 +1,17 @@
 Change Log
 ==========
 
+4.26
+----
+
+- As a content editor, I would like the input boxes (esp in Person: related document sections) to be top adjusted so I can see them without having to scroll to the bottom.
+- As a front end user, I want a more specific error message to indicate I have hit a solr regex complexity limit, so I know how to adjust my query.
+- bugfix: Invalid regex .*{0,10} raises server error instead of form validation error
+- bugfix: Arabic typography sometimes cut off at the bottom of transcriptions
+- bugfix: Wagtail underline style conflicts with "mark" element CSS
+- bugfix: Changing languages after navigating to a document via search redirects to search results page
+- bugfix: In the transcription editor "pin" view, the image container's width is incorrectly constrained to a value lower than 50% of the page width
+
 4.25
 ----
 

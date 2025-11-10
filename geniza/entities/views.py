@@ -27,6 +27,7 @@ from django.views.generic import DetailView, FormView, ListView, View
 from django.views.generic.edit import FormMixin
 from natsort import natsort_key
 
+from geniza.common.views import SolrDownMixin
 from geniza.corpus.dates import DocumentDateMixin, standard_date_display
 from geniza.corpus.models import Dating, Document, DocumentType, TextBlock
 from geniza.corpus.solr_queryset import DocumentSolrQuerySet
@@ -37,6 +38,7 @@ from geniza.entities.forms import (
     PersonMergeForm,
     PersonPersonRelationTypeMergeForm,
     PlaceListForm,
+    PlaceMergeForm,
 )
 from geniza.entities.models import (
     DocumentPlaceRelationType,
@@ -109,6 +111,70 @@ class PersonMerge(PermissionRequiredMixin, FormView):
             self.request,
             mark_safe(
                 f"Successfully merged {secondary_people_str} with {primary_person_str}."
+            ),
+        )
+
+        return super().form_valid(form)
+
+
+class PlaceMerge(PermissionRequiredMixin, FormView):
+    permission_required = ("entities.change_place", "entities.delete_place")
+    form_class = PlaceMergeForm
+    template_name = "admin/entities/place/merge.html"
+
+    def get_success_url(self):
+        return reverse("admin:entities_place_change", args=[self.primary_place.pk])
+
+    def get_form_kwargs(self):
+        form_kwargs = super().get_form_kwargs()
+        form_kwargs["place_ids"] = self.place_ids
+        return form_kwargs
+
+    def get_initial(self):
+        # Default to first place selected
+        place_ids = self.request.GET.get("ids", None)
+        if place_ids:
+            self.place_ids = [int(pid) for pid in place_ids.split(",")]
+            # by default, prefer the first record created
+            return {"primary_place": sorted(self.place_ids)[0]}
+        else:
+            self.place_ids = []
+
+    def form_valid(self, form):
+        """Merge the selected people into the primary place."""
+        primary_place = form.cleaned_data["primary_place"]
+        self.primary_place = primary_place
+
+        secondary_ids = [
+            place_id for place_id in self.place_ids if place_id != primary_place.pk
+        ]
+        secondary_people = Place.objects.filter(pk__in=secondary_ids)
+
+        # Get string representations before they are merged
+        primary_place_str = f"{str(primary_place)} (id = {primary_place.pk})"
+        secondary_people_str = ", ".join(
+            [f"{str(place)} (id = {place.pk})" for place in secondary_people]
+        )
+
+        # Merge secondary people into the selected primary place
+        user = getattr(self.request, "user", None)
+
+        try:
+            primary_place.merge_with(secondary_people, user=user)
+        except ValidationError as err:
+            # in case the merge resulted in an error, display error to user
+            messages.error(self.request, err.message)
+            # redirect to this form page instead of one of the people
+            return HttpResponseRedirect(
+                "%s?ids=%s"
+                % (reverse("admin:place-merge"), self.request.GET.get("ids", "")),
+            )
+
+        # Display info about the merge to the user
+        messages.success(
+            self.request,
+            mark_safe(
+                f"Successfully merged {secondary_people_str} with {primary_place_str}."
             ),
         )
 
@@ -789,7 +855,7 @@ class PlacePeopleView(RelatedPeopleMixin, PlaceDetailView):
     relation_field = "personplacerelation_set"
 
 
-class PersonListView(ListView, FormMixin, SolrDateRangeMixin):
+class PersonListView(ListView, SolrDownMixin, FormMixin, SolrDateRangeMixin):
     """A list view with faceted filtering and sorting using only the Django ORM/database."""
 
     model = Person
@@ -990,7 +1056,7 @@ class PersonListView(ListView, FormMixin, SolrDateRangeMixin):
         return context_data
 
 
-class PlaceListView(ListView, FormMixin, SolrDateRangeMixin):
+class PlaceListView(ListView, SolrDownMixin, FormMixin, SolrDateRangeMixin):
     """A list view with faceted filtering and sorting using solr."""
 
     model = Place

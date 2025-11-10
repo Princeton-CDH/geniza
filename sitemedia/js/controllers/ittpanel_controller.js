@@ -163,6 +163,39 @@ export default class extends Controller {
         }
     }
 
+    getListHeader(listElement) {
+        // given a list, find the nearest H3 before it (and after any prior list)
+        let sibling = listElement.previousElementSibling;
+        // iterate through all non-list previous siblings
+        while (sibling && sibling.tagName !== "OL") {
+            if (sibling.tagName === "H3") {
+                // return when we find an H3
+                return sibling;
+            }
+            sibling = sibling.previousElementSibling;
+        }
+        return null;
+    }
+
+    alignTops(edElement, trElement) {
+        // align the tops of a transcription and translation element
+        if (!edElement || !trElement) return;
+
+        // reset styles
+        edElement.style.paddingTop = "0px";
+        trElement.style.paddingTop = "0px";
+
+        // compare tops and align
+        const edTop = edElement.getBoundingClientRect().top;
+        const trTop = trElement.getBoundingClientRect().top;
+
+        if (edTop < trTop) {
+            edElement.style.paddingTop = `${trTop - edTop}px`;
+        } else if (trTop < edTop) {
+            trElement.style.paddingTop = `${edTop - trTop}px`;
+        }
+    }
+
     alignLines() {
         if (this.transcriptionAndTranslationOpen()) {
             // get the currently selected transcription and translation
@@ -210,19 +243,13 @@ export default class extends Controller {
                     // first, align tops of lists (using inline styles)
                     const edOl = edOls[j];
                     const trOl = trOls[j];
-                    const edTop = edOl.getBoundingClientRect().top;
-                    // translation is always 1 pixel difference
-                    const trTop = trOl.getBoundingClientRect().top - 1;
-                    if (edTop < trTop) {
-                        edOl.style.paddingTop = `${trTop - edTop}px`;
-                        trOl.style.paddingTop = "0px";
-                    } else if (trTop < edTop) {
-                        trOl.style.paddingTop = `${edTop - trTop}px`;
-                        edOl.style.paddingTop = "0px";
-                    } else {
-                        trOl.style.paddingTop = "0px";
-                        edOl.style.paddingTop = "0px";
+                    const edHeader = this.getListHeader(edOl);
+                    const trHeader = this.getListHeader(trOl);
+                    if (edHeader && trHeader) {
+                        // align headers if present
+                        this.alignTops(edHeader, trHeader);
                     }
+                    this.alignTops(edOl, trOl);
                     // then, align each line of transcription to translation
                     const edLines = edOl.querySelectorAll("li");
                     const trLines = trOl.querySelectorAll("li");
@@ -265,14 +292,14 @@ export default class extends Controller {
         // then remove padding-top alignment of the two lists
         if (this.hasTranscriptionTarget) {
             this.transcriptionTargets.forEach((target) => {
-                const edOL = target.querySelector("ol");
-                if (edOL) edOL.removeAttribute("style");
+                const edElems = target.querySelectorAll("h3, ol");
+                edElems.forEach((edElem) => edElem.removeAttribute("style"));
             });
         }
         if (this.hasTranslationTarget) {
             this.translationTargets.forEach((target) => {
-                const trOL = target.querySelector("ol");
-                if (trOL) trOL.removeAttribute("style");
+                const trElems = target.querySelectorAll("h3, ol");
+                trElems.forEach((trElem) => trElem.removeAttribute("style"));
             });
         }
     }

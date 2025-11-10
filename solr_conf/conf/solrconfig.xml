@@ -717,10 +717,14 @@
       <str name="keyword_qf">
         shelfmark_s^200
         description_nostem^190
+        description_he_nostem^190
+        description_ar_nostem^190
         transcription_nostem^190
-        shelfmark_bigram^180
+        shelfmark_bigrams^180
         shelfmark_textnum^140
         description_en_bigram^50
+        description_he_bigram^50
+        description_ar_bigram^50
         pgpid_i
         type_s
         type_t
@@ -729,7 +733,7 @@
         fragment_old_shelfmark_ss
         old_shelfmark_t
         old_shelfmark_textnum
-        old_shelfmark_bigram
+        old_shelfmark_bigrams
         tags_t
         tags_ss_lower
         scholarship_t
@@ -739,14 +743,18 @@
         document_date_t
       </str>
       <str name="keyword_pf">
-        shelfmark_bigram^9500
+        shelfmark_bigrams^9500
         shelfmark_textnum^9500
         description_en_bigram^3500
+        description_he_bigram^3500
+        description_ar_bigram^3500
         description_nostem^3500
+        description_he_nostem^3500
+        description_ar_nostem^3500
         transcription_nostem^3500
         old_shelfmark_t
         old_shelfmark_textnum
-        old_shelfmark_bigram^100
+        old_shelfmark_bigrams^100
         tags_t
         scholarship_t^80
         text_transcription^2500
@@ -757,13 +765,15 @@
        <!-- admin search field for Document model (no boosting because no relevance sort) -->
       <str name="admin_doc_qf">
         type_s
-        shelfmark_bigram
+        shelfmark_bigrams
         shelfmark_s
         fragment_shelfmark_ss
         shelfmark_textnum
         tags_t
         tags_ss_lower
         description_en_bigram
+        description_he_bigram
+        description_ar_bigram
         notes_t
         needs_review_t
         pgpid_i
@@ -774,15 +784,17 @@
         fragment_old_shelfmark_ss
         old_shelfmark_t
         old_shelfmark_textnum
-        old_shelfmark_bigram
+        old_shelfmark_bigrams
         document_date_t
       </str>
       <str name="admin_doc_pf">
         type_s
-        shelfmark_bigram
+        shelfmark_bigrams
         shelfmark_textnum
         tags_t
         description_en_bigram
+        description_he_bigram
+        description_ar_bigram
         notes_t
         needs_review_t
         scholarship_t
@@ -790,7 +802,7 @@
         text_translation
         old_shelfmark_t
         old_shelfmark_textnum
-        old_shelfmark_bigram
+        old_shelfmark_bigrams
         document_date_t
       </str>
 
@@ -798,25 +810,25 @@
       <str name="shelfmark_qf">
         shelfmark_s
         shelfmark_t
-        shelfmark_bigram
+        shelfmark_bigrams
         shelfmark_textnum
         old_shelfmark_t
         old_shelfmark_textnum
-        old_shelfmark_bigram
+        old_shelfmark_bigrams
       </str>
 
       <!-- search fields for entities -->
       <str name="entities_qf">
         name_nostem^30
-        name_bigram^20
+        name_bigrams^20
         other_names_nostem^10
-        other_names_bigram
+        other_names_bigrams
       </str>
       <str name="entities_pf">
         name_nostem^30
-        name_bigram^20
+        name_bigrams^20
         other_names_nostem^10
-        other_names_bigram
+        other_names_bigrams
       </str>
     </lst>
 

@@ -8,7 +8,9 @@ from django.http import HttpResponseRedirect, StreamingHttpResponse
 from django.test import RequestFactory
 from django.urls import reverse
 from pytest_django.asserts import assertContains, assertNotContains
+from requests.exceptions import ConnectionError
 
+from geniza.common.views import SolrDownError
 from geniza.corpus.dates import standard_date_display
 from geniza.corpus.models import Dating, Document, LanguageScript
 from geniza.entities.admin import (
@@ -106,6 +108,28 @@ class TestPersonPersonReverseInline:
 
 @pytest.mark.django_db
 class TestPersonAdmin:
+    @pytest.mark.django_db
+    def test_solr_down_raised(self):
+        # ConnectionError on solr queryset should raise SolrDownError
+        with patch(
+            "geniza.entities.admin.PersonSolrQuerySet", side_effect=ConnectionError
+        ):
+            person_admin = PersonAdmin(model=Person, admin_site=admin.site)
+            with pytest.raises(SolrDownError):
+                person_admin.get_search_results(Mock(), Person.objects.all(), "nahray")
+
+    @pytest.mark.django_db
+    def test_solr_down_admin_mixin(self, admin_client):
+        # SolrDownError should redirect to solr error template w/ 503 response
+        changelist_url = reverse("admin:entities_person_changelist")
+        with patch(
+            "geniza.entities.admin.PersonAdmin.get_search_results",
+            side_effect=SolrDownError,
+        ):
+            response = admin_client.get(changelist_url)
+            assert response.status_code == 503
+            assert "unable to reach the Solr service" in response.content.decode()
+
     def test_get_form(self):
         # should set own_pk property if obj exists
         goitein = Person.objects.create()
@@ -470,13 +494,39 @@ class TestPlaceAdmin:
 
     def test_get_queryset(self):
         # create a place
-        place = Place.objects.create()
-        Name.objects.create(name="Fusṭāṭ", content_object=place, primary=True)
+        fustat = Place.objects.create()
+        Name.objects.create(name="Fusṭāṭ", content_object=fustat, primary=True)
         place_admin = PlaceAdmin(Place, admin_site=admin.site)
 
         # queryset should include name_unaccented field without diacritics
         qs = place_admin.get_queryset(Mock())
         assert qs.filter(name_unaccented__icontains="fustat").exists()
+
+        # should include primary_name field
+        mosul = Place.objects.create()
+        Name.objects.create(name="Mosul", content_object=mosul, primary=True)
+        Name.objects.create(name="الموصل", content_object=mosul)
+
+        qs = place_admin.get_queryset(Mock())
+        assert qs.filter(primary_name__icontains="mosul").exists()
+
+        # should order by primary_name by default (Fustat before Mosul)
+        assert qs.first().pk == fustat.pk
+
+    def test_display_name(self):
+        place_admin = PlaceAdmin(Place, admin_site=admin.site)
+
+        place = Place.objects.create()
+        # should fallback to default string representation
+        assert place_admin.display_name(place) == str(place)
+        # should be primary nmae
+        Name.objects.create(name="Fusṭāṭ", content_object=place, primary=True)
+        assert place_admin.display_name(place) == "Fusṭāṭ"
+        # which should still be str() (but avoids an additional join query)
+        assert place_admin.display_name(place) == str(place)
+        # should still be primary name
+        Name.objects.create(name="Other", content_object=place)
+        assert place_admin.display_name(place) == "Fusṭāṭ"
 
     @pytest.mark.django_db
     def test_export_to_csv(self):
@@ -535,6 +585,23 @@ class TestPlaceAdmin:
         # - some content
         assert str(person) in content
         assert "Home base" in content
+
+    def test_merge_places(self):
+        mockrequest = Mock()
+        test_ids = ["50344", "33003", "10100"]
+        mockrequest.POST.getlist.return_value = test_ids
+        resp = PlaceAdmin(Place, Mock()).merge_places(mockrequest, Mock())
+        assert isinstance(resp, HttpResponseRedirect)
+        assert resp.status_code == 303
+        assert resp["location"].startswith(reverse("admin:place-merge"))
+        assert resp["location"].endswith("?ids=%s" % ",".join(test_ids))
+
+        test_ids = ["50344"]
+        mockrequest.POST.getlist.return_value = test_ids
+        resp = PlaceAdmin(Place, Mock()).merge_places(mockrequest, Mock())
+        assert isinstance(resp, HttpResponseRedirect)
+        assert resp.status_code == 302
+        assert resp["location"] == reverse("admin:entities_place_changelist")
 
 
 class TestPersonDocumentRelationTypeAdmin:

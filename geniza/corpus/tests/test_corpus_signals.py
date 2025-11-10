@@ -35,13 +35,6 @@ def test_related_save(mock_indexitems, document, join, footnote, annotation):
     assert document in mock_indexitems.call_args[0][0]
     assert join in mock_indexitems.call_args[0][0]
 
-    # doctype
-    mock_indexitems.reset_mock()
-    DocumentSignalHandlers.related_save(DocumentType, document.doctype)
-    assert mock_indexitems.call_count == 1
-    assert document in mock_indexitems.call_args[0][0]
-    assert join not in mock_indexitems.call_args[0][0]
-
     # footnote
     mock_indexitems.reset_mock()
     DocumentSignalHandlers.related_save(DocumentType, document.footnotes.first())
@@ -77,6 +70,37 @@ def test_related_save(mock_indexitems, document, join, footnote, annotation):
     mock_indexitems.reset_mock()
     DocumentSignalHandlers.related_save(Document, document)
     mock_indexitems.assert_not_called()
+
+
+@pytest.mark.django_db
+@patch.object(ModelIndexable, "index_items")
+def test_related_save_doctype(mock_indexitems, document, join):
+    # doctype: should only update when update_fields not passed, or name_en or display_label_en updated
+    DocumentSignalHandlers.related_save_doctype(DocumentType, document.doctype)
+    assert mock_indexitems.call_count == 1
+    assert document in mock_indexitems.call_args[0][0]
+    assert join not in mock_indexitems.call_args[0][0]
+    mock_indexitems.reset_mock()
+    DocumentSignalHandlers.related_save_doctype(
+        DocumentType, document.doctype, update_fields=["name_en"]
+    )
+    assert mock_indexitems.call_count == 1
+    assert document in mock_indexitems.call_args[0][0]
+    assert join not in mock_indexitems.call_args[0][0]
+    mock_indexitems.reset_mock()
+    DocumentSignalHandlers.related_save_doctype(
+        DocumentType, document.doctype, update_fields=["display_label_en"]
+    )
+    assert mock_indexitems.call_count == 1
+    assert document in mock_indexitems.call_args[0][0]
+    assert join not in mock_indexitems.call_args[0][0]
+
+    # should not update on other language names/labels changing
+    mock_indexitems.reset_mock()
+    DocumentSignalHandlers.related_save_doctype(
+        DocumentType, document.doctype, update_fields=["name_he"]
+    )
+    assert mock_indexitems.call_count == 0
 
 
 @pytest.mark.django_db

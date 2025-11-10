@@ -17,16 +17,17 @@ from django.http import HttpResponseRedirect, StreamingHttpResponse
 from django.test import RequestFactory
 from django.urls import reverse
 from django.utils import timezone
-from django.utils.timezone import now
 from pytest_django.asserts import assertContains, assertNotContains
+from requests.exceptions import ConnectionError
 
+from geniza.common.views import SolrDownError
 from geniza.corpus.admin import (
     DateAfterListFilter,
     DateBeforeListFilter,
     DocumentAdmin,
     DocumentForm,
-    DocumentPersonInline,
     DocumentTextBlockInline,
+    DocumentTypeAdmin,
     FragmentAdmin,
     FragmentTextBlockInline,
     HasTranscriptionListFilter,
@@ -40,11 +41,11 @@ from geniza.corpus.models import (
     DocumentType,
     Fragment,
     LanguageScript,
-    Provenance,
     MaterialSupport,
-    TextBlock
+    Provenance,
+    TextBlock,
 )
-from geniza.entities.models import Event, Person, PersonDocumentRelation
+from geniza.entities.models import Event
 from geniza.footnotes.models import Footnote, Source, SourceLanguage, SourceType
 
 
@@ -114,6 +115,30 @@ class TestLanguageScriptAdmin:
 
 
 class TestDocumentAdmin:
+    @pytest.mark.django_db
+    def test_solr_down_raised(self):
+        # ConnectionError on solr queryset should raise SolrDownError
+        with patch(
+            "geniza.corpus.admin.DocumentSolrQuerySet", side_effect=ConnectionError
+        ):
+            doc_admin = DocumentAdmin(model=Document, admin_site=admin.site)
+            with pytest.raises(SolrDownError):
+                doc_admin.get_search_results(
+                    Mock(), Document.objects.all(), "deed of sale"
+                )
+
+    @pytest.mark.django_db
+    def test_solr_down_admin_mixin(self, admin_client):
+        # SolrDownError should redirect to solr error template w/ 503 response
+        changelist_url = reverse("admin:corpus_document_changelist")
+        with patch(
+            "geniza.corpus.admin.DocumentAdmin.get_search_results",
+            side_effect=SolrDownError,
+        ):
+            response = admin_client.get(changelist_url)
+            assert response.status_code == 503
+            assert "unable to reach the Solr service" in response.content.decode()
+
     def test_rev_dates(self, db, admin_client):
         """Document change form should display first entry/last revision date"""
         # create a testing doc, user, and some log entries
@@ -465,6 +490,34 @@ class TestDocumentTextBlockInline:
         assert inline.fragment_material_support(textblock) == str(ng)
 
 
+class TestDocumentTypeAdmin:
+    def test_save_model(self, document):
+        doctype_admin = DocumentTypeAdmin(DocumentType, admin.site)
+        doctype = document.doctype
+
+        # should pass update_fields to save() whenever a change is made
+        with patch.object(DocumentType, "save") as mock_save:
+            form = Mock()
+            form.changed_data = ["name_en"]
+            doctype_admin.save_model(Mock(), doctype, form, change=True)
+            mock_save.assert_called_once()
+            args, kwargs = mock_save.call_args
+            assert "update_fields" in kwargs
+            assert "name_en" in kwargs["update_fields"]
+
+            mock_save.reset_mock()
+            form.changed_data = ["name_he"]
+            doctype_admin.save_model(Mock(), doctype, form, change=True)
+            args, kwargs = mock_save.call_args
+            assert "update_fields" in kwargs
+            assert "name_he" in kwargs["update_fields"]
+
+            mock_save.reset_mock()
+            doctype_admin.save_model(Mock(), doctype, form, change=False)
+            args, kwargs = mock_save.call_args
+            assert "update_fields" not in kwargs
+
+
 class TestFragmentAdmin:
     @pytest.mark.django_db
     def test_changelist_sort_collection(self, db, admin_client):
@@ -617,6 +670,11 @@ class TestDateListFilter:
         changelist.get_filters_params.return_value = {}
         all_option = next(filter.choices(changelist))
         assert all_option["display"] == "All"
+
+        # should handle list from get_filters_params appropriately
+        changelist.get_filters_params.return_value = {"date__lte": ["1200"]}
+        all_option = next(filter.choices(changelist))
+        assert dict(all_option["query_parts"])["date__lte"] == "1200"
 
     @patch("geniza.corpus.admin.DocumentSolrQuerySet")
     def test_get_queryset_date_after(self, mock_dqs):

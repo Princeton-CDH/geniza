@@ -345,3 +345,65 @@ class TestPopulateFootnoteEmendations(TestMigrations):
             self.footnote_2_emenders_alt.emendations
             == f"{self.name_1}, {self.date_1} and {self.name_2}, {self.date_2}"
         )
+
+
+@pytest.mark.order("last")
+@pytest.mark.django_db
+class TestPopulateSourceSlugs(TestMigrations):
+    app = "footnotes"
+    migrate_from = "0037_creator_creator_unique_name_first_name_en_and_more"
+    migrate_to = "0038_source_slug"
+    source = None
+    dupe_source = None
+    multiauthor_untitledsource = None
+
+    def setUpBeforeMigration(self, apps):
+        Source = apps.get_model("footnotes", "Source")
+        SourceType = apps.get_model("footnotes", "SourceType")
+        Creator = apps.get_model("footnotes", "Creator")
+        Authorship = apps.get_model("footnotes", "Authorship")
+
+        # create two sources that would get the same slug
+        orwell, _ = Creator.objects.get_or_create(
+            last_name="Orwell", first_name="George"
+        )
+        essay, _ = SourceType.objects.get_or_create(type="Essay")
+        self.source = Source.objects.create(
+            title="A Nice Cup of Tea", source_type=essay, year=1946
+        )
+        Authorship.objects.create(creator=orwell, source=self.source, sort_order=0)
+
+        book, _ = SourceType.objects.get_or_create(type="Book")
+        self.dupe_source = Source.objects.create(
+            title="A Nice Cup of Tea", source_type=book, year=1946
+        )
+        Authorship.objects.create(creator=orwell, source=self.dupe_source, sort_order=0)
+
+        # create a source with several authors and no title
+        self.multiauthor_untitledsource = Source.objects.create(source_type=book)
+        for i, name in enumerate(
+            ["Khan", "el-Leithy", "Rustow", "Vanthieghem", "Fifth", "Sixth"]
+        ):
+            author, _ = Creator.objects.get_or_create(last_name=name)
+            Authorship.objects.create(
+                creator=author, source=self.multiauthor_untitledsource, sort_order=i
+            )
+
+    def test_slugs_populated(self):
+        Source = self.apps.get_model("footnotes", "Source")
+
+        # should dedupe with -2
+        source = Source.objects.get(pk=self.source.pk)
+        assert source.slug == "orwell-george-a-nice-cup-of-tea-1946"
+        dupe_source = Source.objects.get(pk=self.dupe_source.pk)
+        assert dupe_source.slug == "orwell-george-a-nice-cup-of-tea-1946-2"
+
+        # should only include first five words of author list;
+        # should use source type since source is untitled
+        multiauthor_untitledsource = Source.objects.get(
+            pk=self.multiauthor_untitledsource.pk
+        )
+        assert (
+            multiauthor_untitledsource.slug
+            == "khan-el-leithy-rustow-vanthieghem-fifth-book"
+        )

@@ -1,12 +1,15 @@
 from itertools import groupby
 
-from adminsortable2.admin import SortableAdminBase
+from adminsortable2.admin import SortableAdminBase, SortableAdminMixin
 from dal import autocomplete
 from django.contrib import admin, messages
 from django.contrib.contenttypes.admin import GenericTabularInline
 from django.contrib.contenttypes.forms import BaseGenericInlineFormSet
+from django.contrib.contenttypes.models import ContentType
 from django.contrib.postgres.aggregates import ArrayAgg
+from django.db.models import OuterRef, Subquery, Value
 from django.db.models.fields import CharField, TextField
+from django.db.models.functions import Coalesce
 from django.forms import ModelChoiceField, ModelForm, ValidationError
 from django.forms.models import ModelChoiceIterator
 from django.forms.widgets import Textarea, TextInput
@@ -14,8 +17,14 @@ from django.http import HttpResponseRedirect
 from django.urls import path, reverse
 from django_admin_inline_paginator_plus.admin import TabularInlinePaginated
 from modeltranslation.admin import TabbedTranslationAdmin
+from requests.exceptions import ConnectionError
 
-from geniza.common.admin import PreventLogEntryDeleteMixin, TypedRelationInline
+from geniza.common.admin import (
+    PreventLogEntryDeleteMixin,
+    SolrDownAdminMixin,
+    TypedRelationInline,
+)
+from geniza.common.views import SolrDownError
 from geniza.corpus.dates import standard_date_display
 from geniza.corpus.models import DocumentEventRelation
 from geniza.entities.forms import (
@@ -58,6 +67,7 @@ from geniza.entities.views import (
     PersonDocumentRelationTypeMerge,
     PersonMerge,
     PersonPersonRelationTypeMerge,
+    PlaceMerge,
 )
 from geniza.footnotes.models import Footnote
 
@@ -295,18 +305,47 @@ class PersonForm(ModelForm):
         widgets = {"tags": autocomplete.TaggitSelect2("tag-autocomplete")}
 
 
+class NamedAdminMixin:
+    def get_queryset(self, request):
+        """Override get_queryset to annotate with primary_name for list view sorting,
+        and with name_unaccented, so that places can be searched from admin list view
+        without entering diacritics"""
+        qs = super().get_queryset(request)
+
+        # pull content type
+        contenttype = ContentType.objects.get_for_model(self.model)
+        # get the first primary name, or the first non-primary name if none exists
+        primary_name_subquery = (
+            Name.objects.filter(content_type=contenttype, object_id=OuterRef("pk"))
+            .order_by("-primary", "id")
+            .values("name")[:1]
+        )
+        # annotate primary name, fallback to empty string; order by primary name by default
+        return qs.annotate(
+            primary_name=Coalesce(Subquery(primary_name_subquery), Value("")),
+            name_unaccented=ArrayAgg("names__name__unaccent", distinct=True),
+        ).order_by("primary_name")
+
+    @admin.display(ordering="primary_name", description="Display name")
+    def display_name(self, obj):
+        """Use the annotated primary name if found, otherwise use __str__"""
+        return getattr(obj, "primary_name", None) or str(obj)
+
+
 @admin.register(Person)
 class PersonAdmin(
     TabbedTranslationAdmin,
+    NamedAdminMixin,
     SortableAdminBase,
     PreventLogEntryDeleteMixin,
+    SolrDownAdminMixin,
     admin.ModelAdmin,
 ):
     """Admin for Person entities in the PGP"""
 
     form = PersonForm
     list_display = (
-        "__str__",
+        "display_name",
         "slug",
         "gender",
         "all_roles",
@@ -376,12 +415,15 @@ class PersonAdmin(
         Adapted from :meth:`DocumentAdmin.get_search_results`."""
         if search_term:
             # - return slugs for all matching records
-            sqs = (
-                PersonSolrQuerySet()
-                .keyword_search(search_term)
-                .only("slug")
-                .get_results(rows=10000)
-            )
+            try:
+                sqs = (
+                    PersonSolrQuerySet()
+                    .keyword_search(search_term)
+                    .only("slug")
+                    .get_results(rows=10000)
+                )
+            except ConnectionError:
+                raise SolrDownError
             slugs = [r.get("slug") for r in sqs if r.get("slug")]
             # filter queryset by slug if there are results
             if sqs:
@@ -505,6 +547,7 @@ class RelationTypeMergeAdminMixin:
 
 @admin.register(PersonDocumentRelationType)
 class PersonDocumentRelationTypeAdmin(
+    SortableAdminMixin,
     RelationTypeMergeAdminMixin,
     TabbedTranslationAdmin,
     PreventLogEntryDeleteMixin,
@@ -514,7 +557,8 @@ class PersonDocumentRelationTypeAdmin(
 
     fields = ("name",)
     search_fields = ("name",)
-    ordering = ("name",)
+    ordering = ("order",)
+    list_display = ("order", "name")
     merge_path_name = "person-document-relation-type-merge"
     view_class = PersonDocumentRelationTypeMerge
 
@@ -545,12 +589,15 @@ class PersonPlaceRelationTypeAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
 
 
 @admin.register(DocumentPlaceRelationType)
-class DocumentPlaceRelationTypeAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
+class DocumentPlaceRelationTypeAdmin(
+    SortableAdminMixin, TabbedTranslationAdmin, admin.ModelAdmin
+):
     """Admin for managing the controlled vocabulary of documents' relationships to places"""
 
     fields = ("name",)
     search_fields = ("name",)
-    ordering = ("name",)
+    ordering = ("order",)
+    list_display = ("order", "name")
 
 
 class DocumentPlaceInline(TypedRelationInline, DocumentInline):
@@ -623,9 +670,19 @@ class PlaceEventInline(admin.TabularInline):
 
 
 @admin.register(Place)
-class PlaceAdmin(SortableAdminBase, admin.ModelAdmin):
+class PlaceAdmin(
+    SortableAdminBase, PreventLogEntryDeleteMixin, NamedAdminMixin, admin.ModelAdmin
+):
     """Admin for Place entities in the PGP"""
 
+    list_display = (
+        "display_name",
+        "slug",
+        "latitude",
+        "longitude",
+        "containing_region",
+        "is_region",
+    )
     search_fields = ("name_unaccented", "names__name")
     fields = (
         "slug",
@@ -668,18 +725,6 @@ class PlaceAdmin(SortableAdminBase, admin.ModelAdmin):
             place.generate_slug()
             place.save()
 
-    def get_queryset(self, request):
-        """Modify queryset to add unaccented name annotation field, so that places
-        can be searched from admin list view without entering diacritics"""
-        return (
-            super()
-            .get_queryset(request)
-            .annotate(
-                # ArrayAgg to group together related values from related model instances
-                name_unaccented=ArrayAgg("names__name__unaccent", distinct=True),
-            )
-        )
-
     @admin.display(description="Export selected places to CSV")
     def export_to_csv(self, request, queryset=None):
         """Stream tabular data as a CSV file"""
@@ -692,6 +737,24 @@ class PlaceAdmin(SortableAdminBase, admin.ModelAdmin):
         queryset = Place.objects.filter(pk=pk)
         exporter = PlaceRelationsExporter(queryset=queryset, progress=False)
         return exporter.http_export_data_csv()
+
+    @admin.display(description="Merge selected places")
+    def merge_places(self, request, queryset=None):
+        """Admin action to merge selected places. This action redirects to an intermediate
+        page, which displays a form to review for confirmation and choose the primary place before merging.
+        """
+        # Functionality almost identical to Document merge
+
+        # NOTE: using selected ids from form and ignoring queryset
+        # because we can't pass the queryset via redirect
+        selected = request.POST.getlist("_selected_action")
+        if len(selected) < 2:
+            messages.error(request, "You must select at least two places to merge")
+            return HttpResponseRedirect(reverse("admin:entities_place_changelist"))
+        return HttpResponseRedirect(
+            "%s?ids=%s" % (reverse("admin:place-merge"), ",".join(selected)),
+            status=303,
+        )  # status code 303 means "See Other"
 
     def get_urls(self):
         """Return admin urls; adds custom URL for exporting as CSV"""
@@ -706,10 +769,15 @@ class PlaceAdmin(SortableAdminBase, admin.ModelAdmin):
                 self.admin_site.admin_view(self.export_relations_to_csv),
                 name="place-relations-csv",
             ),
+            path(
+                "merge/",
+                PlaceMerge.as_view(),
+                name="place-merge",
+            ),
         ]
         return urls + super().get_urls()
 
-    actions = (export_to_csv,)
+    actions = (export_to_csv, merge_places)
 
 
 @admin.register(PlacePlaceRelationType)
