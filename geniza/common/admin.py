@@ -226,11 +226,12 @@ class PreventLogEntryDeleteMixin:
 
 
 class SolrDownAdminMixin:
-    """Admin mixin to use the solr_error template with a 503 status code when a
+    """Admin mixin to use the solr_error template with a 500 status code when a
     changelist view encounters a solr error"""
 
     def changelist_view(self, request, extra_context=None):
         try:
             return super().changelist_view(request, extra_context)
         except SolrDownError:
-            return render(request, "solr_error.html", {}, status=503)
+            # NOTE: Should be switched to 503 if/when infra issue is resolved
+            return render(request, "solr_error.html", {}, status=500)
