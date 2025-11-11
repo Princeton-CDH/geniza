@@ -9,7 +9,7 @@ from django.contrib.admin.models import ADDITION, LogEntry
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.urls import resolve, reverse
 from django.utils.text import Truncator, slugify
 from django.utils.timezone import get_current_timezone, make_aware
@@ -382,7 +382,7 @@ def test_pgp_metadata_for_old_site():
 class TestDocumentSearchView:
     @pytest.mark.django_db
     def test_solr_down_mixin(self, client):
-        # SolrDownError should redirect to solr error template w/ 500 response
+        # SolrDownError: should redirect to solr error template w/ 500 response
         docsearch_url = reverse("corpus:document-search")
         with patch(
             "geniza.corpus.views.DocumentSearchView.get_range_stats",
@@ -391,6 +391,37 @@ class TestDocumentSearchView:
             response = client.get(docsearch_url)
             assert response.status_code == 500
             assert "unable to reach the Solr service" in response.content.decode()
+
+        # generic exception: should use the normal error template w/ 500 response
+        with patch(
+            "geniza.corpus.views.DocumentSearchView.get_range_stats",
+            side_effect=Exception,
+        ):
+            with pytest.raises(Exception):
+                response = client.get(docsearch_url)
+                assert response.status_code == 500
+                # should NOT contain solr related message
+                assert (
+                    "unable to reach the Solr service" not in response.content.decode()
+                )
+
+        # generic and solr exceptions: should use the normal error template w/ 500 response
+        with patch(
+            "geniza.corpus.views.DocumentSearchView.get_range_stats",
+            side_effect=Exception,
+        ):
+            with patch(
+                "geniza.corpus.views.DocumentSearchView.get_context_data",
+                side_effect=SolrDownError,
+            ):
+                with pytest.raises(Exception):
+                    response = client.get(docsearch_url)
+                    assert response.status_code == 500
+                    # should NOT contain solr related message
+                    assert (
+                        "unable to reach the Solr service"
+                        not in response.content.decode()
+                    )
 
     def test_ignore_suppressed_documents(self, document, empty_solr):
         suppressed_document = Document.objects.create(status=Document.SUPPRESSED)
