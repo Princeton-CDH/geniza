@@ -189,7 +189,7 @@ main.document {
                     color: var(--primary);
                     font-weight: bold;
                     font-style: normal;
-                    background-color: LightGreen;
+                    background-color: var(--search-hit);
                 }
             }
         }
