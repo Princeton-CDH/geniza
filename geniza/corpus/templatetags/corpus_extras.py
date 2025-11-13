@@ -218,6 +218,9 @@ def process_citation(source):
 
 
 def highlight_words(text, highlights):
+    """Given a reference text (the first parameter) and a dictionary of words to be highlighted (the second parameter),
+    this method locates those words in the reference text and surrounds them with css to be highlighted
+    """
     highlighted_text = text
     for matched_word in highlights:
         if not highlights[matched_word] and len(matched_word.strip()) > 0:
@@ -230,7 +233,9 @@ def highlight_words(text, highlights):
 
 @register.filter
 def find_highlight_regex(reference, query):
-    matches = []
+    """Given a reference text (the first parameter) and a search query (the second parameter), this method
+    finds regex matches, highlights them in the reference text, and returns the result.
+    """
     try:
         matches = re.findall(query, reference)
     except:
@@ -241,6 +246,10 @@ def find_highlight_regex(reference, query):
 
 @register.filter
 def find_highlight_keywords(reference, query, english=True):
+    """Given a reference text (the first parameter) and a search query (the second parameter), this method
+    finds keywords matches, highlights them in the reference text, and returns the result.
+    """
+
     import nltk
 
     from geniza.settings.components.base import NLTK_DATA
