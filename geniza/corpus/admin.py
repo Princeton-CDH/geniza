@@ -629,9 +629,6 @@ class DocumentAdmin(
             have at least one selected image; if not, the fragment should be removed from the document."""
         }
         kwargs.update({"help_texts": help_texts})
-        # if updating, store original tags so we can see if new ones
-        if obj:
-            self._tags = set(obj.tags.values_list("name", flat=True))
         return super().get_form(request, obj, **kwargs)
 
     def get_queryset(self, request):
