@@ -2,13 +2,18 @@ import time
 from unittest.mock import Mock, patch
 
 import pytest
+from django.conf import settings
 from django.contrib import admin
+from django.contrib.admin.models import ADDITION, LogEntry
+from django.contrib.auth.models import User
+from django.contrib.contenttypes.models import ContentType
 from django.db.models.query import EmptyQuerySet
 from django.http import HttpResponseRedirect, StreamingHttpResponse
 from django.test import RequestFactory
 from django.urls import reverse
 from pytest_django.asserts import assertContains, assertNotContains
 from requests.exceptions import ConnectionError
+from taggit.models import Tag
 
 from geniza.common.views import SolrDownError
 from geniza.corpus.dates import standard_date_display
@@ -197,9 +202,70 @@ class TestPersonAdmin:
         # mock all arguments to admin method; form.instance should be our person
         mockform = Mock()
         mockform.instance = person
+        mockform.cleaned_data = {}
         with patch.object(admin.ModelAdmin, "save_related"):
             PersonAdmin(Person, Mock()).save_related(Mock(), mockform, Mock(), Mock())
         assert person.slug
+
+    def test_save_related__tags(self):
+        # set up person
+        person = Person.objects.create()
+
+        # create an existing tag and a new tag
+        old_tag_name = "existing"
+        existing_tag = Tag.objects.create(name=old_tag_name)
+        new_tag_name = "newtag"
+        assert not Tag.objects.filter(name=new_tag_name).exists()
+        assert new_tag_name not in person.tags.values_list("name", flat=True)
+
+        # mock adding the existing tag and a new one in the form
+        mockform = Mock()
+        mockform.instance = person
+        mockform.cleaned_data = {"tags": [old_tag_name, new_tag_name]}
+
+        # mock request with user, call save_related
+        request = Mock()
+        script_user = User.objects.get(username=settings.SCRIPT_USERNAME)
+        request.user = script_user
+
+        def save_related_tags(self, request, form, formsets, change):
+            # patch ModelAdmin.save_related() to ONLY save related tags,
+            # since that's the only behavior we need from it
+            for tag_name in form.cleaned_data.get("tags", []):
+                tag, _ = Tag.objects.get_or_create(name=tag_name)
+                form.instance.tags.add(tag)
+
+        with patch.object(admin.ModelAdmin, "save_related", save_related_tags):
+            PersonAdmin(Person, Mock()).save_related(request, mockform, [], True)
+
+        # new tag should now exist in db
+        new_tag = Tag.objects.get(name=new_tag_name)
+        assert new_tag.pk is not None
+
+        # new tag should get a log entry
+        log_entries = LogEntry.objects.filter(
+            content_type=ContentType.objects.get_for_model(Tag),
+            object_id=new_tag.pk,
+            user=script_user,
+            action_flag=ADDITION,
+        )
+        assert log_entries.exists()
+        assert new_tag_name in log_entries.first().change_message
+
+        # existing tag should not have had a new log entry created
+        # NOTE: in normal conditions, it should already have one, so this unit
+        # test is just to ensure we don't create a duplicate log entry for it.
+        oldtag_log_entries = LogEntry.objects.filter(
+            content_type=ContentType.objects.get_for_model(Tag),
+            object_id=existing_tag.pk,
+            action_flag=ADDITION,
+        )
+        assert not oldtag_log_entries.exists()
+
+        # both tags should now be attached to the person
+        person_tags = person.tags.values_list("name", flat=True)
+        assert old_tag_name in person_tags
+        assert new_tag_name in person_tags
 
     @pytest.mark.django_db
     def test_export_to_csv(self, person, person_multiname):

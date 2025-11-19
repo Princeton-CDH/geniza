@@ -4,10 +4,14 @@ import os
 
 from django.conf import settings
 from django.contrib.admin.models import ADDITION, CHANGE, DELETION, LogEntry
+from django.contrib.contenttypes.models import ContentType
 from django.contrib.sites.models import Site
+from django.db.models import Count, OuterRef, Subquery, TextField
+from django.db.models.functions import Cast
 from django.http import StreamingHttpResponse
 from django.utils import timezone
 from rich.progress import track
+from taggit.models import Tag
 
 from geniza.common.utils import Echo, Timerable
 
@@ -210,4 +214,39 @@ class LogEntryExporter(Exporter):
             "object_id": log.object_id,
             "change_message": log.change_message,
             "action": self.action_label[log.action_flag],
+        }
+
+
+class TagExporter(Exporter):
+    model = Tag
+    csv_fields = ["name", "slug", "user", "created", "count"]
+
+    def get_queryset(self):
+        tag_contenttype = ContentType.objects.get(app_label="taggit", model="tag")
+
+        # use subquery to get LogEntries per tag
+        logentry_subquery = LogEntry.objects.filter(
+            content_type=tag_contenttype,
+            # object_id is a text field in postgres, but pk is an integer
+            object_id=Cast(OuterRef("pk"), output_field=TextField()),
+        ).order_by("action_time")
+
+        return (
+            super()
+            .get_queryset()
+            .annotate(
+                # taggit_taggeditem_items is the reference to the taggeditem object
+                item_count=Count("taggit_taggeditem_items", distinct=True),
+                user=Subquery(logentry_subquery.values("user__username")[:1]),
+                created=Subquery(logentry_subquery.values("action_time")[:1]),
+            )
+        )
+
+    def get_export_data_dict(self, tag):
+        return {
+            "name": tag.name,
+            "slug": tag.slug,
+            "user": tag.user,
+            "created": tag.created,
+            "count": tag.item_count,
         }

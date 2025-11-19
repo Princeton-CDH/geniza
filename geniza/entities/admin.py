@@ -22,6 +22,7 @@ from requests.exceptions import ConnectionError
 from geniza.common.admin import (
     PreventLogEntryDeleteMixin,
     SolrDownAdminMixin,
+    TagLogEntryMixin,
     TypedRelationInline,
 )
 from geniza.common.views import SolrDownError
@@ -339,6 +340,7 @@ class PersonAdmin(
     SortableAdminBase,
     PreventLogEntryDeleteMixin,
     SolrDownAdminMixin,
+    TagLogEntryMixin,
     admin.ModelAdmin,
 ):
     """Admin for Person entities in the PGP"""
