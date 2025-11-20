@@ -8,6 +8,8 @@ on:
 
 env:
   NODE_VERSION: 22
+  SOLR_VERSION: 9.9
+  PGSQL_VERSION: 16
   DB_NAME: geniza
   DB_USER: geniza
   DB_PASSWORD: geniza
@@ -23,7 +25,7 @@ jobs:
     # https://docs.github.com/en/free-pro-team@latest/actions/guides/about-service-containers
     services:
       postgres:
-        image: postgres:16
+        image: postgres:${{ env.PGSQL_VERSION }}
         env:
           POSTGRES_DB: ${{ env.DB_NAME }}
           POSTGRES_USER: ${{ env.DB_USER }}
@@ -31,7 +33,7 @@ jobs:
         ports:
           - 5432:5432
       solr:
-        image: solr:9.9
+        image: solr:${{ env.SOLR_VERSION }}
         ports:
           - 8983:8983
     steps:
@@ -39,13 +41,10 @@ jobs:
         uses: actions/checkout@v4
 
       # use docker cp to copy the configset, then bash to set ownership to solr
-      - name: Configure solr modules
-        run: docker run -e SOLR_MODULES=extraction,clustering,langid,analysis-extras,scripting -p 8983:8983 solr:latest
-
       - name: Copy Solr configset to solr service
         run: |
           docker cp solr_conf ${{ job.services.solr.id }}:/opt/solr/server/solr/configsets/geniza
-          docker exec --user root ${{ job.services.solr.id }} /bin/bash -c "chown -R solr:solr /opt/solr/server/solr/configsets/geniza"
+          docker exec -e SOLR_MODULES=extraction,clustering,langid,analysis-extras,scripting --user root ${{ job.services.solr.id }} /bin/bash -c "chown -R solr:solr /opt/solr/server/solr/configsets/geniza"
 
       - name: Copy solr configsets to solr home directory
         run: "docker exec -d ${{ job.services.solr.id }} cp -r /opt/solr/server/solr/configsets /var/solr/data"
