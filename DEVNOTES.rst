@@ -53,6 +53,7 @@ Setup and installation (local environment)
 - Clear pre-existing geniza core (replace <SOLR_HOME> appropriately)::
 
     rm -r <SOLR_HOME>/configsets/geniza
+    solr restart
 
 - Copy Solr configset into your solr server configset directory (replace <SOLR_HOME> appropriately)::
 
@@ -62,9 +63,6 @@ Setup and installation (local environment)
 
     curl "http://localhost:8983/solr/admin/cores?action=CREATE&name=geniza&configSet=geniza"
 
-.. note::
-    The command line version of core creation looks like ``solr create -c geniza -n geniza``, but in
-    current versions of Solr it creates a new core with a *copy* of the configset instead of a *reference*.
 
 - Index content in Solr::
 
