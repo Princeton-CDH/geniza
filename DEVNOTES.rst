@@ -1,12 +1,10 @@
 Developer Instructions
 ======================
 
-Setup and installation
------------------------
+Setup and installation (local environment)
+------------------------------------------
 
-Initial setup and installation:
-
-- Recommended: create and activate a python 3.9 virtualenv
+- Prepare a python environment with Python 3.12.10 and activate it
 
 - Install required python dependencies::
 
@@ -22,9 +20,18 @@ Initial setup and installation:
 
     cp geniza/settings/local_settings.py.sample geniza/settings/local_settings.py
 
-Remember to add a ``SECRET_KEY`` setting!
+- Populate SECRET_KEY (any non-empty string)::
 
-- Create a new database and update your database settings accordingly
+    SECRET_KEY = "xyz"
+
+- Create a new postgres database <DATABASE_NAME>::
+
+    CREATE DATABASE <DATABASE_NAME>;
+
+- Ingest <DATABASE_NAME> from a sample or a dump::
+
+    psql <DATABASE_NAME> < <DB_SAMPLE>
+
 
 - Run database migrations::
 
@@ -34,12 +41,24 @@ Remember to add a ``SECRET_KEY`` setting!
 
     cd geniza && django-admin compilemessages
 
-- Copy Solr configset into your solr server configset directory. For a local install:
+- Make sure you have Solr version >= 9.9  (replace <SOLR_HOME> appropriately)::
 
-    cp -r solr_conf /path/to/solr/server/solr/configsets/geniza
-    chown solr:solr -R /path/to/solr/server/solr/configsets/geniza
+    ❯ solr --version
+    Solr version is: 9.9.0
 
-- Create Solr collection with the configured configset (use `create_core` with Solr standalone and `create_collection` with SolrCloud)::
+- In <SOLR_HOME>/solr.xml, update the <str name="modules"> directive to look like this: (replace <SOLR_HOME> appropriately)::
+
+    <str name="modules">${solr.modules:extraction,clustering,langid,analysis-extras,scripting}</str>
+
+- Clear pre-existing geniza core (replace <SOLR_HOME> appropriately)::
+
+    rm -r <SOLR_HOME>/configsets/geniza
+
+- Copy Solr configset into your solr server configset directory (replace <SOLR_HOME> appropriately)::
+
+    cp -r solr_conf <SOLR_HOME>/configsets/geniza
+
+- Load geniza solr core::
 
     curl "http://localhost:8983/solr/admin/cores?action=CREATE&name=geniza&configSet=geniza"
 
