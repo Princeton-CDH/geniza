@@ -31,6 +31,8 @@ jobs:
         ports:
           - 5432:5432
       solr:
+        environment:
+          SOLR_MODULES: extraction,clustering,langid,analysis-extras,scripting
         image: solr:9.9
         ports:
           - 8983:8983
