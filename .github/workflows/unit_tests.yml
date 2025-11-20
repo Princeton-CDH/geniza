@@ -8,7 +8,6 @@ on:
 
 env:
   NODE_VERSION: 22
-  SOLR_VERSION: 9.9
   DB_VERSION: 16
   DB_NAME: geniza
   DB_USER: geniza
@@ -25,7 +24,7 @@ jobs:
     # https://docs.github.com/en/free-pro-team@latest/actions/guides/about-service-containers
     services:
       postgres:
-        image: postgres:${{ env.DB_VERSION }}
+        image: "postgres:${{ env.DB_VERSION }}"
         env:
           POSTGRES_DB: ${{ env.DB_NAME }}
           POSTGRES_USER: ${{ env.DB_USER }}
@@ -33,7 +32,7 @@ jobs:
         ports:
           - 5432:5432
       solr:
-        image: solr:${{ env.SOLR_VERSION }}
+        image: solr:9.9
         env:
           SOLR_MODULES: extraction,clustering,langid,analysis-extras,scripting
         ports:
