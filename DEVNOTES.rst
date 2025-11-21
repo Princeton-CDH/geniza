@@ -24,13 +24,13 @@ Setup and installation (local environment)
 
     SECRET_KEY = "xyz"
 
-- Create a new postgres database <DATABASE_NAME>::
+- Setup postgresql, login to it, and create a new database <DB_NAME>::
 
-    CREATE DATABASE <DATABASE_NAME>;
+    CREATE DATABASE <DB_NAME>;
 
-- Ingest <DATABASE_NAME> from a sample or a dump::
+- Log out from postgresql console, get a data sample or full dump, and use it to ingest <DB_NAME>::
 
-    psql <DATABASE_NAME> < <DB_SAMPLE>
+    psql <DB_NAME> < <DB_SAMPLE>
 
 
 - Run database migrations::
@@ -41,21 +41,21 @@ Setup and installation (local environment)
 
     cd geniza && django-admin compilemessages
 
-- Make sure you have Solr version >= 9.9  (replace <SOLR_HOME> appropriately)::
+- Setup solr version >= 9.9 (replace <SOLR_HOME> appropriately)::
 
     ❯ solr --version
     Solr version is: 9.9.0
 
-- In <SOLR_HOME>/solr.xml, update the <str name="modules"> directive to look like this: (replace <SOLR_HOME> appropriately)::
+- In <SOLR_HOME>/solr.xml, update the <str name="modules"> directive to look like this:::
 
     <str name="modules">${solr.modules:extraction,clustering,langid,analysis-extras,scripting}</str>
 
-- Clear pre-existing geniza core (replace <SOLR_HOME> appropriately)::
+- Clear pre-existing geniza core::
 
     rm -r <SOLR_HOME>/configsets/geniza
     solr restart
 
-- Copy Solr configset into your solr server configset directory (replace <SOLR_HOME> appropriately)::
+- Copy geniza's solr config into your solr server configset directory::
 
     cp -r solr_conf <SOLR_HOME>/configsets/geniza
 
