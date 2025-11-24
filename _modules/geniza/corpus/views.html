@@ -4,11 +4,11 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>geniza.corpus.views &#8212; Princeton Geniza Project 4.26.0 documentation</title>
+    <title>geniza.corpus.views &#8212; Princeton Geniza Project 4.27.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=5ecbeea2" />
     <link rel="stylesheet" type="text/css" href="../../../_static/basic.css?v=b08954a9" />
     <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=27fed22d" />
-    <script src="../../../_static/documentation_options.js?v=5a3b8251"></script>
+    <script src="../../../_static/documentation_options.js?v=2beec808"></script>
     <script src="../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
@@ -61,16 +61,17 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">django.views.generic.edit</span><span class="w"> </span><span class="kn">import</span> <span class="n">FormMixin</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">parasolr.django.views</span><span class="w"> </span><span class="kn">import</span> <span class="n">SolrLastModifiedMixin</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">piffle.presentation</span><span class="w"> </span><span class="kn">import</span> <span class="n">IIIFPresentation</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">requests.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="ne">ConnectionError</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">tabular_export.admin</span><span class="w"> </span><span class="kn">import</span> <span class="n">export_to_csv_response</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">taggit.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">Tag</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">geniza.common.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">absolutize_url</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">geniza.common.views</span><span class="w"> </span><span class="kn">import</span> <span class="n">SolrDownError</span><span class="p">,</span> <span class="n">SolrDownMixin</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">geniza.corpus</span><span class="w"> </span><span class="kn">import</span> <span class="n">iiif_utils</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">geniza.corpus.forms</span><span class="w"> </span><span class="kn">import</span> <span class="n">DocumentMergeForm</span><span class="p">,</span> <span class="n">DocumentSearchForm</span><span class="p">,</span> <span class="n">TagMergeForm</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">geniza.corpus.ja</span><span class="w"> </span><span class="kn">import</span> <span class="n">contains_arabic</span><span class="p">,</span> <span class="n">contains_hebrew</span><span class="p">,</span> <span class="n">ja_arabic_chars</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">geniza.corpus.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">Document</span><span class="p">,</span> <span class="n">TextBlock</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">geniza.corpus.solr_queryset</span><span class="w"> </span><span class="kn">import</span> <span class="n">DocumentSolrQuerySet</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">geniza.corpus.templatetags</span><span class="w"> </span><span class="kn">import</span> <span class="n">corpus_extras</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">geniza.footnotes.forms</span><span class="w"> </span><span class="kn">import</span> <span class="n">SourceChoiceForm</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">geniza.footnotes.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">Footnote</span><span class="p">,</span> <span class="n">Source</span>
 
@@ -92,7 +93,11 @@
 <span class="sd">            the key is not added to a dictionary.</span>
 <span class="sd">        :rtype: dict</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">stats</span> <span class="o">=</span> <span class="n">queryset_cls</span><span class="p">()</span><span class="o">.</span><span class="n">stats</span><span class="p">(</span><span class="s2">&quot;start_dating_i&quot;</span><span class="p">,</span> <span class="s2">&quot;end_dating_i&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">get_stats</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">stats</span> <span class="o">=</span> <span class="n">queryset_cls</span><span class="p">()</span><span class="o">.</span><span class="n">stats</span><span class="p">(</span><span class="s2">&quot;start_dating_i&quot;</span><span class="p">,</span> <span class="s2">&quot;end_dating_i&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">get_stats</span><span class="p">()</span>
+        <span class="k">except</span> <span class="ne">ConnectionError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">SolrDownError</span>
+
         <span class="k">if</span> <span class="n">stats</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;stats_fields&quot;</span><span class="p">):</span>
             <span class="c1"># use minimum from start date and max from end date</span>
             <span class="c1"># - we&#39;re storing YYYYMMDD as 8-digit number for this we only want year</span>
@@ -113,7 +118,7 @@
 <div class="viewcode-block" id="DocumentSearchView">
 <a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.DocumentSearchView">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">DocumentSearchView</span><span class="p">(</span>
-    <span class="n">ListView</span><span class="p">,</span> <span class="n">FormMixin</span><span class="p">,</span> <span class="n">SolrLastModifiedMixin</span><span class="p">,</span> <span class="n">SolrDateRangeMixin</span>
+    <span class="n">ListView</span><span class="p">,</span> <span class="n">FormMixin</span><span class="p">,</span> <span class="n">SolrDownMixin</span><span class="p">,</span> <span class="n">SolrLastModifiedMixin</span><span class="p">,</span> <span class="n">SolrDateRangeMixin</span>
 <span class="p">):</span>
     <span class="n">model</span> <span class="o">=</span> <span class="n">Document</span>
     <span class="n">form_class</span> <span class="o">=</span> <span class="n">DocumentSearchForm</span>
@@ -316,6 +321,38 @@
                         <span class="n">method</span><span class="o">=</span><span class="s2">&quot;unified&quot;</span><span class="p">,</span>
                         <span class="n">fragsize</span><span class="o">=</span><span class="mi">150</span><span class="p">,</span>
                         <span class="n">requireFieldMatch</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                        <span class="o">**</span><span class="p">{</span><span class="s2">&quot;bs.type&quot;</span><span class="p">:</span> <span class="s2">&quot;SEPARATOR&quot;</span><span class="p">,</span> <span class="s2">&quot;bs.separator&quot;</span><span class="p">:</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">},</span>
+                    <span class="p">)</span>
+                    <span class="o">.</span><span class="n">highlight</span><span class="p">(</span>
+                        <span class="s2">&quot;description_he&quot;</span><span class="p">,</span>
+                        <span class="n">snippets</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+                        <span class="n">method</span><span class="o">=</span><span class="s2">&quot;unified&quot;</span><span class="p">,</span>
+                        <span class="n">fragsize</span><span class="o">=</span><span class="mi">150</span><span class="p">,</span>
+                        <span class="n">requireFieldMatch</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                        <span class="o">**</span><span class="p">{</span><span class="s2">&quot;bs.type&quot;</span><span class="p">:</span> <span class="s2">&quot;SEPARATOR&quot;</span><span class="p">,</span> <span class="s2">&quot;bs.separator&quot;</span><span class="p">:</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">},</span>
+                    <span class="p">)</span>
+                    <span class="o">.</span><span class="n">highlight</span><span class="p">(</span>
+                        <span class="s2">&quot;description_he_nostem&quot;</span><span class="p">,</span>
+                        <span class="n">snippets</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+                        <span class="n">method</span><span class="o">=</span><span class="s2">&quot;unified&quot;</span><span class="p">,</span>
+                        <span class="n">fragsize</span><span class="o">=</span><span class="mi">150</span><span class="p">,</span>
+                        <span class="n">requireFieldMatch</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                        <span class="o">**</span><span class="p">{</span><span class="s2">&quot;bs.type&quot;</span><span class="p">:</span> <span class="s2">&quot;SEPARATOR&quot;</span><span class="p">,</span> <span class="s2">&quot;bs.separator&quot;</span><span class="p">:</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">},</span>
+                    <span class="p">)</span>
+                    <span class="o">.</span><span class="n">highlight</span><span class="p">(</span>
+                        <span class="s2">&quot;description_ar&quot;</span><span class="p">,</span>
+                        <span class="n">snippets</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+                        <span class="n">method</span><span class="o">=</span><span class="s2">&quot;unified&quot;</span><span class="p">,</span>
+                        <span class="n">fragsize</span><span class="o">=</span><span class="mi">150</span><span class="p">,</span>
+                        <span class="n">requireFieldMatch</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                        <span class="o">**</span><span class="p">{</span><span class="s2">&quot;bs.type&quot;</span><span class="p">:</span> <span class="s2">&quot;SEPARATOR&quot;</span><span class="p">,</span> <span class="s2">&quot;bs.separator&quot;</span><span class="p">:</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">},</span>
+                    <span class="p">)</span>
+                    <span class="o">.</span><span class="n">highlight</span><span class="p">(</span>
+                        <span class="s2">&quot;description_ar_nostem&quot;</span><span class="p">,</span>
+                        <span class="n">snippets</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+                        <span class="n">method</span><span class="o">=</span><span class="s2">&quot;unified&quot;</span><span class="p">,</span>
+                        <span class="n">fragsize</span><span class="o">=</span><span class="mi">150</span><span class="p">,</span>
+                        <span class="n">requireFieldMatch</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                         <span class="o">**</span><span class="p">{</span><span class="s2">&quot;bs.type&quot;</span><span class="p">:</span> <span class="s2">&quot;SEPARATOR&quot;</span><span class="p">,</span> <span class="s2">&quot;bs.separator&quot;</span><span class="p">:</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">},</span>
                     <span class="p">)</span>
                     <span class="c1"># highlight old shelfmark so we can show match in results</span>
@@ -609,10 +646,10 @@
                 <span class="p">],</span>
                 <span class="c1"># related entities: sorted by type for grouping, and slug for alphabetization</span>
                 <span class="s2">&quot;related_people&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">object</span><span class="o">.</span><span class="n">persondocumentrelation_set</span><span class="o">.</span><span class="n">order_by</span><span class="p">(</span>
-                    <span class="s2">&quot;type__name&quot;</span><span class="p">,</span> <span class="s2">&quot;person__slug&quot;</span>
+                    <span class="s2">&quot;type__order&quot;</span><span class="p">,</span> <span class="s2">&quot;type__name&quot;</span><span class="p">,</span> <span class="s2">&quot;person__slug&quot;</span>
                 <span class="p">),</span>
                 <span class="s2">&quot;related_places&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">object</span><span class="o">.</span><span class="n">documentplacerelation_set</span><span class="o">.</span><span class="n">order_by</span><span class="p">(</span>
-                    <span class="s2">&quot;type__name&quot;</span><span class="p">,</span> <span class="s2">&quot;place__slug&quot;</span>
+                    <span class="s2">&quot;type__order&quot;</span><span class="p">,</span> <span class="s2">&quot;type__name&quot;</span><span class="p">,</span> <span class="s2">&quot;place__slug&quot;</span>
                 <span class="p">),</span>
             <span class="p">}</span>
         <span class="p">)</span>
