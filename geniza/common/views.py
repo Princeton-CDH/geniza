@@ -50,11 +50,12 @@ class SolrDownError(Exception):
 
 
 class SolrDownMixin:
-    """Mixin to use the solr_error template with a 503 status code when a view
+    """Mixin to use the solr_error template with a 500 status code when a view
     encounters a solr error"""
 
     def dispatch(self, request, *args, **kwargs):
         try:
             return super().dispatch(request, *args, **kwargs)
         except SolrDownError:
-            return render(request, "solr_error.html", {}, status=503)
+            # NOTE: Should be switched to 503 if/when infra issue is resolved
+            return render(request, "solr_error.html", {}, status=500)

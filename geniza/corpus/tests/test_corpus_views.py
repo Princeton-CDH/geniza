@@ -4,12 +4,13 @@ from time import sleep
 from unittest.mock import ANY, MagicMock, Mock, patch
 
 import pytest
+import requests
 from django.conf import settings
 from django.contrib.admin.models import ADDITION, LogEntry
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
-from django.test import TestCase
+from django.test import LiveServerTestCase, TestCase
 from django.urls import resolve, reverse
 from django.utils.text import Truncator, slugify
 from django.utils.timezone import get_current_timezone, make_aware
@@ -379,19 +380,47 @@ def test_pgp_metadata_for_old_site():
     assert b"Legal" in row1
 
 
-class TestDocumentSearchView:
-    @pytest.mark.django_db
-    def test_solr_down_mixin(self, client):
-        # SolrDownError should redirect to solr error template w/ 503 response
-        docsearch_url = reverse("corpus:document-search")
+class TestDocumentSearchViewErrors(LiveServerTestCase):
+    def setUp(self):
+        self.docsearch_url = self.live_server_url + reverse("corpus:document-search")
+
+    def test_solr_down_mixin(self):
+        # SolrDownError: should redirect to solr error template w/ 500 response
+        with patch.object(
+            DocumentSearchView, "get_range_stats", side_effect=SolrDownError
+        ):
+            response = requests.get(self.docsearch_url)
+        self.assertEqual(response.status_code, 500)
+        # should include solr error message
+        self.assertIn("unable to reach the Solr service", response.text)
+
+    def test_generic_exception(self):
+        # generic Exception: should use the generic 500 error template
+        with patch.object(DocumentSearchView, "get_range_stats", side_effect=Exception):
+            response = requests.get(self.docsearch_url)
+
+        self.assertEqual(response.status_code, 500)
+        # should NOT include solr error message
+        self.assertNotIn("unable to reach the Solr service", response.text)
+
+    def test_both_exceptions(self):
+        # both Exception and SolrDownError: should use the generic 500 error template
         with patch(
             "geniza.corpus.views.DocumentSearchView.get_range_stats",
-            side_effect=SolrDownError,
+            side_effect=Exception,
         ):
-            response = client.get(docsearch_url)
-            assert response.status_code == 503
-            assert "unable to reach the Solr service" in response.content.decode()
+            with patch(
+                "geniza.corpus.views.DocumentSearchView.get_context_data",
+                side_effect=SolrDownError,
+            ):
+                response = requests.get(self.docsearch_url)
 
+        self.assertEqual(response.status_code, 500)
+        # should NOT include solr error message
+        self.assertNotIn("unable to reach the Solr service", response.text)
+
+
+class TestDocumentSearchView:
     def test_ignore_suppressed_documents(self, document, empty_solr):
         suppressed_document = Document.objects.create(status=Document.SUPPRESSED)
         Document.index_items([document, suppressed_document])
