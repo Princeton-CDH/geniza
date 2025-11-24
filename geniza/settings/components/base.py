@@ -71,6 +71,7 @@ INSTALLED_APPS = [
     "geniza.pages.apps.PagesConfig",
     "geniza.annotations",
     "geniza.entities",
+    "geniza.resources",
 ]
 
 MIDDLEWARE = [

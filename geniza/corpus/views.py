@@ -28,16 +28,17 @@ from django.views.generic import DetailView, FormView, ListView
 from django.views.generic.edit import FormMixin
 from parasolr.django.views import SolrLastModifiedMixin
 from piffle.presentation import IIIFPresentation
+from requests.exceptions import ConnectionError
 from tabular_export.admin import export_to_csv_response
 from taggit.models import Tag
 
 from geniza.common.utils import absolutize_url
+from geniza.common.views import SolrDownError, SolrDownMixin
 from geniza.corpus import iiif_utils
 from geniza.corpus.forms import DocumentMergeForm, DocumentSearchForm, TagMergeForm
 from geniza.corpus.ja import contains_arabic, contains_hebrew, ja_arabic_chars
 from geniza.corpus.models import Document, TextBlock
 from geniza.corpus.solr_queryset import DocumentSolrQuerySet
-from geniza.corpus.templatetags import corpus_extras
 from geniza.footnotes.forms import SourceChoiceForm
 from geniza.footnotes.models import Footnote, Source
 
@@ -55,7 +56,11 @@ class SolrDateRangeMixin:
             the key is not added to a dictionary.
         :rtype: dict
         """
-        stats = queryset_cls().stats("start_dating_i", "end_dating_i").get_stats()
+        try:
+            stats = queryset_cls().stats("start_dating_i", "end_dating_i").get_stats()
+        except ConnectionError:
+            raise SolrDownError
+
         if stats.get("stats_fields"):
             # use minimum from start date and max from end date
             # - we're storing YYYYMMDD as 8-digit number for this we only want year
@@ -72,7 +77,7 @@ class SolrDateRangeMixin:
 
 
 class DocumentSearchView(
-    ListView, FormMixin, SolrLastModifiedMixin, SolrDateRangeMixin
+    ListView, FormMixin, SolrDownMixin, SolrLastModifiedMixin, SolrDateRangeMixin
 ):
     model = Document
     form_class = DocumentSearchForm
@@ -255,6 +260,38 @@ class DocumentSearchView(
                         method="unified",
                         fragsize=150,
                         requireFieldMatch=False,
+                        **{"bs.type": "SEPARATOR", "bs.separator": "\n"},
+                    )
+                    .highlight(
+                        "description_he",
+                        snippets=3,
+                        method="unified",
+                        fragsize=150,
+                        requireFieldMatch=True,
+                        **{"bs.type": "SEPARATOR", "bs.separator": "\n"},
+                    )
+                    .highlight(
+                        "description_he_nostem",
+                        snippets=3,
+                        method="unified",
+                        fragsize=150,
+                        requireFieldMatch=True,
+                        **{"bs.type": "SEPARATOR", "bs.separator": "\n"},
+                    )
+                    .highlight(
+                        "description_ar",
+                        snippets=3,
+                        method="unified",
+                        fragsize=150,
+                        requireFieldMatch=True,
+                        **{"bs.type": "SEPARATOR", "bs.separator": "\n"},
+                    )
+                    .highlight(
+                        "description_ar_nostem",
+                        snippets=3,
+                        method="unified",
+                        fragsize=150,
+                        requireFieldMatch=True,
                         **{"bs.type": "SEPARATOR", "bs.separator": "\n"},
                     )
                     # highlight old shelfmark so we can show match in results
@@ -515,10 +552,10 @@ class DocumentDetailView(DocumentDetailBase, DetailView):
                 ],
                 # related entities: sorted by type for grouping, and slug for alphabetization
                 "related_people": self.object.persondocumentrelation_set.order_by(
-                    "type__name", "person__slug"
+                    "type__order", "type__name", "person__slug"
                 ),
                 "related_places": self.object.documentplacerelation_set.order_by(
-                    "type__name", "place__slug"
+                    "type__order", "type__name", "place__slug"
                 ),
             }
         )

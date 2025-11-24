@@ -14,13 +14,15 @@ from django.db.models import Count, Q
 from django.db.models.functions import NullIf
 from django.db.models.query import Prefetch
 from django.utils.html import strip_tags
+from django.utils.text import slugify
 from django.utils.translation import gettext_lazy as _
 from gfklookupwidget.fields import GfkLookupField
 from modeltranslation.manager import MultilingualManager, MultilingualQuerySet
 from multiselectfield import MultiSelectField
+from unidecode import unidecode
 
 from geniza.common.fields import NaturalSortField
-from geniza.common.models import TrackChangesModel
+from geniza.common.models import SlugMixin, TrackChangesModel
 from geniza.common.utils import list_to_string
 from geniza.footnotes.utils import HTMLLineNumberParser
 
@@ -126,7 +128,7 @@ class SourceQuerySet(MultilingualQuerySet):
         return self.annotate(Count("footnote", distinct=True))
 
 
-class Source(models.Model):
+class Source(SlugMixin, models.Model):
     """a published or unpublished work related to geniza materials"""
 
     authors = models.ManyToManyField(Creator, through=Authorship)
@@ -196,6 +198,21 @@ class Source(models.Model):
         # Otherwise return formatted display without html tags
         else:
             return self.display()
+
+    def generate_slug(self):
+        """Generate a slug for this source based on authors/title/year, and ensure it is unique.
+        Adapted from mep-django."""
+        # use first 5 words from authors list to keep slugs relatively short
+        authors = "-".join(self.all_authors().split()[:5]).replace("; ", "-")
+        # same with title (fallback to source type if untitled)
+        title = (
+            "-".join(self.title.split()[:5]) if self.title else self.source_type.type
+        )
+        # if no authors, this will have a leading dash, which slugify() removes
+        str_repr = (
+            f"{authors}-{title}-{self.year}" if self.year else f"{authors}-{title}"
+        )
+        self.slug = self.dedupe_slug(slugify(unidecode(str_repr)))
 
     def all_authors(self):
         """semi-colon delimited list of authors in order"""

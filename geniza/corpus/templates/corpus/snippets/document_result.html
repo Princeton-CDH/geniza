@@ -51,22 +51,22 @@
                 {% endif %}
             </dl>
 
-                {# description #}
-                {# TODO: Adjust lang attribute logic for non-English descriptions #}
-            <p class="description" lang="en">
-                    {# display keywords in context if any #}
-                {% with document_highlights=highlighting|dict_item:document.id %}
-                    {% if document_highlights.description %}
-                        {% for snippet in document_highlights.description %}
-                            {{ snippet|safe }}
-                            {% if not forloop.last %}[…]{% endif %}
+            {# description #}
+            {% with highlight=highlighting|dict_item:document.id|translate_highlight %}
+                {% if highlight and highlight.snippets %}
+                    <p class="description" lang="{{ highlight.lang }}" dir="{{ highlight.dir }}">
+                        {% for snippet in highlight.snippets %}
+                            {{ snippet|safe }}{% if not forloop.last %}[…]{% endif %}
                         {% endfor %}
-                    {% else %}
-                            {# otherwise, display truncated description #}
-                        {{ document.description|truncatewords:25 }}
-                    {% endif %}
-                {% endwith %}
-            </p>
+                    </p>
+                {% else %}
+                    {% with description=document|translate_description %}
+                        <p class="description" lang="{{ description.lang }}" dir="{{ description.dir }}">
+                            {{ description.text|truncatewords:25 }}
+                        </p>
+                    {% endwith %}
+                {% endif %}
+            {% endwith %}
 
                 {# transcription: keywords in context if any, or excerpt #}
             {% with document_highlights=highlighting|dict_item:document.id lang=document.language_code lang_script=document.language_script %}

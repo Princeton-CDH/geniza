@@ -4,21 +4,24 @@ from time import sleep
 from unittest.mock import ANY, MagicMock, Mock, patch
 
 import pytest
+import requests
 from django.conf import settings
 from django.contrib.admin.models import ADDITION, LogEntry
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
-from django.test import TestCase
+from django.test import LiveServerTestCase, TestCase
 from django.urls import resolve, reverse
 from django.utils.text import Truncator, slugify
 from django.utils.timezone import get_current_timezone, make_aware
 from parasolr.django import SolrClient
 from pytest_django.asserts import assertContains, assertNotContains
+from requests.exceptions import ConnectionError
 from taggit.models import Tag
 
 from geniza.annotations.models import Annotation
 from geniza.common.utils import absolutize_url
+from geniza.common.views import SolrDownError
 from geniza.corpus.iiif_utils import EMPTY_CANVAS_ID, new_iiif_canvas
 from geniza.corpus.models import Document, DocumentType, Fragment, TextBlock
 from geniza.corpus.solr_queryset import DocumentSolrQuerySet, clean_html
@@ -30,6 +33,7 @@ from geniza.corpus.views import (
     DocumentScholarshipView,
     DocumentSearchView,
     DocumentTranscriptionText,
+    SolrDateRangeMixin,
     SourceAutocompleteView,
     TagMerge,
     old_pgp_edition,
@@ -45,6 +49,16 @@ from geniza.entities.models import (
 )
 from geniza.footnotes.forms import SourceChoiceForm
 from geniza.footnotes.models import Creator, Footnote, Source, SourceType
+
+
+class TestSolrDateRangeMixin:
+    def test_get_range_stats(self):
+        # simulate solr being down to test raising solr error
+        queryset_cls = Mock()
+        queryset_cls.side_effect = ConnectionError
+        mixin = SolrDateRangeMixin()
+        with pytest.raises(SolrDownError):
+            mixin.get_range_stats(queryset_cls, "test")
 
 
 class TestDocumentDetailView:
@@ -364,6 +378,46 @@ def test_pgp_metadata_for_old_site():
     # Ensure objects have been correctly parsed as strings
     assert b"36" in row1
     assert b"Legal" in row1
+
+
+class TestDocumentSearchViewErrors(LiveServerTestCase):
+    def setUp(self):
+        self.docsearch_url = self.live_server_url + reverse("corpus:document-search")
+
+    def test_solr_down_mixin(self):
+        # SolrDownError: should redirect to solr error template w/ 500 response
+        with patch.object(
+            DocumentSearchView, "get_range_stats", side_effect=SolrDownError
+        ):
+            response = requests.get(self.docsearch_url)
+        self.assertEqual(response.status_code, 500)
+        # should include solr error message
+        self.assertIn("unable to reach the Solr service", response.text)
+
+    def test_generic_exception(self):
+        # generic Exception: should use the generic 500 error template
+        with patch.object(DocumentSearchView, "get_range_stats", side_effect=Exception):
+            response = requests.get(self.docsearch_url)
+
+        self.assertEqual(response.status_code, 500)
+        # should NOT include solr error message
+        self.assertNotIn("unable to reach the Solr service", response.text)
+
+    def test_both_exceptions(self):
+        # both Exception and SolrDownError: should use the generic 500 error template
+        with patch(
+            "geniza.corpus.views.DocumentSearchView.get_range_stats",
+            side_effect=Exception,
+        ):
+            with patch(
+                "geniza.corpus.views.DocumentSearchView.get_context_data",
+                side_effect=SolrDownError,
+            ):
+                response = requests.get(self.docsearch_url)
+
+        self.assertEqual(response.status_code, 500)
+        # should NOT include solr error message
+        self.assertNotIn("unable to reach the Solr service", response.text)
 
 
 class TestDocumentSearchView:
@@ -1521,6 +1575,7 @@ class TestDocumentManifestView:
         fragment,
     ):
         # fixture document fragment has iiif, so remove it to test
+        fragment.url = ""
         fragment.iiif_url = ""
         fragment.save()
         # no iiif or transcription; should 404
@@ -1632,6 +1687,7 @@ class TestDocumentManifestView:
         fragment,
     ):
         # remove iiif url from fixture document fragment has iiif
+        fragment.url = ""
         fragment.iiif_url = ""
         fragment.save()
         # add a footnote with transcription content
@@ -1708,6 +1764,7 @@ class TestDocumentAnnotationListView:
         self, mockiifpres, client, document, source, fragment
     ):
         # remove iiif url from fixture document fragment has iiif
+        fragment.url = ""
         fragment.iiif_url = ""
         fragment.save()
         # add a footnote with transcription content

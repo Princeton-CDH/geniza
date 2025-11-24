@@ -5,10 +5,11 @@ from django.contrib.admin import SimpleListFilter
 from django.contrib.contenttypes.admin import GenericTabularInline
 from django.contrib.contenttypes.forms import BaseGenericInlineFormSet
 from django.contrib.contenttypes.models import ContentType
+from django.contrib.postgres.aggregates import StringAgg
 from django.db import models
-from django.db.models.fields import CharField, TextField
+from django.db.models.fields import TextField
 from django.db.models.functions import Concat
-from django.forms import URLField, ValidationError
+from django.forms import ValidationError
 from django.forms.models import BaseInlineFormSet
 from django.forms.widgets import Textarea, TextInput
 from django.urls import path, reverse
@@ -247,6 +248,17 @@ class SourceAdmin(SortableAdminBase, TabbedTranslationAdmin, admin.ModelAdmin):
     class Media:
         css = {"all": ("css/admin-local.css",)}
 
+    def save_related(self, request, form, formsets, change):
+        """Override save to ensure slug is generated if empty. Adapted from mep-django"""
+        super().save_related(request, form, formsets, change)
+
+        # this must be done after related objects are saved, because generate_slug
+        # requires related Creator records
+        source = form.instance
+        if not source.slug:
+            source.generate_slug()
+            source.save()
+
     def get_queryset(self, request):
         return (
             super()
@@ -257,9 +269,13 @@ class SourceAdmin(SortableAdminBase, TabbedTranslationAdmin, admin.ModelAdmin):
                 models.Q(authorship__isnull=True) | models.Q(authorship__sort_order=1)
             )
             .annotate(
-                first_author=Concat(
-                    "authorship__creator__last_name", "authorship__creator__first_name"
-                ),
+                first_author=StringAgg(
+                    Concat(
+                        "authorship__creator__last_name",
+                        "authorship__creator__first_name",
+                    ),
+                    delimiter=", ",
+                )
             )
         )
 

@@ -387,6 +387,32 @@ class Fragment(TrackChangesModel):
         # url in a query string; strip that out if it's there
         self.iiif_url = self.iiif_url.split("?manifest=")[0]
 
+    @classmethod
+    def view_to_iiif_url(cls, url):
+        """Generate IIIF Manifest URL based on view url, if it can
+        be determined automatically"""
+
+        if (
+            "cudl.lib.cam.ac.uk/view/" in url
+            or "digitalcollections.manchester.ac.uk/view/" in url
+        ):
+            # cambridge (and manchester digital collections) iiif manifest
+            # links use the same id as view links
+            # NOTE: should exclude search link like this one:
+            # https://cudl.lib.cam.ac.uk/search?fileID=&keyword=T-s%2013J33.12
+            iiif_link = url.replace("/view/", "/iiif/")
+            # view links end with /1 or /2 but iiif link does not include it
+            return re.sub(r"/\d$", "", iiif_link)
+        elif "colenda.library.upenn.edu/catalog/" in url:
+            # UPenn view links are /catalog/81431-p3891287r
+            # and iiif links are /items/ark:/81431/p3891287r
+            return re.sub(
+                r"/catalog/([A-Za-z0-9]+)-([A-Za-z0-9]+)$",
+                r"/items/ark:/\1/\2/manifest",
+                url,
+            )
+        return ""
+
     def save(self, *args, **kwargs):
         """Remember how shelfmarks have changed by keeping a semi-colon list
         in the old_shelfmarks field"""
@@ -397,6 +423,9 @@ class Fragment(TrackChangesModel):
                 self.old_shelfmarks = ";".join(old_shelfmarks - {self.shelfmark})
             else:
                 self.old_shelfmarks = self.initial_value("shelfmark")
+
+        if self.url and not self.iiif_url:
+            self.iiif_url = Fragment.view_to_iiif_url(self.url)
 
         # if iiif url is set and manifest is not available, or iiif url has changed,
         # import the manifest
@@ -510,6 +539,20 @@ class DocumentSignalHandlers:
         """reindex associated documents when a related object is deleted"""
         # delegate to common method
         DocumentSignalHandlers.related_change(instance, raw, "delete")
+
+    @staticmethod
+    def related_save_doctype(
+        sender, instance=None, raw=False, update_fields=None, **_kwargs
+    ):
+        """reindex associated documents when a related DocumentType is saved"""
+        # for document type, if updating, only reindex docs if name_en or display_label_en updated
+        if (
+            not update_fields
+            or "name_en" in update_fields
+            or "display_label_en" in update_fields
+        ):
+            # delegate to common method
+            DocumentSignalHandlers.related_change(instance, raw, "save")
 
 
 class TagSignalHandlers:
@@ -866,6 +909,9 @@ class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin, TaggableMixin)
         iiif_images = {}
         textblocks = self.textblock_set.all()
 
+        # map textblock pks to their order for sorting
+        tb_order_map = {tb.pk: tb.order for tb in textblocks}
+
         for b in textblocks:
             frag_images = b.fragment.iiif_images(allow_network_reqs=not thumbnail)
             if frag_images is not None:
@@ -885,6 +931,7 @@ class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin, TaggableMixin)
                             "rotation": 0,  # rotation to 0 by default; will change if overridden
                             "excluded": len(b.selected_images)
                             and i not in b.selected_images,
+                            "tb_order": tb_order_map.get(b.pk, float("inf")),
                         }
 
         # when requested, include any placeholder canvas URIs referenced by any associated
@@ -913,10 +960,9 @@ class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin, TaggableMixin)
                     if uri_match:
                         # if this was created using placeholders in the transcription editor,
                         # try to ascertain and display the right fragment shelfmark and label
+                        tb_pk = int(uri_match.group("tb_pk"))
                         tb_match_shelfmarks = [
-                            tb.fragment.shelfmark
-                            for tb in textblocks
-                            if tb.pk == int(uri_match.group("tb_pk"))
+                            tb.fragment.shelfmark for tb in textblocks if tb.pk == tb_pk
                         ]
                         if tb_match_shelfmarks:
                             iiif_images[canvas_uri]["shelfmark"] = tb_match_shelfmarks[
@@ -925,10 +971,20 @@ class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin, TaggableMixin)
                         iiif_images[canvas_uri]["label"] = (
                             "recto" if int(uri_match.group("canvas")) == 1 else "verso"
                         )
+                        # keep track of textblock order for later sort
+                        iiif_images[canvas_uri]["tb_order"] = tb_order_map.get(
+                            tb_pk, float("inf")
+                        )
 
-        # if image_overrides not present, return list, in original order
+        # if image_overrides not present, return list, sorted by TextBlock order
         if not self.image_overrides:
-            return iiif_images
+            return dict(
+                sorted(
+                    iiif_images.items(),
+                    key=lambda item: item[1].get("tb_order", float("inf"))
+                    or float("inf"),
+                )
+            )
 
         # sort canvases by "order" value
         sorted_overrides = sorted(
@@ -1356,8 +1412,9 @@ class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin, TaggableMixin)
                     if self.doctype
                     else "Unknown type"
                 ),
-                # use english description for now
                 "description_en_bigram": strip_tags(self.description_en),
+                "description_he_bigram": strip_tags(self.description_he),
+                "description_ar_bigram": strip_tags(self.description_ar),
                 "notes_t": self.notes or None,
                 "needs_review_t": self.needs_review or None,
                 # index shelfmark label as a string (combined shelfmark OR shelfmark override)
@@ -1559,7 +1616,7 @@ class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin, TaggableMixin)
             "pre_delete": DocumentSignalHandlers.related_delete,
         },
         "doctype": {
-            "post_save": DocumentSignalHandlers.related_save,
+            "post_save": DocumentSignalHandlers.related_save_doctype,
             "pre_delete": DocumentSignalHandlers.related_delete,
         },
         "textblock_set": {

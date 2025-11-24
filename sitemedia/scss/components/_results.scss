@@ -165,6 +165,17 @@ section#document-list {
             }
         }
 
+        .description {
+            &[dir="ltr"] {
+                direction: ltr;
+                text-align: left;
+            }
+            &[dir="rtl"] {
+                direction: rtl;
+                text-align: right;
+            }
+        }
+
         .transcription {
             @include typography.transcription-search;
         }
