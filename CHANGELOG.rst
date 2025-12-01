@@ -1,6 +1,26 @@
 Change Log
 ==========
 
+4.27
+----
+
+- As a front end user, I want the header labels of aligned transcriptions and translations to also be aligned, for visual symmetry
+- As a front end user who speaks Hebrew or Arabic, I want document descriptions in search results in my native language, so that I can read and understand them
+- As a content editor, I want the fragment IIIF url to be populated based on view url when it can be automatically inferred
+- As a content admin, I want stable unique identifiers for Source records, so that they can be easily joined with footnotes in data exports
+- As a content admin, I would like to be able to merge Place records so that I can easily correct duplicates
+- As a content admin, I would like the lists of Places and People to be alphabetized, so that I can easily assess the current records
+- As a public site user, I want relationship types for people/places to appear ordered logically on the document detail page, so that I can easily find the most relevant information first
+- As a front end user, I would like to see more specific error message language for when Solr is down, so that I know what the exact problem is
+- As a content editor, I want to easily access training materials from the backend to ensure I add metadata correctly
+- bugfix: Admin search in Source section returning duplicate results
+- bugfix: Date filter not working in admin
+- bugfix: Image order on joins does not respect TextBlock order when there are placeholders
+- bugfix: All tags deleted on new tag + backspace in the admin tags field
+- chore: Fixing JRL Series shelfmarks
+- chore: Fixing JRL Gaster Ar. shelfmarks
+- chore: On saving DocumentType, only reindex related documents if certain fields are changed
+
 4.26
 ----
 

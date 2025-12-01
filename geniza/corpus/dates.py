@@ -42,9 +42,8 @@ class PartialDate:
     available_precision = ["year", "month", "day"]
     #: public display format based on date precision
     display_format = {
-        "year": "Y",
-        "month": "F Y",
-        "day": "j F Y",
+        "month": "F",
+        "day": "j F",
     }
     #: ISO format based on date precision
     iso_format = {
@@ -70,8 +69,15 @@ class PartialDate:
         self.date = date(*[int(p) for p in date_parts])
 
     def __str__(self):
-        # format the date based on known precision
-        return date_format(self.date, format=self.display_format[self.precision])
+        # format the date for public display, based on known precision
+        # avoid zero-padding automatically applied to year by django date_format
+        year = str(self.date.year)
+        if self.precision == "year":
+            # skip date_format entirely
+            return year
+        # use normal year combined with date_formatted month and day
+        month_day = date_format(self.date, format=self.display_format[self.precision])
+        return " ".join([month_day, year])
 
     def __repr__(self) -> str:
         return f"PartialDate({self.isoformat()})"
