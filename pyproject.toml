@@ -32,7 +32,7 @@ dependencies = [
     "rich",
     "wagtail>=7.1,<7.2",
     "wagtail-localize>=1.12,<1.13",
-    "djiffy>=1.0.1,<1.1",
+    "djiffy>=1.0.2,<1.1",
     "natsort",
     "django-widget-tweaks",
     "django-csp-helpers",
