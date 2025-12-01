@@ -153,23 +153,32 @@ window.addEventListener("DOMContentLoaded", () => {
     // https://github.com/select2/select2/issues/3335#issuecomment-1218072422
     // https://github.com/yourlabs/django-autocomplete-light/issues/1398
     document.addEventListener("dal-init-function", function () {
-        if (window.django?.jQuery) {
-            const AllowClear = window.django.jQuery.fn.select2.amd.require(
-                "select2/selection/allowClear"
+        setTimeout(function () {
+            const $ = window.django?.jQuery || window.jQuery;
+            // find all select2 widgets currently initialized by DAL
+            const selects = document.querySelectorAll(
+                "select.select2-hidden-accessible"
             );
-            const handleKeyboardClear =
-                AllowClear.prototype._handleKeyboardClear;
-            AllowClear.prototype._handleKeyboardClear = function (
-                _,
-                evt,
-                container
-            ) {
-                if (this.$element?.prop("multiple")) {
-                    return;
-                }
-                return handleKeyboardClear.call(this, _, evt, container);
-            };
-        }
+            if ($ && selects.length > 0) {
+                selects.forEach((select2El) => {
+                    // patch select2 instance on widgets directly
+                    const select2 = $(select2El).data("select2");
+                    const original = select2?.selection?._handleKeyboardClear;
+                    if (original) {
+                        select2.selection._handleKeyboardClear = function (
+                            _,
+                            evt,
+                            container
+                        ) {
+                            if (this.$element?.prop("multiple")) {
+                                return;
+                            }
+                            return original.call(this, _, evt, container);
+                        };
+                    }
+                });
+            }
+        }, 10); // a bit hacky, but select2 initializes one tick later than DAL
     });
 });
 

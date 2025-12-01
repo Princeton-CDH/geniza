@@ -1,10 +1,19 @@
 # Deploy Notes
 
-## 4.27
+## 4.28
 
 -   Logic for date formatting has changed, affecting data indexed in Solr.
     Reindex all content to get the updated date display in search results:
     `python manage.py index`.
+
+## 4.27
+
+-   Solr configuration has changed. Ensure Solr configset has been updated
+    and then reindex all content: `python manage.py index`
+-   Solr instance-level configuration changed. We are still using the same modules (extraction, clustering,
+    langid, analysis-extras, scripting) but altering the way to import them (solr-instance level instead of
+    solr-core level, we removed the lib-directives from geniza/solr_conf/conf/solrconfig.xml to support solr >= 9.9)
+    For more details: https://solr.apache.org/guide/solr/latest/configuration-guide/solr-modules.html
 
 ## 4.26
 
