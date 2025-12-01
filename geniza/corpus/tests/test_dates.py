@@ -273,6 +273,17 @@ class TestPartialDate:
         # year only
         assert str(PartialDate("1569")) == "1569"
 
+    def test_partialdate_str_threedigit(self):
+        # three-digit years should not be zero-padded in public display string
+        # single day
+        assert str(PartialDate("0850-10-23")) == "23 October 850"
+
+        # month/year
+        assert str(PartialDate("0850-10")) == "October 850"
+
+        # year only
+        assert str(PartialDate("0850")) == "850"
+
     def test_partialdate_init(self):
         # raise value error for too many parts
         with pytest.raises(ValueError):

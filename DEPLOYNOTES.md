@@ -1,5 +1,11 @@
 # Deploy Notes
 
+## 4.28
+
+-   Logic for date formatting has changed, affecting data indexed in Solr.
+    Reindex all content to get the updated date display in search results:
+    `python manage.py index`.
+
 ## 4.27
 
 -   Solr configuration has changed. Ensure Solr configset has been updated
