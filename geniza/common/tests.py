@@ -5,8 +5,9 @@ from unittest.mock import MagicMock, Mock, patch
 import pytest
 from django.conf import settings
 from django.contrib import admin
-from django.contrib.admin.models import LogEntry
+from django.contrib.admin.models import ADDITION, LogEntry
 from django.contrib.auth.models import Group, User
+from django.contrib.contenttypes.models import ContentType
 from django.contrib.sites.models import Site
 from django.core.exceptions import ValidationError
 from django.db import connection, models
@@ -14,6 +15,7 @@ from django.db.migrations.executor import MigrationExecutor
 from django.http import HttpResponseRedirect, StreamingHttpResponse
 from django.test import RequestFactory, TestCase, TransactionTestCase, override_settings
 from django.urls import reverse
+from django.utils import timezone
 from pytest_django.asserts import assertContains
 from taggit.models import Tag
 
@@ -25,7 +27,7 @@ from geniza.common.admin import (
     custom_empty_field_list_filter,
 )
 from geniza.common.fields import NaturalSortField, RangeField, RangeWidget
-from geniza.common.metadata_export import Exporter, LogEntryExporter
+from geniza.common.metadata_export import Exporter, LogEntryExporter, TagExporter
 from geniza.common.middleware import PublicLocaleMiddleware
 from geniza.common.models import UserProfile
 from geniza.common.utils import (
@@ -364,6 +366,55 @@ class TestCustomTagAdmin:
         assert isinstance(resp, HttpResponseRedirect)
         assert resp.status_code == 302
         assert resp["location"] == reverse("admin:taggit_tag_changelist")
+
+    def test_export_to_csv(self):
+        # tag a document a couple of times
+        document = Document.objects.create()
+        document.tags.add("faketag1", "tag2")
+        tag_admin = CustomTagAdmin(Tag, admin.site)
+
+        # should return streaming HTTP response
+        response = tag_admin.export_to_csv(Mock())
+        assert isinstance(response, StreamingHttpResponse)
+
+        # consume the binary streaming content and decode to inspect as str
+        content = b"".join([val for val in response.streaming_content]).decode()
+
+        # spot-check that we get expected data
+        # - header row
+        assert "name,slug," in content
+        # - some content
+        for tag in document.tags.all():
+            assert tag.name in content
+            assert tag.slug in content
+
+    def test_tag_exporter_data(self):
+        # create a tag that has been used two times
+        document = Document.objects.create()
+        document2 = Document.objects.create()
+        document.tags.add("faketag")
+        document2.tags.add("faketag")
+        tag = document.tags.first()
+        tag_contenttype = ContentType.objects.get(app_label="taggit", model="tag")
+        # create a log entry documenting its creation
+        logentry = LogEntry.objects.create(
+            object_id=tag.pk,
+            content_type=tag_contenttype,
+            user=User.objects.get(username=settings.SCRIPT_USERNAME),
+            action_flag=ADDITION,
+            change_message='Added "faketag"',
+            action_time=timezone.now(),
+        )
+        # export dict should contain expected data
+        tag_exporter = TagExporter()
+        qs = tag_exporter.get_queryset()
+        annotated_tag = qs.get(slug=tag.slug)
+        data = tag_exporter.get_export_data_dict(annotated_tag)
+        assert data["name"] == tag.name
+        assert data["slug"] == tag.slug
+        assert data["user"] == settings.SCRIPT_USERNAME
+        assert data["created"] == logentry.action_time
+        assert data["count"] == 2
 
 
 @pytest.mark.django_db

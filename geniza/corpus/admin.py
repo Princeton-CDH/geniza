@@ -22,6 +22,7 @@ from geniza.annotations.models import Annotation
 from geniza.common.admin import (
     PreventLogEntryDeleteMixin,
     SolrDownAdminMixin,
+    TagLogEntryMixin,
     TypedRelationInline,
     custom_empty_field_list_filter,
 )
@@ -454,6 +455,7 @@ class DocumentAdmin(
     SortableAdminBase,
     PreventLogEntryDeleteMixin,
     SolrDownAdminMixin,
+    TagLogEntryMixin,
     admin.ModelAdmin,
 ):
     form = DocumentForm
