@@ -429,35 +429,42 @@ function rotate(node, degrees) {
         const img = node.querySelector("img");
         const src = img.getAttribute("src");
         const uriMatches = src.match(/\/\d+\//g);
-        const originalRotation = parseInt(
-            uriMatches[uriMatches.length - 1].replace(/\//g, "")
-        );
-        // set the new rotation (taking into consideration the original from URI) as a class
-        node.className = node.classList.contains("selected") ? "selected" : "";
-        const classList = [
-            "admin-thumbnail",
-            `rotate-${normalize360(newRotation - originalRotation)}`,
-        ];
-        node.classList.add(...classList);
+        if (uriMatches) {
+            const originalRotation = parseInt(
+                uriMatches[uriMatches.length - 1].replace(/\//g, "")
+            );
+            // set the new rotation (taking into consideration the original from URI) as a class
+            node.className = node.classList.contains("selected")
+                ? "selected"
+                : "";
+            const classList = [
+                "admin-thumbnail",
+                `rotate-${normalize360(newRotation - originalRotation)}`,
+            ];
+            node.classList.add(...classList);
 
-        // adjust the width and height of the container to accommodate the rotated image,
-        // accounting for controls
-        const rect = img.getBoundingClientRect();
-        const controlRect = node
-            .querySelector(".rotation-controls")
-            .getBoundingClientRect();
-        const checkboxRect = node
-            .querySelector("input[type='checkbox']")
-            .getBoundingClientRect();
+            // adjust the width and height of the container to accommodate the rotated image,
+            // accounting for controls
+            const rect = img.getBoundingClientRect();
+            const controlRect = node
+                .querySelector(".rotation-controls")
+                .getBoundingClientRect();
+            const checkboxRect = node
+                .querySelector("input[type='checkbox']")
+                .getBoundingClientRect();
 
-        node.style.minWidth = `${rect.width}px`;
-        node.style.minHeight = `${
-            rect.height + controlRect.height + checkboxRect.height
-        }px`;
+            node.style.minWidth = `${rect.width}px`;
+            node.style.minHeight = `${
+                rect.height + controlRect.height + checkboxRect.height
+            }px`;
 
-        // finally, update the rotations on the hidden rotation overrides field
-        overrides[canvasUri]["rotation"] = newRotation;
-        imageOverridesField.setAttribute("value", JSON.stringify(overrides));
+            // finally, update the rotations on the hidden rotation overrides field
+            overrides[canvasUri]["rotation"] = newRotation;
+            imageOverridesField.setAttribute(
+                "value",
+                JSON.stringify(overrides)
+            );
+        }
     };
 }
 

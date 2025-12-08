@@ -321,19 +321,23 @@ class Fragment(TrackChangesModel):
             " ".join(
                 # include label as title for now; include canvas as data attribute for reordering
                 # on Document
-                '<div class="admin-thumbnail%s" %s><img src="%s" loading="lazy" height="%d" title="%s" /></div>'
+                '<div class="admin-thumbnail%s" title="%s" %s><img src="%s" loading="lazy" height="%d" /></div>'
                 % (
                     " selected" if i in selected else "",
-                    f'data-canvas="{list(canvases)[i]}"' if canvases else "",
+                    labels[i],
+                    (
+                        f'data-canvas="{list(canvases)[i]}"'
+                        if canvases and len(canvases) > i
+                        else ""
+                    ),
                     img,
                     img.size.options["height"] if hasattr(img, "size") else 200,
-                    labels[i],
                 )
                 for i, img in enumerate(images)
             )
         )
 
-    def iiif_thumbnails(self, selected=[]):
+    def iiif_thumbnails(self, selected=[], canvases=[]):
         """html for thumbnails of iiif image, for display in admin"""
         iiif_images = self.iiif_images()
         if iiif_images is None:
@@ -342,10 +346,10 @@ class Fragment(TrackChangesModel):
             recto_img = static("img/ui/all/all/recto-placeholder.svg")
             verso_img = static("img/ui/all/all/verso-placeholder.svg")
             image_urls = [recto_img, verso_img]
-            labels = ["recto", "verso"]
-            canvases = []
+            labels = [f"{self.shelfmark} recto", f"{self.shelfmark} verso"]
         else:
             images, labels, canvases = iiif_images
+            labels = [f"{self.shelfmark} {label}" for label in labels]
             image_urls = [img.size(height=200) for img in images]
         return Fragment.admin_thumbnails(
             image_urls, labels, canvases=canvases, selected=selected
@@ -1027,16 +1031,36 @@ class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin, TaggableMixin)
 
     def admin_thumbnails(self):
         """generate html for thumbnails of all iiif images, for image reordering UI in admin"""
-        iiif_images = self.iiif_images()
+        iiif_images = self.iiif_images(with_placeholders=True)
         if not iiif_images:
             return ""
         images = iiif_images.values()
+        placeholder = lambda label: f"/static/img/ui/all/all/{label}-placeholder.svg"
+        default_placeholder = Document.PLACEHOLDER_CANVAS["image"]["info"]
+        # include shelfmark + page label
+        labels = [
+            " ".join(
+                [
+                    img["shelfmark"] if "shelfmark" in img else "",
+                    img["label"] if "label" in img else "",
+                ]
+            )
+            for img in images
+        ]
         return Fragment.admin_thumbnails(
             images=[
-                img["image"].size(height=200).rotation(degrees=img["rotation"])
+                (
+                    img["image"].size(height=200).rotation(degrees=img["rotation"])
+                    if hasattr(img["image"], "size")
+                    else (
+                        placeholder(img["label"])
+                        if "label" in img
+                        else default_placeholder
+                    )
+                )
                 for img in images
             ],
-            labels=[img["label"] for img in images],
+            labels=labels,
             canvases=iiif_images.keys(),
         )
 
@@ -1997,7 +2021,33 @@ class TextBlock(models.Model):
 
     def thumbnail(self):
         """iiif thumbnails for this TextBlock, with selected images highlighted"""
-        return self.fragment.iiif_thumbnails(selected=self.selected_images)
+        canvases = []
+        if not self.fragment.iiif_images():
+            # if no IIIF, get placeholder canvas URIs using annotations
+            annotated_canvases = (
+                Annotation.objects.filter(
+                    footnote__content_type=ContentType.objects.get_for_model(Document),
+                    footnote__object_id=self.document.pk,
+                    content__target__source__id__isnull=False,
+                )
+                .order_by()
+                .values_list("content__target__source__id", flat=True)
+                .distinct()
+            )
+            # match placeholder on document and textblock PK; extract canvas number
+            placeholder_re = re.compile(
+                rf"{self.document.pk}/iiif/textblock/{self.pk}/canvas/(\d+)/"
+            )
+            canvases = [
+                canvas_uri
+                for canvas_uri in annotated_canvases
+                if placeholder_re.search(canvas_uri)
+            ]
+            # ensure order of placeholders is 1, 2 (recto, verso) by canvas number
+            canvases.sort(key=lambda uri: int(placeholder_re.search(uri).group(1)))
+        return self.fragment.iiif_thumbnails(
+            selected=self.selected_images, canvases=canvases
+        )
 
 
 class Dating(models.Model):
