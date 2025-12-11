@@ -16,6 +16,7 @@ from django.urls import path, resolve, reverse
 from django.utils import timezone
 from django.utils.html import format_html
 from modeltranslation.admin import TabbedTranslationAdmin
+from parasolr.solr.base import SolrConnectionNotFound
 from requests.exceptions import ConnectionError
 
 from geniza.annotations.models import Annotation
@@ -659,7 +660,7 @@ class DocumentAdmin(
                     .only("pgpid")
                     .get_results(rows=100000)
                 )
-            except ConnectionError:
+            except (ConnectionError, SolrConnectionNotFound):
                 raise SolrDownError
             pks = [r["pgpid"] for r in sqs]
             # filter queryset by id if there are results

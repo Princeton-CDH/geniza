@@ -17,6 +17,7 @@ from django.http import HttpResponseRedirect
 from django.urls import path, reverse
 from django_admin_inline_paginator_plus.admin import TabularInlinePaginated
 from modeltranslation.admin import TabbedTranslationAdmin
+from parasolr.solr.base import SolrConnectionNotFound
 from requests.exceptions import ConnectionError
 
 from geniza.common.admin import (
@@ -424,7 +425,7 @@ class PersonAdmin(
                     .only("slug")
                     .get_results(rows=10000)
                 )
-            except ConnectionError:
+            except (ConnectionError, SolrConnectionNotFound):
                 raise SolrDownError
             slugs = [r.get("slug") for r in sqs if r.get("slug")]
             # filter queryset by slug if there are results

@@ -27,6 +27,7 @@ from django.utils.translation import ngettext
 from django.views.generic import DetailView, FormView, ListView
 from django.views.generic.edit import FormMixin
 from parasolr.django.views import SolrLastModifiedMixin
+from parasolr.solr.base import SolrConnectionNotFound
 from piffle.presentation import IIIFPresentation
 from requests.exceptions import ConnectionError
 from tabular_export.admin import export_to_csv_response
@@ -58,7 +59,7 @@ class SolrDateRangeMixin:
         """
         try:
             stats = queryset_cls().stats("start_dating_i", "end_dating_i").get_stats()
-        except ConnectionError:
+        except (ConnectionError, SolrConnectionNotFound):
             raise SolrDownError
 
         if stats.get("stats_fields"):
