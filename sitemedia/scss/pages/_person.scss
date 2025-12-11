@@ -367,6 +367,9 @@ main.person {
     .network-graph {
         width: 100%;
         height: 24.125rem;
+        @include breakpoints.for-tablet-landscape-up {
+            height: 56rem;
+        }
         margin-top: (2.25rem + spacing.$spacing-xs);
         background-color: var(--network-graph-bg);
         cursor: grab;
