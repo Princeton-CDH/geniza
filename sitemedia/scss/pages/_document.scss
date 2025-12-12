@@ -5,6 +5,7 @@
 @use "../base/breakpoints";
 @use "../base/colors";
 @use "../base/container";
+@use "../base/fonts";
 @use "../base/spacing";
 @use "../base/typography";
 
@@ -185,6 +186,26 @@ main.document {
             p {
                 white-space: pre-line;
                 padding-left: 1.25rem;
+            }
+            div.description-header {
+                display: flex;
+                flex-flow: row;
+                gap: 1rem;
+                select {
+                    cursor: pointer;
+                    font-family: fonts.$primary-bold;
+                    font-size: typography.$text-size-md;
+                    background-color: var(--background-light);
+                    color: var(--on-background-light);
+                    border: 1px solid var(--background-gray);
+                    border-radius: 5px;
+                    padding: 0.3rem 0.25rem;
+                    font-weight: 700;
+                }
+                margin-bottom: 0.25rem;
+            }
+            div.hidden {
+                display: none;
             }
         }
         // related entities

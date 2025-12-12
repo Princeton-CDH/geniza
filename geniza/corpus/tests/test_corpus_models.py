@@ -1782,6 +1782,33 @@ class TestDocument:
         TextBlock.objects.create(fragment=f2, document=document)
         assert document.fragments_by_material_support[0].pk == f1.pk
 
+    def test_description_translations(self):
+        document = Document.objects.create(
+            description="Letter from Abū Zikrī Kohen, in Fustat, to Ḥalfon b. Netanʾel"
+        )
+        # should include just one language, english
+        assert len(document.description_translations) == 1
+        assert document.description_translations[0]["lang"] == "en"
+        assert document.description_translations[0]["content"] == document.description
+
+        # should include the hebrew description as a second dict
+        document.description_he = "מכתב קצר מאת אבו זִכְּרִי כהן אל חלפון"
+        assert len(document.description_translations) == 2
+        he_entry = next(
+            (t for t in document.description_translations if t["lang"] == "he"), None
+        )
+        assert he_entry is not None
+        assert he_entry["content"] == document.description_he
+
+        # should include the arabic description as a third dict
+        document.description_ar = "الفسطاط الى ابي الفرج عوكل ادام الله عزه"
+        assert len(document.description_translations) == 3
+        ar_entry = next(
+            (t for t in document.description_translations if t["lang"] == "ar"), None
+        )
+        assert ar_entry is not None
+        assert ar_entry["content"] == document.description_ar
+
 
 def test_document_merge_with(document, join):
     doc_id = document.id

@@ -558,6 +558,7 @@ class DocumentDetailView(DocumentDetailBase, DetailView):
                 "related_places": self.object.documentplacerelation_set.order_by(
                     "type__order", "type__name", "place__slug"
                 ),
+                "descriptions": self.object.description_translations,
             }
         )
         return context_data

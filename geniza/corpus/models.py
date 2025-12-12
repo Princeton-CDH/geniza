@@ -878,6 +878,23 @@ class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin, TaggableMixin)
             f"{long_name}. {available} {at_pgp} {permalink} (accessed {today})."
         )
 
+    @property
+    def description_translations(self):
+        """list of dictionaries of translated descriptions, with one dict per
+        language present, for the Document detail view.
+        ex. [{'lang': 'he', 'content': 'he description'},
+            {'lang': 'en', 'content': 'en description'}]
+        """
+        descriptions = []
+        # check all languages we have configured
+        for lang, _ in settings.LANGUAGES:
+            field_name = f"description_{lang}"
+            content = getattr(self, field_name, "")
+            # only include if it has content in this language
+            if content and content.strip():
+                descriptions.append({"lang": lang, "content": content})
+        return descriptions
+
     def is_public(self):
         """admin display field indicating if doc is public or suppressed"""
         return self.status == self.PUBLIC
