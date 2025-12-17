@@ -177,7 +177,7 @@ class CustomTagAdmin(TagAdmin):
     item_count.admin_order_field = "item_count"
     item_count.short_description = "count"
 
-    actions = (merge_tags,)
+    actions = (merge_tags, export_to_csv)
 
 
 admin.site.unregister(User)
