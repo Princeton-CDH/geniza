@@ -810,7 +810,8 @@ class TestDocumentSearchView:
         SolrClient().update.index(
             [
                 document.index_data(),  # shelfmark = CUL Add.2586
-                doc2.index_data(),  # shelfmark = T-S 16.377
+                doc2.index_data(),  # shelfmark = T-S 16.377,
+                doc3.index_data(),  # shelfmark = T-S 16.4,
             ],
             commit=True,
         )

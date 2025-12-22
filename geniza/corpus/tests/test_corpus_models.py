@@ -180,7 +180,7 @@ class TestFragment(TestCase):
         )
         assert all(
             label in placeholder_thumbnails
-            for label in ['title="recto"', 'title="verso"']
+            for label in ['title="TS 1 recto"', 'title="TS 1 verso"']
         )
         # test with recto side selected: should add class to recto div, but not verso div
         thumbnails_recto_selected = BeautifulSoup(
@@ -188,8 +188,8 @@ class TestFragment(TestCase):
         ).find_all("div", {"class": "selected"})
 
         assert len(thumbnails_recto_selected) == 1
-        assert 'title="recto"' in str(thumbnails_recto_selected[0])
-        assert 'title="verso"' not in str(thumbnails_recto_selected[0])
+        assert 'title="TS 1 recto"' in str(thumbnails_recto_selected[0])
+        assert 'title="TS 1 verso"' not in str(thumbnails_recto_selected[0])
 
         frag.iiif_url = "http://example.co/iiif/ts-1"
         # return simplified part of the manifest we need for this
@@ -235,8 +235,8 @@ class TestFragment(TestCase):
             '<img src="http://example.co/iiif/ts-1/00001/full/,200/0/default.jpg" loading="lazy"'
             in thumbnails
         )
-        assert 'title="1r"' in thumbnails
-        assert 'title="1v"' in thumbnails
+        assert 'title="TS 1 1r"' in thumbnails
+        assert 'title="TS 1 1v"' in thumbnails
         assert isinstance(thumbnails, SafeString)
 
         # test with verso side selected: should add class to 1v div, but not 1r div
@@ -245,8 +245,8 @@ class TestFragment(TestCase):
         ).find_all("div", {"class": "selected"})
 
         assert len(thumbnails_recto_selected) == 1
-        assert 'title="1v"' in str(thumbnails_recto_selected[0])
-        assert 'title="1r"' not in str(thumbnails_recto_selected[0])
+        assert 'title="TS 1 1v"' in str(thumbnails_recto_selected[0])
+        assert 'title="TS 1 1r"' not in str(thumbnails_recto_selected[0])
 
     @pytest.mark.django_db
     @patch("geniza.corpus.models.GenizaManifestImporter")
@@ -2297,14 +2297,47 @@ class TestTextBlock:
         )
         assert str(block2) == "%s recto (?)" % frag.shelfmark
 
-    def test_thumbnail(self):
+    def test_thumbnail(self, source):
         doc = Document.objects.create()
         frag = Fragment.objects.create(shelfmark="T-S 8J22.21")
+
+        # case 1: fragment has IIIF images
         block = TextBlock.objects.create(
             document=doc, fragment=frag, selected_images=[0]
         )
         with patch.object(frag, "iiif_thumbnails") as mock_frag_thumbnails:
             assert block.thumbnail() == mock_frag_thumbnails.return_value
+            mock_frag_thumbnails.assert_called_with(selected=[0], canvases=[])
+
+        # case 2: fragment has no IIIF images, should use placeholder path
+        block2 = TextBlock.objects.create(document=doc, fragment=frag)
+        footnote = Footnote.objects.create(
+            content_object=doc, source=source, doc_relation=Footnote.DIGITAL_EDITION
+        )
+        with patch.object(frag, "iiif_images", return_value=None):
+            # create annotations that match this textblock
+            for i in range(2):
+                Annotation.objects.create(
+                    footnote=footnote,
+                    content={
+                        "target": {
+                            "source": {
+                                "id": f"{doc.pk}/iiif/textblock/{block2.pk}/canvas/{i+1}/"
+                            }
+                        },
+                        "body": [{"label": "Recto or Verso"}],
+                    },
+                )
+            with patch.object(frag, "iiif_thumbnails") as mock_frag_thumbs:
+                mock_frag_thumbs.return_value = "placeholder_thumbs"
+                result2 = block2.thumbnail()
+                # thumbnail canvases should be from annotations
+                canvases_passed = mock_frag_thumbs.call_args[1]["canvases"]
+                assert canvases_passed == [
+                    f"{doc.pk}/iiif/textblock/{block2.pk}/canvas/1/",
+                    f"{doc.pk}/iiif/textblock/{block2.pk}/canvas/2/",
+                ]
+                assert result2 == "placeholder_thumbs"
 
     def test_side(self):
         doc = Document.objects.create()

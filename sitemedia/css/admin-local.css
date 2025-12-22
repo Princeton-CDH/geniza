@@ -333,6 +333,13 @@ div.field-admin_thumbnails img {
 #textblock_set-group td.field-thumbnail {
     min-width: 314px;
 }
+div.field-admin_thumbnails .admin-thumbnail::before {
+    content: attr(title);
+    display: block;
+    text-align: center;
+    margin-top: 8px;
+    font-size: 14px;
+}
 /* selected side thumbnail for fragment admin */
 #textblock_set-group td.field-thumbnail .admin-thumbnail.selected,
 div.field-admin_thumbnails .admin-thumbnail.selected {
