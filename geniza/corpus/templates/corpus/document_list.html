@@ -31,9 +31,16 @@
             {% translate 'Search' as search_label %}
             {% if request.GET.mode != 'regex' %}
                 <div id="search-input">
-                    {% render_field form.q data-search-target="query" data-action="input->search#autoUpdateSort change->search#update" %}
-
-                    <button type="submit" aria-label="{{ search_label }}" />
+                    <div>
+                        {% render_field form.q data-search-target="query" data-action="input->search#autoUpdateSort change->search#update" %}
+                        <button type="submit" aria-label="{{ search_label }}" />
+                    </div>
+                    <span class="shelfmark-help">
+                        {# translators: help text for shelfmark general search #}
+                        {% blocktrans with example_search="<code>shelfmark:&quot;Bodl ms. Heb a 2/3&quot;</code>"|safe %}
+                            Trouble finding a shelfmark? Try {{ example_search }}
+                        {% endblocktrans %}
+                    </span>
                 </div>
             {% endif %}
         </fieldset>
