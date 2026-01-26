@@ -19,6 +19,7 @@ from django.urls import reverse
 from django.utils import timezone
 from pytest_django.asserts import assertContains, assertNotContains
 from requests.exceptions import ConnectionError
+from taggit.models import Tag
 
 from geniza.common.views import SolrDownError
 from geniza.corpus.admin import (
@@ -416,6 +417,63 @@ class TestDocumentAdmin:
         # queryset should be sorted alphabetically
         assert formfield.queryset.first().pk == doctype_a.pk
         assert formfield.queryset.last().pk == doctype_z.pk
+
+    def test_save_related__tags(self, document):
+        # create an existing tag and a new tag
+        old_tag_name = "existing"
+        existing_tag = Tag.objects.create(name=old_tag_name)
+        new_tag_name = "newtag"
+        assert not Tag.objects.filter(name=new_tag_name).exists()
+        assert new_tag_name not in document.tags.values_list("name", flat=True)
+
+        # mock adding the existing tag and a new one in the form
+        mockform = Mock()
+        mockform.instance = document
+        mockform.cleaned_data = {"tags": [old_tag_name, new_tag_name]}
+
+        # mock request with user, call save_related
+        request = Mock()
+        script_user = User.objects.get(username=settings.SCRIPT_USERNAME)
+        request.user = script_user
+
+        def save_related_tags(self, request, form, formsets, change):
+            # patch ModelAdmin.save_related() to ONLY save related tags,
+            # since that's the only behavior we need from it
+            for tag_name in form.cleaned_data.get("tags", []):
+                tag, _ = Tag.objects.get_or_create(name=tag_name)
+                form.instance.tags.add(tag)
+
+        with patch.object(admin.ModelAdmin, "save_related", save_related_tags):
+            DocumentAdmin(Document, Mock()).save_related(request, mockform, [], True)
+
+        # new tag should now exist in db
+        new_tag = Tag.objects.get(name=new_tag_name)
+        assert new_tag.pk is not None
+
+        # new tag should get a log entry
+        log_entries = LogEntry.objects.filter(
+            content_type=ContentType.objects.get_for_model(Tag),
+            object_id=new_tag.pk,
+            user=script_user,
+            action_flag=ADDITION,
+        )
+        assert log_entries.exists()
+        assert new_tag_name in log_entries.first().change_message
+
+        # existing tag should not have had a new log entry created
+        # NOTE: in normal conditions, it should already have one, so this unit
+        # test is just to ensure we don't create a duplicate log entry for it.
+        oldtag_log_entries = LogEntry.objects.filter(
+            content_type=ContentType.objects.get_for_model(Tag),
+            object_id=existing_tag.pk,
+            action_flag=ADDITION,
+        )
+        assert not oldtag_log_entries.exists()
+
+        # both tags should now be attached to the person
+        doc_tags = document.tags.values_list("name", flat=True)
+        assert old_tag_name in doc_tags
+        assert new_tag_name in doc_tags
 
 
 @pytest.mark.django_db

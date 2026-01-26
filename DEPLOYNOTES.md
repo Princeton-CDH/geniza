@@ -1,5 +1,14 @@
 # Deploy Notes
 
+## 4.28
+
+-   Old placeholder canvases must be manually migrated using the new management
+    command: `python manage.py migrate_orphan_placeholders` in order to allow
+    reordering placeholder canvases alongside images.
+-   Logic for date formatting has changed, affecting data indexed in Solr.
+    Reindex all content to get the updated date display in search results:
+    `python manage.py index`.
+
 ## 4.27
 
 -   Solr configuration has changed. Ensure Solr configset has been updated

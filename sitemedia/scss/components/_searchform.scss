@@ -20,8 +20,9 @@ main.search form {
         margin-bottom: 1.25rem;
         @include breakpoints.for-tablet-landscape-up {
             flex-direction: row;
+            align-items: flex-start;
             gap: 0;
-            margin-bottom: 1.5rem;
+            margin-bottom: 0.5rem;
         }
         div#mode-controls {
             display: flex;
@@ -60,11 +61,25 @@ main.search form {
         }
         div#search-input {
             display: flex;
-            flex-flow: row nowrap;
+            flex-flow: column;
+            gap: 0.5rem;
             flex: 1 0 auto;
             width: 100%;
             @include breakpoints.for-tablet-landscape-up {
                 width: auto;
+            }
+            div {
+                display: flex;
+                flex-flow: row nowrap;
+            }
+            .shelfmark-help {
+                font-size: typography.$text-size-sm;
+                code {
+                    background-color: var(--background-light);
+                    border-radius: 3px;
+                    font-style: italic;
+                    padding: 0 3px;
+                }
             }
         }
         dialog {

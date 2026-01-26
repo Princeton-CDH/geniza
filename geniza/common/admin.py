@@ -1,8 +1,9 @@
 from admin_log_entries.admin import LogEntryAdmin
 from django.contrib import admin, messages
-from django.contrib.admin.models import LogEntry
+from django.contrib.admin.models import ADDITION, LogEntry
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import User
+from django.contrib.contenttypes.models import ContentType
 from django.db.models import Count
 from django.forms import ModelForm, ValidationError
 from django.http import HttpResponseRedirect
@@ -11,7 +12,7 @@ from django.urls import path, reverse
 from taggit.admin import TagAdmin
 from taggit.models import Tag
 
-from geniza.common.metadata_export import LogEntryExporter
+from geniza.common.metadata_export import LogEntryExporter, TagExporter
 from geniza.common.models import UserProfile
 from geniza.common.views import SolrDownError
 from geniza.corpus.views import TagMerge
@@ -147,6 +148,13 @@ class CustomTagAdmin(TagAdmin):
             )
         )
 
+    @admin.display(description="Export selected tags to CSV")
+    def export_to_csv(self, request, queryset=None):
+        """Stream tabular data as a CSV file"""
+        queryset = queryset or self.get_queryset(request)
+        exporter = TagExporter(queryset=queryset, progress=False)
+        return exporter.http_export_data_csv()
+
     def get_urls(self):
         """Return admin urls; adds a custom URL for tag merge"""
         urls = [
@@ -154,6 +162,11 @@ class CustomTagAdmin(TagAdmin):
                 "merge/",
                 TagMerge.as_view(),
                 name="tag-merge",
+            ),
+            path(
+                "csv/",
+                self.admin_site.admin_view(self.export_to_csv),
+                name="admin_tag_csv",
             ),
         ]
         return urls + super().get_urls()
@@ -164,7 +177,7 @@ class CustomTagAdmin(TagAdmin):
     item_count.admin_order_field = "item_count"
     item_count.short_description = "count"
 
-    actions = (merge_tags,)
+    actions = (merge_tags, export_to_csv)
 
 
 admin.site.unregister(User)
@@ -235,3 +248,36 @@ class SolrDownAdminMixin:
         except SolrDownError:
             # NOTE: Should be switched to 503 if/when infra issue is resolved
             return render(request, "solr_error.html", {}, status=500)
+
+
+class TagLogEntryMixin:
+    """Admin mixin to override :meth:`save_related` such that tags added using
+    the autocomplete field will get LogEntry objects with associated user and
+    date.
+    Should be added to the admin for any Taggable model."""
+
+    def save_related(self, request, form, formsets, change):
+        """Override save_related in order to log user and date for new tags"""
+
+        # compute new tags by comparing existing DB tags to form tags
+        instance_tags = set(form.cleaned_data.get("tags", []))
+        existing_tags = set(
+            Tag.objects.filter(name__in=instance_tags).values_list("name", flat=True)
+        )
+        new_tag_names = instance_tags - existing_tags
+
+        # save all related records, including new tags
+        super().save_related(request, form, formsets, change)
+
+        # create log entries for new tags
+        new_tags = Tag.objects.filter(name__in=new_tag_names)
+        for tag in new_tags:
+            tag_repr = str(tag)
+            LogEntry.objects.create(
+                user_id=request.user.pk,
+                content_type_id=ContentType.objects.get_for_model(Tag).pk,
+                object_id=tag.pk,
+                object_repr=tag_repr,
+                action_flag=ADDITION,
+                change_message=f'Added "{tag_repr}".',
+            )

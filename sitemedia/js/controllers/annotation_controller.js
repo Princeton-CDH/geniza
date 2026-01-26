@@ -1,8 +1,4 @@
-import {
-    Controller,
-    getControllerForElementAndIdentifier,
-} from "@hotwired/stimulus";
-import { useIntersection } from "stimulus-use";
+import { Controller } from "@hotwired/stimulus";
 import * as Annotorious from "@recogito/annotorious-openseadragon";
 import {
     TranscriptionEditor,
@@ -24,11 +20,7 @@ export default class extends Controller {
     static targets = ["image", "imageContainer"];
 
     connect() {
-        // enable intersection behaviors (appear, disappear)
-        useIntersection(this);
-    }
-    async appear() {
-        // enable deep zoom, annotorious-tahqiq on first appearance
+        // enable deep zoom, annotorious-tahqiq on page load
         // (appear may fire subsequently, but nothing should happen then)
         if (
             !this.imageContainerTarget.querySelector(".openseadragon-container")
@@ -85,15 +77,19 @@ export default class extends Controller {
 
             // wait for each image to load fully before enabling OSD so we know its full height
             if (this.imageTarget.complete) {
-                await this.element.iiif.activateDeepZoom(settings);
-                this.initAnnotorious(settings);
+                this.activateAnnotation(settings);
             } else {
-                this.imageTarget.addEventListener("load", async () => {
-                    await this.element.iiif.activateDeepZoom(settings);
-                    this.initAnnotorious(settings);
+                this.imageTarget.addEventListener("load", () => {
+                    this.activateAnnotation(settings);
                 });
             }
         }
+    }
+
+    async activateAnnotation(settings) {
+        // wait for OSD from activateDeepZoom, then activate Annotorious
+        await this.element.iiif.activateDeepZoom(settings);
+        this.initAnnotorious(settings);
     }
 
     setNavigatorVisible(visible) {

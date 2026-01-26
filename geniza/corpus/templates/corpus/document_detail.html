@@ -139,11 +139,49 @@
             {% endwith %}
         {% endif %}
 
-        <section class="description">
-            {# Translators: label for document description #}
-            <h2>{% translate 'Description' %}</h2>
-            <p>{{ document.description|pgp_urlize }}</p>
-        </section>
+        {% if descriptions %}
+            <section class="description">
+                {# if multiple description languages, show the dropdown + include stimulus controller #}
+                {% if descriptions|length > 1 %}
+                    <div
+                        data-controller="description"
+                        data-description-hidden-class="hidden"
+                    >
+                        <div class="description-header">
+                            {# Translators: label for document description #}
+                            <h2>{% translate 'Description' %}</h2>
+                            {# language selector dropdown #}
+                            <select
+                                data-description-target="selector"
+                                data-action="change->description#changeLanguage"
+                            >
+                                {% for description in descriptions %}
+                                    <option value="{{ description.lang }}" {% if description.lang == LANGUAGE_CODE %}selected{% endif %}>
+                                        {{ description.lang|upper }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        {# render descriptions in all languages and hide if not currently selected #}
+                        {% for description in descriptions %}
+                            <div
+                                data-description-target="description"
+                                lang="{{ description.lang }}"
+                                class="{% if description.lang != LANGUAGE_CODE %}hidden{% endif %}"
+                                {% if description.lang == "ar" or description.lang == "he" %} dir="rtl"{% endif %}
+                            >
+                                <p>{{ description.content|pgp_urlize }}</p>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    {# if only one translation exists, display it without controller & dropdown #}
+                    <h2>{% translate 'Description' %}</h2>
+                    <p>{{ descriptions.0.content|pgp_urlize }}</p>
+                {% endif %}
+            </section>
+
+        {% endif %}
 
         {# related people #}
         {% if related_people.exists %}
