@@ -1,6 +1,19 @@
 Change Log
 ==========
 
+4.28
+----
+
+- As a front end user, I would like the people network graph to be vertically taller, so that I can see more connections at the default zoom level.
+- As a frontend user, I would like there to be help text under the search bar for shelfmark search, to assist users in limiting their query to shelfmarks.
+- As a frontend user, I want to switch between document description languages on the document detail page, so I can access any additional information unique to each language.
+- As a content editor, I want to reorder placeholders on fragments in the rotation/order override section, so that I can interleave their transcriptions with those for existing images.
+- As a content editor, I would like edition/translation content to appear in the editor even when the image panel is not visible, so that I can work on the transcriptions and translations side-by-side.
+- As an admin user, I would like to generate a .csv of all the tags in Taggit so I can more easily look for doubles to be merged.
+- bugfix: In the transcription editor, annotating or clicking on an annotated selection to open up the text editor causes scroll zoom malfunctions
+- bugfix: CUDL IIIF manifests cannot be re-added to Fragments
+- bugfix: CE dates can incorrectly have leading zeros
+
 4.27
 ----
 
