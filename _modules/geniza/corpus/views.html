@@ -4,13 +4,13 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>geniza.corpus.views &#8212; Princeton Geniza Project 4.27.0 documentation</title>
+    <title>geniza.corpus.views &#8212; Princeton Geniza Project 4.28.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=5ecbeea2" />
     <link rel="stylesheet" type="text/css" href="../../../_static/basic.css?v=b08954a9" />
     <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=27fed22d" />
-    <script src="../../../_static/documentation_options.js?v=2beec808"></script>
-    <script src="../../../_static/doctools.js?v=9bcbadda"></script>
-    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/documentation_options.js?v=9dfd678c"></script>
+    <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
    
@@ -60,6 +60,7 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">django.views.generic</span><span class="w"> </span><span class="kn">import</span> <span class="n">DetailView</span><span class="p">,</span> <span class="n">FormView</span><span class="p">,</span> <span class="n">ListView</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">django.views.generic.edit</span><span class="w"> </span><span class="kn">import</span> <span class="n">FormMixin</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">parasolr.django.views</span><span class="w"> </span><span class="kn">import</span> <span class="n">SolrLastModifiedMixin</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">parasolr.solr.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">SolrConnectionNotFound</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">piffle.presentation</span><span class="w"> </span><span class="kn">import</span> <span class="n">IIIFPresentation</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">requests.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="ne">ConnectionError</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">tabular_export.admin</span><span class="w"> </span><span class="kn">import</span> <span class="n">export_to_csv_response</span>
@@ -95,7 +96,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">stats</span> <span class="o">=</span> <span class="n">queryset_cls</span><span class="p">()</span><span class="o">.</span><span class="n">stats</span><span class="p">(</span><span class="s2">&quot;start_dating_i&quot;</span><span class="p">,</span> <span class="s2">&quot;end_dating_i&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">get_stats</span><span class="p">()</span>
-        <span class="k">except</span> <span class="ne">ConnectionError</span><span class="p">:</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">ConnectionError</span><span class="p">,</span> <span class="n">SolrConnectionNotFound</span><span class="p">):</span>
             <span class="k">raise</span> <span class="n">SolrDownError</span>
 
         <span class="k">if</span> <span class="n">stats</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;stats_fields&quot;</span><span class="p">):</span>
@@ -651,6 +652,7 @@
                 <span class="s2">&quot;related_places&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">object</span><span class="o">.</span><span class="n">documentplacerelation_set</span><span class="o">.</span><span class="n">order_by</span><span class="p">(</span>
                     <span class="s2">&quot;type__order&quot;</span><span class="p">,</span> <span class="s2">&quot;type__name&quot;</span><span class="p">,</span> <span class="s2">&quot;place__slug&quot;</span>
                 <span class="p">),</span>
+                <span class="s2">&quot;descriptions&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">object</span><span class="o">.</span><span class="n">description_translations</span><span class="p">,</span>
             <span class="p">}</span>
         <span class="p">)</span>
         <span class="k">return</span> <span class="n">context_data</span></div>
@@ -1572,7 +1574,7 @@
       &#169;2022, Center for Digital Humanities @ Princeton.
       
       |
-      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 8.2.3</a>
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 9.1.0</a>
       &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
       
     </div>
