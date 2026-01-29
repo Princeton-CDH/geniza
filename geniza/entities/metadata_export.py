@@ -420,7 +420,7 @@ class PersonRelationsExporter(RelationsExporter):
                         ),
                         "shared_documents": ", ".join(
                             [
-                                docs_dict.get(doc_id)
+                                str(docs_dict.get(doc_id))
                                 for doc_id in persondocs_dict.get(rel[ID], [])
                             ]
                         ),
