@@ -1,6 +1,5 @@
 from itertools import groupby
 from operator import itemgetter
-from time import sleep
 
 from django.contrib.contenttypes.models import ContentType
 from django.db.models import F, Value
@@ -129,7 +128,7 @@ class PublicPersonExporter(Exporter):
         if person.get_absolute_url():
             outd["url"] = person.permalink
 
-        # grop related places by relation type name
+        # group related places by relation type name
         related_places = PersonPlaceRelation.objects.filter(
             person__id=person.pk
         ).values("place__id", "type__name")

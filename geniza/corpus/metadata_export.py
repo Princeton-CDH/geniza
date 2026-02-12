@@ -1,7 +1,13 @@
 from django.db.models.query import Prefetch
+from django.utils.text import slugify
 
 from geniza.common.metadata_export import Exporter
 from geniza.corpus.models import Document, Fragment
+from geniza.entities.models import (
+    DocumentPlaceRelation,
+    DocumentPlaceRelationType,
+    Place,
+)
 from geniza.footnotes.models import Footnote
 
 
@@ -61,6 +67,14 @@ class DocumentExporter(Exporter):
         ],
     }
 
+    def __init__(self, queryset=None, progress=False):
+        """Adds fields to the export based on PersonPlaceRelationType names"""
+        self.csv_fields[31:31] = [
+            slugify(dpr_type.name).replace("-", "_")
+            for dpr_type in DocumentPlaceRelationType.objects.order_by("name")
+        ]
+        super().__init__(queryset, progress)
+
     def get_queryset(self):
         """
         Applies some prefetching to the base Exporter's get_queryset functionality.
@@ -79,6 +93,7 @@ class DocumentExporter(Exporter):
                 "log_entries",
                 "log_entries__user",
                 "dating_set",
+                "documentplacerelation_set",
                 Prefetch(
                     "footnotes",
                     queryset=Footnote.objects.select_related(
@@ -138,9 +153,9 @@ class DocumentExporter(Exporter):
 
         # to make the download as efficient as possible, don't use
         # absolutize_url, reverse, or get_absolute_url methods
-        outd[
-            "url"
-        ] = f"{self.url_scheme}{self.site_domain}/documents/{doc.id}/"  # public site url
+        outd["url"] = (
+            f"{self.url_scheme}{self.site_domain}/documents/{doc.id}/"  # public site url
+        )
 
         sep_within_cells = self.sep_within_cells
 
@@ -196,6 +211,25 @@ class DocumentExporter(Exporter):
         outd["has_transcription"] = doc.has_transcription()
         outd["has_translation"] = doc.has_translation()
 
+        # group related places by relation type name
+        related_places = DocumentPlaceRelation.objects.filter(
+            document__id=doc.pk
+        ).values("place__id", "type__name")
+        rel_types = related_places.values_list("type__name", flat=True).distinct()
+        related_place_ids = {}
+        for type_name in rel_types:
+            related_place_ids[type_name] = (
+                related_places.filter(type__name=type_name)
+                .values_list("place__id", flat=True)
+                .distinct()
+            )
+
+        # get names of related places (grouped by type name) and set on output dict
+        for [type_name, place_ids] in related_place_ids.items():
+            outd[slugify(type_name).replace("-", "_")] = ", ".join(
+                sorted([str(place) for place in Place.objects.filter(id__in=place_ids)])
+            )
+
         return outd
 
 
@@ -216,9 +250,9 @@ class AdminDocumentExporter(DocumentExporter):
         outd["notes"] = doc.notes
         outd["needs_review"] = doc.needs_review
         outd["status"] = doc.get_status_display()
-        outd[
-            "url_admin"
-        ] = f"{self.url_scheme}{self.site_domain}/admin/corpus/document/{doc.id}/change/"
+        outd["url_admin"] = (
+            f"{self.url_scheme}{self.site_domain}/admin/corpus/document/{doc.id}/change/"
+        )
 
         return outd
 
@@ -255,7 +289,7 @@ class FragmentExporter(Exporter):
         "last_modified",
         "provenance_display",
         "provenance",
-        "material_support"
+        "material_support",
     ]
 
     # queryset filter for content types included in this import
@@ -290,7 +324,7 @@ class FragmentExporter(Exporter):
             "last_modified": fragment.last_modified,
             "provenance_display": fragment.provenance_display,
             "provenance": fragment.provenance,
-            "material_support": fragment.material_support
+            "material_support": fragment.material_support,
         }
         # it's possible (although unlikely) for collection to be unset
         if fragment.collection:
@@ -332,7 +366,7 @@ class AdminFragmentExporter(FragmentExporter):
         data = super().get_export_data_dict(fragment)
         data["notes"] = fragment.notes
         data["needs_review"] = fragment.needs_review
-        data[
-            "url_admin"
-        ] = f"{self.url_scheme}{self.site_domain}/admin/corpus/fragment/{fragment.id}/change/"
+        data["url_admin"] = (
+            f"{self.url_scheme}{self.site_domain}/admin/corpus/fragment/{fragment.id}/change/"
+        )
         return data
