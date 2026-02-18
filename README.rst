@@ -46,4 +46,4 @@ To access the data from the project, see https://github.com/princetongenizalab/.
 
 License
 -------
-This software is licensed under the `Apache 2.0 License <https://github.com/Princeton-CDH/mep-django/blob/main/LICENSE>`_.
+This software is licensed under the `Apache 2.0 License <https://github.com/Princeton-CDH/geniza/blob/main/LICENSE>`_.
