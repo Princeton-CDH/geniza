@@ -143,6 +143,17 @@ def test_iter_dicts(document):
 
 
 @pytest.mark.django_db
+def test_doc_export_columns_unique():
+
+    from geniza.corpus.metadata_export import AdminDocumentExporter
+
+    exp1 = AdminDocumentExporter()
+    len1 = len(exp1.csv_fields)
+    exp2 = AdminDocumentExporter()
+    len2 = len(exp2.csv_fields)
+    assert len1 == len2
+
+
 def test_export_doc_places(document):
 
     mosul = Place.objects.create(slug="mosul")

@@ -386,3 +386,15 @@ def test_place_relations_csv(person, document, join):
             assert "relationship_type" not in obj
             assert obj["related_object_name"] == evt.name
             assert obj["relationship_notes"] == "test"
+
+
+@pytest.mark.django_db
+def test_people_export_columns_unique():
+
+    from geniza.entities.metadata_export import AdminPersonExporter
+
+    exp1 = AdminPersonExporter()
+    len1 = len(exp1.csv_fields)
+    exp2 = AdminPersonExporter()
+    len2 = len(exp2.csv_fields)
+    assert len1 == len2
