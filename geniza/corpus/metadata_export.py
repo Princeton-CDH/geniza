@@ -69,6 +69,7 @@ class DocumentExporter(Exporter):
 
     def __init__(self, queryset=None, progress=False):
         """Adds fields to the export based on PersonPlaceRelationType names"""
+        self.csv_fields = list(self.csv_fields)
         self.csv_fields[31:31] = [
             slugify(dpr_type.name).replace("-", "_")
             for dpr_type in DocumentPlaceRelationType.objects.order_by("name")

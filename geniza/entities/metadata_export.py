@@ -58,6 +58,7 @@ class PublicPersonExporter(Exporter):
 
     def __init__(self, queryset=None, progress=False):
         """Adds fields to the export based on PersonPlaceRelationType names"""
+        self.csv_fields = list(self.csv_fields)
         self.csv_fields[9:9] = [
             slugify(ppr_type.name).replace("-", "_")
             for ppr_type in PersonPlaceRelationType.objects.order_by("name")
