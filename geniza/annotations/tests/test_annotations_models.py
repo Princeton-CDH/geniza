@@ -169,6 +169,18 @@ class TestAnnotation:
             == '<p></p><ol dir="rtl"><li><p>First</p></li><li><p>First.one</p></li></ol>'
         )
 
+        # should fallback to original string if there are no <li> elements
+        html_no_li = "<p>Just a standard paragraph</p>"
+        assert Annotation.flatten_html_list(html_no_li) == html_no_li
+
+        # should fallback to original string if there is an <li> but no <ol> or <ul>
+        html_orphan_li = "<li>orphan item</li>"
+        assert Annotation.flatten_html_list(html_orphan_li) == html_orphan_li
+
+        # should fallback to original string if there is no closing </li> tag
+        html_unclosed_li = "<ul><li>unclosed item</ul>"
+        assert Annotation.flatten_html_list(html_unclosed_li) == html_unclosed_li
+
     def test_sanitize_html(self):
         html = '<table><div><p style="foo:bar;">test</p></div><ol><li>line</li></ol></table>'
         # should strip out all unwanted elements and attributes (table, div, style)
