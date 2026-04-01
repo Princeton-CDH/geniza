@@ -230,20 +230,20 @@ class Annotation(TrackChangesModel):
         if not li_elem:
             return html_string
         top_list = soup.find(["ul", "ol"])
-        start, end = "", ""
-        if str(top_list)[:4] == "<ol>":
-            start, end = "<ol>", "</ol>"
-        else:
-            start, end = "<ul>", "</ul>"
-        needs_closing = (
-            html_string.replace("<ol>", "")
-            .replace("</ol>", "")
-            .replace("<ul>", "")
-            .replace("</ul>", "")
-            .replace("<li>", f"{start}<li>", 1)
+        if not top_list:
+            return html_string
+        top_list_with_attrs, _ = str(top_list).split(">", 1)
+        start = f"{top_list_with_attrs}>"
+        end = f"</{top_list.name}>"
+        needs_closing = re.sub(r"</?(ol|ul)[^>]*>", "", html_string).replace(
+            "<li>", f"{start}<li>", 1
         )
         splitted = needs_closing.rsplit("</li>", 1)
-        return f"{splitted[0]}</li>{end}{splitted[1]}"
+        if len(splitted) >= 2:
+            return f"{splitted[0]}</li>{end}{splitted[1]}"
+
+        # fallback
+        return html_string
 
     @classmethod
     def sanitize_html(cls, html):
