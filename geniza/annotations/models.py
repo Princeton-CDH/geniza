@@ -109,7 +109,7 @@ class Annotation(TrackChangesModel):
 
     # allowed tags and attributes for annotation body content HTML
     ALLOWED_TAGS = ["del", "li", "ol", "p", "span", "sup", "i"]
-    ALLOWED_ATTRIBUTES = ["lang"]
+    ALLOWED_ATTRIBUTES = ["lang", "dir"]
 
     # error message for malformed annotations
     MALFORMED_ERROR = (
