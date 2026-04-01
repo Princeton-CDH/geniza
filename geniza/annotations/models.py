@@ -232,11 +232,14 @@ class Annotation(TrackChangesModel):
         top_list = soup.find(["ul", "ol"])
         if not top_list:
             return html_string
+        # allow attrs in top-level list
         top_list_with_attrs, _ = str(top_list).split(">", 1)
         start = f"{top_list_with_attrs}>"
         end = f"</{top_list.name}>"
-        needs_closing = re.sub(r"</?(ol|ul)[^>]*>", "", html_string).replace(
-            "<li>", f"{start}<li>", 1
+        needs_closing = re.sub(r"</?(ol|ul)[^>]*>", "", html_string)
+        # prepend start tag before first li, while allowing li attrs to remain
+        needs_closing = re.sub(
+            r"(<li[^>]*>)", lambda m: f"{start}{m.group(1)}", needs_closing, count=1
         )
         splitted = needs_closing.rsplit("</li>", 1)
         if len(splitted) >= 2:
