@@ -151,12 +151,35 @@ class TestAnnotation:
         assert "@context" not in compiled
 
     def test_flatten_html_lists(self):
-        html_nested_ol = '<p></p><ol><li><p>First</p></li><ol><li><p>First.one</p></li><li><p>First.two</p></li></ol><li><p>Second</p></li><ul><li><p>Second.one</p></li><li><p>Second.two</p></li></ul><li><p>Third</p></li><ol><li><p>Third.one</p></li><li><p>Third.two</p></li></ol></ol>'
-        assert Annotation.flatten_html_list(
-            html_nested_ol) == '<p></p><ol><li><p>First</p></li><li><p>First.one</p></li><li><p>First.two</p></li><li><p>Second</p></li><li><p>Second.one</p></li><li><p>Second.two</p></li><li><p>Third</p></li><li><p>Third.one</p></li><li><p>Third.two</p></li></ol>'
-        html_nested_ul = '<p></p><ul><li><p>First</p></li><ol><li><p>First.one</p></li><li><p>First.two</p></li></ol><li><p>Second</p></li><ul><li><p>Second.one</p></li><li><p>Second.two</p></li></ul><li><p>Third</p></li><ol><li><p>Third.one</p></li><li><p>Third.two</p></li></ol></ul>'
-        assert Annotation.flatten_html_list(
-            html_nested_ul) == '<p></p><ul><li><p>First</p></li><li><p>First.one</p></li><li><p>First.two</p></li><li><p>Second</p></li><li><p>Second.one</p></li><li><p>Second.two</p></li><li><p>Third</p></li><li><p>Third.one</p></li><li><p>Third.two</p></li></ul>'
+        html_nested_ol = "<p></p><ol><li><p>First</p></li><ol><li><p>First.one</p></li><li><p>First.two</p></li></ol><li><p>Second</p></li><ul><li><p>Second.one</p></li><li><p>Second.two</p></li></ul><li><p>Third</p></li><ol><li><p>Third.one</p></li><li><p>Third.two</p></li></ol></ol>"
+        assert (
+            Annotation.flatten_html_list(html_nested_ol)
+            == "<p></p><ol><li><p>First</p></li><li><p>First.one</p></li><li><p>First.two</p></li><li><p>Second</p></li><li><p>Second.one</p></li><li><p>Second.two</p></li><li><p>Third</p></li><li><p>Third.one</p></li><li><p>Third.two</p></li></ol>"
+        )
+        html_nested_ul = "<p></p><ul><li><p>First</p></li><ol><li><p>First.one</p></li><li><p>First.two</p></li></ol><li><p>Second</p></li><ul><li><p>Second.one</p></li><li><p>Second.two</p></li></ul><li><p>Third</p></li><ol><li><p>Third.one</p></li><li><p>Third.two</p></li></ol></ul>"
+        assert (
+            Annotation.flatten_html_list(html_nested_ul)
+            == "<p></p><ul><li><p>First</p></li><li><p>First.one</p></li><li><p>First.two</p></li><li><p>Second</p></li><li><p>Second.one</p></li><li><p>Second.two</p></li><li><p>Third</p></li><li><p>Third.one</p></li><li><p>Third.two</p></li></ul>"
+        )
+
+        # should preserve attributes on the top-level list
+        html_nested_ol_attr = '<p></p><ol dir="rtl"><li><p>First</p></li><ol><li><p>First.one</p></li></ol></ol>'
+        assert (
+            Annotation.flatten_html_list(html_nested_ol_attr)
+            == '<p></p><ol dir="rtl"><li><p>First</p></li><li><p>First.one</p></li></ol>'
+        )
+
+        # should fallback to original string if there are no <li> elements
+        html_no_li = "<p>Just a standard paragraph</p>"
+        assert Annotation.flatten_html_list(html_no_li) == html_no_li
+
+        # should fallback to original string if there is an <li> but no <ol> or <ul>
+        html_orphan_li = "<li>orphan item</li>"
+        assert Annotation.flatten_html_list(html_orphan_li) == html_orphan_li
+
+        # should fallback to original string if there is no closing </li> tag
+        html_unclosed_li = "<ul><li>unclosed item</ul>"
+        assert Annotation.flatten_html_list(html_unclosed_li) == html_unclosed_li
 
     def test_sanitize_html(self):
         html = '<table><div><p style="foo:bar;">test</p></div><ol><li>line</li></ol></table>'
@@ -167,6 +190,10 @@ class TestAnnotation:
         # should do nothing to html with all allowed elements
         html = '<p>test <span lang="en">en</span></p><ol><li>line 1</li><li>line 2</li></ol>'
         assert Annotation.sanitize_html(html) == html
+
+        # should allow dir attribute on permitted elements
+        html_dir = '<p dir="rtl">test <span dir="ltr">en</span></p><ol dir="rtl"><li dir="rtl">line 1</li></ol>'
+        assert Annotation.sanitize_html(html_dir) == html_dir
 
         # should remove span elements with no attributes after bleaching
         html = '<p>text <span style="foo:bar">and</span> more text</p>'
