@@ -363,22 +363,6 @@ class TestPerson:
             in moved_log.change_message
         )
 
-    def test_get_absolute_url(self):
-        # should not have an absolute url if has_page is false and < MIN_DOCUMENTS associated docs
-        person = Person.objects.create()
-        assert person.get_absolute_url() == None
-
-        # has_page is true, should get the url in user's language by slug
-        person.has_page = True
-        assert person.get_absolute_url() == "/en/people/%s/" % person.slug
-
-        # has_page is false but has >= MIN_DOCUMENTS, should get url
-        person.has_page = False
-        for _ in range(Person.MIN_DOCUMENTS):
-            d = Document.objects.create()
-            person.documents.add(d)
-        assert person.get_absolute_url() == "/en/people/%s/" % person.slug
-
     def test_save(self):
         # test past slugs are recorded on save
         person = Person(slug="test")
@@ -560,8 +544,6 @@ class TestPerson:
         assert index_data["description_txt"] == person.description_en
         assert index_data["gender_s"] == person.get_gender_display()
         assert str(person.roles.first()) in index_data["role_ss"]
-        assert not index_data["url_s"]
-        assert index_data["has_page_b"] == False
         person.has_page = True
         person.save()
         index_data = person.index_data()

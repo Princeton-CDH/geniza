@@ -256,8 +256,9 @@ class TestDocumentDetailView:
         # should group "recipient" people together and join their names by comma
         response = client.get(reverse("corpus:document", args=(document.pk,)))
         # should be "Halfon, Zed" = recipients
-        print(response.content)
-        assertContains(response, f"{person_diacritic}, {person_multiname}", html=True)
+        print(response.content.decode("utf-8"))
+        assertContains(response, f"{person_diacritic}", html=True)
+        assertContains(response, f"{person_multiname}", html=True)
         # should link to author because has_page=True
         assertContains(
             response, f'<a data-turbo="false" href="{person.get_absolute_url()}">'

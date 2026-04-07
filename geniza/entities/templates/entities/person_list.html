@@ -68,14 +68,6 @@
                     <span class="fieldname">{{ form.date_range.label }}</span>
                     {% render_field form.date_range data-action="search#update keypress->search#preventEnterKeypress" %}
                 </label>
-                <fieldset>
-                    <legend><span class="fieldname">{% translate 'Details' %}</span></legend>
-                    <label for="{{ form.has_page.auto_id }}" class="has-page">
-                        {% render_field form.has_page data-action="search#update" %}
-                        <span>{{ form.has_page.label }}</span>
-                        <div class="thumb" aria-hidden="true"></div>
-                    </label>
-                </fieldset>
             </div>
             <label for="{{ form.social_role.auto_id }}" data-search-target="socialRoles">
                 <span class="fieldname">{{ form.social_role.label }}</span>
@@ -158,8 +150,8 @@
                                         Relevance: {{ person.score|default:0 }}
                                     </span>
                                 {% endif %}
-                                {% if person.url %}
-                                    <a href="{{ person.url }}">{{ person.name }}</a>
+                                {% if person.slug %}
+                                    <a href="{{ person.slug }}">{{ person.name }}</a>
                                 {% else %}
                                     <span>{{ person.name }}</span>
                                 {% endif %}

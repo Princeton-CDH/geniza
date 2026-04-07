@@ -370,20 +370,6 @@ class PersonDetailView(SlugDetailMixin):
         """page description, for metadata; uses truncated description"""
         return Truncator(self.get_object().description).words(20)
 
-    def get_queryset(self, *args, **kwargs):
-        """Don't show person if it does not have more than MIN_DOCUMENTS document associations
-        and has_page override is False"""
-        queryset = (
-            super()
-            .get_queryset(*args, **kwargs)
-            .annotate(
-                doc_count=Count("documents", distinct=True),
-            )
-        )
-        return queryset.filter(
-            Q(doc_count__gte=Person.MIN_DOCUMENTS) | Q(has_page=True)
-        )
-
     def get_context_data(self, **kwargs):
         """extend context data to add page metadata"""
         context_data = super().get_context_data(**kwargs)

@@ -353,14 +353,14 @@ class PersonAdmin(
         "gender",
         "all_roles",
         "all_tags",
-        "has_page",
+        # "has_page",
     )
     search_fields = ("name_unaccented", "names__name")
     fields = (
         "slug",
         "gender",
         "roles",
-        "has_page",
+        # "has_page",
         "date",
         "active_dates",
         "deceased_mention_dates",
