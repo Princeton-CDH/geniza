@@ -550,6 +550,24 @@ class TestFootnote:
         # handle None as input
         assert Footnote.explicit_line_numbers(None) is None
 
+        # should propagate ol dir attribute to li (without overriding existing li dir)
+        doc4 = Document.objects.create()
+        digital_edition4 = Footnote.objects.create(
+            content_object=doc4, source=source, doc_relation=[Footnote.DIGITAL_EDITION]
+        )
+        Annotation.objects.create(
+            footnote=digital_edition4,
+            content={
+                "body": [
+                    {"value": '<ol dir="rtl"><li>one</li><li dir="ltr">two</li></ol>'}
+                ],
+            },
+        )
+        assert (
+            Footnote.explicit_line_numbers(digital_edition4.content_html_str)
+            == '<ol dir="rtl"><li value="1" dir="rtl">one</li><li dir="ltr" value="2">two</li></ol>'
+        )
+
 
 class TestFootnoteQuerySet:
     @pytest.mark.django_db

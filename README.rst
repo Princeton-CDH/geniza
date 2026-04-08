@@ -12,7 +12,7 @@ Python 3.12 / Django 5.2 / Node 22 / Postgresql 16 / Solr 9.9
    :target: https://doi.org/10.5281/zenodo.7347726
 
 .. image:: https://github.com/Princeton-CDH/geniza/workflows/unit%20tests/badge.svg
-    :target: https://github.com/Princeton-CDH/geniza/actions?query=workflow%3Aunit&20tests
+    :target: https://github.com/Princeton-CDH/geniza/actions/workflows/unit_tests.yml?query=branch%3Amain++
     :alt: Unit Test status
 
 .. image:: https://codecov.io/gh/Princeton-CDH/geniza/branch/main/graph/badge.svg
@@ -46,4 +46,4 @@ To access the data from the project, see https://github.com/princetongenizalab/.
 
 License
 -------
-This software is licensed under the `Apache 2.0 License <https://github.com/Princeton-CDH/mep-django/blob/main/LICENSE>`_.
+This software is licensed under the `Apache 2.0 License <LICENSE>`_.

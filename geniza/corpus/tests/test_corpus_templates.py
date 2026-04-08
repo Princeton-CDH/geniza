@@ -160,67 +160,6 @@ class TestDocumentDetailTemplate:
         assertContains(response, "<dt>Shelfmark</dt>", html=True)
         assertContains(response, shelfmark_wrap(join.shelfmark), html=True)
 
-    @pytest.mark.skip(reason="temporarily disabled feature")
-    def test_download_transcription_link_anonymous(
-        self, client, document, unpublished_editions
-    ):
-        edition = Footnote.objects.create(
-            content_object=document,
-            source=unpublished_editions,
-            doc_relation=Footnote.DIGITAL_EDITION,
-        )
-        response = client.get(document.get_absolute_url())
-        # unpublished editions fixture authored by Goitein
-        # should not be available to anonymous users (suppressed for now)
-        assertNotContains(response, "Download Goitein's edition")
-
-    # NOTE: text download is limited to authenticated users for now
-    @pytest.mark.skip(reason="temporarily disabled feature")
-    def test_download_transcription_link(
-        self, admin_client, document, unpublished_editions
-    ):
-        edition = Footnote.objects.create(
-            content_object=document,
-            source=unpublished_editions,
-            doc_relation=Footnote.DIGITAL_EDITION,
-        )
-        response = admin_client.get(document.get_absolute_url())
-        # unpublished editions fixture authored by Goitein
-        assertContains(response, "Download Goitein's edition")
-        assertContains(
-            response,
-            reverse(
-                "corpus:document-transcription-text",
-                kwargs={"pk": document.pk, "transcription_pk": edition.pk},
-            ),
-        )
-
-    @pytest.mark.skip(reason="temporarily disabled feature")
-    def test_download_transcription_link_two_authors(
-        self, admin_client, document, twoauthor_source
-    ):
-        edition = Footnote.objects.create(
-            content_object=document,
-            source=twoauthor_source,
-            doc_relation=Footnote.DIGITAL_EDITION,
-        )
-        response = admin_client.get(document.get_absolute_url())
-        assertContains(response, "Download Kernighan and Ritchie's edition")
-
-    @pytest.mark.skip(reason="temporarily disabled feature")
-    def test_download_transcription_link_many_authors(
-        self, admin_client, document, multiauthor_untitledsource
-    ):
-        edition = Footnote.objects.create(
-            content_object=document,
-            source=multiauthor_untitledsource,
-            doc_relation=Footnote.DIGITAL_EDITION,
-        )
-        response = admin_client.get(document.get_absolute_url())
-        assertContains(
-            response, "Download Khan, el-Leithy, Rustow and Vanthieghem's edition"
-        )
-
     def test_languages_none(self, client, document):
         response = client.get(document.get_absolute_url())
         assertNotContains(response, "Primary Language")

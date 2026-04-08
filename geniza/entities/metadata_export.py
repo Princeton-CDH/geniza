@@ -1,6 +1,5 @@
 from itertools import groupby
 from operator import itemgetter
-from time import sleep
 
 from django.contrib.contenttypes.models import ContentType
 from django.db.models import F, Value
@@ -59,6 +58,7 @@ class PublicPersonExporter(Exporter):
 
     def __init__(self, queryset=None, progress=False):
         """Adds fields to the export based on PersonPlaceRelationType names"""
+        self.csv_fields = list(self.csv_fields)
         self.csv_fields[9:9] = [
             slugify(ppr_type.name).replace("-", "_")
             for ppr_type in PersonPlaceRelationType.objects.order_by("name")
@@ -129,7 +129,7 @@ class PublicPersonExporter(Exporter):
         if person.get_absolute_url():
             outd["url"] = person.permalink
 
-        # grop related places by relation type name
+        # group related places by relation type name
         related_places = PersonPlaceRelation.objects.filter(
             person__id=person.pk
         ).values("place__id", "type__name")
@@ -244,7 +244,7 @@ class PersonRelationsExporter(RelationsExporter):
     """
 
     model = Person
-    csv_fields = ["source_person"] + RelationsExporter.csv_fields
+    csv_fields = ["source_person"] + RelationsExporter.csv_fields + ["url", "admin_url"]
 
     def get_queryset(self):
         """Override get_queryset to get related items for the single item"""
@@ -386,7 +386,7 @@ class PersonRelationsExporter(RelationsExporter):
                 ),
             )
         ).filter(id__in=related_docs)
-        docs_dict = {d.id: str(d) for d in docs}
+        docs_dict = {d.id: d for d in docs}
 
         # get Event names
         events = Event.objects.filter(id__in=related_events).values("id", "name")
@@ -420,7 +420,7 @@ class PersonRelationsExporter(RelationsExporter):
                         ),
                         "shared_documents": ", ".join(
                             [
-                                docs_dict.get(doc_id)
+                                str(docs_dict.get(doc_id))
                                 for doc_id in persondocs_dict.get(rel[ID], [])
                             ]
                         ),
@@ -439,7 +439,7 @@ class PersonRelationsExporter(RelationsExporter):
                         "relationship_type": place_relation_typedict.get(rel[RTID]),
                         "shared_documents": ", ".join(
                             [
-                                docs_dict.get(doc_id)
+                                str(docs_dict.get(doc_id))
                                 for doc_id in placedocs_dict.get(rel[ID], [])
                             ]
                         ),
@@ -449,9 +449,11 @@ class PersonRelationsExporter(RelationsExporter):
                 # get doc name, doc relation type name from precomputed querysets
                 rel.update(
                     {
-                        "related_object_name": docs_dict.get(rel[ID]),
+                        "related_object_name": str(docs_dict.get(rel[ID])),
                         "relationship_type": doc_relation_typedict.get(rel[RTID])
                         + (" (uncertain)" if rel["is_uncertain"] else ""),
+                        "url": f"{self.url_scheme}{self.site_domain}/en/documents/{rel[ID]}/",
+                        "admin_url": f"{self.url_scheme}{self.site_domain}/admin/corpus/document/{rel[ID]}/change/",
                     }
                 )
             elif rel[TYPE] == "Event":
@@ -461,7 +463,7 @@ class PersonRelationsExporter(RelationsExporter):
                         "related_object_name": events_dict.get(rel[ID]),
                         "shared_documents": ", ".join(
                             [
-                                docs_dict.get(doc_id)
+                                str(docs_dict.get(doc_id))
                                 for doc_id in eventdocs_dict.get(rel[ID], [])
                             ]
                         ),

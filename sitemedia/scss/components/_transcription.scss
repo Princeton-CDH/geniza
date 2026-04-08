@@ -1430,85 +1430,67 @@
         }
     }
 
-    // RTL content (all transcriptions, some translations)
+    // handle RTL vs LTR content--at transcription, list, or line level
     &[dir="rtl"] {
         align-self: flex-end;
-
-        text-align: right;
-        // direction: rtl; /* search results are mixed rtl/ltr and include unicode order mark characters */
-
-        .search-result & p {
-            text-align: right;
-        }
-
-        li {
-            margin-right: 1.5em;
-            padding-right: 1em; /* shift to make space for line numbers */
-            direction: rtl;
-        }
-
-        p {
-            // match alignment of list items
-            margin-right: 1em;
-            padding-right: 1.5em;
-        }
-
-        li > p {
-            // if inside a list item, don't pad <p>
-            margin-right: 0;
-            padding-right: 0;
-        }
-
-        // line number dot cover
-        ol li:not([value])::before {
-            /* make font larger than list number font to cover completely;
-            shrink line height to adjust placement */
-            right: -35.75px;
-            font-size: 37px;
-            line-height: 19px;
-
-            @include breakpoints.for-tablet-landscape-up {
-                font-size: 45px;
-                line-height: 25px;
-                right: -36px;
-            }
-        }
-
-        // NOTE: Broken in stable Safari for now, but fixed in Safari preview release.
-        li::marker {
-            text-align: right;
-            float: right;
+    }
+    .search-result & p {
+        text-align: start;
+    }
+    li {
+        padding-inline-start: 1em;
+        margin-inline-start: 1.6em;
+        &:dir(rtl) {
+            margin-inline-start: 1.5em;
         }
     }
-
-    &[dir="ltr"] {
-        li {
-            margin-left: 1.6em;
-            padding-left: 1em; /* shift to make space for line numbers */
+    p {
+        // match alignment of list items
+        margin-inline-start: 1em;
+        padding-inline-start: 1.6em;
+        &:dir(rtl) {
+            padding-inline-start: 1.5em;
         }
-        p {
-            // match alignment of list items
-            margin-left: 1em;
-            padding-left: 1.6em;
-        }
-        li > p {
-            // if inside a list item, don't pad <p>
-            margin-left: 0;
-            padding-left: 0;
-        }
+    }
+    li > p {
+        // if inside a list item, don't pad <p>
+        margin-inline-start: 0;
+        padding-inline-start: 0;
+    }
 
-        // line number dot cover
-        ol li:not([value])::before {
-            /* make font larger than list number font to cover completely;
-                   shrink line height to adjust placement */
-            font-size: 37px;
-            line-height: 13px;
-            left: -9.5px;
+    // line number dot covers
+    ol {
+        /* make font larger than list number font to cover completely;
+        shrink line height to adjust placement */
+        &:dir(rtl) {
+            li:not([value])::before {
+                inset-inline-start: -35.75px;
+                font-size: 37px;
+                line-height: 19px;
 
-            @include breakpoints.for-tablet-landscape-up {
-                font-size: 50px;
-                line-height: 16px;
-                left: -12px;
+                @include breakpoints.for-tablet-landscape-up {
+                    font-size: 45px;
+                    line-height: 25px;
+                    inset-inline-start: -36px;
+                }
+            }
+            // NOTE: Broken in stable Safari for now, but fixed in Safari preview release.
+            li::marker {
+                text-align: start;
+                float: inline-start;
+            }
+        }
+        &:dir(ltr) {
+            li:not([value])::before {
+                inset-inline-start: -9.5px;
+                font-size: 37px;
+                line-height: 13px;
+
+                @include breakpoints.for-tablet-landscape-up {
+                    font-size: 50px;
+                    line-height: 16px;
+                    inset-inline-start: -12px;
+                }
             }
         }
     }
@@ -1522,10 +1504,10 @@
     ~ .panel-container
     .translation {
     @include breakpoints.for-tablet-landscape-up {
-        &[dir="rtl"] ol li:not([value])::before {
+        ol:dir(rtl) li:not([value])::before {
             line-height: 19px;
         }
-        &[dir="ltr"] ol li:not([value])::before {
+        ol:dir(ltr) li:not([value])::before {
             line-height: 12px;
         }
     }
@@ -1537,37 +1519,34 @@
 @supports (font: -apple-system-body) and (-webkit-appearance: none) {
     .transcription,
     .translation {
-        &[dir="rtl"] ol li:not([value])::before {
-            right: -41px;
-            line-height: 21px;
+        ol:dir(rtl) {
             @include breakpoints.for-tablet-landscape-up {
-                line-height: 24px;
+                margin-inline-start: 10px;
+            }
+            li:not([value])::before {
+                inset-inline-start: -41px;
+                line-height: 21px;
+                @include breakpoints.for-tablet-landscape-up {
+                    line-height: 24px;
+                }
             }
         }
-        // handle RTL line numbers cut off horizontally
-        &[dir="rtl"] ol {
+        ol:dir(ltr) {
+            margin-inline-start: 5px;
             @include breakpoints.for-tablet-landscape-up {
-                margin-right: 10px;
+                margin-inline-start: 10px;
             }
-        }
-    }
-    .translation {
-        &[dir="ltr"] ol li:not([value])::before {
-            left: -14px;
-            line-height: 12px;
-            @include breakpoints.for-tablet-landscape-up {
-                left: -17px;
-                line-height: 17px;
-            }
-        }
-        // handle LTR line numbers cut off horizontally
-        &[dir="ltr"] ol {
-            margin-left: 5px;
-            @include breakpoints.for-tablet-landscape-up {
-                margin-left: 10px;
+            li:not([value])::before {
+                inset-inline-start: -14px;
+                line-height: 12px;
+                @include breakpoints.for-tablet-landscape-up {
+                    inset-inline-start: -17px;
+                    line-height: 17px;
+                }
             }
         }
     }
+
     #toggles:has(#transcription-on:not(:checked) ~ #translation-on:checked)
         ~ .panel-container
         .translation,
@@ -1575,10 +1554,10 @@
         ~ .panel-container
         .transcription {
         @include breakpoints.for-tablet-landscape-up {
-            &[dir="rtl"] ol li:not([value])::before {
+            ol:dir(rtl) li:not([value])::before {
                 line-height: 21px;
             }
-            &[dir="ltr"] ol li:not([value])::before {
+            ol:dir(ltr) li:not([value])::before {
                 line-height: 11px;
             }
         }
@@ -1587,6 +1566,12 @@
 
 .transcription {
     @include typography.transcription;
+    &:dir(ltr),
+    p:dir(ltr),
+    li:dir(ltr) {
+        // LTR transcription should not use hebrew/arabic fonts
+        @include typography.body;
+    }
 }
 .transcription,
 .translation {
@@ -1596,10 +1581,13 @@
     span[lang="ar"] {
         @include typography.arabic-transcription;
     }
-    // hebrew script
+    // hebrew script or non-arabic-tagged rtl
     &[lang="he"],
     &[data-lang-script="hebrew"],
-    span[lang="he"] {
+    span[lang="he"],
+    &:dir(rtl):not(:lang(ar)),
+    p:dir(rtl):not(:lang(ar)),
+    li:dir(rtl):not(:lang(ar)) {
         @include typography.transcription;
     }
 }

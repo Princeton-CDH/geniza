@@ -10,6 +10,7 @@ import "tinymce/tinymce";
 import "tinymce/icons/default";
 import "tinymce/themes/silver";
 import "tinymce/plugins/lists";
+import "tinymce/plugins/directionality";
 import contentUiCss from "tinymce/skins/ui/oxide/content.css";
 import contentCss from "tinymce/skins/content/default/content.css";
 import skinCss from "tinymce/skins/ui/oxide/skin.min.css";
@@ -149,8 +150,8 @@ export default class extends Controller {
                 content_css: false,
                 // use css modules for tinyMCE editor inner content style
                 content_style: `${contentUiCss} ${contentCss}
-                    ::marker { margin-left: 1em; }
-                    li { padding-right: 1em; } ins { color: gray; }`,
+                    ::marker { margin-inline-end: 1em; }
+                    li { padding-inline-start: 1em; } ins { color: gray; }`,
                 setup: (editor) => {
                     editor.on("init", () => {
                         // place imported CSS modules into <style> element inside shadow root.

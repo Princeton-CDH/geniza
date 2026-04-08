@@ -527,7 +527,7 @@ islamic_month_aliases = {
     "Rabi' I": "Rabi' al-`Awwal",
     # NOTE: trailing commas are typeod in convertdate; will be fixed in 2.4.1
     "Rabi' II": "Rabi' ath-Thani,",
-    "Jumada I": "Jumada al-`Awwal,",
+    "Jumada I": "Jumada al-`Awwal",
     "Jumada II": "Jumada ath-Thaniyah,",
     "Dhu l-Qa'da": "Zu al-Qa'dah",
     "Dhu l-Hijja": "Zu al-Hijjah",
