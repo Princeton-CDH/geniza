@@ -184,7 +184,6 @@ class TestAnnotation:
     def test_sanitize_html(self):
         html = '<table><div><p style="foo:bar;">test</p></div><ol><li>line</li></ol></table>'
         # should strip out all unwanted elements and attributes (table, div, style)
-        # (\n is added because bleach replaces block-level elements with newline)
         assert Annotation.sanitize_html(html) == "<p>test</p><ol><li>line</li></ol>"
 
         # should do nothing to html with all allowed elements
