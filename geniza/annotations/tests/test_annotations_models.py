@@ -195,6 +195,16 @@ class TestAnnotation:
         html_dir = '<p dir="rtl">test <span dir="ltr">en</span></p><ol dir="rtl"><li dir="rtl">line 1</li></ol>'
         assert Annotation.sanitize_html(html_dir) == html_dir
 
+        # should unwrap <p> tags nested inside <li> tags
+        html_nested_p = "<ol><li><p>line 1</p></li></ol>"
+        assert Annotation.sanitize_html(html_nested_p) == "<ol><li>line 1</li></ol>"
+
+        # should propagate dir attribute up from <p> to <li>
+        html_p_dir = '<ol><li><p dir="ltr">line 1</p></li></ol>'
+        assert (
+            Annotation.sanitize_html(html_p_dir) == '<ol><li dir="ltr">line 1</li></ol>'
+        )
+
         # should remove span elements with no attributes after bleaching
         html = '<p>text <span style="foo:bar">and</span> more text</p>'
         assert Annotation.sanitize_html(html) == "<p>text and more text</p>"
