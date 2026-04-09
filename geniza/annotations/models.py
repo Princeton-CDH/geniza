@@ -265,7 +265,8 @@ class Annotation(TrackChangesModel):
 
         # if resulting text has any span elements with no attributes, remove them;
         # if resulting text has any p elements inside li, unwrap them
-        if "<span>" in cleaned_html or "<p>" in cleaned_html:
+        # (leave out ">" from opening tag in case of attributes)
+        if "<span" in cleaned_html or "<p" in cleaned_html:
             # parse as html to identify spans with no attributes
             soup = BeautifulSoup(cleaned_html)
             for span in soup.find_all("span"):
