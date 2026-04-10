@@ -375,7 +375,7 @@ class Person(
     names = GenericRelation(Name, related_query_name="person")
     description = models.TextField(
         blank=True,
-        help_text="A description that will appear on the public Person page if 'Person page' box is checked.",
+        help_text="A description that will appear on the public Person page.",
     )
     has_page = models.BooleanField(
         help_text="Check box if this person should have a dedicated, public Person page on the PGP. If checked, please draft a public description below.",
