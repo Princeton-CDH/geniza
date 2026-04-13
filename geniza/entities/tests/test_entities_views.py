@@ -405,24 +405,6 @@ class TestPersonDetailView:
             long_description
         ).words(20)
 
-    def test_get_queryset(self, client):
-        # should 404 on person with has_page=False and < 10 related documents
-        person = Person.objects.create(slug="test")
-        response = client.get(reverse("entities:person", args=(person.slug,)))
-        assert response.status_code == 404
-
-        # should 200 on person with 10+ associated documents
-        for _ in range(Person.MIN_DOCUMENTS):
-            d = Document.objects.create()
-            person.documents.add(d)
-        response = client.get(reverse("entities:person", args=(person.slug,)))
-        assert response.status_code == 200
-
-        # should 200 on person with has_page = True
-        person_override = Person.objects.create(has_page=True, slug="has-page")
-        response = client.get(reverse("entities:person", args=(person_override.slug,)))
-        assert response.status_code == 200
-
     def test_get_context_data(self, client):
         # context should include "page_type": "person"
         person = Person.objects.create(has_page=True, slug="test")
@@ -581,7 +563,7 @@ class TestPersonListView:
             # filter by detail page
             mock_get_form.return_value.cleaned_data = {"has_page": True}
             qs = personlist_view.get_queryset()
-            assert qs.count() == 1
+            assert qs.count() == 3
             assert any(
                 (f["field"] == "has_page" and f["value"] == "on")
                 for f in personlist_view.applied_filter_labels

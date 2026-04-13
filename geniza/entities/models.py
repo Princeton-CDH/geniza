@@ -375,11 +375,11 @@ class Person(
     names = GenericRelation(Name, related_query_name="person")
     description = models.TextField(
         blank=True,
-        help_text="A description that will appear on the public Person page if 'Person page' box is checked.",
+        help_text="A description that will appear on the public Person page.",
     )
     has_page = models.BooleanField(
         help_text="Check box if this person should have a dedicated, public Person page on the PGP. If checked, please draft a public description below.",
-        default=False,
+        default=True,
         verbose_name="Person page",
     )
     documents = models.ManyToManyField(
@@ -548,10 +548,8 @@ class Person(
 
     def get_absolute_url(self):
         """url for this person"""
-        if self.documents.count() >= self.MIN_DOCUMENTS or self.has_page == True:
-            return reverse("entities:person", args=[str(self.slug)])
-        else:
-            return None
+        # If we want to re-introduce has_page, we'd execute it only if this person's has_page is set to True
+        return reverse("entities:person", args=[str(self.slug)])
 
     @property
     def related_people_count(self):

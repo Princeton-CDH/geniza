@@ -407,6 +407,10 @@ class PersonRelationsExporter(RelationsExporter):
                     names,
                 )
                 rel_type = person_relation_typedict.get(rel[RTID])
+                people_qs = Person.objects.filter(id__in=related_people).values(
+                    "id", "slug"
+                )
+                people_slug_dict = {p["id"]: p["slug"] for p in people_qs}
                 rel.update(
                     {
                         "related_object_name": next(filtered_names).get("name"),
@@ -424,6 +428,8 @@ class PersonRelationsExporter(RelationsExporter):
                                 for doc_id in persondocs_dict.get(rel[ID], [])
                             ]
                         ),
+                        "url": f"{self.url_scheme}{self.site_domain}/en/people/{people_slug_dict.get(rel[ID])}/",
+                        "admin_url": f"{self.url_scheme}{self.site_domain}/admin/entities/person/{rel[ID]}/change/",
                     }
                 )
             elif rel[TYPE] == "Place":
@@ -433,6 +439,10 @@ class PersonRelationsExporter(RelationsExporter):
                     and n.get("content_type") == place_contenttype_id,
                     names,
                 )
+                places_qs = Place.objects.filter(id__in=related_places).values(
+                    "id", "slug"
+                )
+                places_slug_dict = {p["id"]: p["slug"] for p in places_qs}
                 rel.update(
                     {
                         "related_object_name": next(filtered_names).get("name"),
@@ -443,6 +453,8 @@ class PersonRelationsExporter(RelationsExporter):
                                 for doc_id in placedocs_dict.get(rel[ID], [])
                             ]
                         ),
+                        "url": f"{self.url_scheme}{self.site_domain}/en/places/{places_slug_dict.get(rel[ID])}/",
+                        "admin_url": f"{self.url_scheme}{self.site_domain}/admin/entities/place/{rel[ID]}/change/",
                     }
                 )
             elif rel[TYPE] == "Document":
@@ -467,6 +479,7 @@ class PersonRelationsExporter(RelationsExporter):
                                 for doc_id in eventdocs_dict.get(rel[ID], [])
                             ]
                         ),
+                        "admin_url": f"{self.url_scheme}{self.site_domain}/admin/entities/event/{rel[ID]}/change/",
                     }
                 )
                 # relationship type is not used for events
