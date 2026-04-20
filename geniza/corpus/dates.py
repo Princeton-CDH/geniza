@@ -244,6 +244,16 @@ class DocumentDateMixin(TrackChangesModel):
             raise ValidationError("Original date is required when calendar is set")
         if self.doc_date_original and not self.doc_date_calendar:
             raise ValidationError("Calendar is required when original date is set")
+        date_to_check = self.doc_date_standard
+        if not self.doc_date_standard and self.doc_date_original:
+            date_to_check = self.standardize_date(update=False)
+        if (
+            date.fromisoformat(
+                PartialDate(date_to_check).isoformat(mode="max", fmt="full")
+            )
+            >= date.today()
+        ):
+            raise ValidationError("Can't input a date in the future!")
 
     def standardize_date(self, update=False):
         """
@@ -283,7 +293,6 @@ class DocumentDateMixin(TrackChangesModel):
                     end = start
                 else:
                     end = PartialDate(date_parts[1])
-
                 self._parsed_date = {"start": start, "end": end}
             except ValueError:
                 # ignore if it can't be parsed (records before validation added)
