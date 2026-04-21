@@ -238,11 +238,21 @@ class DocumentDateMixin(TrackChangesModel):
     def get_doc_date(self):
         date_to_check = self.doc_date_standard
         if not date_to_check and self.doc_date_original:
-            date_to_check = self.standardize_date(update=False)
+            date_to_check = self.standardize_date(update=False).split("/")
+            date_to_check = (
+                date_to_check[len(date_to_check) - 1]
+                if len(date_to_check) > 1
+                else date_to_check[0]
+            )
+        date_to_check = PartialDate(date_to_check) if date_to_check else None
         date_to_check = (
-            self.end_date if self.parsed_date else PartialDate(date_to_check)
+            self.end_date if not date_to_check and self.parsed_date else date_to_check
         )
-        return date.fromisoformat(date_to_check.isoformat(mode="max", fmt="full"))
+        return (
+            date.fromisoformat(date_to_check.isoformat(mode="max", fmt="full"))
+            if date_to_check
+            else None
+        )
 
     def clean(self):
         """
@@ -253,7 +263,8 @@ class DocumentDateMixin(TrackChangesModel):
             raise ValidationError("Original date is required when calendar is set")
         if self.doc_date_original and not self.doc_date_calendar:
             raise ValidationError("Calendar is required when original date is set")
-        if self.get_doc_date() > date.today():
+        date_to_check = self.get_doc_date()
+        if date_to_check and date_to_check > date.today():
             raise ValidationError("Can't input a date in the future!")
 
     def standardize_date(self, update=False):
