@@ -181,8 +181,14 @@ class TestPerson:
         person.clean()
 
         # future date - error
-        tomorrow = datetime.date.today() + datetime.timedelta(days=1)
+        today = datetime.date.today()
+        tomorrow = today + datetime.timedelta(days=1)
         person.date = tomorrow.strftime("%Y-%m-%d")
+        with pytest.raises(ValidationError):
+            person.clean()
+
+        # future date range - error
+        person.date = f"{today.strftime('%Y-%m-%d')}/{tomorrow.strftime('%Y-%m-%d')}"
         with pytest.raises(ValidationError):
             person.clean()
 
