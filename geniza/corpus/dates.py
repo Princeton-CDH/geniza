@@ -236,6 +236,7 @@ class DocumentDateMixin(TrackChangesModel):
         return self.get_document_date(self.doc_date_standard, self.original_date)
 
     def get_doc_date(self):
+        """Utility method to validate / vet document's date"""
         date_to_check = (
             self.doc_date_standard.split("/") if self.doc_date_standard else None
         )

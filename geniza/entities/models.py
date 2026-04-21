@@ -476,8 +476,6 @@ class Person(
         Require date_str is not a future date.
         If date_str is a range, require its end not tobe a future date
         """
-        # date_to_check = datetime.strptime(self.date_str, '%d %B %Y CE').date()
-
         if self.date:
             date_to_check = self.date.split("/")
             date_to_check = (
