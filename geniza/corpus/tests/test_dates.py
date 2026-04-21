@@ -15,6 +15,7 @@ from geniza.corpus.dates import (
     standard_date_display,
 )
 from geniza.corpus.models import Document
+from geniza.entities.models import Person
 
 
 class TestDocumentDateMixin:
@@ -138,6 +139,28 @@ class TestDocumentDateMixin:
         # end is beginning of date range
         doc.doc_date_standard = "1839-03-17/1840-03-04"
         assert doc.end_date == PartialDate("1840-03-04")
+
+
+class TestPerson:
+
+    def test_clean(self):
+        person = Person()
+        # no dates; no error
+        person.clean()
+
+        # full past date — no error
+        person.date = "2024-06-12"
+        person.clean()
+
+        # partial past date — no error
+        person.date = "2024"
+        person.clean()
+
+        # future date - error
+        tomorrow = datetime.date.today() + datetime.timedelta(days=1)
+        person.date = tomorrow.strftime("%Y-%m-%d")
+        with pytest.raises(ValidationError):
+            person.clean()
 
 
 # test hebrew date conversion

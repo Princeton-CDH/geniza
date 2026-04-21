@@ -477,13 +477,13 @@ class Person(
         If date_str is a range, require its end not tobe a future date
         """
         # date_to_check = datetime.strptime(self.date_str, '%d %B %Y CE').date()
-        date_to_check = (
-            datetime.strptime(standard_date_display(self.date), "%d %B %Y CE").date()
-            if self.date
-            else None
-        )
-        if date_to_check and date_to_check > date.today():
-            raise ValidationError("Can't input a date in the future!")
+
+        if self.date:
+            date_to_check = date.fromisoformat(
+                PartialDate(self.date).isoformat(mode="max", fmt="full")
+            )
+            if date_to_check > date.today():
+                raise ValidationError("Can't input a date in the future!")
 
     @property
     def date_str(self):

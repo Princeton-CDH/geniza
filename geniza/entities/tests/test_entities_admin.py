@@ -371,7 +371,6 @@ class TestPersonAdmin:
         assert queryset.count() == Person.objects.all().count()
 
 
-@pytest.mark.mohamed
 @pytest.mark.django_db
 class TestNameInlineFormSet:
     def test_clean(self, admin_client):
