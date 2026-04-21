@@ -1,6 +1,6 @@
 import logging
 import re
-from datetime import datetime
+from datetime import date, datetime
 from math import modf
 from operator import itemgetter
 
@@ -470,6 +470,20 @@ class Person(
             return str(self.names.filter(primary=True).first())
         except Name.DoesNotExist:
             return str(self.names.first() or super().__str__())
+
+    def clean(self):
+        """
+        Require date_str is not a future date.
+        If date_str is a range, require its end not tobe a future date
+        """
+        # date_to_check = datetime.strptime(self.date_str, '%d %B %Y CE').date()
+        date_to_check = (
+            datetime.strptime(standard_date_display(self.date), "%d %B %Y CE").date()
+            if self.date
+            else None
+        )
+        if date_to_check and date_to_check > date.today():
+            raise ValidationError("Can't input a date in the future!")
 
     @property
     def date_str(self):

@@ -602,32 +602,6 @@ class TestDocument:
         unsaved_doc = Document()
         assert str(unsaved_doc) == "?? (PGPID ??)"
 
-    def test_clean(self):
-        doc = Document()
-        # no dates; no error
-        doc.clean()
-
-        # original date but no calendar — error
-        doc.doc_date_original = "480"
-        with pytest.raises(ValidationError):
-            doc.clean()
-
-        # calendar but no date — error
-        doc.doc_date_original = ""
-        doc.doc_date_calendar = Calendar.HIJRI
-        with pytest.raises(ValidationError):
-            doc.clean()
-
-        # both — no error
-        doc.doc_date_original = "350"
-        doc.clean()
-
-        # future date - error
-        tomorrow = datetime.date.today() + datetime.timedelta(days=1)
-        doc.doc_date_original = tomorrow.strftime("%Y-%m-%d")
-        with pytest.raises(ValidationError):
-            doc.clean()
-
     def test_original_date(self):
         """Should display the historical document date with its calendar name"""
         doc = Document.objects.create(
