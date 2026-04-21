@@ -236,9 +236,12 @@ class DocumentDateMixin(TrackChangesModel):
         return self.get_document_date(self.doc_date_standard, self.original_date)
 
     def get_doc_date(self):
-        date_to_check = self.doc_date_standard
+        date_to_check = (
+            self.doc_date_standard.split("/") if self.doc_date_standard else None
+        )
         if not date_to_check and self.doc_date_original:
             date_to_check = self.standardize_date(update=False).split("/")
+        if date_to_check:
             date_to_check = (
                 date_to_check[len(date_to_check) - 1]
                 if len(date_to_check) > 1

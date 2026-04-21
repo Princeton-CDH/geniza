@@ -41,9 +41,25 @@ class TestDocumentDateMixin:
         doc.doc_date_original = "350"
         doc.clean()
 
+        # both full date — no error
+        doc.doc_date_original = "350-01-01"
+        doc.clean()
+
+        # both full date range — no error
+        doc.doc_date_original = "350-01-01/351-01-01"
+        doc.clean()
+
         # future date - error
-        tomorrow = datetime.date.today() + datetime.timedelta(days=1)
+        today = datetime.date.today()
+        tomorrow = today + datetime.timedelta(days=1)
         doc.doc_date_original = tomorrow.strftime("%Y-%m-%d")
+        with pytest.raises(ValidationError):
+            doc.clean()
+
+        # future date range - error
+        doc.doc_date_original = (
+            f"{today.strftime('%Y-%m-%d')}/{tomorrow.strftime('%Y-%m-%d')}"
+        )
         with pytest.raises(ValidationError):
             doc.clean()
 
@@ -152,8 +168,16 @@ class TestPerson:
         person.date = "2024-06-12"
         person.clean()
 
+        # full past date range — no error
+        person.date = "2024-06-12/2025-06-12"
+        person.clean()
+
         # partial past date — no error
         person.date = "2024"
+        person.clean()
+
+        # partial past date range — no error
+        person.date = "2024/2025"
         person.clean()
 
         # future date - error

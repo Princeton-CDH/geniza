@@ -479,8 +479,14 @@ class Person(
         # date_to_check = datetime.strptime(self.date_str, '%d %B %Y CE').date()
 
         if self.date:
+            date_to_check = self.date.split("/")
+            date_to_check = (
+                date_to_check[len(date_to_check) - 1]
+                if len(date_to_check) > 1
+                else date_to_check[0]
+            )
             date_to_check = date.fromisoformat(
-                PartialDate(self.date).isoformat(mode="max", fmt="full")
+                PartialDate(date_to_check).isoformat(mode="max", fmt="full")
             )
             if date_to_check > date.today():
                 raise ValidationError("Can't input a date in the future!")
