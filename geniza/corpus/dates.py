@@ -235,6 +235,29 @@ class DocumentDateMixin(TrackChangesModel):
         """Property: formatted display of combined original and standardized dates"""
         return self.get_document_date(self.doc_date_standard, self.original_date)
 
+    def get_doc_date(self):
+        """Utility method to validate / vet document's date"""
+        date_to_check = (
+            self.doc_date_standard.split("/") if self.doc_date_standard else None
+        )
+        if not date_to_check and self.doc_date_original:
+            date_to_check = self.standardize_date(update=False).split("/")
+        if date_to_check:
+            date_to_check = (
+                date_to_check[len(date_to_check) - 1]
+                if len(date_to_check) > 1
+                else date_to_check[0]
+            )
+        date_to_check = PartialDate(date_to_check) if date_to_check else None
+        date_to_check = (
+            self.end_date if not date_to_check and self.parsed_date else date_to_check
+        )
+        return (
+            date.fromisoformat(date_to_check.isoformat(mode="max", fmt="full"))
+            if date_to_check
+            else None
+        )
+
     def clean(self):
         """
         Require doc_date_original and doc_date_calendar to be set
@@ -244,6 +267,9 @@ class DocumentDateMixin(TrackChangesModel):
             raise ValidationError("Original date is required when calendar is set")
         if self.doc_date_original and not self.doc_date_calendar:
             raise ValidationError("Calendar is required when original date is set")
+        date_to_check = self.get_doc_date()
+        if date_to_check and date_to_check > date.today():
+            raise ValidationError("Can't input a date in the future!")
 
     def standardize_date(self, update=False):
         """
@@ -283,7 +309,6 @@ class DocumentDateMixin(TrackChangesModel):
                     end = start
                 else:
                     end = PartialDate(date_parts[1])
-
                 self._parsed_date = {"start": start, "end": end}
             except ValueError:
                 # ignore if it can't be parsed (records before validation added)

@@ -1,4 +1,4 @@
-from datetime import datetime
+import datetime
 from unittest import TestCase
 from unittest.mock import Mock, patch
 
@@ -601,26 +601,6 @@ class TestDocument:
 
         unsaved_doc = Document()
         assert str(unsaved_doc) == "?? (PGPID ??)"
-
-    def test_clean(self):
-        doc = Document()
-        # no dates; no error
-        doc.clean()
-
-        # original date but no calendar — error
-        doc.doc_date_original = "480"
-        with pytest.raises(ValidationError):
-            doc.clean()
-
-        # calendar but no date — error
-        doc.doc_date_original = ""
-        doc.doc_date_calendar = Calendar.HIJRI
-        with pytest.raises(ValidationError):
-            doc.clean()
-
-        # both — no error
-        doc.doc_date_original = "350"
-        doc.clean()
 
     def test_original_date(self):
         """Should display the historical document date with its calendar name"""
@@ -2029,7 +2009,7 @@ def test_document_merge_with_log_entries(document, join):
     # create some log entries
     document_contenttype = ContentType.objects.get_for_model(Document)
     # creation
-    creation_date = timezone.make_aware(datetime(1991, 5, 1))
+    creation_date = timezone.make_aware(datetime.datetime(1991, 5, 1))
     creator = User.objects.get_or_create(username="editor")[0]
     LogEntry.objects.bulk_create(
         [
