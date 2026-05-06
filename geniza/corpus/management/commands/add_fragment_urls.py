@@ -9,7 +9,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.management.base import BaseCommand, CommandError
 from parasolr.django.signals import IndexableSignalHandler
 
-from geniza.corpus.models import Fragment
+from geniza.corpus.models import Fragment, MaterialSupport, Provenance
 
 
 class Command(BaseCommand):
@@ -87,6 +87,8 @@ class Command(BaseCommand):
 
         url = row.get("url")
         iiif_url = row.get("iiif_url") or Fragment.view_to_iiif_url(row["url"])
+        provenance = row.get("provenance")
+        material_support = row.get("material_support")
         save_needed = False
         log_message = []
 
@@ -124,6 +126,14 @@ class Command(BaseCommand):
                     fragment.iiif_url = iiif_url
                     save_needed = True
                     log_message.append("updated IIIF URL")
+
+        if material_support:
+            ms = MaterialSupport.objects.get_or_create(name=material_support)
+            fragment.material_support = ms[0]
+
+        if provenance:
+            prov = Provenance.objects.get_or_create(name=provenance)
+            fragment.provenance_display = row.get(prov[0])
 
         if save_needed:
             if self.dryrun:
