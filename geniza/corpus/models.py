@@ -2038,33 +2038,68 @@ class TextBlock(models.Model):
 
     def thumbnail(self):
         """iiif thumbnails for this TextBlock, with selected images highlighted"""
-        canvases = []
-        if not self.fragment.iiif_images():
-            # if no IIIF, get placeholder canvas URIs using annotations
-            annotated_canvases = (
-                Annotation.objects.filter(
-                    footnote__content_type=ContentType.objects.get_for_model(Document),
-                    footnote__object_id=self.document.pk,
-                    content__target__source__id__isnull=False,
-                )
-                .order_by()
-                .values_list("content__target__source__id", flat=True)
-                .distinct()
+        # get any placeholder canvas URIs that have been annotated
+        annotated_canvases = (
+            Annotation.objects.filter(
+                footnote__content_type=ContentType.objects.get_for_model(Document),
+                footnote__object_id=self.document.pk,
+                content__target__source__id__isnull=False,
             )
-            # match placeholder on document and textblock PK; extract canvas number
-            placeholder_re = re.compile(
-                rf"{self.document.pk}/iiif/textblock/{self.pk}/canvas/(\d+)/"
+            .order_by()
+            .values_list("content__target__source__id", flat=True)
+            .distinct()
+        )
+        # match placeholder on document and textblock PK; extract canvas number
+        placeholder_re = re.compile(
+            rf"{self.document.pk}/iiif/textblock/{self.pk}/canvas/(\d+)/"
+        )
+        placeholder_canvases = [
+            canvas_uri
+            for canvas_uri in annotated_canvases
+            if placeholder_re.search(canvas_uri)
+        ]
+        # ensure order of placeholders is 1, 2 (recto, verso) by canvas number
+        placeholder_canvases.sort(
+            key=lambda uri: int(placeholder_re.search(uri).group(1))
+        )
+
+        # get any real iiif images
+        iiif_images = self.fragment.iiif_images()
+        if not iiif_images:
+            # if none, return placeholders
+            return self.fragment.iiif_thumbnails(
+                selected=self.selected_images, canvases=placeholder_canvases
             )
-            canvases = [
-                canvas_uri
-                for canvas_uri in annotated_canvases
-                if placeholder_re.search(canvas_uri)
-            ]
-            # ensure order of placeholders is 1, 2 (recto, verso) by canvas number
-            canvases.sort(key=lambda uri: int(placeholder_re.search(uri).group(1)))
-        return self.fragment.iiif_thumbnails(
+
+        _, _, canvases = iiif_images
+        thumbnails = self.fragment.iiif_thumbnails(
             selected=self.selected_images, canvases=canvases
         )
+
+        # if we have both, combine their thumbnails
+        if placeholder_canvases:
+            # generate placeholder thumbnails and append
+            recto_img = static("img/ui/all/all/recto-placeholder.svg")
+            verso_img = static("img/ui/all/all/verso-placeholder.svg")
+            placeholder_images = []
+            placeholder_labels = []
+            for uri in placeholder_canvases:
+                canvas_num = int(placeholder_re.search(uri).group(1))
+                if canvas_num == 1:
+                    placeholder_images.append(recto_img)
+                    placeholder_labels.append(f"{self.fragment.shelfmark} recto")
+                else:
+                    placeholder_images.append(verso_img)
+                    placeholder_labels.append(f"{self.fragment.shelfmark} verso")
+            placeholder_thumbs = Fragment.admin_thumbnails(
+                images=placeholder_images,
+                labels=placeholder_labels,
+                canvases=placeholder_canvases,
+                selected=self.selected_images,
+            )
+            thumbnails += placeholder_thumbs
+
+        return thumbnails
 
 
 class Dating(models.Model):
