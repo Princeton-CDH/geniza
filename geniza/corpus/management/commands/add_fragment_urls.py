@@ -133,7 +133,7 @@ class Command(BaseCommand):
 
         if provenance:
             prov = Provenance.objects.get_or_create(name=provenance)
-            fragment.provenance_display = row.get(prov[0])
+            fragment.provenance_display = prov[0]
 
         if save_needed:
             if self.dryrun:

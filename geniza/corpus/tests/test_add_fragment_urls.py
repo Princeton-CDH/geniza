@@ -123,12 +123,16 @@ def test_add_fragment_urls(mock_log_change):
         {
             "shelfmark": orig_frag.shelfmark,
             "url": "https://cudl.lib.cam.ac.uk/view/MS-TS-NS-J-00600",
+            "material_support": "Paper",
+            "provenance": "Geniza",
         }
     )
     command.add_fragment_urls(row)
     fragment = Fragment.objects.get(shelfmark=orig_frag.shelfmark)
     assert fragment.url == row["url"]
     assert fragment.iiif_url == orig_frag.iiif_url
+    assert fragment.material_support.name == row["material_support"]
+    assert fragment.provenance_display.name == row["provenance"]
     assert command.stats["url_added"] == 1
     assert not command.stats["iiif_added"]
     assert not command.stats["iiif_updated"]
