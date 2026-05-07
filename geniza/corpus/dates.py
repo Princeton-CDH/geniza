@@ -253,9 +253,11 @@ class DocumentDateMixin(TrackChangesModel):
             self.end_date if not date_to_check and self.parsed_date else date_to_check
         )
         start_to_return, end_to_return = None, None
-        range_splitted = (
-            self.doc_date_original.split("/") if self.doc_date_original else None
-        )
+        range_splitted = None
+        if self.doc_date_original:
+            range_splitted = self.doc_date_original.split("/")
+        elif self.doc_date_standard:
+            range_splitted = self.doc_date_standard.split("/")
         if range_splitted and len(range_splitted) > 1:
             start = PartialDate(range_splitted[0])
             end = PartialDate(range_splitted[1])

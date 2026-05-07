@@ -21,6 +21,7 @@ from geniza.entities.models import Person
 class TestDocumentDateMixin:
     # for convenience, use the Document model to test the date mixin
 
+    @pytest.mark.mohamed
     def test_clean(self):
         doc = Document()
         # no dates; no error
@@ -51,6 +52,17 @@ class TestDocumentDateMixin:
 
         # both full date range (star later than end) — error
         doc.doc_date_original = "351-01-01/350-01-01"
+        with pytest.raises(ValidationError):
+            doc.clean()
+
+        # only std (CE) full date range and no calendar — no error
+        doc.doc_date_calendar = None
+        doc.doc_date_original = None
+        doc.doc_date_standard = "2020/2021"
+        doc.clean()
+
+        # only std (CE) full date range and no calendar (star later than end) — error
+        doc.doc_date_standard = "2021/2020"
         with pytest.raises(ValidationError):
             doc.clean()
 
