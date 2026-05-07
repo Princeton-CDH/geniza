@@ -253,9 +253,20 @@ class DocumentDateMixin(TrackChangesModel):
             self.end_date if not date_to_check and self.parsed_date else date_to_check
         )
         start_to_return, end_to_return = None, None
-        range_splitted = None
+        range_splitted = []
         if self.doc_date_original:
-            range_splitted = self.doc_date_original.split("/")
+            original_range_splitted = self.doc_date_original.split("/")
+            if len(original_range_splitted) > 1:
+                start_std = standardize_date(
+                    original_range_splitted[0], self.doc_date_calendar
+                )
+                converted_start = display_date_range(*start_std)
+                range_splitted.append(converted_start)
+                end_std = standardize_date(
+                    original_range_splitted[1], self.doc_date_calendar
+                )
+                converted_end = display_date_range(*end_std)
+                range_splitted.append(converted_end)
         elif self.doc_date_standard:
             range_splitted = self.doc_date_standard.split("/")
         if range_splitted and len(range_splitted) > 1:
