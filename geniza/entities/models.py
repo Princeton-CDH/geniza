@@ -473,21 +473,31 @@ class Person(
 
     def clean(self):
         """
-        Require date_str is not a future date.
-        If date_str is a range, require its end not tobe a future date
+        Disallowing date_str from being a future date.
+        If date_str is a range, require its end not to be a future date
         """
         if self.date:
-            date_to_check = self.date.split("/")
+            range_splitted = self.date.split("/")
+            start_to_check, end_to_check = None, None
+            if len(range_splitted) > 1:
+                start = PartialDate(range_splitted[0])
+                end = PartialDate(range_splitted[1])
+                start_to_check = date.fromisoformat(
+                    start.isoformat(mode="max", fmt="full")
+                )
+                end_to_check = date.fromisoformat(end.isoformat(mode="max", fmt="full"))
             date_to_check = (
-                date_to_check[len(date_to_check) - 1]
-                if len(date_to_check) > 1
-                else date_to_check[0]
+                range_splitted[len(range_splitted) - 1]
+                if len(range_splitted) > 1
+                else range_splitted[0]
             )
             date_to_check = date.fromisoformat(
                 PartialDate(date_to_check).isoformat(mode="max", fmt="full")
             )
             if date_to_check > date.today():
                 raise ValidationError("Can't input a date in the future!")
+            if start_to_check and end_to_check and end_to_check < start_to_check:
+                raise ValidationError("End date can't be earlier than start date!")
 
     @property
     def date_str(self):

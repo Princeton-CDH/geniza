@@ -185,6 +185,11 @@ class TestPerson:
         person.date = "2024-06-12/2025-06-12"
         person.clean()
 
+        # full past date range with end earlier than start —  error
+        person.date = "2025-06-12/2024-06-12"
+        with pytest.raises(ValidationError):
+            person.clean()
+
         # partial past date — no error
         person.date = "2024"
         person.clean()
@@ -192,6 +197,11 @@ class TestPerson:
         # partial past date range — no error
         person.date = "2024/2025"
         person.clean()
+
+        # partial past date range with end earlier than start — error
+        person.date = "2025/2024"
+        with pytest.raises(ValidationError):
+            person.clean()
 
         # future date - error
         today = datetime.date.today()
@@ -202,6 +212,12 @@ class TestPerson:
 
         # future date range - error
         person.date = f"{today.strftime('%Y-%m-%d')}/{tomorrow.strftime('%Y-%m-%d')}"
+        with pytest.raises(ValidationError):
+            person.clean()
+
+        # date range with end earlier than start - error
+        yesterday = today - datetime.timedelta(days=1)
+        person.date = f"{today.strftime('%Y-%m-%d')}/{yesterday.strftime('%Y-%m-%d')}"
         with pytest.raises(ValidationError):
             person.clean()
 
