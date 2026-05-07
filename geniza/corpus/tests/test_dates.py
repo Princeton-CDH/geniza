@@ -21,7 +21,6 @@ from geniza.entities.models import Person
 class TestDocumentDateMixin:
     # for convenience, use the Document model to test the date mixin
 
-    @pytest.mark.mohamed
     def test_clean(self):
         doc = Document()
         # no dates; no error
