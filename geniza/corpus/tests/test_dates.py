@@ -49,6 +49,11 @@ class TestDocumentDateMixin:
         doc.doc_date_original = "350-01-01/351-01-01"
         doc.clean()
 
+        # both full date range (star later than end) — error
+        doc.doc_date_original = "351-01-01/350-01-01"
+        with pytest.raises(ValidationError):
+            doc.clean()
+
         # future date - error
         today = datetime.date.today()
         tomorrow = today + datetime.timedelta(days=1)
@@ -59,6 +64,14 @@ class TestDocumentDateMixin:
         # future date range - error
         doc.doc_date_original = (
             f"{today.strftime('%Y-%m-%d')}/{tomorrow.strftime('%Y-%m-%d')}"
+        )
+        with pytest.raises(ValidationError):
+            doc.clean()
+
+        # date_original with no calendar (star later than end) — error
+        yesterday = today - datetime.timedelta(days=1)
+        doc.doc_date_original = (
+            f"{yesterday.strftime('%Y-%m-%d')}/{today.strftime('%Y-%m-%d')}"
         )
         with pytest.raises(ValidationError):
             doc.clean()
