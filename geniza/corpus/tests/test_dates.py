@@ -49,6 +49,22 @@ class TestDocumentDateMixin:
         doc.doc_date_original = "350-01-01/351-01-01"
         doc.clean()
 
+        # both full date range (star later than end) — error
+        doc.doc_date_original = "351-01-01/350-01-01"
+        with pytest.raises(ValidationError):
+            doc.clean()
+
+        # only std (CE) full date range and no calendar — no error
+        doc.doc_date_calendar = None
+        doc.doc_date_original = None
+        doc.doc_date_standard = "2020/2021"
+        doc.clean()
+
+        # only std (CE) full date range and no calendar (star later than end) — error
+        doc.doc_date_standard = "2021/2020"
+        with pytest.raises(ValidationError):
+            doc.clean()
+
         # future date - error
         today = datetime.date.today()
         tomorrow = today + datetime.timedelta(days=1)
@@ -59,6 +75,14 @@ class TestDocumentDateMixin:
         # future date range - error
         doc.doc_date_original = (
             f"{today.strftime('%Y-%m-%d')}/{tomorrow.strftime('%Y-%m-%d')}"
+        )
+        with pytest.raises(ValidationError):
+            doc.clean()
+
+        # date_original with no calendar (star later than end) — error
+        yesterday = today - datetime.timedelta(days=1)
+        doc.doc_date_original = (
+            f"{yesterday.strftime('%Y-%m-%d')}/{today.strftime('%Y-%m-%d')}"
         )
         with pytest.raises(ValidationError):
             doc.clean()
@@ -172,6 +196,11 @@ class TestPerson:
         person.date = "2024-06-12/2025-06-12"
         person.clean()
 
+        # full past date range with end earlier than start —  error
+        person.date = "2025-06-12/2024-06-12"
+        with pytest.raises(ValidationError):
+            person.clean()
+
         # partial past date — no error
         person.date = "2024"
         person.clean()
@@ -179,6 +208,11 @@ class TestPerson:
         # partial past date range — no error
         person.date = "2024/2025"
         person.clean()
+
+        # partial past date range with end earlier than start — error
+        person.date = "2025/2024"
+        with pytest.raises(ValidationError):
+            person.clean()
 
         # future date - error
         today = datetime.date.today()
@@ -189,6 +223,12 @@ class TestPerson:
 
         # future date range - error
         person.date = f"{today.strftime('%Y-%m-%d')}/{tomorrow.strftime('%Y-%m-%d')}"
+        with pytest.raises(ValidationError):
+            person.clean()
+
+        # date range with end earlier than start - error
+        yesterday = today - datetime.timedelta(days=1)
+        person.date = f"{today.strftime('%Y-%m-%d')}/{yesterday.strftime('%Y-%m-%d')}"
         with pytest.raises(ValidationError):
             person.clean()
 

@@ -252,10 +252,50 @@ class DocumentDateMixin(TrackChangesModel):
         date_to_check = (
             self.end_date if not date_to_check and self.parsed_date else date_to_check
         )
+        start_to_return, end_to_return = None, None
+        range_splitted = []
+        if self.doc_date_original:
+            original_range_splitted = self.doc_date_original.split("/")
+            if len(original_range_splitted) > 1:
+                start_std = standardize_date(
+                    original_range_splitted[0], self.doc_date_calendar
+                )
+                converted_start = display_date_range(*start_std)
+                converted_str = (
+                    converted_start[0]
+                    if isinstance(converted_start, tuple)
+                    else converted_start
+                )
+                converted0 = converted_str.split("/")[0]
+                range_splitted.append(converted0)
+                end_std = standardize_date(
+                    original_range_splitted[1], self.doc_date_calendar
+                )
+                converted_end = display_date_range(*end_std)
+                converted_str = (
+                    converted_end[0]
+                    if isinstance(converted_end, tuple)
+                    else converted_end
+                )
+                converted1 = converted_str.split("/")[0]
+                range_splitted.append(converted1)
+        elif self.doc_date_standard:
+            range_splitted = self.doc_date_standard.split("/")
+        if range_splitted and len(range_splitted) > 1:
+            start = PartialDate(range_splitted[0])
+            end = PartialDate(range_splitted[1])
+            start_to_return = date.fromisoformat(
+                start.isoformat(mode="max", fmt="full")
+            )
+            end_to_return = date.fromisoformat(end.isoformat(mode="max", fmt="full"))
         return (
-            date.fromisoformat(date_to_check.isoformat(mode="max", fmt="full"))
-            if date_to_check
-            else None
+            (
+                date.fromisoformat(date_to_check.isoformat(mode="max", fmt="full"))
+                if date_to_check
+                else None
+            ),
+            start_to_return,
+            end_to_return,
         )
 
     def clean(self):
@@ -267,9 +307,11 @@ class DocumentDateMixin(TrackChangesModel):
             raise ValidationError("Original date is required when calendar is set")
         if self.doc_date_original and not self.doc_date_calendar:
             raise ValidationError("Calendar is required when original date is set")
-        date_to_check = self.get_doc_date()
+        date_to_check, start_date, end_date = self.get_doc_date()
         if date_to_check and date_to_check > date.today():
             raise ValidationError("Can't input a date in the future!")
+        if start_date and end_date and end_date < start_date:
+            raise ValidationError("End date can't be earlier than start date!")
 
     def standardize_date(self, update=False):
         """
