@@ -322,13 +322,17 @@ def test_convert_seleucid_date():
 def test_get_islamic_month():
     # month name as used in the convertdate library
     assert get_islamic_month("Rajab") == 7  # referenced by number, no defines
+    assert get_islamic_month("Rabi' ath-Thani") == 4
+    assert get_islamic_month("Jumada ath-Thaniyah") == 6
     # month name without accents
     assert get_islamic_month("Safar") == 2
     # local override
     assert get_islamic_month("Muharram") == 1
     assert get_islamic_month("Dhū l-Qaʿda") == 11
     assert get_islamic_month("Rabīʿ I") == 3
+    assert get_islamic_month("Rabīʿ II") == 4
     assert get_islamic_month("Jumädä I") == 5
+    assert get_islamic_month("Jumädä II") == 6
 
 
 def test_convert_islamic_date():
@@ -359,6 +363,10 @@ def test_convert_islamic_date():
     assert converted_date[0] == datetime.date(1527, 12, 8)
     converted_date = convert_islamic_date("5 Jumädä I 556")
     assert converted_date[0] == datetime.date(1161, 5, 2)
+    converted_date = convert_islamic_date("14 Rabīʿ II 934")
+    assert converted_date[0] == datetime.date(1528, 1, 7)
+    converted_date = convert_islamic_date("5 Jumädä II 556")
+    assert converted_date[0] == datetime.date(1161, 6, 1)
 
 
 class TestPartialDate:
