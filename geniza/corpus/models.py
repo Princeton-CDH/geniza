@@ -306,7 +306,7 @@ class Fragment(TrackChangesModel):
                     images.append(IIIFImageClient(*image_id.rsplit("/", 1)))
                     # label provides library's recto/verso designation
                     labels.append(canvas.label)
-                    canvases.append(canvas.uri)
+                    canvases.append(canvas.id)
             except (IIIFException, ConnectionError, HTTPError):
                 logger.warning("Error loading IIIF manifest: %s" % self.iiif_url)
                 return None
@@ -441,7 +441,7 @@ class Fragment(TrackChangesModel):
                     # (either newly imported or already in the database)
                     imported = GenizaManifestImporter().import_paths([self.iiif_url])
                     self.manifest = imported[0] if imported else None
-                except (IIIFException, NewConnectionError):
+                except (IIIFException, NewConnectionError, ConnectionError):
                     # clear out the manifest if there was an error
                     self.manifest = None
                     # if saved via admin, alert the user
