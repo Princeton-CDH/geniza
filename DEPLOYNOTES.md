@@ -1,6 +1,6 @@
 # Deploy Notes
 
-## 4.29
+## 4.30
 
 -   Copy the new versions of FrankRuhl, `FrankRuhl1924MFMediumPro.woff` and `FrankRuhl1924MFMediumPro.woff2` from the shared Google Drive folder "Geniza – woff files only" to `sitemedia/fonts`. The original font was missing certain combining vowel marks.
 
