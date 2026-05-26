@@ -11,22 +11,18 @@
 
 /**
  * @license
- * MyFonts Webfont Build ID 4233441, 2021-12-03T12:11:09-0500
- *
+ * MyFonts Webfont Build ID 3867246, 2020-12-16T11:57:38-0500
+ * 
  * The fonts listed in this notice are subject to the End User License
- * Agreement(s) entered into by the website owner. All other parties are
+ * Agreement(s) entered into by the website owner. All other parties are 
  * explicitly restricted from using the Licensed Webfonts(s).
- *
+ * 
  * You may obtain a valid license at the URLs below.
- *
- * Webfont: FrankRuhl1924MF-Medium-Medium by Masterfont
- * URL: https://www.myfonts.com/fonts/masterfont/frank-ruhl1924-mf/frank-ruhl1924-mf/
- * Copyright: Masterfont Ltd.
- *
- *
- *
- * © 2021 MyFonts Inc
-*/
+ * 
+ * Webfont: Frank Ruhl1924 MF Medium Pro by Masterfont
+ * URL: https://www.myfonts.com/collections/masterfont-foundry
+ 
+ * © 2026 MyFonts Inc. */
 
 // @font-face declarations
 
@@ -119,14 +115,12 @@
         font-display: swap;
     }
 
-    // Frank Ruhl1924 MF Medium for Hebrew text (transcriptions)
+    // Frank Ruhl1924 MF Medium Pro for Hebrew text (transcriptions)
     @font-face {
-        font-family: "FrankRuhl 1924 MF Medium";
+        font-family: "FrankRuhl1924MFMediumPro";
         font-style: normal;
-        src: url("#{$base_url}/FrankRuhl1924MF-Medium-Medium.woff2")
-                format("woff2"),
-            url("#{$base_url}/FrankRuhl1924MF-Medium-Medium.woff")
-                format("woff");
+        src: url("#{$base_url}/FrankRuhl1924MFMediumPro.woff2") format("woff2"),
+            url("#{$base_url}/FrankRuhl1924MFMediumPro.woff") format("woff");
         font-display: swap;
         unicode-range:
             // Hebrew
@@ -233,7 +227,7 @@ $primary-italic: ("Greta Sans Regular Italic", "arial-italic", sans-serif);
 // with Greta Sans for Latin script, and Times New Roman for missing
 // Hebrew/Arabic glyphs)
 $transcription: (
-    "FrankRuhl 1924 MF Medium",
+    "FrankRuhl1924MFMediumPro",
     "Amiri",
     "Greta Sans Latin Fallback",
     "Times New Roman",
