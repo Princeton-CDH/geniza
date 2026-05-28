@@ -125,7 +125,7 @@ a#needsreview:target {
 .form-row .transcription li,
 .form-row .translation[lang="he"] p,
 .form-row .translation[lang="he"] li {
-    font-family: "FrankRuhl 1924 MF Medium", "Amiri", "Times New Roman", serif;
+    font-family: "FrankRuhl1924MFMediumPro", "Amiri", "Times New Roman", serif;
     box-sizing: border-box;
 }
 .form-row .translation p,
