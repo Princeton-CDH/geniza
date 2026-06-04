@@ -120,6 +120,8 @@ If you need to add fonts to the bundle, you will need access to the original fon
 
 When prompted after entering the ``gpg`` command, you must use the same passphrase that was previously used to encrypt the file, or store the new passphrase in GitHub Secrets in a variable called ``GPG_PASSPHRASE``.
 
+To install fonts in CDH-managed staging and production environments, follow the [instructions here](https://github.com/Princeton-CDH/cdh-ansible/blob/bb78e8f9d0011098f489567efd85d5f1253c5f67/roles/geniza_setup/README.md) to setup fonts. The Ansible playbook for deploying the application will copy those fonts to `/var/www/fonts` on the relevant server.
+
 Static Files
 ~~~~~~~~~~~~
 

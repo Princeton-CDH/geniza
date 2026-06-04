@@ -2,7 +2,7 @@
 
 ## 4.30
 
--   Copy the new versions of FrankRuhl, `FrankRuhl1924MFMediumPro.woff` and `FrankRuhl1924MFMediumPro.woff2` from the shared Google Drive folder "Geniza – woff files only" to `sitemedia/fonts`. The original font was missing certain combining vowel marks.
+-   Replace FrankRuhl with the new `FrankRuhl1924MFMediumPro.woff` and `FrankRuhl1924MFMediumPro.woff2` in `sitemedia/fonts`. The original font was missing certain combining vowel marks. (If using CDH Ansible to deploy, no action is required.)
 
 ## 4.28
 
