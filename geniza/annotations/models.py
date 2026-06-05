@@ -263,14 +263,23 @@ class Annotation(TrackChangesModel):
         # replace Unicode non-breaking space \xa0
         cleaned_html = re.sub(r"[\xa0 ]+", " ", cleaned_html)
 
-        # if resulting text has any span elements with no attributes, remove them
-        if "<span>" in cleaned_html:
+        # if resulting text has any span elements with no attributes, remove them;
+        # if resulting text has any p elements inside li, unwrap them
+        # (leave out ">" from opening tag in case of attributes)
+        if "<span" in cleaned_html or "<p" in cleaned_html:
             # parse as html to identify spans with no attributes
             soup = BeautifulSoup(cleaned_html)
             for span in soup.find_all("span"):
                 # if span has no attributes, unwrap the text and remove the span tag
                 if not span.attrs:
                     span.unwrap()
+            # unwrap nested <p> inside <li>
+            for li in soup.find_all("li"):
+                for p in li.find_all("p"):
+                    # ensure dir attr (ltr or rtl) is propagated back up to the parent li
+                    if p.has_attr("dir"):
+                        li["dir"] = p["dir"]
+                    p.unwrap()
             # serialize back out as html without wrapping html/body tags
             cleaned_html = "".join(str(el) for el in soup.html.body.children)
         return cls.flatten_html_list(cleaned_html)

@@ -1,5 +1,10 @@
 # Deploy Notes
 
+## 4.30
+
+-   Replace FrankRuhl with the new `FrankRuhl1924MFMediumPro.woff` and `FrankRuhl1924MFMediumPro.woff2` in `sitemedia/fonts`. The original font was missing certain combining vowel marks. (If using CDH Ansible to deploy, no action is required.)
+-   Ingest new CUDL IIIF manifests from the CSV in issue #1984
+
 ## 4.28
 
 -   Old placeholder canvases must be manually migrated using the new management

@@ -1,4 +1,4 @@
-from datetime import date
+import datetime
 
 import convertdate
 import pytest
@@ -15,6 +15,7 @@ from geniza.corpus.dates import (
     standard_date_display,
 )
 from geniza.corpus.models import Document
+from geniza.entities.models import Person
 
 
 class TestDocumentDateMixin:
@@ -39,6 +40,52 @@ class TestDocumentDateMixin:
         # both — no error
         doc.doc_date_original = "350"
         doc.clean()
+
+        # both full date — no error
+        doc.doc_date_original = "350-01-01"
+        doc.clean()
+
+        # both full date range — no error
+        doc.doc_date_original = "350-01-01/351-01-01"
+        doc.clean()
+
+        # both full date range (star later than end) — error
+        doc.doc_date_original = "351-01-01/350-01-01"
+        with pytest.raises(ValidationError):
+            doc.clean()
+
+        # only std (CE) full date range and no calendar — no error
+        doc.doc_date_calendar = None
+        doc.doc_date_original = None
+        doc.doc_date_standard = "2020/2021"
+        doc.clean()
+
+        # only std (CE) full date range and no calendar (star later than end) — error
+        doc.doc_date_standard = "2021/2020"
+        with pytest.raises(ValidationError):
+            doc.clean()
+
+        # future date - error
+        today = datetime.date.today()
+        tomorrow = today + datetime.timedelta(days=1)
+        doc.doc_date_original = tomorrow.strftime("%Y-%m-%d")
+        with pytest.raises(ValidationError):
+            doc.clean()
+
+        # future date range - error
+        doc.doc_date_original = (
+            f"{today.strftime('%Y-%m-%d')}/{tomorrow.strftime('%Y-%m-%d')}"
+        )
+        with pytest.raises(ValidationError):
+            doc.clean()
+
+        # date_original with no calendar (star later than end) — error
+        yesterday = today - datetime.timedelta(days=1)
+        doc.doc_date_original = (
+            f"{yesterday.strftime('%Y-%m-%d')}/{today.strftime('%Y-%m-%d')}"
+        )
+        with pytest.raises(ValidationError):
+            doc.clean()
 
     def test_original_date(self):
         """Should display the historical document date with its calendar name"""
@@ -134,6 +181,58 @@ class TestDocumentDateMixin:
         assert doc.end_date == PartialDate("1840-03-04")
 
 
+class TestPerson:
+
+    def test_clean(self):
+        person = Person()
+        # no dates; no error
+        person.clean()
+
+        # full past date — no error
+        person.date = "2024-06-12"
+        person.clean()
+
+        # full past date range — no error
+        person.date = "2024-06-12/2025-06-12"
+        person.clean()
+
+        # full past date range with end earlier than start —  error
+        person.date = "2025-06-12/2024-06-12"
+        with pytest.raises(ValidationError):
+            person.clean()
+
+        # partial past date — no error
+        person.date = "2024"
+        person.clean()
+
+        # partial past date range — no error
+        person.date = "2024/2025"
+        person.clean()
+
+        # partial past date range with end earlier than start — error
+        person.date = "2025/2024"
+        with pytest.raises(ValidationError):
+            person.clean()
+
+        # future date - error
+        today = datetime.date.today()
+        tomorrow = today + datetime.timedelta(days=1)
+        person.date = tomorrow.strftime("%Y-%m-%d")
+        with pytest.raises(ValidationError):
+            person.clean()
+
+        # future date range - error
+        person.date = f"{today.strftime('%Y-%m-%d')}/{tomorrow.strftime('%Y-%m-%d')}"
+        with pytest.raises(ValidationError):
+            person.clean()
+
+        # date range with end earlier than start - error
+        yesterday = today - datetime.timedelta(days=1)
+        person.date = f"{today.strftime('%Y-%m-%d')}/{yesterday.strftime('%Y-%m-%d')}"
+        with pytest.raises(ValidationError):
+            person.clean()
+
+
 # test hebrew date conversion
 def test_get_hebrew_month():
     # month name used in the convertdate library
@@ -148,20 +247,20 @@ def test_convert_hebrew_date():
     # start/end should be the same
     assert converted_date[0] == converted_date[1]
     # expected converted date
-    assert converted_date[1] == date(1807, 9, 8)
+    assert converted_date[1] == datetime.date(1807, 9, 8)
 
     # single day, julian
     converted_date = convert_hebrew_date("Thursday, 16 Elul 5[2]09")
     # start/end should be the same
     assert converted_date[0] == converted_date[1]
     # expected converted date
-    assert converted_date[1] == date(1449, 9, 4)
+    assert converted_date[1] == datetime.date(1449, 9, 4)
 
     # month/year
     converted_date = convert_hebrew_date("Tishrei 4898")
     # expect 1137-09-18/1137-10-17
-    assert converted_date[0] == date(1137, 9, 18)
-    assert converted_date[1] == date(1137, 10, 17)
+    assert converted_date[0] == datetime.date(1137, 9, 18)
+    assert converted_date[1] == datetime.date(1137, 10, 17)
 
     # year only
     converted_date = convert_hebrew_date("5632")
@@ -169,14 +268,14 @@ def test_convert_hebrew_date():
     assert converted_date[0].year == 1871
     assert converted_date[1].year == 1872
     # hebrew civil calendar begins in Tishri, in September
-    assert converted_date[0] == date(1871, 9, 16)
-    assert converted_date[1] == date(1872, 10, 2)
+    assert converted_date[0] == datetime.date(1871, 9, 16)
+    assert converted_date[1] == datetime.date(1872, 10, 2)
 
     # season is currently ignored
     converted_date = convert_hebrew_date("spring 5632")
     # should be the same as year only
-    assert converted_date[0] == date(1871, 9, 16)
-    assert converted_date[1] == date(1872, 10, 2)
+    assert converted_date[0] == datetime.date(1871, 9, 16)
+    assert converted_date[1] == datetime.date(1872, 10, 2)
 
 
 # test seleucid date conversion
@@ -185,13 +284,13 @@ def test_convert_seleucid_date():
     # start/end should be the same
     assert converted_date[0] == converted_date[1]
     # expected converted date
-    assert converted_date[1] == date(1000, 9, 1)
+    assert converted_date[1] == datetime.date(1000, 9, 1)
 
     converted_date = convert_seleucid_date("23 Adar I 1475")
     # start/end should be the same
     assert converted_date[0] == converted_date[1]
     # expected converted date
-    assert converted_date[1] == date(1164, 2, 18)
+    assert converted_date[1] == datetime.date(1164, 2, 18)
 
     # month/year
     seleucid_year = 1458
@@ -205,7 +304,7 @@ def test_convert_seleucid_date():
 
     # leap day (Feb 29, 2020) should convert properly
     converted_date = convert_seleucid_date("4 Adar 2331")
-    assert converted_date[1] == date(2020, 2, 29)
+    assert converted_date[1] == datetime.date(2020, 2, 29)
 
     # leap year (4826 AM = 1377 Seleucid) should convert properly
     seleucid_year = 1377
@@ -216,20 +315,24 @@ def test_convert_seleucid_date():
     assert converted_date[0] == converted_date_am[0]
     assert converted_date[1] == converted_date_am[1]
     # and it should be converted to 1066-03-21 CE
-    assert converted_date[1] == date(1066, 3, 21)
+    assert converted_date[1] == datetime.date(1066, 3, 21)
 
 
 # test islamic date conversion
 def test_get_islamic_month():
     # month name as used in the convertdate library
     assert get_islamic_month("Rajab") == 7  # referenced by number, no defines
+    assert get_islamic_month("Rabi' ath-Thani") == 4
+    assert get_islamic_month("Jumada ath-Thaniyah") == 6
     # month name without accents
     assert get_islamic_month("Safar") == 2
     # local override
     assert get_islamic_month("Muharram") == 1
     assert get_islamic_month("Dhū l-Qaʿda") == 11
     assert get_islamic_month("Rabīʿ I") == 3
+    assert get_islamic_month("Rabīʿ II") == 4
     assert get_islamic_month("Jumädä I") == 5
+    assert get_islamic_month("Jumädä II") == 6
 
 
 def test_convert_islamic_date():
@@ -238,13 +341,13 @@ def test_convert_islamic_date():
     # start/end should be the same
     assert converted_date[0] == converted_date[1]
     # expected converted date
-    assert converted_date[1] == date(1235, 8, 13)
+    assert converted_date[1] == datetime.date(1235, 8, 13)
 
     # year/month
     converted_date = convert_islamic_date("Rajab 495")
     # expect 1102-04-21/1102-05-20
-    assert converted_date[0] == date(1102, 4, 21)
-    assert converted_date[1] == date(1102, 5, 20)
+    assert converted_date[0] == datetime.date(1102, 4, 21)
+    assert converted_date[1] == datetime.date(1102, 5, 20)
 
     # year only
     converted_date = convert_islamic_date("441")
@@ -252,14 +355,18 @@ def test_convert_islamic_date():
     assert converted_date[0].year == 1049
     assert converted_date[1].year == 1050
     # 1049-06-05/1050-05-25
-    assert converted_date[0] == date(1049, 6, 5)
-    assert converted_date[1] == date(1050, 5, 25)
+    assert converted_date[0] == datetime.date(1049, 6, 5)
+    assert converted_date[1] == datetime.date(1050, 5, 25)
 
     # failing unexpectedly
     converted_date = convert_islamic_date("14 Rabīʿ I 934")
-    assert converted_date[0] == date(1527, 12, 8)
+    assert converted_date[0] == datetime.date(1527, 12, 8)
     converted_date = convert_islamic_date("5 Jumädä I 556")
-    assert converted_date[0] == date(1161, 5, 2)
+    assert converted_date[0] == datetime.date(1161, 5, 2)
+    converted_date = convert_islamic_date("14 Rabīʿ II 934")
+    assert converted_date[0] == datetime.date(1528, 1, 7)
+    converted_date = convert_islamic_date("5 Jumädä II 556")
+    assert converted_date[0] == datetime.date(1161, 6, 1)
 
 
 class TestPartialDate:

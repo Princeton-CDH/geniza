@@ -347,20 +347,12 @@ class PersonAdmin(
     """Admin for Person entities in the PGP"""
 
     form = PersonForm
-    list_display = (
-        "display_name",
-        "slug",
-        "gender",
-        "all_roles",
-        "all_tags",
-        "has_page",
-    )
+    list_display = ("display_name", "slug", "gender", "all_roles", "all_tags")
     search_fields = ("name_unaccented", "names__name")
     fields = (
         "slug",
         "gender",
         "roles",
-        "has_page",
         "date",
         "active_dates",
         "deceased_mention_dates",

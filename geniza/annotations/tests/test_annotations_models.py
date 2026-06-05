@@ -184,8 +184,7 @@ class TestAnnotation:
     def test_sanitize_html(self):
         html = '<table><div><p style="foo:bar;">test</p></div><ol><li>line</li></ol></table>'
         # should strip out all unwanted elements and attributes (table, div, style)
-        # (\n is added because bleach replaces block-level elements with newline)
-        assert Annotation.sanitize_html(html) == "\n<p>test</p><ol><li>line</li></ol>"
+        assert Annotation.sanitize_html(html) == "<p>test</p><ol><li>line</li></ol>"
 
         # should do nothing to html with all allowed elements
         html = '<p>test <span lang="en">en</span></p><ol><li>line 1</li><li>line 2</li></ol>'
@@ -194,6 +193,16 @@ class TestAnnotation:
         # should allow dir attribute on permitted elements
         html_dir = '<p dir="rtl">test <span dir="ltr">en</span></p><ol dir="rtl"><li dir="rtl">line 1</li></ol>'
         assert Annotation.sanitize_html(html_dir) == html_dir
+
+        # should unwrap <p> tags nested inside <li> tags
+        html_nested_p = "<ol><li><p>line 1</p></li></ol>"
+        assert Annotation.sanitize_html(html_nested_p) == "<ol><li>line 1</li></ol>"
+
+        # should propagate dir attribute up from <p> to <li>
+        html_p_dir = '<ol><li><p dir="ltr">line 1</p></li></ol>'
+        assert (
+            Annotation.sanitize_html(html_p_dir) == '<ol><li dir="ltr">line 1</li></ol>'
+        )
 
         # should remove span elements with no attributes after bleaching
         html = '<p>text <span style="foo:bar">and</span> more text</p>'

@@ -1,6 +1,6 @@
 import logging
 import re
-from datetime import datetime
+from datetime import date, datetime
 from math import modf
 from operator import itemgetter
 
@@ -375,11 +375,11 @@ class Person(
     names = GenericRelation(Name, related_query_name="person")
     description = models.TextField(
         blank=True,
-        help_text="A description that will appear on the public Person page if 'Person page' box is checked.",
+        help_text="A description that will appear on the public Person page.",
     )
     has_page = models.BooleanField(
         help_text="Check box if this person should have a dedicated, public Person page on the PGP. If checked, please draft a public description below.",
-        default=False,
+        default=True,
         verbose_name="Person page",
     )
     documents = models.ManyToManyField(
@@ -471,6 +471,34 @@ class Person(
         except Name.DoesNotExist:
             return str(self.names.first() or super().__str__())
 
+    def clean(self):
+        """
+        Disallowing date_str from being a future date.
+        If date_str is a range, require its end not to be a future date
+        """
+        if self.date:
+            range_splitted = self.date.split("/")
+            start_to_check, end_to_check = None, None
+            if len(range_splitted) > 1:
+                start = PartialDate(range_splitted[0])
+                end = PartialDate(range_splitted[1])
+                start_to_check = date.fromisoformat(
+                    start.isoformat(mode="max", fmt="full")
+                )
+                end_to_check = date.fromisoformat(end.isoformat(mode="max", fmt="full"))
+            date_to_check = (
+                range_splitted[len(range_splitted) - 1]
+                if len(range_splitted) > 1
+                else range_splitted[0]
+            )
+            date_to_check = date.fromisoformat(
+                PartialDate(date_to_check).isoformat(mode="max", fmt="full")
+            )
+            if date_to_check > date.today():
+                raise ValidationError("Can't input a date in the future!")
+            if start_to_check and end_to_check and end_to_check < start_to_check:
+                raise ValidationError("End date can't be earlier than start date!")
+
     @property
     def date_str(self):
         """Return a formatted string for the person's active date range, for use in public site.
@@ -548,10 +576,8 @@ class Person(
 
     def get_absolute_url(self):
         """url for this person"""
-        if self.documents.count() >= self.MIN_DOCUMENTS or self.has_page == True:
-            return reverse("entities:person", args=[str(self.slug)])
-        else:
-            return None
+        # If we want to re-introduce has_page, we'd execute it only if this person's has_page is set to True
+        return reverse("entities:person", args=[str(self.slug)])
 
     @property
     def related_people_count(self):

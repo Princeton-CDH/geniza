@@ -235,6 +235,69 @@ class DocumentDateMixin(TrackChangesModel):
         """Property: formatted display of combined original and standardized dates"""
         return self.get_document_date(self.doc_date_standard, self.original_date)
 
+    def get_doc_date(self):
+        """Utility method to validate / vet document's date"""
+        date_to_check = (
+            self.doc_date_standard.split("/") if self.doc_date_standard else None
+        )
+        if not date_to_check and self.doc_date_original:
+            date_to_check = self.standardize_date(update=False).split("/")
+        if date_to_check:
+            date_to_check = (
+                date_to_check[len(date_to_check) - 1]
+                if len(date_to_check) > 1
+                else date_to_check[0]
+            )
+        date_to_check = PartialDate(date_to_check) if date_to_check else None
+        date_to_check = (
+            self.end_date if not date_to_check and self.parsed_date else date_to_check
+        )
+        start_to_return, end_to_return = None, None
+        range_splitted = []
+        if self.doc_date_original:
+            original_range_splitted = self.doc_date_original.split("/")
+            if len(original_range_splitted) > 1:
+                start_std = standardize_date(
+                    original_range_splitted[0], self.doc_date_calendar
+                )
+                converted_start = display_date_range(*start_std)
+                converted_str = (
+                    converted_start[0]
+                    if isinstance(converted_start, tuple)
+                    else converted_start
+                )
+                converted0 = converted_str.split("/")[0]
+                range_splitted.append(converted0)
+                end_std = standardize_date(
+                    original_range_splitted[1], self.doc_date_calendar
+                )
+                converted_end = display_date_range(*end_std)
+                converted_str = (
+                    converted_end[0]
+                    if isinstance(converted_end, tuple)
+                    else converted_end
+                )
+                converted1 = converted_str.split("/")[0]
+                range_splitted.append(converted1)
+        elif self.doc_date_standard:
+            range_splitted = self.doc_date_standard.split("/")
+        if range_splitted and len(range_splitted) > 1:
+            start = PartialDate(range_splitted[0])
+            end = PartialDate(range_splitted[1])
+            start_to_return = date.fromisoformat(
+                start.isoformat(mode="max", fmt="full")
+            )
+            end_to_return = date.fromisoformat(end.isoformat(mode="max", fmt="full"))
+        return (
+            (
+                date.fromisoformat(date_to_check.isoformat(mode="max", fmt="full"))
+                if date_to_check
+                else None
+            ),
+            start_to_return,
+            end_to_return,
+        )
+
     def clean(self):
         """
         Require doc_date_original and doc_date_calendar to be set
@@ -244,6 +307,11 @@ class DocumentDateMixin(TrackChangesModel):
             raise ValidationError("Original date is required when calendar is set")
         if self.doc_date_original and not self.doc_date_calendar:
             raise ValidationError("Calendar is required when original date is set")
+        date_to_check, start_date, end_date = self.get_doc_date()
+        if date_to_check and date_to_check > date.today():
+            raise ValidationError("Can't input a date in the future!")
+        if start_date and end_date and end_date < start_date:
+            raise ValidationError("End date can't be earlier than start date!")
 
     def standardize_date(self, update=False):
         """
@@ -283,7 +351,6 @@ class DocumentDateMixin(TrackChangesModel):
                     end = start
                 else:
                     end = PartialDate(date_parts[1])
-
                 self._parsed_date = {"start": start, "end": end}
             except ValueError:
                 # ignore if it can't be parsed (records before validation added)
@@ -525,10 +592,9 @@ islamic_months = [unidecode(m) for m in convertdate.islamic.MONTHS]
 islamic_month_aliases = {
     "Muharram": "al-Muharram",
     "Rabi' I": "Rabi' al-`Awwal",
-    # NOTE: trailing commas are typeod in convertdate; will be fixed in 2.4.1
-    "Rabi' II": "Rabi' ath-Thani,",
+    "Rabi' II": "Rabi' ath-Thani",
     "Jumada I": "Jumada al-`Awwal",
-    "Jumada II": "Jumada ath-Thaniyah,",
+    "Jumada II": "Jumada ath-Thaniyah",
     "Dhu l-Qa'da": "Zu al-Qa'dah",
     "Dhu l-Hijja": "Zu al-Hijjah",
 }

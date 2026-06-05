@@ -1,4 +1,4 @@
-from datetime import datetime
+import datetime
 from unittest import TestCase
 from unittest.mock import Mock, patch
 
@@ -267,7 +267,7 @@ class TestFragment(TestCase):
         )
         frag.save()
         # should return one IIIFImage and one label
-        (images, labels, _) = frag.iiif_images()
+        images, labels, _ = frag.iiif_images()
         assert len(images) == 1
         assert isinstance(images[0], IIIFImage)
         assert len(labels) == 1
@@ -601,26 +601,6 @@ class TestDocument:
 
         unsaved_doc = Document()
         assert str(unsaved_doc) == "?? (PGPID ??)"
-
-    def test_clean(self):
-        doc = Document()
-        # no dates; no error
-        doc.clean()
-
-        # original date but no calendar — error
-        doc.doc_date_original = "480"
-        with pytest.raises(ValidationError):
-            doc.clean()
-
-        # calendar but no date — error
-        doc.doc_date_original = ""
-        doc.doc_date_calendar = Calendar.HIJRI
-        with pytest.raises(ValidationError):
-            doc.clean()
-
-        # both — no error
-        doc.doc_date_original = "350"
-        doc.clean()
 
     def test_original_date(self):
         """Should display the historical document date with its calendar name"""
@@ -1762,8 +1742,8 @@ class TestDocument:
 
     def test_fragments_by_provenance(self, document):
         assert not document.fragments_by_provenance
-        (g, _) = Provenance.objects.get_or_create(name="Geniza")
-        (ng, _) = Provenance.objects.get_or_create(name="Not Geniza")
+        g, _ = Provenance.objects.get_or_create(name="Geniza")
+        ng, _ = Provenance.objects.get_or_create(name="Not Geniza")
         f1 = Fragment.objects.create(shelfmark="CUL 123", provenance_display=g)
         f2 = Fragment.objects.create(shelfmark="CUL 456", provenance_display=ng)
         TextBlock.objects.create(fragment=f1, document=document)
@@ -1773,8 +1753,8 @@ class TestDocument:
 
     def test_fragments_by_material_support(self, document):
         assert not document.fragments_by_material_support
-        (paper, _) = MaterialSupport.objects.get_or_create(name="Paper")
-        (parch, _) = MaterialSupport.objects.get_or_create(name="Parchment")
+        paper, _ = MaterialSupport.objects.get_or_create(name="Paper")
+        parch, _ = MaterialSupport.objects.get_or_create(name="Parchment")
         f1 = Fragment.objects.create(shelfmark="CUL 123", material_support=paper)
         f2 = Fragment.objects.create(shelfmark="CUL 456", material_support=parch)
         TextBlock.objects.create(fragment=f1, document=document)
@@ -2029,7 +2009,7 @@ def test_document_merge_with_log_entries(document, join):
     # create some log entries
     document_contenttype = ContentType.objects.get_for_model(Document)
     # creation
-    creation_date = timezone.make_aware(datetime(1991, 5, 1))
+    creation_date = timezone.make_aware(datetime.datetime(1991, 5, 1))
     creator = User.objects.get_or_create(username="editor")[0]
     LogEntry.objects.bulk_create(
         [
@@ -2209,9 +2189,9 @@ def test_document_merge_with_related_entities(
     document, join, person, person_diacritic, person_multiname
 ):
     # add person-document relationships
-    (mentioned, _) = PersonDocumentRelationType.objects.get_or_create(name="Mentioned")
-    (author, _) = PersonDocumentRelationType.objects.get_or_create(name="Author")
-    (recipient, _) = PersonDocumentRelationType.objects.get_or_create(name="Recipient")
+    mentioned, _ = PersonDocumentRelationType.objects.get_or_create(name="Mentioned")
+    author, _ = PersonDocumentRelationType.objects.get_or_create(name="Author")
+    recipient, _ = PersonDocumentRelationType.objects.get_or_create(name="Recipient")
     # same person and type, different notes
     mentioned_rel = PersonDocumentRelation.objects.create(
         document=document, person=person, type=mentioned, notes="Mentioned on line 5."
@@ -2332,9 +2312,16 @@ class TestTextBlock:
         block = TextBlock.objects.create(
             document=doc, fragment=frag, selected_images=[0]
         )
-        with patch.object(frag, "iiif_thumbnails") as mock_frag_thumbnails:
-            assert block.thumbnail() == mock_frag_thumbnails.return_value
-            mock_frag_thumbnails.assert_called_with(selected=[0], canvases=[])
+        with (
+            patch.object(frag, "iiif_images") as mock_iiif_images,
+            patch.object(frag, "iiif_thumbnails") as mock_frag_thumbnails,
+        ):
+            mock_iiif_images.return_value = (["img1"], ["label1"], ["real_canvas_1"])
+            mock_frag_thumbnails.return_value = "real_thumbs"
+            assert block.thumbnail() == "real_thumbs"
+            mock_frag_thumbnails.assert_called_with(
+                selected=[0], canvases=["real_canvas_1"]
+            )
 
         # case 2: fragment has no IIIF images, should use placeholder path
         block2 = TextBlock.objects.create(document=doc, fragment=frag)
@@ -2365,6 +2352,55 @@ class TestTextBlock:
                     f"{doc.pk}/iiif/textblock/{block2.pk}/canvas/2/",
                 ]
                 assert result2 == "placeholder_thumbs"
+
+        # case 3: fragment has BOTH real IIIF images AND placeholder annotations
+        block3 = TextBlock.objects.create(document=doc, fragment=frag)
+        for i in range(2):
+            Annotation.objects.create(
+                footnote=footnote,
+                content={
+                    "target": {
+                        "source": {
+                            "id": f"{doc.pk}/iiif/textblock/{block3.pk}/canvas/{i+1}/"
+                        }
+                    },
+                    "body": [{"label": "Recto or Verso"}],
+                },
+            )
+
+        with (
+            patch.object(frag, "iiif_images") as mock_iiif_images,
+            patch.object(frag, "iiif_thumbnails") as mock_frag_thumbs,
+            patch(
+                "geniza.corpus.models.Fragment.admin_thumbnails"
+            ) as mock_admin_thumbs,
+        ):
+            # mock data
+            mock_iiif_images.return_value = (
+                ["real_img"],
+                ["real_label"],
+                ["real_canvas"],
+            )
+            mock_frag_thumbs.return_value = "(real_thumbs)"
+            mock_admin_thumbs.return_value = "(placeholder_thumbs)"
+
+            result3 = block3.thumbnail()
+
+            # should build the real thumbs
+            mock_frag_thumbs.assert_called_with(selected=[], canvases=["real_canvas"])
+            # should build the placeholder thumbs
+            mock_admin_thumbs.assert_called_once()
+            # thumbnail canvases should be from annotations
+            kwargs = mock_admin_thumbs.call_args[1]
+            assert "recto-placeholder.svg" in kwargs["images"][0]
+            assert "verso-placeholder.svg" in kwargs["images"][1]
+            assert kwargs["labels"] == ["T-S 8J22.21 recto", "T-S 8J22.21 verso"]
+            assert kwargs["canvases"] == [
+                f"{doc.pk}/iiif/textblock/{block3.pk}/canvas/1/",
+                f"{doc.pk}/iiif/textblock/{block3.pk}/canvas/2/",
+            ]
+            # should combine the two
+            assert result3 == "(real_thumbs)(placeholder_thumbs)"
 
     def test_side(self):
         doc = Document.objects.create()
