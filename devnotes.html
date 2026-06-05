@@ -5,11 +5,11 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Developer Instructions &#8212; Princeton Geniza Project 4.29.0 documentation</title>
+    <title>Developer Instructions &#8212; Princeton Geniza Project 4.30.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=5ecbeea2" />
     <link rel="stylesheet" type="text/css" href="_static/basic.css?v=b08954a9" />
     <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=27fed22d" />
-    <script src="_static/documentation_options.js?v=ec282dd5"></script>
+    <script src="_static/documentation_options.js?v=b77305dc"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <link rel="index" title="Index" href="genindex.html" />
@@ -158,6 +158,7 @@ Solr version is: 9.9.0
 </pre></div>
 </div>
 <p>When prompted after entering the <code class="docutils literal notranslate"><span class="pre">gpg</span></code> command, you must use the same passphrase that was previously used to encrypt the file, or store the new passphrase in GitHub Secrets in a variable called <code class="docutils literal notranslate"><span class="pre">GPG_PASSPHRASE</span></code>.</p>
+<p>To install fonts in CDH-managed staging and production environments, follow the [instructions here](<a class="reference external" href="https://github.com/Princeton-CDH/cdh-ansible/blob/bb78e8f9d0011098f489567efd85d5f1253c5f67/roles/geniza_setup/README.md">https://github.com/Princeton-CDH/cdh-ansible/blob/bb78e8f9d0011098f489567efd85d5f1253c5f67/roles/geniza_setup/README.md</a>) to setup fonts. The Ansible playbook for deploying the application will copy those fonts to <cite>/var/www/fonts</cite> on the relevant server.</p>
 </section>
 <section id="static-files">
 <h3>Static Files<a class="headerlink" href="#static-files" title="Link to this heading">¶</a></h3>
