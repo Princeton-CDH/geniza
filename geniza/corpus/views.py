@@ -460,6 +460,21 @@ class DocumentSearchView(
         return context_data
 
 
+class ImageSearchView(DocumentSearchView):
+    context_object_name = "documents"
+    template_name = "corpus/document_image_list.html"
+    page_title = _("Document images")
+    # Translators: description of document search page, for search engines
+    page_description = _("Search and browse Geniza document images.")
+    paginate_by = 100
+    initial = {
+        "sort": "random",
+        "mode": "general",
+        "regex_field": "transcription",
+        "has_image": True,
+    }
+
+
 class DocumentDetailBase(SolrLastModifiedMixin):
     """View mixin to handle lastmodified and redirects for documents with old PGPIDs.
     Overrides get request in the case of a 404, looking for any records
@@ -1045,9 +1060,9 @@ class DocumentTranscribeView(PermissionRequiredMixin, DocumentDetailView):
                     context_data["images"][canvas_uri] = deepcopy(
                         Document.PLACEHOLDER_CANVAS
                     )
-                    context_data["images"][canvas_uri][
-                        "shelfmark"
-                    ] = b.fragment.shelfmark
+                    context_data["images"][canvas_uri]["shelfmark"] = (
+                        b.fragment.shelfmark
+                    )
                     context_data["images"][canvas_uri]["label"] = (
                         "recto" if i == 1 else "verso"
                     )
