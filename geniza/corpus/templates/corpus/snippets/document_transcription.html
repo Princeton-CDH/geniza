@@ -240,7 +240,7 @@
                                     {% if image_info.image|stringformat:"s" in related.images %}
                                         <li><a class="view-link" href="{% url 'corpus:document' related.document.pgpid %}">
                                             {% translate 'Unknown type' as unknown_type %}
-                                            {% with doctype=related.document.type|default:unknown_type shelfmark=related.document.shelfmark|shelfmark_wrap %}
+                                            {% with doctype=related.document.type|default:unknown_type|stringformat:"s" shelfmark=related.document.shelfmark|shelfmark_wrap %}
                                                 {# translators: link to view a related document #}
                                                 {% blocktranslate with related_doc="<span>"|add:doctype|add:": "|add:shelfmark|add:"</span>"|safe trimmed %}
                                                     View {{ related_doc }}
