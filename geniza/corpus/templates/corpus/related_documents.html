@@ -11,9 +11,12 @@
     {% include "corpus/snippets/document_tabs.html" %}
     <section id="document-list" class="related-documents">
         <ol>
-            {% for document in document.related_documents %}
+            {% for document in page_obj %}
                 {% include "corpus/snippets/document_result.html" %}
             {% endfor %}
         </ol>
+        {% if is_paginated %}
+            {% include "corpus/snippets/pagination.html" %}
+        {% endif %}
     </section>
 {% endblock main %}
