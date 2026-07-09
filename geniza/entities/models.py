@@ -479,21 +479,27 @@ class Person(
         if self.date:
             range_splitted = self.date.split("/")
             start_to_check, end_to_check = None, None
-            if len(range_splitted) > 1:
-                start = PartialDate(range_splitted[0])
-                end = PartialDate(range_splitted[1])
-                start_to_check = date.fromisoformat(
-                    start.isoformat(mode="max", fmt="full")
+            try:
+                if len(range_splitted) > 1:
+                    start = PartialDate(range_splitted[0])
+                    end = PartialDate(range_splitted[1])
+                    start_to_check = date.fromisoformat(
+                        start.isoformat(mode="max", fmt="full")
+                    )
+                    end_to_check = date.fromisoformat(
+                        end.isoformat(mode="max", fmt="full")
+                    )
+                date_to_check = (
+                    range_splitted[len(range_splitted) - 1]
+                    if len(range_splitted) > 1
+                    else range_splitted[0]
                 )
-                end_to_check = date.fromisoformat(end.isoformat(mode="max", fmt="full"))
-            date_to_check = (
-                range_splitted[len(range_splitted) - 1]
-                if len(range_splitted) > 1
-                else range_splitted[0]
-            )
-            date_to_check = date.fromisoformat(
-                PartialDate(date_to_check).isoformat(mode="max", fmt="full")
-            )
+                date_to_check = date.fromisoformat(
+                    PartialDate(date_to_check).isoformat(mode="max", fmt="full")
+                )
+            except ValueError as e:
+                # display the precise date issue such as "month must be in 1..12"
+                raise ValidationError("Invalid date: %s" % e)
             if date_to_check > date.today():
                 raise ValidationError("Can't input a date in the future!")
             if start_to_check and end_to_check and end_to_check < start_to_check:

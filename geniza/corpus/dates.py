@@ -194,7 +194,13 @@ class DocumentDateMixin(TrackChangesModel):
         + "calculate standardized date for supported calendars.",
         blank=True,
         max_length=255,
-        validators=[RegexValidator(re_date_format)],
+        validators=[
+            RegexValidator(
+                re_date_format,
+                message="Enter a valid CE date as YYYY, YYYY-MM, YYYY-MM-DD, "
+                "or a range (e.g. 1148/1149).",
+            )
+        ],
     )
 
     class Meta:
@@ -241,7 +247,12 @@ class DocumentDateMixin(TrackChangesModel):
             self.doc_date_standard.split("/") if self.doc_date_standard else None
         )
         if not date_to_check and self.doc_date_original:
-            date_to_check = self.standardize_date(update=False).split("/")
+            try:
+                std = self.standardize_date(update=False)
+            except ValueError:
+                # set to None to allow Document.save() messages.warning display
+                std = None
+            date_to_check = std.split("/") if std else None
         if date_to_check:
             date_to_check = (
                 date_to_check[len(date_to_check) - 1]
@@ -254,31 +265,37 @@ class DocumentDateMixin(TrackChangesModel):
         )
         start_to_return, end_to_return = None, None
         range_splitted = []
-        if self.doc_date_original:
+        if self.doc_date_original and self.doc_date_calendar in Calendar.can_convert:
             original_range_splitted = self.doc_date_original.split("/")
             if len(original_range_splitted) > 1:
-                start_std = standardize_date(
-                    original_range_splitted[0], self.doc_date_calendar
-                )
-                converted_start = display_date_range(*start_std)
-                converted_str = (
-                    converted_start[0]
-                    if isinstance(converted_start, tuple)
-                    else converted_start
-                )
-                converted0 = converted_str.split("/")[0]
-                range_splitted.append(converted0)
-                end_std = standardize_date(
-                    original_range_splitted[1], self.doc_date_calendar
-                )
-                converted_end = display_date_range(*end_std)
-                converted_str = (
-                    converted_end[0]
-                    if isinstance(converted_end, tuple)
-                    else converted_end
-                )
-                converted1 = converted_str.split("/")[0]
-                range_splitted.append(converted1)
+                try:
+                    start_std = standardize_date(
+                        original_range_splitted[0], self.doc_date_calendar
+                    )
+                    end_std = standardize_date(
+                        original_range_splitted[1], self.doc_date_calendar
+                    )
+                except ValueError:
+                    # set to None to allow Document.save() messages.warning display
+                    start_std = end_std = None
+                if start_std and end_std:
+                    # only process if these were successfully standardized
+                    converted_start = display_date_range(*start_std)
+                    converted_str = (
+                        converted_start[0]
+                        if isinstance(converted_start, tuple)
+                        else converted_start
+                    )
+                    converted0 = converted_str.split("/")[0]
+                    range_splitted.append(converted0)
+                    converted_end = display_date_range(*end_std)
+                    converted_str = (
+                        converted_end[0]
+                        if isinstance(converted_end, tuple)
+                        else converted_end
+                    )
+                    converted1 = converted_str.split("/")[0]
+                    range_splitted.append(converted1)
         elif self.doc_date_standard:
             range_splitted = self.doc_date_standard.split("/")
         if range_splitted and len(range_splitted) > 1:
@@ -307,7 +324,11 @@ class DocumentDateMixin(TrackChangesModel):
             raise ValidationError("Original date is required when calendar is set")
         if self.doc_date_original and not self.doc_date_calendar:
             raise ValidationError("Calendar is required when original date is set")
-        date_to_check, start_date, end_date = self.get_doc_date()
+        try:
+            date_to_check, start_date, end_date = self.get_doc_date()
+        except ValueError as e:
+            # display the precise date issue such as "month must be in 1..12"
+            raise ValidationError("Invalid CE date: %s" % e)
         if date_to_check and date_to_check > date.today():
             raise ValidationError("Can't input a date in the future!")
         if start_date and end_date and end_date < start_date:
