@@ -21,6 +21,7 @@ from pytest_django.asserts import assertContains, assertNotContains
 from requests.exceptions import ConnectionError
 from taggit.models import Tag
 
+from geniza.annotations.models import Annotation
 from geniza.common.views import SolrDownError
 from geniza.corpus.admin import (
     DateAfterListFilter,
@@ -35,6 +36,7 @@ from geniza.corpus.admin import (
     HasTranslationListFilter,
     InferredDatingListFilter,
     LanguageScriptAdmin,
+    PlaceholderCanvasListFilter,
 )
 from geniza.corpus.models import (
     Collection,
@@ -714,6 +716,85 @@ class TestHasTranslationListFilter(TestHasTranscriptionListFilter):
             ("yes_he", f"Has Hebrew {self.name}"),
             ("no", f"No {self.name}"),
         )
+
+
+class TestPlaceholderCanvasListFilter:
+    def init_filter(self):
+        # request, params, model, admin_site
+        return PlaceholderCanvasListFilter(Mock(), {}, Document, DocumentAdmin)
+
+    def test_lookups(self):
+        assert self.init_filter().lookups(Mock(), Mock()) == (
+            ("yes", "Has content on placeholder image(s)"),
+            ("movable", "Has placeholder content and real image(s)"),
+        )
+
+    def make_annotation(self, source, document, canvas_uri):
+        footnote = Footnote.objects.create(
+            source=source,
+            content_object=document,
+            doc_relation=Footnote.DIGITAL_EDITION,
+        )
+        return Annotation.objects.create(
+            footnote=footnote,
+            content={
+                "body": [{"value": "Test annotation"}],
+                "target": {"source": {"id": canvas_uri}},
+            },
+        )
+
+    @pytest.mark.django_db
+    def test_queryset(self, annotation, document, source):
+        # `annotation` fixture puts `document` on a real (external) canvas;
+        # add a second document on a programmatic placeholder canvas
+        placeholder_doc = Document.objects.create()
+        self.make_annotation(
+            source,
+            placeholder_doc,
+            f"/documents/{placeholder_doc.pk}/iiif/textblock/1/canvas/1/",
+        )
+
+        filter = self.init_filter()
+        with patch.object(filter, "value", return_value="yes"):
+            result = filter.queryset(Mock(), Document.objects.all())
+            # only the placeholder document matches; real-canvas doc does not
+            assert set(result.values_list("pk", flat=True)) == {placeholder_doc.pk}
+
+    @pytest.mark.django_db
+    def test_queryset_old_style_placeholder(self, document, source):
+        # old-style placeholder URIs (without a textblock id) should also match
+        self.make_annotation(
+            source, document, f"/documents/{document.pk}/iiif/canvas/2/"
+        )
+        filter = self.init_filter()
+        with patch.object(filter, "value", return_value="yes"):
+            result = filter.queryset(Mock(), Document.objects.all())
+            assert result.filter(pk=document.pk).exists()
+
+    @pytest.mark.django_db
+    @patch("geniza.corpus.models.GenizaManifestImporter")
+    def test_queryset_movable(self, mock_importer, document, source):
+        mock_importer.return_value.import_paths.return_value = []
+        placeholder_uri = f"/documents/{document.pk}/iiif/textblock/1/canvas/1/"
+        # `document` fixture has a fragment with a real IIIF url, so its
+        # placeholder content can be moved to a real image -> matches
+        self.make_annotation(source, document, placeholder_uri)
+
+        # a document whose only fragment has no IIIF url has nowhere to move
+        # its placeholder content -> does not match
+        no_image_doc = Document.objects.create()
+        no_image_frag = Fragment.objects.create(shelfmark="No image 1", iiif_url="")
+        TextBlock.objects.create(document=no_image_doc, fragment=no_image_frag, order=1)
+        self.make_annotation(
+            source,
+            no_image_doc,
+            f"/documents/{no_image_doc.pk}/iiif/textblock/1/canvas/1/",
+        )
+
+        filter = self.init_filter()
+        with patch.object(filter, "value", return_value="movable"):
+            result = filter.queryset(Mock(), Document.objects.all())
+            assert set(result.values_list("pk", flat=True)) == {document.pk}
 
 
 @pytest.mark.django_db
