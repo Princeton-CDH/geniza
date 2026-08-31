@@ -3,14 +3,14 @@ msgstr ""
 "Project-Id-Version: princeton-geniza-project\n"
 "Report-Msgid-Bugs-To: cdhdevteam@princeton.edu\n"
 "POT-Creation-Date: 2025-12-11 17:59-0500\n"
-"PO-Revision-Date: 2025-12-22 15:32\n"
+"PO-Revision-Date: 2026-08-31 20:10\n"
 "Last-Translator: \n"
 "Language-Team: Hebrew\n"
 "Language: he_IL\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=4; plural=n%100==1 ? 0 : n%100==2 ? 1 : n%100==3 || n%100==4 ? 2 : 3;\n"
+"Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n==2 ? 1 : 2);\n"
 "X-Crowdin-Project: princeton-geniza-project\n"
 "X-Crowdin-Project-ID: 520356\n"
 "X-Crowdin-Language: he\n"
@@ -267,7 +267,6 @@ msgid_plural "Other documents on these shelfmarks"
 msgstr[0] "מסמכים נוספים עם מספר מדף זה"
 msgstr[1] "מסמכים נוספים עם מספרי מדף אלו"
 msgstr[2] "מסמכים נוספים עם מספרי מדף אלו"
-msgstr[3] "מסמכים נוספים עם מספרי מדף אלו"
 
 #: corpus/templates/corpus/document_detail.html:20
 msgid "Editor"
@@ -275,7 +274,6 @@ msgid_plural "Editors"
 msgstr[0] "עורך"
 msgstr[1] "עורכים"
 msgstr[2] "עורכים"
-msgstr[3] "עורכים"
 
 #. Translators: label for document metadata section (editor, date, input date)
 #. Translators: label for person metadata section
@@ -298,7 +296,6 @@ msgid_plural "Inferred Dates"
 msgstr[0] ""
 msgstr[1] ""
 msgstr[2] ""
-msgstr[3] ""
 
 #. Translators: Primary language label
 #: corpus/templates/corpus/document_detail.html:83
@@ -307,7 +304,6 @@ msgid_plural "Primary Languages"
 msgstr[0] "שפה עיקרית"
 msgstr[1] "שפות עיקריות"
 msgstr[2] "שפות עיקריות"
-msgstr[3] "שפות עיקריות"
 
 #. Translators: Secondary language label
 #: corpus/templates/corpus/document_detail.html:96
@@ -316,7 +312,6 @@ msgid_plural "Secondary Languages"
 msgstr[0] "שפה משנית"
 msgstr[1] "שפות משניות"
 msgstr[2] "שפות משניות"
-msgstr[3] "שפות משניות"
 
 #. Translators: label for document content stats (number of translations, transcriptions, images)
 #: corpus/templates/corpus/document_detail.html:113
@@ -330,7 +325,6 @@ msgid_plural "%(n_transcriptions)s Transcriptions"
 msgstr[0] ""
 msgstr[1] ""
 msgstr[2] ""
-msgstr[3] ""
 
 #: corpus/templates/corpus/document_detail.html:130
 #, python-format
@@ -339,7 +333,6 @@ msgid_plural "%(n_translations)s Translations"
 msgstr[0] ""
 msgstr[1] ""
 msgstr[2] ""
-msgstr[3] ""
 
 #. Translators: heading label for document related people
 #. Translators: label for sort by number of related people
@@ -401,7 +394,6 @@ msgid_plural "Collections"
 msgstr[0] ""
 msgstr[1] ""
 msgstr[2] ""
-msgstr[3] ""
 
 #. Translators: label for historical/old shelfmarks on document fragments
 #: corpus/templates/corpus/document_detail.html:266
@@ -512,7 +504,6 @@ msgid_plural "%(count_humanized)s results"
 msgstr[0] "תוצאה אחת"
 msgstr[1] "%(count_humanized)s תוצאות"
 msgstr[2] "%(count_humanized)s תוצאות"
-msgstr[3] "%(count_humanized)s תוצאות"
 
 #: corpus/templates/corpus/document_list.html:208
 msgid "View results in the Arabic Papyrology Database"
@@ -572,7 +563,6 @@ msgid_plural "Primary languages"
 msgstr[0] ""
 msgstr[1] ""
 msgstr[2] ""
-msgstr[3] ""
 
 #. Translators: label for sort by number of related documents
 #: corpus/templates/corpus/snippets/document_result.html:121
@@ -596,7 +586,6 @@ msgid_plural "%(counter)s Transcriptions"
 msgstr[0] "תעתוק אחד"
 msgstr[1] "%(counter)s תעתוקים"
 msgstr[2] "%(counter)s תעתוקים"
-msgstr[3] "%(counter)s תעתוקים"
 
 #. Translators: number of translations for this document
 #: corpus/templates/corpus/snippets/document_result.html:159
@@ -606,7 +595,6 @@ msgid_plural "%(counter)s Translations"
 msgstr[0] "תרגום אחד"
 msgstr[1] "%(counter)s תרגומים"
 msgstr[2] "%(counter)s תרגומים"
-msgstr[3] "%(counter)s תרגומים"
 
 #. Translators: number of sources that discuss this document
 #: corpus/templates/corpus/snippets/document_result.html:169
@@ -616,7 +604,6 @@ msgid_plural "%(counter)s Discussions"
 msgstr[0] "דיון אחד"
 msgstr[1] "%(counter)s דיונים"
 msgstr[2] "%(counter)s דיונים"
-msgstr[3] "%(counter)s דיונים"
 
 #: corpus/templates/corpus/snippets/document_result.html:177
 msgid "No Scholarship Records"
@@ -772,7 +759,6 @@ msgid_plural "Editors: %(eds)s"
 msgstr[0] ""
 msgstr[1] ""
 msgstr[2] ""
-msgstr[3] ""
 
 #. Translators: Label for authors of a translation
 #: corpus/templates/corpus/snippets/document_transcription.html:140
@@ -783,7 +769,6 @@ msgid_plural "Translators: %(eds)s"
 msgstr[0] ""
 msgstr[1] ""
 msgstr[2] ""
-msgstr[3] ""
 
 #: corpus/templates/corpus/snippets/document_transcription.html:211
 msgid "Zoom and Rotate"
@@ -855,7 +840,6 @@ msgid_plural "%(count)d scholarship records"
 msgstr[0] "%(count)d רשומה קשורה"
 msgstr[1] "%(count)d רשומות קשורות"
 msgstr[2] "%(count)d רשומות קשורות"
-msgstr[3] "%(count)d רשומות קשורות"
 
 #. Translators: title of related documents page
 #: corpus/views.py:627
@@ -870,7 +854,6 @@ msgid_plural "%(count)d related documents"
 msgstr[0] "%(count)d מסמך קשור"
 msgstr[1] "%(count)d מסמכים קשורים"
 msgstr[2] "%(count)d מסמכים קשורים"
-msgstr[3] "%(count)d מסמכים קשורים"
 
 #. Translators: placeholder for people keyword search input
 #: entities/forms.py:235
@@ -903,7 +886,6 @@ msgid_plural "Social roles"
 msgstr[0] ""
 msgstr[1] ""
 msgstr[2] ""
-msgstr[3] ""
 
 #: entities/forms.py:245
 msgid "Relation to documents"
@@ -1004,7 +986,6 @@ msgid_plural "Other names"
 msgstr[0] ""
 msgstr[1] ""
 msgstr[2] ""
-msgstr[3] ""
 
 #. Translators: label for person description / bio
 #. Translators: Person "description / bio" column header on the browse page
@@ -1211,7 +1192,6 @@ msgid_plural "%(count)d related people"
 msgstr[0] ""
 msgstr[1] ""
 msgstr[2] ""
-msgstr[3] ""
 
 #. Translators: title of person "related places" page
 #: entities/views.py:751
@@ -1226,7 +1206,6 @@ msgid_plural "%(count)d related places"
 msgstr[0] ""
 msgstr[1] ""
 msgstr[2] ""
-msgstr[3] ""
 
 #. Translators: title of people list/browse page
 #. Translators: label for link to people browse page in main navigation
@@ -1258,7 +1237,6 @@ msgid_plural "%(count)d results"
 msgstr[0] ""
 msgstr[1] ""
 msgstr[2] ""
-msgstr[3] ""
 
 #. Translators: number of places
 #: entities/views.py:1196
@@ -1268,7 +1246,6 @@ msgid_plural "%(count)d places"
 msgstr[0] ""
 msgstr[1] ""
 msgstr[2] ""
-msgstr[3] ""
 
 #: footnotes/models.py:516
 msgid "Edition"
