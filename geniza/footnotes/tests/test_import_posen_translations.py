@@ -229,6 +229,12 @@ def test_skips_bad_rows_and_reports():
         make_row(pgpid=doc.pk, reassign="no", creator_ids=missing_creator_id),
         # non-numeric creator id
         make_row(pgpid=doc.pk, reassign="no", creator_ids="abc"),
+        # no creator id at all
+        make_row(pgpid=doc.pk, reassign="no", creator_ids=""),
+        # valid document and creator, but no title
+        make_row(pgpid=doc.pk, reassign="no", title="", creator_ids=cid),
+        # fully blank row is silently ignored (not counted as a skip)
+        [""] * ROW_WIDTH,
     ]
     run_command(rows)
 
