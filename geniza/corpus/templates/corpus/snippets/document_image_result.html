@@ -1,0 +1,13 @@
+{% load i18n corpus_extras %}
+{% spaceless %}
+{# images are indexed as a list of tuples of (IIIF image, label, rotation) #}
+{% for image in document.iiif_images|slice:":3" %}
+{% with deg=image.2|stringformat:"i" %}
+    {% with rotation="rotation:degrees="|add:deg %}
+        <div class="image">
+            <img src="{{ image.0|iiif_image:"size:width=250"|iiif_image:rotation }}" loading="lazy" alt="{{ image.1 }}">
+        </div>
+    {% endwith %}
+{% endwith %}
+{% endfor %}
+{% endspaceless %}

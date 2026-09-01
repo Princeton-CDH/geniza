@@ -8,6 +8,7 @@ urlpatterns = [
     path(
         "documents/", corpus_views.DocumentSearchView.as_view(), name="document-search"
     ),
+    path("images/", corpus_views.ImageSearchView.as_view(), name="image-search"),
     path(
         "documents/<int:pk>/",
         corpus_views.DocumentDetailView.as_view(),
