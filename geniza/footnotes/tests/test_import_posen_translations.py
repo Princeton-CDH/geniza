@@ -3,13 +3,21 @@ import io
 from unittest.mock import mock_open, patch
 
 import pytest
+from django.conf import settings
 from django.contrib.admin.models import ADDITION, CHANGE, LogEntry
+from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.core.management import call_command
 from django.core.management.base import CommandError
 
 from geniza.corpus.models import Document, DocumentType
-from geniza.footnotes.models import Creator, Footnote, Source, SourceType
+from geniza.footnotes.models import (
+    Creator,
+    Footnote,
+    Source,
+    SourceLanguage,
+    SourceType,
+)
 
 # full set of column headers is irrelevant (the command indexes by position),
 # but the row must be wide enough to reach the Posen URL column (index 11)
@@ -241,6 +249,96 @@ def test_skips_bad_rows_and_reports():
     # every row was skipped; nothing created
     assert Source.objects.count() == 0
     assert Footnote.objects.count() == 0
+
+
+@pytest.mark.django_db
+def test_creator_ids_tolerate_blank_parts():
+    # separators with empty segments (e.g. a trailing ";") are ignored
+    doc = make_document()
+    ashur = Creator.objects.create(first_name_en="Amir", last_name_en="Ashur")
+    outhwaite = Creator.objects.create(first_name_en="Ben", last_name_en="Outhwaite")
+
+    run_command(
+        [
+            make_row(
+                pgpid=doc.pk,
+                reassign="no",
+                creator_ids="%d; ; %d;" % (ashur.pk, outhwaite.pk),
+            )
+        ]
+    )
+
+    source = Source.objects.get()
+    assert list(
+        source.authorship_set.order_by("sort_order").values_list(
+            "creator_id", flat=True
+        )
+    ) == [ashur.pk, outhwaite.pk]
+
+
+@pytest.mark.django_db
+def test_reassign_non_digital_translation_and_rerun():
+    # a footnote that is not a Digital Translation is still reassigned (with a
+    # warning), and reassigning again is a no-op
+    doc = make_document()
+    creator = Creator.objects.create(first_name_en="Amir", last_name_en="Ashur")
+    old_source = Source.objects.create(
+        title="Wrong Source", source_type=SourceType.objects.get(type="Book")
+    )
+    footnote = Footnote.objects.create(
+        source=old_source,
+        content_object=doc,
+        doc_relation=[Footnote.EDITION],
+    )
+    rows = [
+        make_row(reassign="yes", footnote_id=footnote.pk, creator_ids=str(creator.pk))
+    ]
+
+    run_command(rows)
+    footnote.refresh_from_db()
+    new_source = Source.objects.get(title="A Test Chapter")
+    assert footnote.source_id == new_source.pk
+
+    # second run: footnote is already on the new source, so nothing changes
+    run_command(rows)
+    assert (
+        LogEntry.objects.filter(action_flag=CHANGE, object_id=footnote.pk).count() == 1
+    )
+
+
+@pytest.mark.django_db
+def test_skip_indexing_disconnects_signal_handler():
+    doc = make_document()
+    creator = Creator.objects.create(first_name_en="Amir", last_name_en="Ashur")
+
+    with patch(
+        "geniza.footnotes.management.commands.import_posen_translations."
+        "IndexableSignalHandler.disconnect"
+    ) as mock_disconnect:
+        run_command(
+            [make_row(pgpid=doc.pk, reassign="no", creator_ids=str(creator.pk))],
+            "--skip-indexing",
+        )
+    mock_disconnect.assert_called_once()
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize(
+    # the command checks these records in order and raises on the first missing
+    # one, so each must be deleted in its own run to cover all three branches
+    "records",
+    [
+        User.objects.filter(username=settings.SCRIPT_USERNAME),
+        SourceType.objects.filter(type="Book Section"),
+        SourceLanguage.objects.filter(name="English"),
+    ],
+    ids=["script_user", "book_section", "english"],
+)
+def test_errors_when_required_records_missing(records):
+    # command should raise error if required records are missing
+    records.delete()
+    with pytest.raises(CommandError):
+        run_command([make_row(pgpid=1, reassign="no", creator_ids="1")])
 
 
 @pytest.mark.django_db
