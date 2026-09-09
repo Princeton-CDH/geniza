@@ -1,4 +1,5 @@
 import csv
+import unicodedata
 from collections import Counter
 
 from django.conf import settings
@@ -102,7 +103,7 @@ class Command(BaseCommand):
         self.footnote_contenttype = ContentType.objects.get_for_model(Footnote)
 
         try:
-            with open(options["csv"]) as f:
+            with open(options["csv"], encoding="utf-8-sig") as f:
                 # index by column position rather than header name;
                 # headers are long and contain commas/newlines
                 reader = csv.reader(f)
@@ -211,7 +212,9 @@ class Command(BaseCommand):
         """Return the Posen source for this row, creating it (with authorship,
         language, and slug) if an equivalent one does not already exist.
         Matching on title + authors keeps the command safe to re-run."""
-        title = self.cell(row, self.COL_TITLE).strip()
+        # normalize to NFC so visually identical titles compare equal.
+        # the spreadsheet mixes precomposed and decomposed forms
+        title = unicodedata.normalize("NFC", self.cell(row, self.COL_TITLE).strip())
         if not title:
             raise SkipRow("missing title (Column G)")
 
@@ -326,7 +329,7 @@ class Command(BaseCommand):
     def report(self):
         """Summarize created/reassigned records and list skipped rows."""
         if self.dryrun:
-            self.stdout.write(self.style.NOTICE("DRY RUN — no changes committed"))
+            self.stdout.write(self.style.NOTICE("DRY RUN - no changes committed"))
         self.stdout.write("Sources created: %d" % self.stats["sources_created"])
         self.stdout.write("Footnotes created: %d" % self.stats["footnotes_created"])
         self.stdout.write(
