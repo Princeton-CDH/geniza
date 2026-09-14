@@ -1,5 +1,6 @@
 import csv
 import io
+import unicodedata
 from unittest.mock import mock_open, patch
 
 import pytest
@@ -339,6 +340,40 @@ def test_errors_when_required_records_missing(records):
     records.delete()
     with pytest.raises(CommandError):
         run_command([make_row(pgpid=1, reassign="no", creator_ids="1")])
+
+
+@pytest.mark.django_db
+def test_reads_utf8_file_and_normalizes_title(tmp_path):
+    # read from a real file (not mock_open, which ignores encoding) so the
+    # UTF-8 decode path is exercised; title mixes a curly quote and a
+    # decomposed u + combining macron (NFD)
+    doc = make_document()
+    creator = Creator.objects.create(first_name_en="Amir", last_name_en="Ashur")
+    nfc_title = "Letter to Abraham Ben Yijū ‘Eli ibn Hilāl"
+    # write the decomposed (NFD) form so normalization has work to do
+    nfd_title = unicodedata.normalize("NFD", nfc_title)
+    assert nfd_title != nfc_title
+
+    csv_path = tmp_path / "posen.csv"
+    csv_path.write_text(
+        csv_text(
+            [
+                make_row(
+                    pgpid=doc.pk,
+                    reassign="no",
+                    title=nfd_title,
+                    creator_ids=str(creator.pk),
+                )
+            ]
+        ),
+        encoding="utf-8",
+    )
+    call_command("import_posen_translations", str(csv_path), "--skip-indexing")
+
+    source = Source.objects.get()
+    # should be decoded correctly and normalized to NFC without combining mark
+    assert source.title == nfc_title
+    assert "̄" not in source.title
 
 
 @pytest.mark.django_db
