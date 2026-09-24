@@ -1,5 +1,9 @@
 # Deploy Notes
 
+## 4.31
+
+-   Ingest the Posen spreadsheet's source and footnote records using the CSV downloaded from Google Drive, with the new management command: `python manage.py import_posen_translations /path/to/posen.csv`
+
 ## 4.30
 
 -   Replace FrankRuhl with the new `FrankRuhl1924MFMediumPro.woff` and `FrankRuhl1924MFMediumPro.woff2` in `sitemedia/fonts`. The original font was missing certain combining vowel marks. (If using CDH Ansible to deploy, no action is required.)

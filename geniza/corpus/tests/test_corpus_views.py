@@ -2191,6 +2191,20 @@ class TestRelatdDocumentview:
             == doc_response.context["page_includes_transcriptions"]
         )
 
+    def test_pagination(self, document, join, client, empty_solr):
+        """should paginate related documents using a Solr-backed page_obj"""
+        Document.index_items([document, join])
+        SolrClient().update.index([], commit=True)
+
+        response = client.get(reverse("corpus:related-documents", args=(document.id,)))
+        page_obj = response.context["page_obj"]
+        # "join" fixture = 1 related document, fits on a single page
+        assert page_obj.paginator.count == 1
+        assert page_obj.number == 1
+        assert response.context["is_paginated"] is False
+        # related document should be present in the paginated results
+        assert page_obj.object_list[0]["pgpid"] == join.id
+
 
 class TestDocumentTranscribeView:
     def test_page_title(self, document, source, admin_client):

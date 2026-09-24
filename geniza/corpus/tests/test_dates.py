@@ -87,6 +87,48 @@ class TestDocumentDateMixin:
         with pytest.raises(ValidationError):
             doc.clean()
 
+    def test_clean_malformed_dates(self):
+        # malformed dates should raise ValidationError, but never an uncaught exception
+        # (which would show a 500 instead of a form error)
+
+        # misspelled historic date month — no error, but not converted
+        # (surfaced as a warning on save)
+        doc = Document(
+            doc_date_original="15 Ramadab 500", doc_date_calendar=Calendar.HIJRI
+        )
+        doc.clean()
+
+        # historic date range with one unparseable side — no error, but not converted
+        doc = Document(
+            doc_date_original="500/garbage", doc_date_calendar=Calendar.HIJRI
+        )
+        doc.clean()
+
+        # historic date range with a misspelled month — no error, but not converted
+        doc = Document(
+            doc_date_original="500/15 Ramadab 600", doc_date_calendar=Calendar.HIJRI
+        )
+        doc.clean()
+
+        # impossible CE date (invalid day) — form validation error, not 500
+        doc = Document(doc_date_standard="2021-02-30")
+        with pytest.raises(ValidationError):
+            doc.clean()
+
+        # not malformed, but non-convertible calendar (Kharaji) w/ no CE date — no error
+        doc = Document(doc_date_original="500", doc_date_calendar=Calendar.KHARAJI)
+        doc.clean()
+
+        # non-convertible calendar (Kharaji), date range — no error
+        doc = Document(doc_date_original="500/600", doc_date_calendar=Calendar.KHARAJI)
+        doc.clean()
+
+        # a bad date should reach the form as a non-field error rather than an uncaught 500
+        doc = Document(doc_date_standard="2021-02-30")
+        with pytest.raises(ValidationError) as err:
+            doc.full_clean(validate_unique=False)
+        assert "Invalid CE date" in err.value.message_dict["__all__"][0]
+
     def test_original_date(self):
         """Should display the historical document date with its calendar name"""
         doc = Document(doc_date_original="507", doc_date_calendar=Calendar.HIJRI)
@@ -229,6 +271,11 @@ class TestPerson:
         # date range with end earlier than start - error
         yesterday = today - datetime.timedelta(days=1)
         person.date = f"{today.strftime('%Y-%m-%d')}/{yesterday.strftime('%Y-%m-%d')}"
+        with pytest.raises(ValidationError):
+            person.clean()
+
+        # impossible date (invalid day) — form validation error, but not 500
+        person.date = "2021-02-30"
         with pytest.raises(ValidationError):
             person.clean()
 

@@ -41,7 +41,7 @@ class PublicPersonExporter(Exporter):
         "gender",
         "social_roles",
         # TODO: floruit vs mentioned as dead date columns
-        "auto_date_range",
+        "active_date_range",
         "manual_date_range",
         "description",
         "tags",

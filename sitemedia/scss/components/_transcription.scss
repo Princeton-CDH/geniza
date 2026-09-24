@@ -1101,6 +1101,11 @@
                     & > span {
                         margin-left: 0.25em;
                     }
+                    /* balance the "+" join separator: the flex parent trims the
+                       whitespace around it, so add space before each "+" too */
+                    & > span:not(:last-child) {
+                        margin-right: 0.25em;
+                    }
                 }
                 &:hover {
                     border-bottom-color: var(--icon-button);

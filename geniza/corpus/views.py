@@ -12,6 +12,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.postgres.aggregates import ArrayAgg
 from django.contrib.postgres.search import SearchVector
 from django.core.exceptions import ValidationError
+from django.core.paginator import Paginator
 from django.db.models import Q
 from django.db.models.query import Prefetch
 from django.http import Http404, HttpResponse, JsonResponse
@@ -622,6 +623,8 @@ class RelatedDocumentView(DocumentDetailView):
 
     template_name = "corpus/related_documents.html"
     viewname = "corpus:related-documents"
+    #: number of related documents to show per page; matches document search
+    paginate_by = 50
 
     def page_title(self):
         # Translators: title of related documents page
@@ -644,7 +647,19 @@ class RelatedDocumentView(DocumentDetailView):
         # if there are no related documents, don't serve out this page
         if not doc.related_documents.count():
             raise Http404
-        return super().get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
+        # paginate the related documents Solr queryset, reusing the same
+        # pagination behavior and template snippet as document search
+        paginator = Paginator(doc.related_documents, self.paginate_by)
+        page_obj = paginator.get_page(self.request.GET.get("page"))
+        context.update(
+            {
+                "paginator": paginator,
+                "page_obj": page_obj,
+                "is_paginated": page_obj.has_other_pages(),
+            }
+        )
+        return context
 
 
 class DocumentTranscriptionText(DocumentDetailView):

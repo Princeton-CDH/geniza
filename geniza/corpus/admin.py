@@ -277,6 +277,42 @@ class HasTranslationListFilter(admin.SimpleListFilter):
             )
 
 
+class PlaceholderCanvasListFilter(admin.SimpleListFilter):
+    """Custom list filters for documents with annotation content (transcription
+    or translation) on placeholder canvases.
+
+    Placeholder canvases are minted by this application rather than an external
+    IIIF image server, used when a document has no (or not enough) real IIIF
+    images. Their canvas URIs always have a path like:
+        /documents/<pk>/iiif/textblock/<tb_pk>/canvas/<n>/
+    """
+
+    title = "Placeholder images"
+    parameter_name = "placeholder_canvas"
+
+    # regex matching any placeholder canvas URI (old + current, relative + absolute)
+    PLACEHOLDER_CANVAS_RE = r"/documents/\d+/iiif/(canvas|textblock)/"
+
+    def lookups(self, request, model_admin):
+        return (
+            ("yes", "Has content on placeholder image(s)"),
+            ("movable", "Has placeholder content and real image(s)"),
+        )
+
+    def queryset(self, request, queryset):
+        placeholder = Q(
+            footnotes__annotation__content__target__source__id__regex=self.PLACEHOLDER_CANVAS_RE
+        )
+        if self.value() == "yes":
+            # distinct(): a document may have several matching annotations
+            return queryset.filter(placeholder).distinct()
+        if self.value() == "movable":
+            # also require a real IIIF image the content could be moved onto
+            return queryset.filter(
+                placeholder & Q(textblock__fragment__iiif_url__gt="")
+            ).distinct()
+
+
 class TextInputListFilter(admin.SimpleListFilter):
     """
     Custom list filter class for text input, adapted from this solution by Haki Benita:
@@ -520,6 +556,7 @@ class DocumentAdmin(
         "doctype",
         HasTranscriptionListFilter,
         HasTranslationListFilter,
+        PlaceholderCanvasListFilter,
         (
             "textblock__fragment__iiif_url",
             custom_empty_field_list_filter("IIIF image", "Has image", "No image"),
