@@ -4,11 +4,11 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>geniza.corpus.management.commands.import_manifests &#8212; Princeton Geniza Project 4.30.0 documentation</title>
+    <title>geniza.corpus.management.commands.import_manifests &#8212; Princeton Geniza Project 4.31.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css?v=5ecbeea2" />
     <link rel="stylesheet" type="text/css" href="../../../../../_static/basic.css?v=b08954a9" />
     <link rel="stylesheet" type="text/css" href="../../../../../_static/alabaster.css?v=27fed22d" />
-    <script src="../../../../../_static/documentation_options.js?v=b77305dc"></script>
+    <script src="../../../../../_static/documentation_options.js?v=c6a64f85"></script>
     <script src="../../../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <link rel="index" title="Index" href="../../../../../genindex.html" />
@@ -31,10 +31,10 @@
           <div class="body" role="main">
             
   <h1>Source code for geniza.corpus.management.commands.import_manifests</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span></span><span class="sd">"""</span>
 <span class="sd">Importing IIIF manifests to be cached in the database.</span>
 
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">urllib</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">django.core.management.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseCommand</span>
@@ -49,7 +49,7 @@
 <div class="viewcode-block" id="Command">
 <a class="viewcode-back" href="../../../../../codedocs/corpus.html#geniza.corpus.management.commands.import_manifests.Command">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">Command</span><span class="p">(</span><span class="n">BaseCommand</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Import IIIF manifests into the local database.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Import IIIF manifests into the local database."""</span>
 
     <span class="n">help</span> <span class="o">=</span> <span class="vm">__doc__</span>
 
@@ -57,21 +57,21 @@
 <a class="viewcode-back" href="../../../../../codedocs/corpus.html#geniza.corpus.management.commands.import_manifests.Command.add_arguments">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">add_arguments</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parser</span><span class="p">):</span>
         <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
-            <span class="s2">&quot;path&quot;</span><span class="p">,</span>
-            <span class="n">nargs</span><span class="o">=</span><span class="s2">&quot;*&quot;</span><span class="p">,</span>
-            <span class="n">help</span><span class="o">=</span><span class="s2">&quot;One or more IIIF Collections or Manifests as file or URL (optional)&quot;</span><span class="p">,</span>
+            <span class="s2">"path"</span><span class="p">,</span>
+            <span class="n">nargs</span><span class="o">=</span><span class="s2">"*"</span><span class="p">,</span>
+            <span class="n">help</span><span class="o">=</span><span class="s2">"One or more IIIF Collections or Manifests as file or URL (optional)"</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
-            <span class="s2">&quot;--update&quot;</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s2">&quot;store_true&quot;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Update previously imported manifests&quot;</span>
+            <span class="s2">"--update"</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s2">"store_true"</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">"Update previously imported manifests"</span>
         <span class="p">)</span>
         <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
-            <span class="s2">&quot;--filter&quot;</span><span class="p">,</span>
-            <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Limit database manifests to update by url substring (optional)&quot;</span><span class="p">,</span>
+            <span class="s2">"--filter"</span><span class="p">,</span>
+            <span class="n">help</span><span class="o">=</span><span class="s2">"Limit database manifests to update by url substring (optional)"</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
-            <span class="s2">&quot;--associate&quot;</span><span class="p">,</span>
-            <span class="n">action</span><span class="o">=</span><span class="s2">&quot;store_true&quot;</span><span class="p">,</span>
-            <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Only associate fragments with imported manifests (no import)&quot;</span><span class="p">,</span>
+            <span class="s2">"--associate"</span><span class="p">,</span>
+            <span class="n">action</span><span class="o">=</span><span class="s2">"store_true"</span><span class="p">,</span>
+            <span class="n">help</span><span class="o">=</span><span class="s2">"Only associate fragments with imported manifests (no import)"</span><span class="p">,</span>
         <span class="p">)</span></div>
 
 
@@ -79,39 +79,39 @@
 <a class="viewcode-back" href="../../../../../codedocs/corpus.html#geniza.corpus.management.commands.import_manifests.Command.handle">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">handle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="c1"># if fragment-manifest association is requested, run it and bail out</span>
-        <span class="k">if</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;associate&quot;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"associate"</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">associate_manifests</span><span class="p">()</span>
             <span class="k">return</span>
 
         <span class="c1"># use command-line urls if specified</span>
-        <span class="n">iiif_urls</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;path&quot;</span><span class="p">)</span>
+        <span class="n">iiif_urls</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"path"</span><span class="p">)</span>
         <span class="c1"># otherwise, import all iiif manifests referenced by fragments in the db</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">iiif_urls</span><span class="p">:</span>
-            <span class="n">iiif_fragments</span> <span class="o">=</span> <span class="n">Fragment</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="n">iiif_url</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+            <span class="n">iiif_fragments</span> <span class="o">=</span> <span class="n">Fragment</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="n">iiif_url</span><span class="o">=</span><span class="s2">""</span><span class="p">)</span>
             <span class="c1"># if a filter was specified, limit the objects to those that match</span>
-            <span class="k">if</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;filter&quot;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"filter"</span><span class="p">):</span>
                 <span class="n">iiif_fragments</span> <span class="o">=</span> <span class="n">iiif_fragments</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span>
-                    <span class="n">iiif_url__contains</span><span class="o">=</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;filter&quot;</span><span class="p">)</span>
+                    <span class="n">iiif_url__contains</span><span class="o">=</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"filter"</span><span class="p">)</span>
                 <span class="p">)</span>
-            <span class="n">iiif_urls</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">iiif_fragments</span><span class="o">.</span><span class="n">values_list</span><span class="p">(</span><span class="s2">&quot;iiif_url&quot;</span><span class="p">,</span> <span class="n">flat</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
-            <span class="c1"># if we&#39;re not updating, filter out the ones we already have</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;update&quot;</span><span class="p">]:</span>
-                <span class="n">already_imported</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">Manifest</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">values_list</span><span class="p">(</span><span class="s2">&quot;uri&quot;</span><span class="p">,</span> <span class="n">flat</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+            <span class="n">iiif_urls</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">iiif_fragments</span><span class="o">.</span><span class="n">values_list</span><span class="p">(</span><span class="s2">"iiif_url"</span><span class="p">,</span> <span class="n">flat</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+            <span class="c1"># if we're not updating, filter out the ones we already have</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">"update"</span><span class="p">]:</span>
+                <span class="n">already_imported</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">Manifest</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">values_list</span><span class="p">(</span><span class="s2">"uri"</span><span class="p">,</span> <span class="n">flat</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
-                    <span class="s2">&quot;Skipping </span><span class="si">%d</span><span class="s2"> previously imported IIIF manifests&quot;</span>
+                    <span class="s2">"Skipping </span><span class="si">%d</span><span class="s2"> previously imported IIIF manifests"</span>
                     <span class="o">%</span> <span class="nb">len</span><span class="p">(</span><span class="n">already_imported</span><span class="p">)</span>
                 <span class="p">)</span>
                 <span class="n">iiif_urls</span> <span class="o">=</span> <span class="n">iiif_urls</span> <span class="o">-</span> <span class="n">already_imported</span>
 
             <span class="bp">self</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
-                <span class="s2">&quot;</span><span class="si">%d</span><span class="s2"> IIIF urls associated with fragments to import&quot;</span> <span class="o">%</span> <span class="nb">len</span><span class="p">(</span><span class="n">iiif_urls</span><span class="p">)</span>
+                <span class="s2">"</span><span class="si">%d</span><span class="s2"> IIIF urls associated with fragments to import"</span> <span class="o">%</span> <span class="nb">len</span><span class="p">(</span><span class="n">iiif_urls</span><span class="p">)</span>
             <span class="p">)</span>
 
         <span class="n">GenizaManifestImporter</span><span class="p">(</span>
             <span class="n">stdout</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span>
             <span class="n">stderr</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">stderr</span><span class="p">,</span>
             <span class="n">style</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">style</span><span class="p">,</span>
-            <span class="n">update</span><span class="o">=</span><span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;update&quot;</span><span class="p">],</span>
+            <span class="n">update</span><span class="o">=</span><span class="n">kwargs</span><span class="p">[</span><span class="s2">"update"</span><span class="p">],</span>
         <span class="p">)</span><span class="o">.</span><span class="n">import_paths</span><span class="p">(</span><span class="n">iiif_urls</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">associate_manifests</span><span class="p">()</span></div>
@@ -120,10 +120,10 @@
 <div class="viewcode-block" id="Command.associate_manifests">
 <a class="viewcode-back" href="../../../../../codedocs/corpus.html#geniza.corpus.management.commands.import_manifests.Command.associate_manifests">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">associate_manifests</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;update fragments with iiif urls to add foreign keys to the new manifests&quot;&quot;&quot;</span>
-        <span class="n">fragments</span> <span class="o">=</span> <span class="n">Fragment</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="n">iiif_url</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">manifest__isnull</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="w">        </span><span class="sd">"""update fragments with iiif urls to add foreign keys to the new manifests"""</span>
+        <span class="n">fragments</span> <span class="o">=</span> <span class="n">Fragment</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="n">iiif_url</span><span class="o">=</span><span class="s2">""</span><span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">manifest__isnull</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
-            <span class="s2">&quot;</span><span class="si">%d</span><span class="s2"> fragments with iiif url but unlinked manifest&quot;</span> <span class="o">%</span> <span class="n">fragments</span><span class="o">.</span><span class="n">count</span><span class="p">()</span>
+            <span class="s2">"</span><span class="si">%d</span><span class="s2"> fragments with iiif url but unlinked manifest"</span> <span class="o">%</span> <span class="n">fragments</span><span class="o">.</span><span class="n">count</span><span class="p">()</span>
         <span class="p">)</span>
         <span class="n">updated</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="k">for</span> <span class="n">fragment</span> <span class="ow">in</span> <span class="n">fragments</span><span class="p">:</span>
@@ -131,11 +131,11 @@
             <span class="c1"># resulting in a mismatch with the imported manifest objects.</span>
             <span class="c1"># parse the url and clean up if present</span>
             <span class="n">parsed</span> <span class="o">=</span> <span class="n">urllib</span><span class="o">.</span><span class="n">parse</span><span class="o">.</span><span class="n">urlparse</span><span class="p">(</span><span class="n">fragment</span><span class="o">.</span><span class="n">iiif_url</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">parsed</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;//&quot;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">parsed</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"//"</span><span class="p">):</span>
                 <span class="c1"># remove the extra slash and then reassemble the url</span>
                 <span class="n">url_path</span> <span class="o">=</span> <span class="n">parsed</span><span class="o">.</span><span class="n">path</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
                 <span class="n">fragment</span><span class="o">.</span><span class="n">iiif_url</span> <span class="o">=</span> <span class="n">urllib</span><span class="o">.</span><span class="n">parse</span><span class="o">.</span><span class="n">urlunparse</span><span class="p">(</span>
-                    <span class="p">(</span><span class="n">parsed</span><span class="o">.</span><span class="n">scheme</span><span class="p">,</span> <span class="n">parsed</span><span class="o">.</span><span class="n">netloc</span><span class="p">,</span> <span class="n">url_path</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+                    <span class="p">(</span><span class="n">parsed</span><span class="o">.</span><span class="n">scheme</span><span class="p">,</span> <span class="n">parsed</span><span class="o">.</span><span class="n">netloc</span><span class="p">,</span> <span class="n">url_path</span><span class="p">,</span> <span class="s2">""</span><span class="p">,</span> <span class="s2">""</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span>
                 <span class="p">)</span>
 
             <span class="n">fragment</span><span class="o">.</span><span class="n">manifest</span> <span class="o">=</span> <span class="n">Manifest</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">uri</span><span class="o">=</span><span class="n">fragment</span><span class="o">.</span><span class="n">iiif_url</span><span class="p">)</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
@@ -143,7 +143,7 @@
                 <span class="n">fragment</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
                 <span class="n">updated</span> <span class="o">+=</span> <span class="mi">1</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;Updated </span><span class="si">%d</span><span class="s2"> fragments with link to manifest&quot;</span> <span class="o">%</span> <span class="n">updated</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">"Updated </span><span class="si">%d</span><span class="s2"> fragments with link to manifest"</span> <span class="o">%</span> <span class="n">updated</span><span class="p">)</span></div>
 </div>
 
 </pre></div>

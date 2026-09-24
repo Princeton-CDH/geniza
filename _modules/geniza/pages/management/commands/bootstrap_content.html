@@ -4,11 +4,11 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>geniza.pages.management.commands.bootstrap_content &#8212; Princeton Geniza Project 4.30.0 documentation</title>
+    <title>geniza.pages.management.commands.bootstrap_content &#8212; Princeton Geniza Project 4.31.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css?v=5ecbeea2" />
     <link rel="stylesheet" type="text/css" href="../../../../../_static/basic.css?v=b08954a9" />
     <link rel="stylesheet" type="text/css" href="../../../../../_static/alabaster.css?v=27fed22d" />
-    <script src="../../../../../_static/documentation_options.js?v=b77305dc"></script>
+    <script src="../../../../../_static/documentation_options.js?v=c6a64f85"></script>
     <script src="../../../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <link rel="index" title="Index" href="../../../../../genindex.html" />
@@ -51,45 +51,45 @@
 <a class="viewcode-back" href="../../../../../codedocs/pages.html#geniza.pages.management.commands.bootstrap_content.Command.add_arguments">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">add_arguments</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parser</span><span class="p">):</span>
         <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
-            <span class="s2">&quot;-H&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;--hostname&quot;</span><span class="p">,</span>
-            <span class="n">default</span><span class="o">=</span><span class="s2">&quot;localhost&quot;</span><span class="p">,</span>
-            <span class="n">help</span><span class="o">=</span><span class="s2">&quot;hostname from which the app is served (default: localhost)&quot;</span><span class="p">,</span>
+            <span class="s2">"-H"</span><span class="p">,</span>
+            <span class="s2">"--hostname"</span><span class="p">,</span>
+            <span class="n">default</span><span class="o">=</span><span class="s2">"localhost"</span><span class="p">,</span>
+            <span class="n">help</span><span class="o">=</span><span class="s2">"hostname from which the app is served (default: localhost)"</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
-            <span class="s2">&quot;-p&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;--port&quot;</span><span class="p">,</span>
-            <span class="n">default</span><span class="o">=</span><span class="s2">&quot;8000&quot;</span><span class="p">,</span>
-            <span class="n">help</span><span class="o">=</span><span class="s2">&quot;port from which the app is served (default: 8000)&quot;</span><span class="p">,</span>
+            <span class="s2">"-p"</span><span class="p">,</span>
+            <span class="s2">"--port"</span><span class="p">,</span>
+            <span class="n">default</span><span class="o">=</span><span class="s2">"8000"</span><span class="p">,</span>
+            <span class="n">help</span><span class="o">=</span><span class="s2">"port from which the app is served (default: 8000)"</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
-            <span class="s2">&quot;-f&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;--fixtures&quot;</span><span class="p">,</span>
-            <span class="n">action</span><span class="o">=</span><span class="s2">&quot;store_true&quot;</span><span class="p">,</span>
-            <span class="n">help</span><span class="o">=</span><span class="s2">&quot;include test fixture content page&quot;</span><span class="p">,</span>
+            <span class="s2">"-f"</span><span class="p">,</span>
+            <span class="s2">"--fixtures"</span><span class="p">,</span>
+            <span class="n">action</span><span class="o">=</span><span class="s2">"store_true"</span><span class="p">,</span>
+            <span class="n">help</span><span class="o">=</span><span class="s2">"include test fixture content page"</span><span class="p">,</span>
         <span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="Command.handle">
 <a class="viewcode-back" href="../../../../../codedocs/pages.html#geniza.pages.management.commands.bootstrap_content.Command.handle">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">handle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Bootstrap content for Geniza public project site.</span>
-<span class="sd">        NOTE: Not idempotent. Will recreate pages if they already exist.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Bootstrap content for Geniza public project site.</span>
+<span class="sd">        NOTE: Not idempotent. Will recreate pages if they already exist."""</span>
 
-        <span class="n">include_fixtures</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;fixtures&quot;</span><span class="p">)</span>
-        <span class="n">hostname</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;hostname&quot;</span><span class="p">)</span>
-        <span class="n">port</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;port&quot;</span><span class="p">)</span>
-        <span class="p">(</span><span class="n">locale</span><span class="p">,</span> <span class="n">_</span><span class="p">)</span> <span class="o">=</span> <span class="n">Locale</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get_or_create</span><span class="p">(</span><span class="n">language_code</span><span class="o">=</span><span class="s2">&quot;en&quot;</span><span class="p">)</span>
+        <span class="n">include_fixtures</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"fixtures"</span><span class="p">)</span>
+        <span class="n">hostname</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"hostname"</span><span class="p">)</span>
+        <span class="n">port</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"port"</span><span class="p">)</span>
+        <span class="p">(</span><span class="n">locale</span><span class="p">,</span> <span class="n">_</span><span class="p">)</span> <span class="o">=</span> <span class="n">Locale</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get_or_create</span><span class="p">(</span><span class="n">language_code</span><span class="o">=</span><span class="s2">"en"</span><span class="p">)</span>
 
         <span class="c1"># Bootstrap home page</span>
-        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;geniza/pages/fixtures/example_homepage.html&quot;</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">home_fixture</span><span class="p">:</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">"geniza/pages/fixtures/example_homepage.html"</span><span class="p">,</span> <span class="s2">"r"</span><span class="p">)</span> <span class="k">as</span> <span class="n">home_fixture</span><span class="p">:</span>
             <span class="n">home_content</span> <span class="o">=</span> <span class="n">home_fixture</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
 
         <span class="n">home_page</span> <span class="o">=</span> <span class="n">HomePage</span><span class="p">(</span>
-            <span class="n">title</span><span class="o">=</span><span class="s2">&quot;The Princeton Geniza Project&quot;</span><span class="p">,</span>
-            <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Home page&quot;</span><span class="p">,</span>
+            <span class="n">title</span><span class="o">=</span><span class="s2">"The Princeton Geniza Project"</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Home page"</span><span class="p">,</span>
             <span class="n">locale</span><span class="o">=</span><span class="n">locale</span><span class="p">,</span>
-            <span class="n">body</span><span class="o">=</span><span class="p">[(</span><span class="s2">&quot;paragraph&quot;</span><span class="p">,</span> <span class="n">RichText</span><span class="p">(</span><span class="n">home_content</span><span class="p">))],</span>
+            <span class="n">body</span><span class="o">=</span><span class="p">[(</span><span class="s2">"paragraph"</span><span class="p">,</span> <span class="n">RichText</span><span class="p">(</span><span class="n">home_content</span><span class="p">))],</span>
             <span class="n">live</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
         <span class="p">)</span>
 
@@ -97,8 +97,8 @@
         <span class="n">root</span> <span class="o">=</span> <span class="n">Page</span><span class="o">.</span><span class="n">get_first_root_node</span><span class="p">()</span>
         <span class="n">root</span><span class="o">.</span><span class="n">add_child</span><span class="p">(</span><span class="n">instance</span><span class="o">=</span><span class="n">home_page</span><span class="p">)</span>
 
-        <span class="c1"># Create container page called &quot;About&quot;</span>
-        <span class="n">container_page</span> <span class="o">=</span> <span class="n">ContainerPage</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="s2">&quot;About&quot;</span><span class="p">,</span> <span class="n">slug</span><span class="o">=</span><span class="s2">&quot;about&quot;</span><span class="p">,</span> <span class="n">locale</span><span class="o">=</span><span class="n">locale</span><span class="p">)</span>
+        <span class="c1"># Create container page called "About"</span>
+        <span class="n">container_page</span> <span class="o">=</span> <span class="n">ContainerPage</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="s2">"About"</span><span class="p">,</span> <span class="n">slug</span><span class="o">=</span><span class="s2">"about"</span><span class="p">,</span> <span class="n">locale</span><span class="o">=</span><span class="n">locale</span><span class="p">)</span>
         <span class="n">home_page</span><span class="o">.</span><span class="n">add_child</span><span class="p">(</span><span class="n">instance</span><span class="o">=</span><span class="n">container_page</span><span class="p">)</span>
 
         <span class="c1"># Bootstrap other empty content pages</span>
@@ -106,9 +106,9 @@
         <span class="c1"># Pages for main navigation menu</span>
         <span class="n">root_pages</span> <span class="o">=</span> <span class="p">[</span>
             <span class="n">ContentPage</span><span class="p">(</span>
-                <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Contact Us&quot;</span><span class="p">,</span>
-                <span class="n">slug</span><span class="o">=</span><span class="s2">&quot;contact&quot;</span><span class="p">,</span>
-                <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Contact information&quot;</span><span class="p">,</span>
+                <span class="n">title</span><span class="o">=</span><span class="s2">"Contact Us"</span><span class="p">,</span>
+                <span class="n">slug</span><span class="o">=</span><span class="s2">"contact"</span><span class="p">,</span>
+                <span class="n">description</span><span class="o">=</span><span class="s2">"Contact information"</span><span class="p">,</span>
                 <span class="n">locale</span><span class="o">=</span><span class="n">locale</span><span class="p">,</span>
             <span class="p">),</span>
         <span class="p">]</span>
@@ -119,33 +119,33 @@
         <span class="c1"># Pages for About sub-navigation menu</span>
         <span class="n">container_pages</span> <span class="o">=</span> <span class="p">[</span>
             <span class="n">ContentPage</span><span class="p">(</span>
-                <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Credits&quot;</span><span class="p">,</span>
-                <span class="n">slug</span><span class="o">=</span><span class="s2">&quot;credits&quot;</span><span class="p">,</span>
-                <span class="n">description</span><span class="o">=</span><span class="s2">&quot;List of Geniza Project contributors and their roles&quot;</span><span class="p">,</span>
+                <span class="n">title</span><span class="o">=</span><span class="s2">"Credits"</span><span class="p">,</span>
+                <span class="n">slug</span><span class="o">=</span><span class="s2">"credits"</span><span class="p">,</span>
+                <span class="n">description</span><span class="o">=</span><span class="s2">"List of Geniza Project contributors and their roles"</span><span class="p">,</span>
                 <span class="n">locale</span><span class="o">=</span><span class="n">locale</span><span class="p">,</span>
             <span class="p">),</span>
             <span class="n">ContentPage</span><span class="p">(</span>
-                <span class="n">title</span><span class="o">=</span><span class="s2">&quot;How to Cite&quot;</span><span class="p">,</span>
-                <span class="n">slug</span><span class="o">=</span><span class="s2">&quot;how-to-cite&quot;</span><span class="p">,</span>
-                <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Instructions for citing the Princeton Geniza Project&quot;</span><span class="p">,</span>
+                <span class="n">title</span><span class="o">=</span><span class="s2">"How to Cite"</span><span class="p">,</span>
+                <span class="n">slug</span><span class="o">=</span><span class="s2">"how-to-cite"</span><span class="p">,</span>
+                <span class="n">description</span><span class="o">=</span><span class="s2">"Instructions for citing the Princeton Geniza Project"</span><span class="p">,</span>
                 <span class="n">locale</span><span class="o">=</span><span class="n">locale</span><span class="p">,</span>
             <span class="p">),</span>
             <span class="n">ContentPage</span><span class="p">(</span>
-                <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Data Exports&quot;</span><span class="p">,</span>
-                <span class="n">slug</span><span class="o">=</span><span class="s2">&quot;data-exports&quot;</span><span class="p">,</span>
-                <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Information about exporting data&quot;</span><span class="p">,</span>
+                <span class="n">title</span><span class="o">=</span><span class="s2">"Data Exports"</span><span class="p">,</span>
+                <span class="n">slug</span><span class="o">=</span><span class="s2">"data-exports"</span><span class="p">,</span>
+                <span class="n">description</span><span class="o">=</span><span class="s2">"Information about exporting data"</span><span class="p">,</span>
                 <span class="n">locale</span><span class="o">=</span><span class="n">locale</span><span class="p">,</span>
             <span class="p">),</span>
             <span class="n">ContentPage</span><span class="p">(</span>
-                <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Technical&quot;</span><span class="p">,</span>
-                <span class="n">slug</span><span class="o">=</span><span class="s2">&quot;technical&quot;</span><span class="p">,</span>
-                <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Technical information&quot;</span><span class="p">,</span>
+                <span class="n">title</span><span class="o">=</span><span class="s2">"Technical"</span><span class="p">,</span>
+                <span class="n">slug</span><span class="o">=</span><span class="s2">"technical"</span><span class="p">,</span>
+                <span class="n">description</span><span class="o">=</span><span class="s2">"Technical information"</span><span class="p">,</span>
                 <span class="n">locale</span><span class="o">=</span><span class="n">locale</span><span class="p">,</span>
             <span class="p">),</span>
             <span class="n">ContentPage</span><span class="p">(</span>
-                <span class="n">title</span><span class="o">=</span><span class="s2">&quot;FAQ&quot;</span><span class="p">,</span>
-                <span class="n">slug</span><span class="o">=</span><span class="s2">&quot;faq&quot;</span><span class="p">,</span>
-                <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Frequently asked questions&quot;</span><span class="p">,</span>
+                <span class="n">title</span><span class="o">=</span><span class="s2">"FAQ"</span><span class="p">,</span>
+                <span class="n">slug</span><span class="o">=</span><span class="s2">"faq"</span><span class="p">,</span>
+                <span class="n">description</span><span class="o">=</span><span class="s2">"Frequently asked questions"</span><span class="p">,</span>
                 <span class="n">locale</span><span class="o">=</span><span class="n">locale</span><span class="p">,</span>
             <span class="p">),</span>
         <span class="p">]</span>
@@ -164,7 +164,7 @@
             <span class="n">default_site</span><span class="o">.</span><span class="n">root_page</span> <span class="o">=</span> <span class="n">home_page</span>
             <span class="n">default_site</span><span class="o">.</span><span class="n">port</span> <span class="o">=</span> <span class="n">port</span>
             <span class="n">default_site</span><span class="o">.</span><span class="n">hostname</span> <span class="o">=</span> <span class="n">hostname</span>
-            <span class="n">default_site</span><span class="o">.</span><span class="n">site_name</span> <span class="o">=</span> <span class="s2">&quot;Geniza&quot;</span>
+            <span class="n">default_site</span><span class="o">.</span><span class="n">site_name</span> <span class="o">=</span> <span class="s2">"Geniza"</span>
             <span class="n">default_site</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
         <span class="k">except</span> <span class="n">ObjectDoesNotExist</span><span class="p">:</span>
             <span class="n">default_site</span> <span class="o">=</span> <span class="n">Site</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
@@ -172,60 +172,60 @@
                 <span class="n">port</span><span class="o">=</span><span class="n">port</span><span class="p">,</span>
                 <span class="n">root_page</span><span class="o">=</span><span class="n">home_page</span><span class="p">,</span>
                 <span class="n">is_default_site</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-                <span class="n">site_name</span><span class="o">=</span><span class="s2">&quot;Geniza&quot;</span><span class="p">,</span>
+                <span class="n">site_name</span><span class="o">=</span><span class="s2">"Geniza"</span><span class="p">,</span>
             <span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="Command.generate_test_content_page">
 <a class="viewcode-back" href="../../../../../codedocs/pages.html#geniza.pages.management.commands.bootstrap_content.Command.generate_test_content_page">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">generate_test_content_page</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a test content page from fixture&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Create a test content page from fixture"""</span>
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span>
-            <span class="s2">&quot;geniza/pages/fixtures/example_content_page.html&quot;</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span>
+            <span class="s2">"geniza/pages/fixtures/example_content_page.html"</span><span class="p">,</span> <span class="s2">"r"</span>
         <span class="p">)</span> <span class="k">as</span> <span class="n">content_fixture</span><span class="p">:</span>
             <span class="n">paragraph_1</span> <span class="o">=</span> <span class="n">content_fixture</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
-        <span class="n">image_caption</span> <span class="o">=</span> <span class="s2">&quot;Image Caption&quot;</span>
-        <span class="n">image1</span> <span class="o">=</span> <span class="n">Image</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="s2">&quot;Fragment&quot;</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">400</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">535</span><span class="p">)</span>
-        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;sitemedia/img/fixtures/test-image-fragment.jpg&quot;</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fragment</span><span class="p">:</span>
+        <span class="n">image_caption</span> <span class="o">=</span> <span class="s2">"Image Caption"</span>
+        <span class="n">image1</span> <span class="o">=</span> <span class="n">Image</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="s2">"Fragment"</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">400</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">535</span><span class="p">)</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">"sitemedia/img/fixtures/test-image-fragment.jpg"</span><span class="p">,</span> <span class="s2">"rb"</span><span class="p">)</span> <span class="k">as</span> <span class="n">fragment</span><span class="p">:</span>
             <span class="n">image1</span><span class="o">.</span><span class="n">file</span> <span class="o">=</span> <span class="n">UploadedFile</span><span class="p">(</span><span class="n">file</span><span class="o">=</span><span class="n">fragment</span><span class="p">)</span>
             <span class="n">image1</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
-        <span class="n">paragraph2</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;&lt;p&gt;The metadata is stored in the backend in Google Sheets and pushed out to</span>
-<span class="s2">            the PGP site every 24 hours. The transcriptions are stored in Bitbucket.&lt;/p&gt;&quot;&quot;&quot;</span>
-        <span class="n">image2</span> <span class="o">=</span> <span class="n">Image</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="s2">&quot;Tag Network&quot;</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">557</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">313</span><span class="p">)</span>
+        <span class="n">paragraph2</span> <span class="o">=</span> <span class="s2">"""&lt;p&gt;The metadata is stored in the backend in Google Sheets and pushed out to</span>
+<span class="s2">            the PGP site every 24 hours. The transcriptions are stored in Bitbucket.&lt;/p&gt;"""</span>
+        <span class="n">image2</span> <span class="o">=</span> <span class="n">Image</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="s2">"Tag Network"</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">557</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">313</span><span class="p">)</span>
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span>
-            <span class="s2">&quot;sitemedia/img/fixtures/test-image-tagnetwork.png&quot;</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span>
+            <span class="s2">"sitemedia/img/fixtures/test-image-tagnetwork.png"</span><span class="p">,</span> <span class="s2">"rb"</span>
         <span class="p">)</span> <span class="k">as</span> <span class="n">tag_network</span><span class="p">:</span>
             <span class="n">image2</span><span class="o">.</span><span class="n">file</span> <span class="o">=</span> <span class="n">UploadedFile</span><span class="p">(</span><span class="n">file</span><span class="o">=</span><span class="n">tag_network</span><span class="p">)</span>
             <span class="n">image2</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
-        <span class="n">paragraph3</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;&lt;p&gt;Previous versions of the PGP database were based on the TextGarden web</span>
+        <span class="n">paragraph3</span> <span class="o">=</span> <span class="s2">"""&lt;p&gt;Previous versions of the PGP database were based on the TextGarden web</span>
 <span class="s2">            application developed in 2005 by Rafael Alvarado, Manager of Humanities</span>
 <span class="s2">            Computing Research Applications at Princeton, and the original browser</span>
-<span class="s2">            developed by Peter Batke at Princeton in the late 1990s.&lt;/p&gt;&quot;&quot;&quot;</span>
+<span class="s2">            developed by Peter Batke at Princeton in the late 1990s.&lt;/p&gt;"""</span>
         <span class="n">body</span> <span class="o">=</span> <span class="p">[</span>
-            <span class="p">(</span><span class="s2">&quot;paragraph&quot;</span><span class="p">,</span> <span class="n">RichText</span><span class="p">(</span><span class="n">paragraph_1</span><span class="p">)),</span>
+            <span class="p">(</span><span class="s2">"paragraph"</span><span class="p">,</span> <span class="n">RichText</span><span class="p">(</span><span class="n">paragraph_1</span><span class="p">)),</span>
             <span class="p">(</span>
-                <span class="s2">&quot;image&quot;</span><span class="p">,</span>
+                <span class="s2">"image"</span><span class="p">,</span>
                 <span class="p">{</span>
-                    <span class="s2">&quot;image&quot;</span><span class="p">:</span> <span class="n">image1</span><span class="p">,</span>
-                    <span class="s2">&quot;alternative_text&quot;</span><span class="p">:</span> <span class="n">image_caption</span><span class="p">,</span>
-                    <span class="s2">&quot;caption&quot;</span><span class="p">:</span> <span class="n">RichText</span><span class="p">(</span><span class="n">image_caption</span><span class="p">),</span>
+                    <span class="s2">"image"</span><span class="p">:</span> <span class="n">image1</span><span class="p">,</span>
+                    <span class="s2">"alternative_text"</span><span class="p">:</span> <span class="n">image_caption</span><span class="p">,</span>
+                    <span class="s2">"caption"</span><span class="p">:</span> <span class="n">RichText</span><span class="p">(</span><span class="n">image_caption</span><span class="p">),</span>
                 <span class="p">},</span>
             <span class="p">),</span>
-            <span class="p">(</span><span class="s2">&quot;paragraph&quot;</span><span class="p">,</span> <span class="n">RichText</span><span class="p">(</span><span class="n">paragraph2</span><span class="p">)),</span>
+            <span class="p">(</span><span class="s2">"paragraph"</span><span class="p">,</span> <span class="n">RichText</span><span class="p">(</span><span class="n">paragraph2</span><span class="p">)),</span>
             <span class="p">(</span>
-                <span class="s2">&quot;image&quot;</span><span class="p">,</span>
+                <span class="s2">"image"</span><span class="p">,</span>
                 <span class="p">{</span>
-                    <span class="s2">&quot;image&quot;</span><span class="p">:</span> <span class="n">image2</span><span class="p">,</span>
-                    <span class="s2">&quot;alternative_text&quot;</span><span class="p">:</span> <span class="n">image_caption</span><span class="p">,</span>
-                    <span class="s2">&quot;caption&quot;</span><span class="p">:</span> <span class="n">RichText</span><span class="p">(</span><span class="n">image_caption</span><span class="p">),</span>
+                    <span class="s2">"image"</span><span class="p">:</span> <span class="n">image2</span><span class="p">,</span>
+                    <span class="s2">"alternative_text"</span><span class="p">:</span> <span class="n">image_caption</span><span class="p">,</span>
+                    <span class="s2">"caption"</span><span class="p">:</span> <span class="n">RichText</span><span class="p">(</span><span class="n">image_caption</span><span class="p">),</span>
                 <span class="p">},</span>
             <span class="p">),</span>
-            <span class="p">(</span><span class="s2">&quot;paragraph&quot;</span><span class="p">,</span> <span class="n">RichText</span><span class="p">(</span><span class="n">paragraph3</span><span class="p">)),</span>
+            <span class="p">(</span><span class="s2">"paragraph"</span><span class="p">,</span> <span class="n">RichText</span><span class="p">(</span><span class="n">paragraph3</span><span class="p">)),</span>
         <span class="p">]</span>
         <span class="k">return</span> <span class="n">ContentPage</span><span class="p">(</span>
-            <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Page Title&quot;</span><span class="p">,</span>
-            <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Example page&quot;</span><span class="p">,</span>
-            <span class="n">slug</span><span class="o">=</span><span class="s2">&quot;content&quot;</span><span class="p">,</span>
+            <span class="n">title</span><span class="o">=</span><span class="s2">"Page Title"</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Example page"</span><span class="p">,</span>
+            <span class="n">slug</span><span class="o">=</span><span class="s2">"content"</span><span class="p">,</span>
             <span class="n">body</span><span class="o">=</span><span class="n">body</span><span class="p">,</span>
             <span class="n">live</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
             <span class="n">show_in_menus</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>

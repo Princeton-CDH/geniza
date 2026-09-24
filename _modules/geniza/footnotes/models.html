@@ -4,11 +4,11 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>geniza.footnotes.models &#8212; Princeton Geniza Project 4.30.0 documentation</title>
+    <title>geniza.footnotes.models &#8212; Princeton Geniza Project 4.31.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=5ecbeea2" />
     <link rel="stylesheet" type="text/css" href="../../../_static/basic.css?v=b08954a9" />
     <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=27fed22d" />
-    <script src="../../../_static/documentation_options.js?v=b77305dc"></script>
+    <script src="../../../_static/documentation_options.js?v=c6a64f85"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
@@ -63,7 +63,7 @@
 <div class="viewcode-block" id="SourceType">
 <a class="viewcode-back" href="../../../codedocs/footnotes.html#geniza.footnotes.models.SourceType">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">SourceType</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;type of source&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""type of source"""</span>
 
     <span class="nb">type</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">255</span><span class="p">)</span>
 
@@ -75,18 +75,18 @@
 <div class="viewcode-block" id="SourceLanguage">
 <a class="viewcode-back" href="../../../codedocs/footnotes.html#geniza.footnotes.models.SourceLanguage">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">SourceLanguage</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;language of a source document&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""language of a source document"""</span>
 
     <span class="n">name</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">255</span><span class="p">)</span>
-    <span class="n">code</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">help_text</span><span class="o">=</span><span class="s2">&quot;ISO language code&quot;</span><span class="p">)</span>
-    <span class="n">LTR</span> <span class="o">=</span> <span class="s2">&quot;ltr&quot;</span>
-    <span class="n">RTL</span> <span class="o">=</span> <span class="s2">&quot;rtl&quot;</span>
-    <span class="n">DIRECTION_CHOICES</span> <span class="o">=</span> <span class="p">((</span><span class="n">LTR</span><span class="p">,</span> <span class="s2">&quot;Left to right&quot;</span><span class="p">),</span> <span class="p">(</span><span class="n">RTL</span><span class="p">,</span> <span class="s2">&quot;Right to left&quot;</span><span class="p">))</span>
+    <span class="n">code</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">help_text</span><span class="o">=</span><span class="s2">"ISO language code"</span><span class="p">)</span>
+    <span class="n">LTR</span> <span class="o">=</span> <span class="s2">"ltr"</span>
+    <span class="n">RTL</span> <span class="o">=</span> <span class="s2">"rtl"</span>
+    <span class="n">DIRECTION_CHOICES</span> <span class="o">=</span> <span class="p">((</span><span class="n">LTR</span><span class="p">,</span> <span class="s2">"Left to right"</span><span class="p">),</span> <span class="p">(</span><span class="n">RTL</span><span class="p">,</span> <span class="s2">"Right to left"</span><span class="p">))</span>
     <span class="n">direction</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">LTR</span><span class="p">,</span> <span class="n">choices</span><span class="o">=</span><span class="n">DIRECTION_CHOICES</span><span class="p">)</span>
     <span class="n">non_latin</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">BooleanField</span><span class="p">(</span>
         <span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-        <span class="n">help_text</span><span class="o">=</span><span class="s2">&quot;True if this language uses a non-Latin script, and therefore should be included in formatted citations for associated Source records.&quot;</span><span class="p">,</span>
-        <span class="n">verbose_name</span><span class="o">=</span><span class="s2">&quot;Uses non-Latin script&quot;</span><span class="p">,</span>
+        <span class="n">help_text</span><span class="o">=</span><span class="s2">"True if this language uses a non-Latin script, and therefore should be included in formatted citations for associated Source records."</span><span class="p">,</span>
+        <span class="n">verbose_name</span><span class="o">=</span><span class="s2">"Uses non-Latin script"</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -97,12 +97,12 @@
 <div class="viewcode-block" id="CreatorManager">
 <a class="viewcode-back" href="../../../codedocs/footnotes.html#geniza.footnotes.models.CreatorManager">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">CreatorManager</span><span class="p">(</span><span class="n">MultilingualManager</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Custom manager for :class:`Creator` with natural key lookup&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Custom manager for :class:`Creator` with natural key lookup"""</span>
 
 <div class="viewcode-block" id="CreatorManager.get_by_natural_key">
 <a class="viewcode-back" href="../../../codedocs/footnotes.html#geniza.footnotes.models.CreatorManager.get_by_natural_key">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_by_natural_key</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">last_name</span><span class="p">,</span> <span class="n">first_name</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;natural key lookup: based on combination of last name and first name&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""natural key lookup: based on combination of last name and first name"""</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">last_name</span><span class="o">=</span><span class="n">last_name</span><span class="p">,</span> <span class="n">first_name</span><span class="o">=</span><span class="n">first_name</span><span class="p">)</span></div>
 </div>
 
@@ -111,7 +111,7 @@
 <div class="viewcode-block" id="Creator">
 <a class="viewcode-back" href="../../../codedocs/footnotes.html#geniza.footnotes.models.Creator">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">Creator</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;author or other contributor to a source&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""author or other contributor to a source"""</span>
 
     <span class="n">first_name</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">255</span><span class="p">)</span>
     <span class="n">last_name</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">255</span><span class="p">)</span>
@@ -119,28 +119,28 @@
     <span class="n">objects</span> <span class="o">=</span> <span class="n">CreatorManager</span><span class="p">()</span>
 
     <span class="k">class</span><span class="w"> </span><span class="nc">Meta</span><span class="p">:</span>
-        <span class="n">ordering</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;last_name&quot;</span><span class="p">,</span> <span class="s2">&quot;first_name&quot;</span><span class="p">]</span>
+        <span class="n">ordering</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"last_name"</span><span class="p">,</span> <span class="s2">"first_name"</span><span class="p">]</span>
         <span class="n">constraints</span> <span class="o">=</span> <span class="p">[</span>
             <span class="n">models</span><span class="o">.</span><span class="n">UniqueConstraint</span><span class="p">(</span>
-                <span class="n">fields</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;first_name&quot;</span><span class="p">,</span> <span class="s2">&quot;last_name&quot;</span><span class="p">],</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;creator_unique_name&quot;</span>
+                <span class="n">fields</span><span class="o">=</span><span class="p">[</span><span class="s2">"first_name"</span><span class="p">,</span> <span class="s2">"last_name"</span><span class="p">],</span> <span class="n">name</span><span class="o">=</span><span class="s2">"creator_unique_name"</span>
             <span class="p">)</span>
         <span class="p">]</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">n</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">last_name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">first_name</span><span class="p">]</span> <span class="k">if</span> <span class="n">n</span><span class="p">])</span>
+        <span class="k">return</span> <span class="s2">", "</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">n</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">last_name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">first_name</span><span class="p">]</span> <span class="k">if</span> <span class="n">n</span><span class="p">])</span>
 
 <div class="viewcode-block" id="Creator.natural_key">
 <a class="viewcode-back" href="../../../codedocs/footnotes.html#geniza.footnotes.models.Creator.natural_key">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">natural_key</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;natural key: tuple of last name, first name&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""natural key: tuple of last name, first name"""</span>
         <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">last_name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">first_name</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="Creator.firstname_lastname">
 <a class="viewcode-back" href="../../../codedocs/footnotes.html#geniza.footnotes.models.Creator.firstname_lastname">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">firstname_lastname</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Creator full name, with first name first&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">n</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">first_name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">last_name</span><span class="p">]</span> <span class="k">if</span> <span class="n">n</span><span class="p">])</span></div>
+<span class="w">        </span><span class="sd">"""Creator full name, with first name first"""</span>
+        <span class="k">return</span> <span class="s2">" "</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">n</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">first_name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">last_name</span><span class="p">]</span> <span class="k">if</span> <span class="n">n</span><span class="p">])</span></div>
 </div>
 
 
@@ -148,17 +148,17 @@
 <div class="viewcode-block" id="Authorship">
 <a class="viewcode-back" href="../../../codedocs/footnotes.html#geniza.footnotes.models.Authorship">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">Authorship</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Ordered relationship between :class:`Creator` and :class:`Source`.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Ordered relationship between :class:`Creator` and :class:`Source`."""</span>
 
     <span class="n">creator</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">ForeignKey</span><span class="p">(</span><span class="n">Creator</span><span class="p">,</span> <span class="n">on_delete</span><span class="o">=</span><span class="n">models</span><span class="o">.</span><span class="n">CASCADE</span><span class="p">)</span>
-    <span class="n">source</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">ForeignKey</span><span class="p">(</span><span class="s2">&quot;Source&quot;</span><span class="p">,</span> <span class="n">on_delete</span><span class="o">=</span><span class="n">models</span><span class="o">.</span><span class="n">CASCADE</span><span class="p">)</span>
+    <span class="n">source</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">ForeignKey</span><span class="p">(</span><span class="s2">"Source"</span><span class="p">,</span> <span class="n">on_delete</span><span class="o">=</span><span class="n">models</span><span class="o">.</span><span class="n">CASCADE</span><span class="p">)</span>
     <span class="n">sort_order</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">PositiveSmallIntegerField</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 
     <span class="k">class</span><span class="w"> </span><span class="nc">Meta</span><span class="p">:</span>
-        <span class="n">ordering</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;sort_order&quot;</span><span class="p">,)</span>
+        <span class="n">ordering</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"sort_order"</span><span class="p">,)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-        <span class="k">return</span> <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">, </span><span class="si">%s</span><span class="s1"> author on &quot;</span><span class="si">%s</span><span class="s1">&quot;&#39;</span> <span class="o">%</span> <span class="p">(</span>
+        <span class="k">return</span> <span class="s1">'</span><span class="si">%s</span><span class="s1">, </span><span class="si">%s</span><span class="s1"> author on "</span><span class="si">%s</span><span class="s1">"'</span> <span class="o">%</span> <span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">creator</span><span class="p">,</span>
             <span class="n">ordinal</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sort_order</span><span class="p">),</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="o">.</span><span class="n">title</span><span class="p">,</span>
@@ -169,18 +169,18 @@
 <div class="viewcode-block" id="SourceQuerySet">
 <a class="viewcode-back" href="../../../codedocs/footnotes.html#geniza.footnotes.models.SourceQuerySet">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">SourceQuerySet</span><span class="p">(</span><span class="n">MultilingualQuerySet</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Custom queryset for :class:`Source`, for reusable</span>
-<span class="sd">    prefetching and count annotation.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Custom queryset for :class:`Source`, for reusable</span>
+<span class="sd">    prefetching and count annotation."""</span>
 
 <div class="viewcode-block" id="SourceQuerySet.metadata_prefetch">
 <a class="viewcode-back" href="../../../codedocs/footnotes.html#geniza.footnotes.models.SourceQuerySet.metadata_prefetch">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">metadata_prefetch</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="s2">&quot;prefetch source type and authors&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">select_related</span><span class="p">(</span><span class="s2">&quot;source_type&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">prefetch_related</span><span class="p">(</span>
-            <span class="s2">&quot;languages&quot;</span><span class="p">,</span>
+        <span class="s2">"prefetch source type and authors"</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">select_related</span><span class="p">(</span><span class="s2">"source_type"</span><span class="p">)</span><span class="o">.</span><span class="n">prefetch_related</span><span class="p">(</span>
+            <span class="s2">"languages"</span><span class="p">,</span>
             <span class="n">Prefetch</span><span class="p">(</span>
-                <span class="s2">&quot;authorship_set&quot;</span><span class="p">,</span>
-                <span class="n">queryset</span><span class="o">=</span><span class="n">Authorship</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">select_related</span><span class="p">(</span><span class="s2">&quot;creator&quot;</span><span class="p">),</span>
+                <span class="s2">"authorship_set"</span><span class="p">,</span>
+                <span class="n">queryset</span><span class="o">=</span><span class="n">Authorship</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">select_related</span><span class="p">(</span><span class="s2">"creator"</span><span class="p">),</span>
             <span class="p">),</span>
         <span class="p">)</span></div>
 
@@ -188,8 +188,8 @@
 <div class="viewcode-block" id="SourceQuerySet.footnote_count">
 <a class="viewcode-back" href="../../../codedocs/footnotes.html#geniza.footnotes.models.SourceQuerySet.footnote_count">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">footnote_count</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="s2">&quot;annotate with footnote count&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span><span class="n">Count</span><span class="p">(</span><span class="s2">&quot;footnote&quot;</span><span class="p">,</span> <span class="n">distinct</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span></div>
+        <span class="s2">"annotate with footnote count"</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span><span class="n">Count</span><span class="p">(</span><span class="s2">"footnote"</span><span class="p">,</span> <span class="n">distinct</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span></div>
 </div>
 
 
@@ -197,7 +197,7 @@
 <div class="viewcode-block" id="Source">
 <a class="viewcode-back" href="../../../codedocs/footnotes.html#geniza.footnotes.models.Source">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">Source</span><span class="p">(</span><span class="n">SlugMixin</span><span class="p">,</span> <span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;a published or unpublished work related to geniza materials&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""a published or unpublished work related to geniza materials"""</span>
 
     <span class="n">authors</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">ManyToManyField</span><span class="p">(</span><span class="n">Creator</span><span class="p">,</span> <span class="n">through</span><span class="o">=</span><span class="n">Authorship</span><span class="p">)</span>
     <span class="n">title</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">255</span><span class="p">,</span> <span class="n">blank</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">null</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -206,47 +206,47 @@
     <span class="n">volume</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span>
         <span class="n">max_length</span><span class="o">=</span><span class="mi">255</span><span class="p">,</span>
         <span class="n">blank</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-        <span class="n">help_text</span><span class="o">=</span><span class="s2">&quot;Volume of a multivolume book, or journal volume for an article&quot;</span><span class="p">,</span>
+        <span class="n">help_text</span><span class="o">=</span><span class="s2">"Volume of a multivolume book, or journal volume for an article"</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="n">issue</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">PositiveIntegerField</span><span class="p">(</span>
         <span class="n">blank</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
         <span class="n">null</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-        <span class="n">help_text</span><span class="o">=</span><span class="s2">&quot;Issue number for a journal article&quot;</span><span class="p">,</span>
+        <span class="n">help_text</span><span class="o">=</span><span class="s2">"Issue number for a journal article"</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="n">journal</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span>
-        <span class="s2">&quot;Journal / Book&quot;</span><span class="p">,</span>
+        <span class="s2">"Journal / Book"</span><span class="p">,</span>
         <span class="n">max_length</span><span class="o">=</span><span class="mi">255</span><span class="p">,</span>
         <span class="n">blank</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-        <span class="n">help_text</span><span class="o">=</span><span class="s2">&quot;Journal title (for an article) or book title (for a book section)&quot;</span><span class="p">,</span>
+        <span class="n">help_text</span><span class="o">=</span><span class="s2">"Journal title (for an article) or book title (for a book section)"</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="n">page_range</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span>
-        <span class="n">max_length</span><span class="o">=</span><span class="mi">255</span><span class="p">,</span> <span class="n">blank</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">help_text</span><span class="o">=</span><span class="s2">&quot;Page range for article or book section.&quot;</span>
+        <span class="n">max_length</span><span class="o">=</span><span class="mi">255</span><span class="p">,</span> <span class="n">blank</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">help_text</span><span class="o">=</span><span class="s2">"Page range for article or book section."</span>
     <span class="p">)</span>
     <span class="n">publisher</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span>
         <span class="n">max_length</span><span class="o">=</span><span class="mi">255</span><span class="p">,</span>
         <span class="n">blank</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-        <span class="n">help_text</span><span class="o">=</span><span class="s2">&quot;Publisher name, or degree granting institution for a dissertation&quot;</span><span class="p">,</span>
+        <span class="n">help_text</span><span class="o">=</span><span class="s2">"Publisher name, or degree granting institution for a dissertation"</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="n">place_published</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span>
-        <span class="n">max_length</span><span class="o">=</span><span class="mi">255</span><span class="p">,</span> <span class="n">blank</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">help_text</span><span class="o">=</span><span class="s2">&quot;Place where the work was published&quot;</span>
+        <span class="n">max_length</span><span class="o">=</span><span class="mi">255</span><span class="p">,</span> <span class="n">blank</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">help_text</span><span class="o">=</span><span class="s2">"Place where the work was published"</span>
     <span class="p">)</span>
     <span class="n">other_info</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">TextField</span><span class="p">(</span>
-        <span class="n">blank</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">help_text</span><span class="o">=</span><span class="s2">&quot;Additional citation information, if any&quot;</span>
+        <span class="n">blank</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">help_text</span><span class="o">=</span><span class="s2">"Additional citation information, if any"</span>
     <span class="p">)</span>
     <span class="n">source_type</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">ForeignKey</span><span class="p">(</span>
         <span class="n">SourceType</span><span class="p">,</span>
         <span class="n">on_delete</span><span class="o">=</span><span class="n">models</span><span class="o">.</span><span class="n">CASCADE</span><span class="p">,</span>
-        <span class="n">help_text</span><span class="o">=</span><span class="s2">&quot;&quot;&quot;The form of the source&#39;s publication. Note: for unpublished sources, be sure</span>
+        <span class="n">help_text</span><span class="o">=</span><span class="s2">"""The form of the source's publication. Note: for unpublished sources, be sure</span>
 <span class="s2">        to create separate Source records for unpublished transcriptions and unpublished</span>
-<span class="s2">        translations, even if they reside on the same digital document.&quot;&quot;&quot;</span><span class="p">,</span>
+<span class="s2">        translations, even if they reside on the same digital document."""</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="n">languages</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">ManyToManyField</span><span class="p">(</span>
         <span class="n">SourceLanguage</span><span class="p">,</span>
-        <span class="n">help_text</span><span class="o">=</span><span class="s2">&quot;&quot;&quot;The language(s) the source is written in. Note: The Unspecified language</span>
+        <span class="n">help_text</span><span class="o">=</span><span class="s2">"""The language(s) the source is written in. Note: The Unspecified language</span>
 <span class="s2">        option should only ever be used for unpublished transcriptions, as the language of the</span>
-<span class="s2">        transcription is already marked on the document.&quot;&quot;&quot;</span><span class="p">,</span>
+<span class="s2">        transcription is already marked on the document."""</span><span class="p">,</span>
     <span class="p">)</span>
-    <span class="n">url</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">URLField</span><span class="p">(</span><span class="n">blank</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">max_length</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span> <span class="n">verbose_name</span><span class="o">=</span><span class="s2">&quot;URL&quot;</span><span class="p">)</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">URLField</span><span class="p">(</span><span class="n">blank</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">max_length</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span> <span class="n">verbose_name</span><span class="o">=</span><span class="s2">"URL"</span><span class="p">)</span>
     <span class="c1"># preliminary place to store transcription text; should not be editable</span>
     <span class="n">notes</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">TextField</span><span class="p">(</span><span class="n">blank</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
@@ -255,14 +255,14 @@
     <span class="k">class</span><span class="w"> </span><span class="nc">Meta</span><span class="p">:</span>
         <span class="c1"># set default order to title, year for now since first-author order</span>
         <span class="c1"># requires queryset annotation</span>
-        <span class="n">ordering</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;title&quot;</span><span class="p">,</span> <span class="s2">&quot;year&quot;</span><span class="p">]</span>
+        <span class="n">ordering</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"title"</span><span class="p">,</span> <span class="s2">"year"</span><span class="p">]</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Method used for for internal/data admin use.</span>
-<span class="sd">        Please use the `display` or `formatted_display` methods for public display.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Method used for for internal/data admin use.</span>
+<span class="sd">        Please use the `display` or `formatted_display` methods for public display."""</span>
         <span class="c1"># Append volume for unpublished</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">source_type</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">&quot;Unpublished&quot;</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">volume</span><span class="p">:</span>
-            <span class="k">return</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> (</span><span class="si">%s</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">display</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">volume</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">source_type</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">"Unpublished"</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">volume</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">"</span><span class="si">%s</span><span class="s2"> (</span><span class="si">%s</span><span class="s2">)"</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">display</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">volume</span><span class="p">)</span>
         <span class="c1"># Otherwise return formatted display without html tags</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">display</span><span class="p">()</span>
@@ -270,17 +270,17 @@
 <div class="viewcode-block" id="Source.generate_slug">
 <a class="viewcode-back" href="../../../codedocs/footnotes.html#geniza.footnotes.models.Source.generate_slug">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">generate_slug</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate a slug for this source based on authors/title/year, and ensure it is unique.</span>
-<span class="sd">        Adapted from mep-django.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Generate a slug for this source based on authors/title/year, and ensure it is unique.</span>
+<span class="sd">        Adapted from mep-django."""</span>
         <span class="c1"># use first 5 words from authors list to keep slugs relatively short</span>
-        <span class="n">authors</span> <span class="o">=</span> <span class="s2">&quot;-&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">all_authors</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">()[:</span><span class="mi">5</span><span class="p">])</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;; &quot;</span><span class="p">,</span> <span class="s2">&quot;-&quot;</span><span class="p">)</span>
+        <span class="n">authors</span> <span class="o">=</span> <span class="s2">"-"</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">all_authors</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">()[:</span><span class="mi">5</span><span class="p">])</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"; "</span><span class="p">,</span> <span class="s2">"-"</span><span class="p">)</span>
         <span class="c1"># same with title (fallback to source type if untitled)</span>
         <span class="n">title</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="s2">&quot;-&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">title</span><span class="o">.</span><span class="n">split</span><span class="p">()[:</span><span class="mi">5</span><span class="p">])</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">title</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">source_type</span><span class="o">.</span><span class="n">type</span>
+            <span class="s2">"-"</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">title</span><span class="o">.</span><span class="n">split</span><span class="p">()[:</span><span class="mi">5</span><span class="p">])</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">title</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">source_type</span><span class="o">.</span><span class="n">type</span>
         <span class="p">)</span>
         <span class="c1"># if no authors, this will have a leading dash, which slugify() removes</span>
         <span class="n">str_repr</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">authors</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">title</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">year</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">year</span> <span class="k">else</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">authors</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">title</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">authors</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">title</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">year</span><span class="si">}</span><span class="s2">"</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">year</span> <span class="k">else</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">authors</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">title</span><span class="si">}</span><span class="s2">"</span>
         <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">slug</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dedupe_slug</span><span class="p">(</span><span class="n">slugify</span><span class="p">(</span><span class="n">unidecode</span><span class="p">(</span><span class="n">str_repr</span><span class="p">)))</span></div>
 
@@ -288,33 +288,33 @@
 <div class="viewcode-block" id="Source.all_authors">
 <a class="viewcode-back" href="../../../codedocs/footnotes.html#geniza.footnotes.models.Source.all_authors">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">all_authors</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;semi-colon delimited list of authors in order&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="s2">&quot;; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">creator</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">authorship_set</span><span class="o">.</span><span class="n">all</span><span class="p">()])</span></div>
+<span class="w">        </span><span class="sd">"""semi-colon delimited list of authors in order"""</span>
+        <span class="k">return</span> <span class="s2">"; "</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">creator</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">authorship_set</span><span class="o">.</span><span class="n">all</span><span class="p">()])</span></div>
 
 
 <div class="viewcode-block" id="Source.all_languages">
 <a class="viewcode-back" href="../../../codedocs/footnotes.html#geniza.footnotes.models.Source.all_languages">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">all_languages</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;comma-delimited list of languages, in parentheses, used for the translation selector&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""comma-delimited list of languages, in parentheses, used for the translation selector"""</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">languages</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
             <span class="n">langs</span> <span class="o">=</span> <span class="p">[</span>
                 <span class="nb">str</span><span class="p">(</span><span class="n">lang</span><span class="p">)</span>
-                <span class="k">for</span> <span class="n">lang</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">languages</span><span class="o">.</span><span class="n">all</span><span class="p">()</span><span class="o">.</span><span class="n">order_by</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">)</span>
-                <span class="k">if</span> <span class="s2">&quot;Unspecified&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="nb">str</span><span class="p">(</span><span class="n">lang</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">lang</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">languages</span><span class="o">.</span><span class="n">all</span><span class="p">()</span><span class="o">.</span><span class="n">order_by</span><span class="p">(</span><span class="s2">"name"</span><span class="p">)</span>
+                <span class="k">if</span> <span class="s2">"Unspecified"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="nb">str</span><span class="p">(</span><span class="n">lang</span><span class="p">)</span>
             <span class="p">]</span>
             <span class="k">if</span> <span class="n">langs</span><span class="p">:</span>
-                <span class="k">return</span> <span class="s2">&quot;(in </span><span class="si">%s</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">langs</span><span class="p">)</span>
-        <span class="k">return</span> <span class="s2">&quot;&quot;</span></div>
+                <span class="k">return</span> <span class="s2">"(in </span><span class="si">%s</span><span class="s2">)"</span> <span class="o">%</span> <span class="s2">", "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">langs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="s2">""</span></div>
 
 
 <div class="viewcode-block" id="Source.formatted_display">
 <a class="viewcode-back" href="../../../codedocs/footnotes.html#geniza.footnotes.models.Source.formatted_display">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">formatted_display</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">extra_fields</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">format_index_cards</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Format source for display; used on document scholarship page.</span>
+<span class="w">        </span><span class="sd">"""Format source for display; used on document scholarship page.</span>
 <span class="sd">        To omit publisher and page_range fields, specify `extra_fields=False`.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
-        <span class="n">author</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="n">author</span> <span class="o">=</span> <span class="s2">""</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">authorship_set</span><span class="o">.</span><span class="n">all</span><span class="p">()):</span>
             <span class="n">author_lastnames</span> <span class="o">=</span> <span class="p">[</span>
                 <span class="n">a</span><span class="o">.</span><span class="n">creator</span><span class="o">.</span><span class="n">firstname_lastname</span><span class="p">()</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">authorship_set</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
@@ -322,8 +322,8 @@
             <span class="c1"># combine the last pair with and; combine all others with comma</span>
             <span class="c1"># thanks to https://stackoverflow.com/a/30084022</span>
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">author_lastnames</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
-                <span class="n">author</span> <span class="o">=</span> <span class="s2">&quot; and &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
-                    <span class="p">[</span><span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">author_lastnames</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]),</span> <span class="n">author_lastnames</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]]</span>
+                <span class="n">author</span> <span class="o">=</span> <span class="s2">" and "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                    <span class="p">[</span><span class="s2">", "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">author_lastnames</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]),</span> <span class="n">author_lastnames</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]]</span>
                 <span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">author</span> <span class="o">=</span> <span class="n">author_lastnames</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
@@ -331,33 +331,33 @@
         <span class="n">parts</span> <span class="o">=</span> <span class="p">[]</span>
 
         <span class="c1"># Ensure that Unicode LTR mark is added after fields when RTL languages present</span>
-        <span class="n">rtl_langs</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Hebrew&quot;</span><span class="p">,</span> <span class="s2">&quot;Arabic&quot;</span><span class="p">,</span> <span class="s2">&quot;Judaeo-Arabic&quot;</span><span class="p">]</span>
+        <span class="n">rtl_langs</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"Hebrew"</span><span class="p">,</span> <span class="s2">"Arabic"</span><span class="p">,</span> <span class="s2">"Judaeo-Arabic"</span><span class="p">]</span>
         <span class="n">source_langs</span> <span class="o">=</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">lang</span><span class="p">)</span> <span class="k">for</span> <span class="n">lang</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">languages</span><span class="o">.</span><span class="n">all</span><span class="p">()]</span>
         <span class="n">source_contains_rtl</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">source_langs</span><span class="p">)</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">rtl_langs</span><span class="p">))</span>
-        <span class="n">ltr_mark</span> <span class="o">=</span> <span class="nb">chr</span><span class="p">(</span><span class="mi">8206</span><span class="p">)</span> <span class="k">if</span> <span class="n">source_contains_rtl</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
+        <span class="n">ltr_mark</span> <span class="o">=</span> <span class="nb">chr</span><span class="p">(</span><span class="mi">8206</span><span class="p">)</span> <span class="k">if</span> <span class="n">source_contains_rtl</span> <span class="k">else</span> <span class="s2">""</span>
 
         <span class="c1"># Types that should receive double quotes around title</span>
-        <span class="n">doublequoted_types</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Article&quot;</span><span class="p">,</span> <span class="s2">&quot;Dissertation&quot;</span><span class="p">,</span> <span class="s2">&quot;Book Section&quot;</span><span class="p">]</span>
+        <span class="n">doublequoted_types</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"Article"</span><span class="p">,</span> <span class="s2">"Dissertation"</span><span class="p">,</span> <span class="s2">"Book Section"</span><span class="p">]</span>
 
         <span class="c1"># Handle title</span>
-        <span class="n">work_title</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="n">work_title</span> <span class="o">=</span> <span class="s2">""</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">title</span><span class="p">:</span>
             <span class="c1"># if this is a book, italicize title</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">source_type</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">&quot;Book&quot;</span><span class="p">:</span>
-                <span class="n">work_title</span> <span class="o">=</span> <span class="s2">&quot;&lt;em&gt;</span><span class="si">%s%s</span><span class="s2">&lt;/em&gt;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">title</span><span class="p">,</span> <span class="n">ltr_mark</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">source_type</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">"Book"</span><span class="p">:</span>
+                <span class="n">work_title</span> <span class="o">=</span> <span class="s2">"&lt;em&gt;</span><span class="si">%s%s</span><span class="s2">&lt;/em&gt;"</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">title</span><span class="p">,</span> <span class="n">ltr_mark</span><span class="p">)</span>
             <span class="c1"># if this is a doublequoted type, wrap title in quotes</span>
             <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">source_type</span><span class="o">.</span><span class="n">type</span> <span class="ow">in</span> <span class="n">doublequoted_types</span><span class="p">:</span>
-                <span class="n">stripped_title</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">title</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\&quot;</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
-                <span class="n">work_title</span> <span class="o">=</span> <span class="s1">&#39;&quot;</span><span class="si">%s%s</span><span class="s1">&quot;&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">stripped_title</span><span class="p">,</span> <span class="n">ltr_mark</span><span class="p">)</span>
+                <span class="n">stripped_title</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">title</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s2">"</span><span class="se">\"</span><span class="s2">'"</span><span class="p">)</span>
+                <span class="n">work_title</span> <span class="o">=</span> <span class="s1">'"</span><span class="si">%s%s</span><span class="s1">"'</span> <span class="o">%</span> <span class="p">(</span><span class="n">stripped_title</span><span class="p">,</span> <span class="n">ltr_mark</span><span class="p">)</span>
             <span class="c1"># if this is a machine learning model, format appropriately</span>
-            <span class="k">elif</span> <span class="s2">&quot;model&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">source_type</span><span class="o">.</span><span class="n">type</span><span class="p">:</span>
-                <span class="n">work_title</span> <span class="o">=</span> <span class="s2">&quot;Machine-generated transcription (</span><span class="si">%s</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">title</span>
+            <span class="k">elif</span> <span class="s2">"model"</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">source_type</span><span class="o">.</span><span class="n">type</span><span class="p">:</span>
+                <span class="n">work_title</span> <span class="o">=</span> <span class="s2">"Machine-generated transcription (</span><span class="si">%s</span><span class="s2">)"</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">title</span>
             <span class="k">elif</span> <span class="p">(</span>
                 <span class="n">format_index_cards</span>
-                <span class="ow">and</span> <span class="s2">&quot;Goitein&quot;</span> <span class="ow">in</span> <span class="n">author</span>
-                <span class="ow">and</span> <span class="s2">&quot;index card&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">title</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+                <span class="ow">and</span> <span class="s2">"Goitein"</span> <span class="ow">in</span> <span class="n">author</span>
+                <span class="ow">and</span> <span class="s2">"index card"</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">title</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
             <span class="p">):</span>
-                <span class="n">work_title</span> <span class="o">=</span> <span class="s2">&quot;unpublished index cards (1950–85)&quot;</span>
+                <span class="n">work_title</span> <span class="o">=</span> <span class="s2">"unpublished index cards (1950–85)"</span>
             <span class="c1"># otherwise, just leave unformatted</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">work_title</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">title</span> <span class="o">+</span> <span class="n">ltr_mark</span>
@@ -370,15 +370,15 @@
 
         <span class="c1"># Wrap title in link to URL</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">url</span> <span class="ow">and</span> <span class="n">work_title</span><span class="p">:</span>
-            <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;&lt;a href=&quot;</span><span class="si">%s</span><span class="s1">&quot;&gt;</span><span class="si">%s</span><span class="s1">&lt;/a&gt;&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="p">,</span> <span class="n">work_title</span><span class="p">))</span>
+            <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">'&lt;a href="</span><span class="si">%s</span><span class="s1">"&gt;</span><span class="si">%s</span><span class="s1">&lt;/a&gt;'</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="p">,</span> <span class="n">work_title</span><span class="p">))</span>
         <span class="k">elif</span> <span class="n">work_title</span><span class="p">:</span>
             <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">work_title</span><span class="p">)</span>
 
         <span class="c1"># Add edition for Book type if present</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">edition</span><span class="p">:</span>
-            <span class="n">edition_str</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> ed.&quot;</span> <span class="o">%</span> <span class="n">ordinal</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">edition</span><span class="p">)</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">source_type</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">&quot;Book&quot;</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">title</span><span class="p">:</span>
-                <span class="n">parts</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="s2">&quot;,&quot;</span>
+            <span class="n">edition_str</span> <span class="o">=</span> <span class="s2">"</span><span class="si">%s</span><span class="s2"> ed."</span> <span class="o">%</span> <span class="n">ordinal</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">edition</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">source_type</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">"Book"</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">title</span><span class="p">:</span>
+                <span class="n">parts</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="s2">","</span>
                 <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">edition_str</span><span class="p">)</span>
 
         <span class="c1"># Add non-English languages as parenthetical</span>
@@ -386,53 +386,53 @@
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">languages</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
             <span class="k">for</span> <span class="n">lang</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">languages</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
                 <span class="c1"># Also prevent Unspecified from showing up in source citations</span>
-                <span class="k">if</span> <span class="n">lang</span><span class="o">.</span><span class="n">non_latin</span> <span class="ow">and</span> <span class="s2">&quot;Unspecified&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="nb">str</span><span class="p">(</span><span class="n">lang</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">lang</span><span class="o">.</span><span class="n">non_latin</span> <span class="ow">and</span> <span class="s2">"Unspecified"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="nb">str</span><span class="p">(</span><span class="n">lang</span><span class="p">):</span>
                     <span class="n">included_langs</span> <span class="o">+=</span> <span class="mi">1</span>
-                    <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;(in </span><span class="si">%s</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="n">lang</span><span class="p">)</span>
+                    <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"(in </span><span class="si">%s</span><span class="s2">)"</span> <span class="o">%</span> <span class="n">lang</span><span class="p">)</span>
 
         <span class="c1"># Handling presence of book/journal title</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">journal</span><span class="p">:</span>
             <span class="c1"># add comma inside doublequotes when they are present, if no language parenthetical</span>
             <span class="c1"># examples:</span>
-            <span class="c1">#   &quot;Title&quot;                 --&gt; &quot;Title,&quot;</span>
-            <span class="c1">#   NOT &quot;Title&quot; (in Hebrew) --&gt; &quot;Title,&quot; (in Hebrew)</span>
+            <span class="c1">#   "Title"                 --&gt; "Title,"</span>
+            <span class="c1">#   NOT "Title" (in Hebrew) --&gt; "Title," (in Hebrew)</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">title</span> <span class="ow">and</span> <span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">source_type</span><span class="o">.</span><span class="n">type</span> <span class="ow">in</span> <span class="n">doublequoted_types</span>
                 <span class="ow">and</span> <span class="ow">not</span> <span class="n">included_langs</span>  <span class="c1"># put comma after language even when doublequotes present</span>
             <span class="p">):</span>
                 <span class="c1"># find rightmost doublequote</span>
                 <span class="n">formatted_title</span> <span class="o">=</span> <span class="n">parts</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-                <span class="n">last_dq</span> <span class="o">=</span> <span class="n">formatted_title</span><span class="o">.</span><span class="n">rindex</span><span class="p">(</span><span class="s1">&#39;&quot;&#39;</span><span class="p">)</span>
+                <span class="n">last_dq</span> <span class="o">=</span> <span class="n">formatted_title</span><span class="o">.</span><span class="n">rindex</span><span class="p">(</span><span class="s1">'"'</span><span class="p">)</span>
                 <span class="c1"># add comma directly before it</span>
-                <span class="n">parts</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">formatted_title</span><span class="p">[:</span><span class="n">last_dq</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;,&quot;</span> <span class="o">+</span> <span class="n">formatted_title</span><span class="p">[</span><span class="n">last_dq</span><span class="p">:]</span>
+                <span class="n">parts</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">formatted_title</span><span class="p">[:</span><span class="n">last_dq</span><span class="p">]</span> <span class="o">+</span> <span class="s2">","</span> <span class="o">+</span> <span class="n">formatted_title</span><span class="p">[</span><span class="n">last_dq</span><span class="p">:]</span>
             <span class="c1"># otherwise, simply add the comma at the end of the title (or language)</span>
             <span class="c1"># examples:</span>
             <span class="c1">#   &lt;em&gt;Title&lt;/em&gt;      --&gt; &lt;em&gt;Title&lt;/em&gt;,</span>
-            <span class="c1">#   &quot;Title&quot; (in Hebrew) --&gt; &quot;Title&quot; (in Hebrew),</span>
+            <span class="c1">#   "Title" (in Hebrew) --&gt; "Title" (in Hebrew),</span>
             <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">parts</span><span class="p">):</span>
-                <span class="n">parts</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="s2">&quot;,&quot;</span>
+                <span class="n">parts</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="s2">","</span>
 
-            <span class="c1"># CMS needs &quot;in&quot; before book title</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">source_type</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">&quot;Book Section&quot;</span><span class="p">:</span>
-                <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;in&quot;</span><span class="p">)</span>
+            <span class="c1"># CMS needs "in" before book title</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">source_type</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">"Book Section"</span><span class="p">:</span>
+                <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"in"</span><span class="p">)</span>
 
             <span class="c1"># italicize book/journal title</span>
-            <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&lt;em&gt;</span><span class="si">%s%s</span><span class="s2">&lt;/em&gt;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">journal</span><span class="p">,</span> <span class="n">ltr_mark</span><span class="p">))</span>
+            <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"&lt;em&gt;</span><span class="si">%s%s</span><span class="s2">&lt;/em&gt;"</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">journal</span><span class="p">,</span> <span class="n">ltr_mark</span><span class="p">))</span>
 
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">source_type</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">&quot;Book Section&quot;</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">edition</span><span class="p">:</span>
-                <span class="n">parts</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="s2">&quot;,&quot;</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">source_type</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">"Book Section"</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">edition</span><span class="p">:</span>
+                <span class="n">parts</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="s2">","</span>
                 <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">edition_str</span><span class="p">)</span>
 
-        <span class="c1"># Unlike other work types, journal articles&#39; volume/issue numbers</span>
+        <span class="c1"># Unlike other work types, journal articles' volume/issue numbers</span>
         <span class="c1"># appear before the publisher info and date</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">source_type</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">&quot;Article&quot;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">source_type</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">"Article"</span><span class="p">:</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">volume</span><span class="p">:</span>
                 <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">volume</span><span class="p">)</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">issue</span><span class="p">:</span>
-                <span class="n">parts</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="s2">&quot;,&quot;</span>
-                <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;no. </span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">issue</span><span class="p">)</span>
+                <span class="n">parts</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="s2">","</span>
+                <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"no. </span><span class="si">%d</span><span class="s2">"</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">issue</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="n">extra_fields</span> <span class="ow">and</span> <span class="ow">not</span> <span class="s2">&quot;model&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">source_type</span><span class="o">.</span><span class="n">type</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">extra_fields</span> <span class="ow">and</span> <span class="ow">not</span> <span class="s2">"model"</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">source_type</span><span class="o">.</span><span class="n">type</span><span class="p">:</span>
             <span class="c1"># Publisher and date (omit for unpublished, unless it has a year)</span>
             <span class="c1"># examples:</span>
             <span class="c1">#   (n.p., n.d.)</span>
@@ -441,46 +441,46 @@
             <span class="c1">#   (PhD diss., n.p., n.d.)</span>
             <span class="c1">#   (PhD diss., n.p., 2013)</span>
             <span class="c1">#   (PhD diss., Oxford University, 2013)</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">source_type</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">&quot;Unpublished&quot;</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">year</span><span class="p">):</span>
-                <span class="c1"># If publisher name present, assign it to &quot;pubname&quot;, otherwise assign n.p.</span>
-                <span class="n">pub_name</span> <span class="o">=</span> <span class="s2">&quot;n.p.&quot;</span> <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">publisher</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">publisher</span>
-                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">source_type</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">&quot;Dissertation&quot;</span><span class="p">:</span>
-                    <span class="c1"># Add &quot;PhD diss.&quot; and degree granting institution for dissertation</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">source_type</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">"Unpublished"</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">year</span><span class="p">):</span>
+                <span class="c1"># If publisher name present, assign it to "pubname", otherwise assign n.p.</span>
+                <span class="n">pub_name</span> <span class="o">=</span> <span class="s2">"n.p."</span> <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">publisher</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">publisher</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">source_type</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">"Dissertation"</span><span class="p">:</span>
+                    <span class="c1"># Add "PhD diss." and degree granting institution for dissertation</span>
                     <span class="c1"># (do not include place published here)</span>
-                    <span class="n">pub_data</span> <span class="o">=</span> <span class="s2">&quot;PhD diss., </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">pub_name</span>
+                    <span class="n">pub_data</span> <span class="o">=</span> <span class="s2">"PhD diss., </span><span class="si">%s</span><span class="s2">"</span> <span class="o">%</span> <span class="n">pub_name</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="c1"># If not a dissertation, then just use publisher name or n.p.</span>
                     <span class="n">pub_data</span> <span class="o">=</span> <span class="n">pub_name</span>
 
-                <span class="n">pub_year</span> <span class="o">=</span> <span class="s2">&quot;n.d.&quot;</span> <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">year</span> <span class="k">else</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">year</span><span class="p">)</span>
-                <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;(</span><span class="si">%s</span><span class="s2">, </span><span class="si">%s</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">pub_data</span><span class="p">,</span> <span class="n">pub_year</span><span class="p">))</span>
+                <span class="n">pub_year</span> <span class="o">=</span> <span class="s2">"n.d."</span> <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">year</span> <span class="k">else</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">year</span><span class="p">)</span>
+                <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"(</span><span class="si">%s</span><span class="s2">, </span><span class="si">%s</span><span class="s2">)"</span> <span class="o">%</span> <span class="p">(</span><span class="n">pub_data</span><span class="p">,</span> <span class="n">pub_year</span><span class="p">))</span>
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">year</span><span class="p">:</span>
             <span class="c1"># when extra fields disabled, show year only</span>
-            <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;(</span><span class="si">%s</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">year</span><span class="p">))</span>
+            <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"(</span><span class="si">%s</span><span class="s2">)"</span> <span class="o">%</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">year</span><span class="p">))</span>
 
         <span class="c1"># omit volumes for unpublished sources</span>
         <span class="c1"># (those volumes are an admin convienence for managing Goitein content)</span>
         <span class="c1"># and for articles (appears earlier in citation)</span>
         <span class="n">needs_volume</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">volume</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">source_type</span><span class="o">.</span><span class="n">type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;Article&quot;</span><span class="p">,</span> <span class="s2">&quot;Unpublished&quot;</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">volume</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">source_type</span><span class="o">.</span><span class="n">type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">"Article"</span><span class="p">,</span> <span class="s2">"Unpublished"</span><span class="p">]</span>
         <span class="p">)</span>
 
         <span class="k">if</span> <span class="n">extra_fields</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">page_range</span><span class="p">:</span>
             <span class="c1"># Page range and/or volume at end of citation</span>
-            <span class="n">parts</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="s2">&quot;,&quot;</span>
+            <span class="n">parts</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="s2">","</span>
             <span class="k">if</span> <span class="n">needs_volume</span><span class="p">:</span>
-                <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2">:</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">volume</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">page_range</span><span class="p">))</span>
+                <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"</span><span class="si">%s</span><span class="s2">:</span><span class="si">%s</span><span class="s2">"</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">volume</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">page_range</span><span class="p">))</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">page_range</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">needs_volume</span><span class="p">:</span>
             <span class="c1"># Just volume at end of citation</span>
-            <span class="n">parts</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="s2">&quot;,&quot;</span>
-            <span class="k">if</span> <span class="s2">&quot;Book&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">source_type</span><span class="o">.</span><span class="n">type</span><span class="p">:</span>
-                <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;vol.&quot;</span><span class="p">)</span>
+            <span class="n">parts</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="s2">","</span>
+            <span class="k">if</span> <span class="s2">"Book"</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">source_type</span><span class="o">.</span><span class="n">type</span><span class="p">:</span>
+                <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"vol."</span><span class="p">)</span>
             <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">volume</span><span class="p">)</span>
 
         <span class="c1"># title and other metadata should be joined by spaces</span>
-        <span class="n">ref</span> <span class="o">=</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span>
+        <span class="n">ref</span> <span class="o">=</span> <span class="s2">" "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span>
 
         <span class="c1"># use comma delimiter after authors when it does not break citation;</span>
         <span class="c1"># i.e. extra_fields is true, source has a title, or source has a journal</span>
@@ -494,21 +494,21 @@
             <span class="n">extra_fields</span>
             <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">title</span>
             <span class="ow">or</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">journal</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">included_langs</span><span class="p">)</span>
-            <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">source_type</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">&quot;Unpublished&quot;</span>
+            <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">source_type</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">"Unpublished"</span>
         <span class="p">)</span>
-        <span class="n">delimiter</span> <span class="o">=</span> <span class="s2">&quot;, &quot;</span> <span class="k">if</span> <span class="n">use_comma</span> <span class="k">else</span> <span class="s2">&quot; &quot;</span>
+        <span class="n">delimiter</span> <span class="o">=</span> <span class="s2">", "</span> <span class="k">if</span> <span class="n">use_comma</span> <span class="k">else</span> <span class="s2">" "</span>
 
         <span class="c1"># rstrip to prevent double periods (e.g. in the case of trailing edition abbreviation)</span>
-        <span class="k">return</span> <span class="n">delimiter</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">val</span> <span class="k">for</span> <span class="n">val</span> <span class="ow">in</span> <span class="p">(</span><span class="n">author</span><span class="p">,</span> <span class="n">ref</span><span class="p">)</span> <span class="k">if</span> <span class="n">val</span><span class="p">])</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;.&quot;</span></div>
+        <span class="k">return</span> <span class="n">delimiter</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">val</span> <span class="k">for</span> <span class="n">val</span> <span class="ow">in</span> <span class="p">(</span><span class="n">author</span><span class="p">,</span> <span class="n">ref</span><span class="p">)</span> <span class="k">if</span> <span class="n">val</span><span class="p">])</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s2">"."</span><span class="p">)</span> <span class="o">+</span> <span class="s2">"."</span></div>
 
 
-    <span class="n">all_authors</span><span class="o">.</span><span class="n">short_description</span> <span class="o">=</span> <span class="s2">&quot;Authors&quot;</span>
-    <span class="n">all_authors</span><span class="o">.</span><span class="n">admin_order_field</span> <span class="o">=</span> <span class="s2">&quot;first_author&quot;</span>  <span class="c1"># set in admin queryset</span>
+    <span class="n">all_authors</span><span class="o">.</span><span class="n">short_description</span> <span class="o">=</span> <span class="s2">"Authors"</span>
+    <span class="n">all_authors</span><span class="o">.</span><span class="n">admin_order_field</span> <span class="o">=</span> <span class="s2">"first_author"</span>  <span class="c1"># set in admin queryset</span>
 
 <div class="viewcode-block" id="Source.display">
 <a class="viewcode-back" href="../../../codedocs/footnotes.html#geniza.footnotes.models.Source.display">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">display</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;strip HTML tags from formatted display&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""strip HTML tags from formatted display"""</span>
         <span class="k">return</span> <span class="n">strip_tags</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">formatted_display</span><span class="p">(</span><span class="n">extra_fields</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span></div>
 
 
@@ -516,42 +516,42 @@
 <a class="viewcode-back" href="../../../codedocs/footnotes.html#geniza.footnotes.models.Source.get_volume_from_shelfmark">[docs]</a>
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_volume_from_shelfmark</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">shelfmark</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Given a shelfmark, get our volume label. This logic was determined in</span>
+<span class="w">        </span><span class="sd">"""Given a shelfmark, get our volume label. This logic was determined in</span>
 <span class="sd">        migration 0011_split_goitein_typedtexts.py</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">shelfmark</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;T-S&quot;</span><span class="p">):</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="n">shelfmark</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"T-S"</span><span class="p">):</span>
             <span class="n">volume</span> <span class="o">=</span> <span class="n">shelfmark</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">6</span><span class="p">]</span>
-            <span class="n">volume</span> <span class="o">=</span> <span class="s2">&quot;T-S Misc&quot;</span> <span class="k">if</span> <span class="n">volume</span> <span class="o">==</span> <span class="s2">&quot;T-S Mi&quot;</span> <span class="k">else</span> <span class="n">volume</span>
+            <span class="n">volume</span> <span class="o">=</span> <span class="s2">"T-S Misc"</span> <span class="k">if</span> <span class="n">volume</span> <span class="o">==</span> <span class="s2">"T-S Mi"</span> <span class="k">else</span> <span class="n">volume</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">volume</span> <span class="o">=</span> <span class="n">shelfmark</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">volume</span> <span class="o">=</span> <span class="n">shelfmark</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">" "</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
         <span class="k">return</span> <span class="n">volume</span></div>
 
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">uri</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate a URI for this source to be used in transcription annotations,</span>
-<span class="sd">        in order to filter them by associated source&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Generate a URI for this source to be used in transcription annotations,</span>
+<span class="sd">        in order to filter them by associated source"""</span>
         <span class="c1"># TODO: add a minimal view with json representation of the source so that this uri resolves</span>
-        <span class="n">manifest_base_url</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s2">&quot;ANNOTATION_MANIFEST_BASE_URL&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">urljoin</span><span class="p">(</span><span class="n">manifest_base_url</span><span class="p">,</span> <span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s2">&quot;sources&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pk</span><span class="p">)))</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span>
+        <span class="n">manifest_base_url</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s2">"ANNOTATION_MANIFEST_BASE_URL"</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">urljoin</span><span class="p">(</span><span class="n">manifest_base_url</span><span class="p">,</span> <span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s2">"sources"</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pk</span><span class="p">)))</span> <span class="o">+</span> <span class="s2">"/"</span>
 
 <div class="viewcode-block" id="Source.id_from_uri">
 <a class="viewcode-back" href="../../../codedocs/footnotes.html#geniza.footnotes.models.Source.id_from_uri">[docs]</a>
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">id_from_uri</span><span class="p">(</span><span class="n">uri</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Given a URi for a source (as used in transcription annotations), return</span>
-<span class="sd">        the source id&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Given a URi for a source (as used in transcription annotations), return</span>
+<span class="sd">        the source id"""</span>
         <span class="c1"># TODO: Use resolve() when the json source view exists</span>
         <span class="c1"># (see logic in equivalent Document method)</span>
-        <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">uri</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">2</span><span class="p">])</span></div>
+        <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">uri</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"/"</span><span class="p">)[</span><span class="o">-</span><span class="mi">2</span><span class="p">])</span></div>
 
 
 <div class="viewcode-block" id="Source.from_uri">
 <a class="viewcode-back" href="../../../codedocs/footnotes.html#geniza.footnotes.models.Source.from_uri">[docs]</a>
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">from_uri</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">uri</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Given a URI for a Source (as used in transcription annotations), return the Source</span>
-<span class="sd">        object matching the pk&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Given a URI for a Source (as used in transcription annotations), return the Source</span>
+<span class="sd">        object matching the pk"""</span>
         <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">pk</span><span class="o">=</span><span class="n">Source</span><span class="o">.</span><span class="n">id_from_uri</span><span class="p">(</span><span class="n">uri</span><span class="p">))</span></div>
 </div>
 
@@ -563,12 +563,12 @@
 <div class="viewcode-block" id="FootnoteQuerySet.includes_footnote">
 <a class="viewcode-back" href="../../../codedocs/footnotes.html#geniza.footnotes.models.FootnoteQuerySet.includes_footnote">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">includes_footnote</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if the current queryset includes a match for the</span>
+<span class="w">        </span><span class="sd">"""Check if the current queryset includes a match for the</span>
 <span class="sd">        specified footnote. Matches are made by comparing content source,</span>
 <span class="sd">        location, document relation type, and notes.</span>
-<span class="sd">        Returns the matching object if there was one, or False if not.&quot;&quot;&quot;</span>
+<span class="sd">        Returns the matching object if there was one, or False if not."""</span>
 
-        <span class="n">compare_fields</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;source&quot;</span><span class="p">,</span> <span class="s2">&quot;location&quot;</span><span class="p">,</span> <span class="s2">&quot;emendations&quot;</span><span class="p">,</span> <span class="s2">&quot;notes&quot;</span><span class="p">]</span>
+        <span class="n">compare_fields</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"source"</span><span class="p">,</span> <span class="s2">"location"</span><span class="p">,</span> <span class="s2">"emendations"</span><span class="p">,</span> <span class="s2">"notes"</span><span class="p">]</span>
 
         <span class="k">for</span> <span class="n">fn</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
             <span class="k">if</span> <span class="p">(</span>
@@ -585,16 +585,16 @@
 <div class="viewcode-block" id="FootnoteQuerySet.editions">
 <a class="viewcode-back" href="../../../codedocs/footnotes.html#geniza.footnotes.models.FootnoteQuerySet.editions">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">editions</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Filter to all footnotes that provide editions/transcriptions.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Filter to all footnotes that provide editions/transcriptions."""</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">doc_relation__contains</span><span class="o">=</span><span class="n">Footnote</span><span class="o">.</span><span class="n">EDITION</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="FootnoteQuerySet.metadata_prefetch">
 <a class="viewcode-back" href="../../../codedocs/footnotes.html#geniza.footnotes.models.FootnoteQuerySet.metadata_prefetch">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">metadata_prefetch</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="s2">&quot;prefetch source, source authors, and content object&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">select_related</span><span class="p">(</span><span class="s2">&quot;source&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">prefetch_related</span><span class="p">(</span>
-            <span class="s2">&quot;content_object&quot;</span><span class="p">,</span> <span class="s2">&quot;source__authorship_set__creator&quot;</span>
+        <span class="s2">"prefetch source, source authors, and content object"</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">select_related</span><span class="p">(</span><span class="s2">"source"</span><span class="p">)</span><span class="o">.</span><span class="n">prefetch_related</span><span class="p">(</span>
+            <span class="s2">"content_object"</span><span class="p">,</span> <span class="s2">"source__authorship_set__creator"</span>
         <span class="p">)</span></div>
 </div>
 
@@ -603,74 +603,74 @@
 <div class="viewcode-block" id="Footnote">
 <a class="viewcode-back" href="../../../codedocs/footnotes.html#geniza.footnotes.models.Footnote">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">Footnote</span><span class="p">(</span><span class="n">TrackChangesModel</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;a footnote that links a :class:`~geniza.corpus.models.Document` to a :class:`Source`&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""a footnote that links a :class:`~geniza.corpus.models.Document` to a :class:`Source`"""</span>
 
     <span class="n">source</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">ForeignKey</span><span class="p">(</span><span class="n">Source</span><span class="p">,</span> <span class="n">on_delete</span><span class="o">=</span><span class="n">models</span><span class="o">.</span><span class="n">CASCADE</span><span class="p">)</span>
     <span class="n">location</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span>
         <span class="n">max_length</span><span class="o">=</span><span class="mi">255</span><span class="p">,</span>
         <span class="n">blank</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-        <span class="n">help_text</span><span class="o">=</span><span class="s2">&quot;Location within the source &quot;</span>
-        <span class="o">+</span> <span class="s2">&quot;(e.g., document number or page range)&quot;</span><span class="p">,</span>
+        <span class="n">help_text</span><span class="o">=</span><span class="s2">"Location within the source "</span>
+        <span class="o">+</span> <span class="s2">"(e.g., document number or page range)"</span><span class="p">,</span>
     <span class="p">)</span>
-    <span class="n">location_sort</span> <span class="o">=</span> <span class="n">NaturalSortField</span><span class="p">(</span><span class="n">for_field</span><span class="o">=</span><span class="s2">&quot;location&quot;</span><span class="p">)</span>
+    <span class="n">location_sort</span> <span class="o">=</span> <span class="n">NaturalSortField</span><span class="p">(</span><span class="n">for_field</span><span class="o">=</span><span class="s2">"location"</span><span class="p">)</span>
 
-    <span class="n">EDITION</span> <span class="o">=</span> <span class="s2">&quot;E&quot;</span>
-    <span class="n">TRANSLATION</span> <span class="o">=</span> <span class="s2">&quot;T&quot;</span>
-    <span class="n">DISCUSSION</span> <span class="o">=</span> <span class="s2">&quot;D&quot;</span>
-    <span class="n">DIGITAL_EDITION</span> <span class="o">=</span> <span class="s2">&quot;X&quot;</span>
-    <span class="n">DIGITAL_TRANSLATION</span> <span class="o">=</span> <span class="s2">&quot;Y&quot;</span>
+    <span class="n">EDITION</span> <span class="o">=</span> <span class="s2">"E"</span>
+    <span class="n">TRANSLATION</span> <span class="o">=</span> <span class="s2">"T"</span>
+    <span class="n">DISCUSSION</span> <span class="o">=</span> <span class="s2">"D"</span>
+    <span class="n">DIGITAL_EDITION</span> <span class="o">=</span> <span class="s2">"X"</span>
+    <span class="n">DIGITAL_TRANSLATION</span> <span class="o">=</span> <span class="s2">"Y"</span>
     <span class="n">DOCUMENT_RELATION_TYPES</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="p">(</span><span class="n">EDITION</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Edition&quot;</span><span class="p">)),</span>
-        <span class="p">(</span><span class="n">TRANSLATION</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Translation&quot;</span><span class="p">)),</span>
-        <span class="p">(</span><span class="n">DISCUSSION</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Discussion&quot;</span><span class="p">)),</span>
-        <span class="p">(</span><span class="n">DIGITAL_EDITION</span><span class="p">,</span> <span class="s2">&quot;Digital Edition&quot;</span><span class="p">),</span>
-        <span class="p">(</span><span class="n">DIGITAL_TRANSLATION</span><span class="p">,</span> <span class="s2">&quot;Digital Translation&quot;</span><span class="p">),</span>
+        <span class="p">(</span><span class="n">EDITION</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s2">"Edition"</span><span class="p">)),</span>
+        <span class="p">(</span><span class="n">TRANSLATION</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s2">"Translation"</span><span class="p">)),</span>
+        <span class="p">(</span><span class="n">DISCUSSION</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s2">"Discussion"</span><span class="p">)),</span>
+        <span class="p">(</span><span class="n">DIGITAL_EDITION</span><span class="p">,</span> <span class="s2">"Digital Edition"</span><span class="p">),</span>
+        <span class="p">(</span><span class="n">DIGITAL_TRANSLATION</span><span class="p">,</span> <span class="s2">"Digital Translation"</span><span class="p">),</span>
     <span class="p">)</span>
 
     <span class="n">doc_relation</span> <span class="o">=</span> <span class="n">MultiSelectField</span><span class="p">(</span>
-        <span class="s2">&quot;Document relation&quot;</span><span class="p">,</span>
+        <span class="s2">"Document relation"</span><span class="p">,</span>
         <span class="n">choices</span><span class="o">=</span><span class="n">DOCUMENT_RELATION_TYPES</span><span class="p">,</span>
-        <span class="n">help_text</span><span class="o">=</span><span class="s2">&quot;How does the source relate to this document? &quot;</span>
-        <span class="o">+</span> <span class="s1">&#39;Please note: &quot;Edition&quot; is a (published or unpublished) &#39;</span>
-        <span class="o">+</span> <span class="s1">&#39;transcription. &quot;Digital edition&quot; is the PGP version of an &#39;</span>
-        <span class="o">+</span> <span class="s2">&quot;edition, and the source record should NOT be deleted. Footnotes &quot;</span>
-        <span class="o">+</span> <span class="s1">&#39;for &quot;editions&quot; and &quot;digital editions&quot; should NOT be combined, &#39;</span>
-        <span class="o">+</span> <span class="s2">&quot;even if they refer to the same transcription.&quot;</span><span class="p">,</span>
+        <span class="n">help_text</span><span class="o">=</span><span class="s2">"How does the source relate to this document? "</span>
+        <span class="o">+</span> <span class="s1">'Please note: "Edition" is a (published or unpublished) '</span>
+        <span class="o">+</span> <span class="s1">'transcription. "Digital edition" is the PGP version of an '</span>
+        <span class="o">+</span> <span class="s2">"edition, and the source record should NOT be deleted. Footnotes "</span>
+        <span class="o">+</span> <span class="s1">'for "editions" and "digital editions" should NOT be combined, '</span>
+        <span class="o">+</span> <span class="s2">"even if they refer to the same transcription."</span><span class="p">,</span>
         <span class="n">null</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
         <span class="n">blank</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="n">emendations</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span>
-        <span class="s2">&quot;minor emendations by&quot;</span><span class="p">,</span>
+        <span class="s2">"minor emendations by"</span><span class="p">,</span>
         <span class="n">max_length</span><span class="o">=</span><span class="mi">512</span><span class="p">,</span>
-        <span class="n">help_text</span><span class="o">=</span><span class="s2">&quot;Displays publicly. For minor emendations to a &quot;</span>
-        <span class="o">+</span> <span class="s2">&quot;transcription or translation (not including typo corrections), &quot;</span>
-        <span class="o">+</span> <span class="s2">&quot;enter Your Name, Year (may include multiple names and dates). For &quot;</span>
-        <span class="o">+</span> <span class="s2">&quot;significant alterations to a transcription or translation, create &quot;</span>
-        <span class="o">+</span> <span class="s2">&quot;a new source indicating co-authorship.&quot;</span><span class="p">,</span>
+        <span class="n">help_text</span><span class="o">=</span><span class="s2">"Displays publicly. For minor emendations to a "</span>
+        <span class="o">+</span> <span class="s2">"transcription or translation (not including typo corrections), "</span>
+        <span class="o">+</span> <span class="s2">"enter Your Name, Year (may include multiple names and dates). For "</span>
+        <span class="o">+</span> <span class="s2">"significant alterations to a transcription or translation, create "</span>
+        <span class="o">+</span> <span class="s2">"a new source indicating co-authorship."</span><span class="p">,</span>
         <span class="n">null</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
         <span class="n">blank</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="n">notes</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">TextField</span><span class="p">(</span>
-        <span class="n">help_text</span><span class="o">=</span><span class="s2">&quot;Additional context. Only visible to admins/editors.&quot;</span><span class="p">,</span>
+        <span class="n">help_text</span><span class="o">=</span><span class="s2">"Additional context. Only visible to admins/editors."</span><span class="p">,</span>
         <span class="n">blank</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="n">content</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">JSONField</span><span class="p">(</span>
         <span class="n">blank</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
         <span class="n">null</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-        <span class="n">help_text</span><span class="o">=</span><span class="s2">&quot;Transcription content (transitional; edit with care and only when needed)&quot;</span><span class="p">,</span>
+        <span class="n">help_text</span><span class="o">=</span><span class="s2">"Transcription content (transitional; edit with care and only when needed)"</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="n">url</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">URLField</span><span class="p">(</span>
-        <span class="s2">&quot;URL&quot;</span><span class="p">,</span> <span class="n">blank</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">max_length</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span> <span class="n">help_text</span><span class="o">=</span><span class="s2">&quot;Link to the source (optional)&quot;</span>
+        <span class="s2">"URL"</span><span class="p">,</span> <span class="n">blank</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">max_length</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span> <span class="n">help_text</span><span class="o">=</span><span class="s2">"Link to the source (optional)"</span>
     <span class="p">)</span>
 
     <span class="c1"># Generic relationship</span>
     <span class="n">content_type</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">ForeignKey</span><span class="p">(</span>
         <span class="n">ContentType</span><span class="p">,</span>
         <span class="n">on_delete</span><span class="o">=</span><span class="n">models</span><span class="o">.</span><span class="n">CASCADE</span><span class="p">,</span>
-        <span class="n">limit_choices_to</span><span class="o">=</span><span class="n">models</span><span class="o">.</span><span class="n">Q</span><span class="p">(</span><span class="n">app_label</span><span class="o">=</span><span class="s2">&quot;corpus&quot;</span><span class="p">)</span> <span class="o">|</span> <span class="n">models</span><span class="o">.</span><span class="n">Q</span><span class="p">(</span><span class="n">app_label</span><span class="o">=</span><span class="s2">&quot;entities&quot;</span><span class="p">),</span>
+        <span class="n">limit_choices_to</span><span class="o">=</span><span class="n">models</span><span class="o">.</span><span class="n">Q</span><span class="p">(</span><span class="n">app_label</span><span class="o">=</span><span class="s2">"corpus"</span><span class="p">)</span> <span class="o">|</span> <span class="n">models</span><span class="o">.</span><span class="n">Q</span><span class="p">(</span><span class="n">app_label</span><span class="o">=</span><span class="s2">"entities"</span><span class="p">),</span>
     <span class="p">)</span>
     <span class="n">object_id</span> <span class="o">=</span> <span class="n">GfkLookupField</span><span class="p">(</span>
-        <span class="s2">&quot;content_type&quot;</span><span class="p">,</span> <span class="n">help_text</span><span class="o">=</span><span class="s2">&quot;If content type is Document, this is PGPID&quot;</span>
+        <span class="s2">"content_type"</span><span class="p">,</span> <span class="n">help_text</span><span class="o">=</span><span class="s2">"If content type is Document, this is PGPID"</span>
     <span class="p">)</span>
     <span class="n">content_object</span> <span class="o">=</span> <span class="n">GenericForeignKey</span><span class="p">()</span>
 
@@ -679,24 +679,24 @@
 
     <span class="k">class</span><span class="w"> </span><span class="nc">Meta</span><span class="p">:</span>
         <span class="n">ordering</span> <span class="o">=</span> <span class="p">[</span>
-            <span class="s2">&quot;source&quot;</span><span class="p">,</span>
+            <span class="s2">"source"</span><span class="p">,</span>
             <span class="c1"># sort footnote with empty locations after footnote with location</span>
             <span class="c1"># (sort digital editions after other footnotes for same source)</span>
-            <span class="n">NullIf</span><span class="p">(</span><span class="s2">&quot;location_sort&quot;</span><span class="p">,</span> <span class="n">models</span><span class="o">.</span><span class="n">Value</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">asc</span><span class="p">(</span><span class="n">nulls_last</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+            <span class="n">NullIf</span><span class="p">(</span><span class="s2">"location_sort"</span><span class="p">,</span> <span class="n">models</span><span class="o">.</span><span class="n">Value</span><span class="p">(</span><span class="s2">""</span><span class="p">))</span><span class="o">.</span><span class="n">asc</span><span class="p">(</span><span class="n">nulls_last</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
         <span class="p">]</span>
         <span class="n">constraints</span> <span class="o">=</span> <span class="p">[</span>
             <span class="c1"># only allow one digital edition per source for a document</span>
             <span class="n">models</span><span class="o">.</span><span class="n">UniqueConstraint</span><span class="p">(</span>
-                <span class="n">fields</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;source&quot;</span><span class="p">,</span> <span class="s2">&quot;object_id&quot;</span><span class="p">,</span> <span class="s2">&quot;content_type&quot;</span><span class="p">),</span>
-                <span class="n">name</span><span class="o">=</span><span class="s2">&quot;one_digital_edition_per_document_and_source&quot;</span><span class="p">,</span>
-                <span class="n">condition</span><span class="o">=</span><span class="n">models</span><span class="o">.</span><span class="n">Q</span><span class="p">(</span><span class="n">doc_relation__contains</span><span class="o">=</span><span class="s2">&quot;X&quot;</span><span class="p">),</span>  <span class="c1"># X = DIGITAL_EDITION</span>
+                <span class="n">fields</span><span class="o">=</span><span class="p">(</span><span class="s2">"source"</span><span class="p">,</span> <span class="s2">"object_id"</span><span class="p">,</span> <span class="s2">"content_type"</span><span class="p">),</span>
+                <span class="n">name</span><span class="o">=</span><span class="s2">"one_digital_edition_per_document_and_source"</span><span class="p">,</span>
+                <span class="n">condition</span><span class="o">=</span><span class="n">models</span><span class="o">.</span><span class="n">Q</span><span class="p">(</span><span class="n">doc_relation__contains</span><span class="o">=</span><span class="s2">"X"</span><span class="p">),</span>  <span class="c1"># X = DIGITAL_EDITION</span>
             <span class="p">),</span>
             <span class="c1"># only allow one digital translation per source for a document</span>
             <span class="n">models</span><span class="o">.</span><span class="n">UniqueConstraint</span><span class="p">(</span>
-                <span class="n">fields</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;source&quot;</span><span class="p">,</span> <span class="s2">&quot;object_id&quot;</span><span class="p">,</span> <span class="s2">&quot;content_type&quot;</span><span class="p">),</span>
-                <span class="n">name</span><span class="o">=</span><span class="s2">&quot;one_digital_translation_per_document_and_source&quot;</span><span class="p">,</span>
+                <span class="n">fields</span><span class="o">=</span><span class="p">(</span><span class="s2">"source"</span><span class="p">,</span> <span class="s2">"object_id"</span><span class="p">,</span> <span class="s2">"content_type"</span><span class="p">),</span>
+                <span class="n">name</span><span class="o">=</span><span class="s2">"one_digital_translation_per_document_and_source"</span><span class="p">,</span>
                 <span class="n">condition</span><span class="o">=</span><span class="n">models</span><span class="o">.</span><span class="n">Q</span><span class="p">(</span>
-                    <span class="n">doc_relation__contains</span><span class="o">=</span><span class="s2">&quot;Y&quot;</span>
+                    <span class="n">doc_relation__contains</span><span class="o">=</span><span class="s2">"Y"</span>
                 <span class="p">),</span>  <span class="c1"># Y = DIGITAL_TRANSLATION</span>
             <span class="p">),</span>
         <span class="p">]</span>
@@ -705,73 +705,73 @@
         <span class="n">choices</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">DOCUMENT_RELATION_TYPES</span><span class="p">)</span>
 
         <span class="n">rel</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="s2">&quot; and &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">choices</span><span class="p">[</span><span class="n">c</span><span class="p">])</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">doc_relation</span> <span class="ow">or</span> <span class="p">[])])</span>
-            <span class="ow">or</span> <span class="s2">&quot;Footnote&quot;</span>
+            <span class="s2">" and "</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">choices</span><span class="p">[</span><span class="n">c</span><span class="p">])</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">doc_relation</span> <span class="ow">or</span> <span class="p">[])])</span>
+            <span class="ow">or</span> <span class="s2">"Footnote"</span>
         <span class="p">)</span>
-        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">rel</span><span class="si">}</span><span class="s2"> of </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">content_object</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">rel</span><span class="si">}</span><span class="s2"> of </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">content_object</span><span class="si">}</span><span class="s2">"</span>
 
 <div class="viewcode-block" id="Footnote.display">
 <a class="viewcode-back" href="../../../codedocs/footnotes.html#geniza.footnotes.models.Footnote.display">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">display</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">old_pgp</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;format footnote for display; used on document detail page&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""format footnote for display; used on document detail page"""</span>
         <span class="c1"># normally, just use source display.</span>
         <span class="c1"># for unpublished records:</span>
         <span class="c1"># source author (year), with minor emendations by person.</span>
         <span class="n">parts</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="o">.</span><span class="n">display</span><span class="p">()</span> <span class="k">if</span> <span class="n">old_pgp</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="o">.</span><span class="n">formatted_display</span><span class="p">()]</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="o">.</span><span class="n">source_type</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">&quot;Unpublished&quot;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="o">.</span><span class="n">source_type</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">"Unpublished"</span><span class="p">:</span>
             <span class="n">authors</span> <span class="o">=</span> <span class="p">[</span>
                 <span class="n">c</span><span class="o">.</span><span class="n">creator</span><span class="o">.</span><span class="n">firstname_lastname</span><span class="p">()</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="o">.</span><span class="n">authorship_set</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
             <span class="p">]</span>
             <span class="n">parts</span> <span class="o">=</span> <span class="p">[</span><span class="n">list_to_string</span><span class="p">(</span><span class="n">authors</span><span class="p">)]</span>
             <span class="n">relation_display</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_doc_relation_display</span><span class="p">()</span>
-            <span class="k">if</span> <span class="s2">&quot;Goitein&quot;</span> <span class="ow">in</span> <span class="n">parts</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
-                <span class="c1"># handle goitein, &quot;unpublished&quot; not &quot;digital&quot;</span>
-                <span class="n">relation_display</span> <span class="o">=</span> <span class="n">relation_display</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;Digital&quot;</span><span class="p">,</span> <span class="s2">&quot;unpublished&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="s2">"Goitein"</span> <span class="ow">in</span> <span class="n">parts</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+                <span class="c1"># handle goitein, "unpublished" not "digital"</span>
+                <span class="n">relation_display</span> <span class="o">=</span> <span class="n">relation_display</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"Digital"</span><span class="p">,</span> <span class="s2">"unpublished"</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">relation_display</span><span class="p">:</span>
-                <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;&#39;s </span><span class="si">{</span><span class="n">relation_display</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"'s </span><span class="si">{</span><span class="n">relation_display</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="o">.</span><span class="n">year</span><span class="p">:</span>
-                <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot; (</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="o">.</span><span class="n">year</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
-            <span class="k">elif</span> <span class="s2">&quot;Goitein&quot;</span> <span class="ow">in</span> <span class="n">parts</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+                <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">" (</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="o">.</span><span class="n">year</span><span class="si">}</span><span class="s2">)"</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="s2">"Goitein"</span> <span class="ow">in</span> <span class="n">parts</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
                 <span class="c1"># handle goitein years</span>
-                <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot; (1950–85)&quot;</span><span class="p">)</span>
+                <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">" (1950–85)"</span><span class="p">)</span>
             <span class="c1"># add emendations</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">emendations</span><span class="p">:</span>
                 <span class="n">emd</span> <span class="o">=</span> <span class="p">(</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">emendations</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">emendations</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">emendations</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">"."</span><span class="p">)</span>
                     <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">emendations</span>
                 <span class="p">)</span>
-                <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;, with minor emendations by </span><span class="si">{</span><span class="n">emd</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-            <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span></div>
+                <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">", with minor emendations by </span><span class="si">{</span><span class="n">emd</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+            <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"."</span><span class="p">)</span>
+        <span class="k">return</span> <span class="s2">""</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="Footnote.display_multiple">
 <a class="viewcode-back" href="../../../codedocs/footnotes.html#geniza.footnotes.models.Footnote.display_multiple">[docs]</a>
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">display_multiple</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">footnotes</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Display method for multiple footnotes, grouped by source, on the scholarship</span>
+<span class="w">        </span><span class="sd">"""Display method for multiple footnotes, grouped by source, on the scholarship</span>
 <span class="sd">        records/bibliography page. Normally uses source formatted display, but requires</span>
 <span class="sd">        special handling for unpublished source records with multiple footnotes.</span>
 <span class="sd">        Handles Goitein index cards by including URLs and index card numbers when</span>
-<span class="sd">        available, and by adding the attribution to the PGL.&quot;&quot;&quot;</span>
+<span class="sd">        available, and by adding the attribution to the PGL."""</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">footnotes</span><span class="p">:</span>
             <span class="c1"># bail out with empty string on no footnotes provided</span>
-            <span class="k">return</span> <span class="s2">&quot;&quot;</span>
+            <span class="k">return</span> <span class="s2">""</span>
         <span class="n">source</span> <span class="o">=</span> <span class="n">footnotes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">source</span>
         <span class="c1"># start with source formatted display</span>
         <span class="n">citation</span> <span class="o">=</span> <span class="n">source</span><span class="o">.</span><span class="n">formatted_display</span><span class="p">(</span><span class="n">format_index_cards</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="c1"># handle Goitein index cards</span>
-        <span class="k">if</span> <span class="s2">&quot;unpublished index cards&quot;</span> <span class="ow">in</span> <span class="n">citation</span><span class="p">:</span>
+        <span class="k">if</span> <span class="s2">"unpublished index cards"</span> <span class="ow">in</span> <span class="n">citation</span><span class="p">:</span>
             <span class="n">all_cards</span> <span class="o">=</span> <span class="p">[]</span>
             <span class="c1"># add card numbers</span>
             <span class="k">for</span> <span class="n">fn</span> <span class="ow">in</span> <span class="n">footnotes</span><span class="p">:</span>
-                <span class="c1"># remove &quot;Card&quot; or &quot;card&quot; from the location field first, we just want #NNN</span>
-                <span class="n">loc</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="s2">&quot;[Cc]ard &quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">fn</span><span class="o">.</span><span class="n">location</span><span class="p">)</span>
-                <span class="n">card_str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+                <span class="c1"># remove "Card" or "card" from the location field first, we just want #NNN</span>
+                <span class="n">loc</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="s2">"[Cc]ard "</span><span class="p">,</span> <span class="s2">""</span><span class="p">,</span> <span class="n">fn</span><span class="o">.</span><span class="n">location</span><span class="p">)</span>
+                <span class="n">card_str</span> <span class="o">=</span> <span class="s2">""</span>
                 <span class="c1"># add URL if present</span>
                 <span class="k">if</span> <span class="n">loc</span> <span class="ow">and</span> <span class="n">fn</span><span class="o">.</span><span class="n">url</span><span class="p">:</span>
-                    <span class="n">card_str</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;&lt;a href=&quot;</span><span class="si">{</span><span class="n">fn</span><span class="o">.</span><span class="n">url</span><span class="si">}</span><span class="s1">&quot; data-turbo=&quot;false&quot;&gt;</span><span class="si">{</span><span class="n">loc</span><span class="si">}</span><span class="s1">&lt;/a&gt;&#39;</span>
+                    <span class="n">card_str</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">'&lt;a href="</span><span class="si">{</span><span class="n">fn</span><span class="o">.</span><span class="n">url</span><span class="si">}</span><span class="s1">" data-turbo="false"&gt;</span><span class="si">{</span><span class="n">loc</span><span class="si">}</span><span class="s1">&lt;/a&gt;'</span>
                 <span class="k">elif</span> <span class="n">loc</span><span class="p">:</span>
                     <span class="n">card_str</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">loc</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">card_str</span><span class="p">:</span>
@@ -779,24 +779,24 @@
             <span class="k">if</span> <span class="n">all_cards</span><span class="p">:</span>
                 <span class="c1"># if card #s are present, include them as a list in the citation</span>
                 <span class="n">joined</span> <span class="o">=</span> <span class="n">list_to_string</span><span class="p">(</span><span class="n">all_cards</span><span class="p">)</span>
-                <span class="n">citation</span> <span class="o">=</span> <span class="n">citation</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;, </span><span class="si">{</span><span class="n">joined</span><span class="si">}</span><span class="s2">.&quot;</span>
+                <span class="n">citation</span> <span class="o">=</span> <span class="n">citation</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">", </span><span class="si">{</span><span class="n">joined</span><span class="si">}</span><span class="s2">."</span>
             <span class="c1"># add PGL attribution</span>
-            <span class="n">citation</span> <span class="o">+=</span> <span class="s2">&quot; Princeton Geniza Lab, Princeton University.&quot;</span>
-        <span class="k">elif</span> <span class="n">source</span><span class="o">.</span><span class="n">source_type</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">&quot;Unpublished&quot;</span><span class="p">:</span>
+            <span class="n">citation</span> <span class="o">+=</span> <span class="s2">" Princeton Geniza Lab, Princeton University."</span>
+        <span class="k">elif</span> <span class="n">source</span><span class="o">.</span><span class="n">source_type</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">"Unpublished"</span><span class="p">:</span>
             <span class="c1"># handle other unpublished sources</span>
             <span class="n">authors</span> <span class="o">=</span> <span class="p">[</span>
                 <span class="n">c</span><span class="o">.</span><span class="n">creator</span><span class="o">.</span><span class="n">firstname_lastname</span><span class="p">()</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">source</span><span class="o">.</span><span class="n">authorship_set</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
             <span class="p">]</span>
             <span class="n">citation</span> <span class="o">=</span> <span class="n">list_to_string</span><span class="p">(</span><span class="n">authors</span><span class="p">)</span>
             <span class="c1"># get doc relations across all footnotes</span>
-            <span class="k">if</span> <span class="s2">&quot;Goitein&quot;</span> <span class="ow">in</span> <span class="n">citation</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s2">"Goitein"</span> <span class="ow">in</span> <span class="n">citation</span><span class="p">:</span>
                 <span class="c1"># handle goitein unpublished work (non-index cards):</span>
-                <span class="c1"># should say &quot;unpublished edition&quot; or &quot;unpublished translation&quot;</span>
+                <span class="c1"># should say "unpublished edition" or "unpublished translation"</span>
                 <span class="n">relation_set</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span>
                     <span class="p">[</span>
                         <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span>
-                            <span class="sa">r</span><span class="s2">&quot;([dD]igital )?([Ee]dition|[Tt]ranslation)&quot;</span><span class="p">,</span>
-                            <span class="sa">r</span><span class="s2">&quot;unpublished \2&quot;</span><span class="p">,</span>
+                            <span class="sa">r</span><span class="s2">"([dD]igital )?([Ee]dition|[Tt]ranslation)"</span><span class="p">,</span>
+                            <span class="sa">r</span><span class="s2">"unpublished \2"</span><span class="p">,</span>
                             <span class="n">fn</span><span class="o">.</span><span class="n">get_doc_relation_display</span><span class="p">(),</span>
                         <span class="p">)</span>
                         <span class="k">for</span> <span class="n">fn</span> <span class="ow">in</span> <span class="n">footnotes</span>
@@ -813,23 +813,23 @@
                 <span class="p">)</span>
             <span class="n">relation_display</span> <span class="o">=</span> <span class="n">list_to_string</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">relation_set</span><span class="p">)))</span>
             <span class="k">if</span> <span class="n">relation_display</span><span class="p">:</span>
-                <span class="n">citation</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;&#39;s </span><span class="si">{</span><span class="n">relation_display</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="n">citation</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">"'s </span><span class="si">{</span><span class="n">relation_display</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="si">}</span><span class="s2">"</span>
             <span class="c1"># handle languages (some unpublished records have this)</span>
             <span class="k">if</span> <span class="n">source</span><span class="o">.</span><span class="n">languages</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
                 <span class="k">for</span> <span class="n">lang</span> <span class="ow">in</span> <span class="n">source</span><span class="o">.</span><span class="n">languages</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
-                    <span class="k">if</span> <span class="n">lang</span><span class="o">.</span><span class="n">non_latin</span> <span class="ow">and</span> <span class="s2">&quot;Unspecified&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="nb">str</span><span class="p">(</span><span class="n">lang</span><span class="p">):</span>
-                        <span class="n">citation</span> <span class="o">+=</span> <span class="s2">&quot; (in </span><span class="si">%s</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="n">lang</span>
+                    <span class="k">if</span> <span class="n">lang</span><span class="o">.</span><span class="n">non_latin</span> <span class="ow">and</span> <span class="s2">"Unspecified"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="nb">str</span><span class="p">(</span><span class="n">lang</span><span class="p">):</span>
+                        <span class="n">citation</span> <span class="o">+=</span> <span class="s2">" (in </span><span class="si">%s</span><span class="s2">)"</span> <span class="o">%</span> <span class="n">lang</span>
             <span class="c1"># year if specified, and special range for Goitein</span>
             <span class="k">if</span> <span class="n">source</span><span class="o">.</span><span class="n">year</span><span class="p">:</span>
-                <span class="n">citation</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot; (</span><span class="si">{</span><span class="n">source</span><span class="o">.</span><span class="n">year</span><span class="si">}</span><span class="s2">)&quot;</span>
-            <span class="k">elif</span> <span class="s2">&quot;Goitein&quot;</span> <span class="ow">in</span> <span class="n">citation</span><span class="p">:</span>
-                <span class="n">citation</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot; (1950–85)&quot;</span>
+                <span class="n">citation</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">" (</span><span class="si">{</span><span class="n">source</span><span class="o">.</span><span class="n">year</span><span class="si">}</span><span class="s2">)"</span>
+            <span class="k">elif</span> <span class="s2">"Goitein"</span> <span class="ow">in</span> <span class="n">citation</span><span class="p">:</span>
+                <span class="n">citation</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">" (1950–85)"</span>
             <span class="c1"># handle minor emendations if specified</span>
             <span class="n">emendations</span> <span class="o">=</span> <span class="n">list_to_string</span><span class="p">(</span>
                 <span class="p">[</span>
                     <span class="p">(</span>
                         <span class="n">fn</span><span class="o">.</span><span class="n">emendations</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-                        <span class="k">if</span> <span class="n">fn</span><span class="o">.</span><span class="n">emendations</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="n">fn</span><span class="o">.</span><span class="n">emendations</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">"."</span><span class="p">)</span>
                         <span class="k">else</span> <span class="n">fn</span><span class="o">.</span><span class="n">emendations</span>
                     <span class="p">)</span>
                     <span class="k">for</span> <span class="n">fn</span> <span class="ow">in</span> <span class="n">footnotes</span>
@@ -837,16 +837,16 @@
                 <span class="p">]</span>
             <span class="p">)</span>
             <span class="k">if</span> <span class="n">emendations</span><span class="p">:</span>
-                <span class="n">citation</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;, with minor emendations by </span><span class="si">{</span><span class="n">emendations</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="n">citation</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">", with minor emendations by </span><span class="si">{</span><span class="n">emendations</span><span class="si">}</span><span class="s2">"</span>
             <span class="c1"># include information about PGP for digital edition/translation</span>
             <span class="n">relations</span> <span class="o">=</span> <span class="p">[</span><span class="n">r</span> <span class="k">for</span> <span class="n">rs</span> <span class="ow">in</span> <span class="p">[</span><span class="n">fn</span><span class="o">.</span><span class="n">doc_relation</span> <span class="k">for</span> <span class="n">fn</span> <span class="ow">in</span> <span class="n">footnotes</span><span class="p">]</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">rs</span><span class="p">]</span>
             <span class="k">if</span> <span class="bp">cls</span><span class="o">.</span><span class="n">DIGITAL_EDITION</span> <span class="ow">in</span> <span class="n">relations</span> <span class="ow">or</span> <span class="bp">cls</span><span class="o">.</span><span class="n">DIGITAL_TRANSLATION</span> <span class="ow">in</span> <span class="n">relations</span><span class="p">:</span>
                 <span class="n">citation</span> <span class="o">+=</span> <span class="p">(</span>
-                    <span class="s2">&quot;, available online through the Princeton Geniza Project at &quot;</span>
+                    <span class="s2">", available online through the Princeton Geniza Project at "</span>
                 <span class="p">)</span>
                 <span class="n">permalink</span> <span class="o">=</span> <span class="n">footnotes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">content_object</span><span class="o">.</span><span class="n">permalink</span>
-                <span class="n">citation</span> <span class="o">+=</span> <span class="sa">f</span><span class="s1">&#39;&lt;a href=&quot;</span><span class="si">{</span><span class="n">permalink</span><span class="si">}</span><span class="s1">&quot;&gt;</span><span class="si">{</span><span class="n">permalink</span><span class="si">}</span><span class="s1">&lt;/a&gt;&#39;</span>
-            <span class="n">citation</span> <span class="o">+=</span> <span class="s2">&quot;.&quot;</span>
+                <span class="n">citation</span> <span class="o">+=</span> <span class="sa">f</span><span class="s1">'&lt;a href="</span><span class="si">{</span><span class="n">permalink</span><span class="si">}</span><span class="s1">"&gt;</span><span class="si">{</span><span class="n">permalink</span><span class="si">}</span><span class="s1">&lt;/a&gt;'</span>
+            <span class="n">citation</span> <span class="o">+=</span> <span class="s2">"."</span>
 
         <span class="k">return</span> <span class="n">citation</span></div>
 
@@ -854,19 +854,19 @@
 <div class="viewcode-block" id="Footnote.has_url">
 <a class="viewcode-back" href="../../../codedocs/footnotes.html#geniza.footnotes.models.Footnote.has_url">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">has_url</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Admin display field indicating if footnote has a url.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Admin display field indicating if footnote has a url."""</span>
         <span class="k">return</span> <span class="nb">bool</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="p">)</span></div>
 
 
     <span class="n">has_url</span><span class="o">.</span><span class="n">boolean</span> <span class="o">=</span> <span class="kc">True</span>
-    <span class="n">has_url</span><span class="o">.</span><span class="n">admin_order_field</span> <span class="o">=</span> <span class="s2">&quot;url&quot;</span>
+    <span class="n">has_url</span><span class="o">.</span><span class="n">admin_order_field</span> <span class="o">=</span> <span class="s2">"url"</span>
 
     <span class="nd">@cached_property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">content_html</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;content as html, if available; returns a dictionary of lists.</span>
-<span class="sd">        keys are canvas ids, list is html content.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""content as html, if available; returns a dictionary of lists.</span>
+<span class="sd">        keys are canvas ids, list is html content."""</span>
         <span class="c1"># NOTE: previously only returned if type was digital edition;</span>
-        <span class="c1"># now that we&#39;re using foreign keys, return content from</span>
+        <span class="c1"># now that we're using foreign keys, return content from</span>
         <span class="c1"># any associated annotations, regardless of what doc relation.</span>
 
         <span class="c1"># generate return a dictionary of lists of annotation html content</span>
@@ -879,19 +879,19 @@
             <span class="c1"># if they have lines. (isnull check required to not exclude block-level annotations</span>
             <span class="c1"># missing the textGranularity attribute)</span>
             <span class="n">Q</span><span class="p">(</span><span class="n">content__textGranularity__isnull</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-            <span class="o">&amp;</span> <span class="n">Q</span><span class="p">(</span><span class="n">content__textGranularity</span><span class="o">=</span><span class="s2">&quot;line&quot;</span><span class="p">)</span>
-        <span class="p">)</span><span class="o">.</span><span class="n">order_by</span><span class="p">(</span><span class="s2">&quot;content__schema:position&quot;</span><span class="p">,</span> <span class="s2">&quot;created&quot;</span><span class="p">):</span>
+            <span class="o">&amp;</span> <span class="n">Q</span><span class="p">(</span><span class="n">content__textGranularity</span><span class="o">=</span><span class="s2">"line"</span><span class="p">)</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">order_by</span><span class="p">(</span><span class="s2">"content__schema:position"</span><span class="p">,</span> <span class="s2">"created"</span><span class="p">):</span>
             <span class="n">html_content</span><span class="p">[</span><span class="n">a</span><span class="o">.</span><span class="n">target_source_id</span><span class="p">]</span> <span class="o">+=</span> <span class="n">a</span><span class="o">.</span><span class="n">block_content_html</span>
         <span class="c1"># cast to a regular dict to avoid weirdness in django templates</span>
         <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">html_content</span><span class="p">)</span>
 
     <span class="nd">@cached_property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">content_html_str</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="s2">&quot;content as a single string of html, if available&quot;</span>
+        <span class="s2">"content as a single string of html, if available"</span>
         <span class="c1"># content html is a dict; values are lists of html content</span>
         <span class="n">content_html</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">content_html</span>
         <span class="k">if</span> <span class="n">content_html</span><span class="p">:</span>
-            <span class="k">return</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+            <span class="k">return</span> <span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
                 <span class="p">[</span>
                     <span class="n">section</span>
                     <span class="k">for</span> <span class="n">canvas_annos</span> <span class="ow">in</span> <span class="n">content_html</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
@@ -901,16 +901,16 @@
 
     <span class="nd">@cached_property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">content_text_canvases</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;content as a list of strings, one per canvas&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""content as a list of strings, one per canvas"""</span>
         <span class="c1"># used for regex search indexing</span>
         <span class="n">content_html</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">content_html</span>
         <span class="k">if</span> <span class="n">content_html</span><span class="p">:</span>
             <span class="k">return</span> <span class="p">[</span>
                 <span class="c1"># convert each annotation from html to plaintext</span>
-                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                <span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
                     <span class="p">[</span>
                         <span class="c1"># remove newlines so that multiline annotations can be searched</span>
-                        <span class="n">BeautifulSoup</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">features</span><span class="o">=</span><span class="s2">&quot;lxml&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">get_text</span><span class="p">()</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot; &quot;</span><span class="p">)</span>
+                        <span class="n">BeautifulSoup</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">features</span><span class="o">=</span><span class="s2">"lxml"</span><span class="p">)</span><span class="o">.</span><span class="n">get_text</span><span class="p">()</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="p">,</span> <span class="s2">" "</span><span class="p">)</span>
                         <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">canvas_annos</span>
                     <span class="p">]</span>
                 <span class="p">)</span>
@@ -921,8 +921,8 @@
 <a class="viewcode-back" href="../../../codedocs/footnotes.html#geniza.footnotes.models.Footnote.explicit_line_numbers">[docs]</a>
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">explicit_line_numbers</span><span class="p">(</span><span class="n">html</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;add explicit line numbers to passed HTML (in value attributes of ol &gt; li)&quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">html</span><span class="p">:</span>  <span class="c1"># don&#39;t attempt to parse if html is not set</span>
+<span class="w">        </span><span class="sd">"""add explicit line numbers to passed HTML (in value attributes of ol &gt; li)"""</span>
+        <span class="k">if</span> <span class="n">html</span><span class="p">:</span>  <span class="c1"># don't attempt to parse if html is not set</span>
             <span class="n">parser</span> <span class="o">=</span> <span class="n">HTMLLineNumberParser</span><span class="p">()</span>
             <span class="n">parser</span><span class="o">.</span><span class="n">feed</span><span class="p">(</span><span class="n">html</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">parser</span><span class="o">.</span><span class="n">html_str</span></div>
@@ -930,30 +930,30 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">content_text</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="s2">&quot;content as plain text, if available&quot;</span>
+        <span class="s2">"content as plain text, if available"</span>
         <span class="c1"># use beautiful soup to parse html content and return as text</span>
         <span class="c1"># (strips tags and convert entities to plain text equivalent)</span>
-        <span class="c1"># but only return if we have content (otherwise returns string &quot;None&quot;)</span>
+        <span class="c1"># but only return if we have content (otherwise returns string "None")</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">content_html_str</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">BeautifulSoup</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">content_html_str</span><span class="p">,</span> <span class="n">features</span><span class="o">=</span><span class="s2">&quot;lxml&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">get_text</span><span class="p">()</span>
+            <span class="k">return</span> <span class="n">BeautifulSoup</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">content_html_str</span><span class="p">,</span> <span class="n">features</span><span class="o">=</span><span class="s2">"lxml"</span><span class="p">)</span><span class="o">.</span><span class="n">get_text</span><span class="p">()</span>
 
 <div class="viewcode-block" id="Footnote.iiif_annotation_content">
 <a class="viewcode-back" href="../../../codedocs/footnotes.html#geniza.footnotes.models.Footnote.iiif_annotation_content">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">iiif_annotation_content</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return transcription content from this footnote (if any)</span>
+<span class="w">        </span><span class="sd">"""Return transcription content from this footnote (if any)</span>
 <span class="sd">        as a IIIF annotation resource that can be associated with a canvas.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># For now, since we have no block/canvas information, return the</span>
         <span class="c1"># whole thing as a single resource</span>
         <span class="n">html</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">content_html</span>
         <span class="k">if</span> <span class="n">html</span><span class="p">:</span>
-            <span class="c1"># this is the content that should be set as the &quot;resource&quot;</span>
+            <span class="c1"># this is the content that should be set as the "resource"</span>
             <span class="c1"># of an annotation</span>
             <span class="k">return</span> <span class="p">{</span>
-                <span class="s2">&quot;@type&quot;</span><span class="p">:</span> <span class="s2">&quot;cnt:ContentAsText&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;format&quot;</span><span class="p">:</span> <span class="s2">&quot;text/html&quot;</span><span class="p">,</span>
+                <span class="s2">"@type"</span><span class="p">:</span> <span class="s2">"cnt:ContentAsText"</span><span class="p">,</span>
+                <span class="s2">"format"</span><span class="p">:</span> <span class="s2">"text/html"</span><span class="p">,</span>
                 <span class="c1"># language todo</span>
-                <span class="s2">&quot;chars&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;div dir=&#39;rtl&#39; class=&#39;transcription&#39;&gt;</span><span class="si">%s</span><span class="s2">&lt;/div&gt;&quot;</span> <span class="o">%</span> <span class="n">html</span><span class="p">,</span>
+                <span class="s2">"chars"</span><span class="p">:</span> <span class="s2">"&lt;div dir='rtl' class='transcription'&gt;</span><span class="si">%s</span><span class="s2">&lt;/div&gt;"</span> <span class="o">%</span> <span class="n">html</span><span class="p">,</span>
             <span class="p">}</span></div>
 </div>
 

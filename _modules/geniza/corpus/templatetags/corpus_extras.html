@@ -4,11 +4,11 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>geniza.corpus.templatetags.corpus_extras &#8212; Princeton Geniza Project 4.30.0 documentation</title>
+    <title>geniza.corpus.templatetags.corpus_extras &#8212; Princeton Geniza Project 4.31.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=5ecbeea2" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/basic.css?v=b08954a9" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/alabaster.css?v=27fed22d" />
-    <script src="../../../../_static/documentation_options.js?v=b77305dc"></script>
+    <script src="../../../../_static/documentation_options.js?v=c6a64f85"></script>
     <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <link rel="index" title="Index" href="../../../../genindex.html" />
@@ -51,11 +51,11 @@
 <a class="viewcode-back" href="../../../../codedocs/corpus.html#geniza.corpus.templatetags.corpus_extras.alphabetize">[docs]</a>
 <span class="nd">@register</span><span class="o">.</span><span class="n">filter</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">alphabetize</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Lowercases, then alphabetizes, a list of strings&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Lowercases, then alphabetizes, a list of strings"""</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">all</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">value</span><span class="p">):</span>
         <span class="k">return</span> <span class="nb">sorted</span><span class="p">([</span><span class="n">s</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">value</span><span class="p">])</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Argument must be a list of strings&quot;</span><span class="p">)</span></div>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">"Argument must be a list of strings"</span><span class="p">)</span></div>
 
 
 
@@ -66,11 +66,11 @@
 <a class="viewcode-back" href="../../../../codedocs/corpus.html#geniza.corpus.templatetags.corpus_extras.dict_item">[docs]</a>
 <span class="nd">@register</span><span class="o">.</span><span class="n">filter</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">dict_item</span><span class="p">(</span><span class="n">dictionary</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;&#39;Template filter to allow accessing dictionary value by variable key.</span>
+<span class="w">    </span><span class="sd">"""'Template filter to allow accessing dictionary value by variable key.</span>
 <span class="sd">    Example use::</span>
 
 <span class="sd">        {{ mydict|dict_item:keyvar }}</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">dictionary</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
     <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
@@ -83,15 +83,15 @@
 <a class="viewcode-back" href="../../../../codedocs/corpus.html#geniza.corpus.templatetags.corpus_extras.index">[docs]</a>
 <span class="nd">@register</span><span class="o">.</span><span class="n">filter</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">index</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;&#39;Template filter to allow accessing list element by variable index.</span>
+<span class="w">    </span><span class="sd">"""'Template filter to allow accessing list element by variable index.</span>
 <span class="sd">    Example use::</span>
 
 <span class="sd">        {{ mylist|index:forloop.counter0 }}</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">item</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
     <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
-        <span class="k">return</span> <span class="s2">&quot;&quot;</span></div>
+        <span class="k">return</span> <span class="s2">""</span></div>
 
 
 
@@ -99,17 +99,17 @@
 <a class="viewcode-back" href="../../../../codedocs/corpus.html#geniza.corpus.templatetags.corpus_extras.querystring_replace">[docs]</a>
 <span class="nd">@register</span><span class="o">.</span><span class="n">simple_tag</span><span class="p">(</span><span class="n">takes_context</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">querystring_replace</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Template tag to simplify retaining querystring parameters</span>
+<span class="w">    </span><span class="sd">"""Template tag to simplify retaining querystring parameters</span>
 <span class="sd">    when paging through search results with active filters.</span>
 <span class="sd">    Example use::</span>
 
-<span class="sd">        &lt;a href=&quot;?{% querystring_replace page=paginator.next_page_number %}&quot;&gt;</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">        &lt;a href="?{% querystring_replace page=paginator.next_page_number %}"&gt;</span>
+<span class="sd">    """</span>
     <span class="c1"># borrowed as-is from derrida codebase</span>
     <span class="c1"># inspired by https://stackoverflow.com/questions/2047622/how-to-paginate-django-with-other-get-variables</span>
 
     <span class="c1"># get a mutable copy of the current request</span>
-    <span class="n">querystring</span> <span class="o">=</span> <span class="n">context</span><span class="p">[</span><span class="s2">&quot;request&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">querystring</span> <span class="o">=</span> <span class="n">context</span><span class="p">[</span><span class="s2">"request"</span><span class="p">]</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
     <span class="c1"># update with any parameters passed in</span>
     <span class="c1"># NOTE: needs to *set* fields rather than using update,</span>
     <span class="c1"># because QueryDict update appends to field rather than replacing</span>
@@ -124,40 +124,40 @@
 <a class="viewcode-back" href="../../../../codedocs/corpus.html#geniza.corpus.templatetags.corpus_extras.iiif_image">[docs]</a>
 <span class="nd">@register</span><span class="o">.</span><span class="n">filter</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">iiif_image</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">args</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Add options to resize or otherwise change the display of an iiif</span>
+<span class="w">    </span><span class="sd">"""Add options to resize or otherwise change the display of an iiif</span>
 <span class="sd">    image; expects an instance of :class:`piffle.image.IIIFImageClient`.</span>
 <span class="sd">    Provide the method and arguments as filter string, i.e.::</span>
 
-<span class="sd">        {{ myimg|iiif_image:&quot;size:width=225,height=255&quot; }}</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">        {{ myimg|iiif_image:"size:width=225,height=255" }}</span>
+<span class="sd">    """</span>
     <span class="c1"># copied from mep-django</span>
 
     <span class="c1"># split into method and parameters (return if not formatted properly)</span>
-    <span class="k">if</span> <span class="s2">&quot;:&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">args</span><span class="p">:</span>
-        <span class="k">return</span> <span class="s2">&quot;&quot;</span>
-    <span class="c1"># placeholder images will be a dict with an image url as value for key &quot;info&quot;</span>
-    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">and</span> <span class="s2">&quot;info&quot;</span> <span class="ow">in</span> <span class="n">img</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">img</span><span class="p">[</span><span class="s2">&quot;info&quot;</span><span class="p">]</span>
+    <span class="k">if</span> <span class="s2">":"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">args</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">""</span>
+    <span class="c1"># placeholder images will be a dict with an image url as value for key "info"</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">and</span> <span class="s2">"info"</span> <span class="ow">in</span> <span class="n">img</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">img</span><span class="p">[</span><span class="s2">"info"</span><span class="p">]</span>
     <span class="c1"># placeholder images will be strings if this function is called again after the above call,</span>
     <span class="c1"># e.g. when trying to rotate images after resizing, so return as-is since placeholders will not</span>
     <span class="c1"># be rotated or resized</span>
     <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">img</span>
-    <span class="n">mode</span><span class="p">,</span> <span class="n">opts</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;:&quot;</span><span class="p">)</span>
+    <span class="n">mode</span><span class="p">,</span> <span class="n">opts</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">":"</span><span class="p">)</span>
     <span class="c1"># split parameters into args and kwargs</span>
-    <span class="n">args</span> <span class="o">=</span> <span class="n">opts</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)</span>
-    <span class="c1"># if there&#39;s an =, split it and include in kwargs dict</span>
-    <span class="n">kwargs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">arg</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;=&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">arg</span> <span class="ow">in</span> <span class="n">args</span> <span class="k">if</span> <span class="s2">&quot;=&quot;</span> <span class="ow">in</span> <span class="n">arg</span><span class="p">)</span>
+    <span class="n">args</span> <span class="o">=</span> <span class="n">opts</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">","</span><span class="p">)</span>
+    <span class="c1"># if there's an =, split it and include in kwargs dict</span>
+    <span class="n">kwargs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">arg</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"="</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">arg</span> <span class="ow">in</span> <span class="n">args</span> <span class="k">if</span> <span class="s2">"="</span> <span class="ow">in</span> <span class="n">arg</span><span class="p">)</span>
     <span class="c1"># use ints for rotation degrees</span>
-    <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">if</span> <span class="n">k</span> <span class="o">==</span> <span class="s2">&quot;degrees&quot;</span> <span class="ow">and</span> <span class="n">v</span> <span class="k">else</span> <span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+    <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">if</span> <span class="n">k</span> <span class="o">==</span> <span class="s2">"degrees"</span> <span class="ow">and</span> <span class="n">v</span> <span class="k">else</span> <span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
     <span class="c1"># otherwise, include as an arg</span>
-    <span class="n">args</span> <span class="o">=</span> <span class="p">[</span><span class="n">arg</span> <span class="k">for</span> <span class="n">arg</span> <span class="ow">in</span> <span class="n">args</span> <span class="k">if</span> <span class="s2">&quot;=&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">arg</span><span class="p">]</span>
+    <span class="n">args</span> <span class="o">=</span> <span class="p">[</span><span class="n">arg</span> <span class="k">for</span> <span class="n">arg</span> <span class="ow">in</span> <span class="n">args</span> <span class="k">if</span> <span class="s2">"="</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">arg</span><span class="p">]</span>
     <span class="c1"># attempt to call the method with the arguments</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">mode</span><span class="p">)(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
     <span class="k">except</span> <span class="p">(</span><span class="n">IIIFImageClientException</span><span class="p">,</span> <span class="ne">TypeError</span><span class="p">):</span>
         <span class="c1"># return an empty string if anything goes wrong</span>
-        <span class="k">return</span> <span class="s2">&quot;&quot;</span></div>
+        <span class="k">return</span> <span class="s2">""</span></div>
 
 
 
@@ -165,10 +165,10 @@
 <a class="viewcode-back" href="../../../../codedocs/corpus.html#geniza.corpus.templatetags.corpus_extras.iiif_info_json">[docs]</a>
 <span class="nd">@register</span><span class="o">.</span><span class="n">filter</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">iiif_info_json</span><span class="p">(</span><span class="n">images</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Add /info.json to a list of IIIF image IDs and dump to JSON,</span>
+<span class="w">    </span><span class="sd">"""Add /info.json to a list of IIIF image IDs and dump to JSON,</span>
 <span class="sd">    for OpenSeaDragon to parse.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">([</span><span class="n">image</span><span class="p">[</span><span class="s2">&quot;image&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">info</span><span class="p">()</span> <span class="k">for</span> <span class="n">image</span> <span class="ow">in</span> <span class="n">images</span><span class="p">])</span></div>
+<span class="sd">    """</span>
+    <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">([</span><span class="n">image</span><span class="p">[</span><span class="s2">"image"</span><span class="p">]</span><span class="o">.</span><span class="n">info</span><span class="p">()</span> <span class="k">for</span> <span class="n">image</span> <span class="ow">in</span> <span class="n">images</span><span class="p">])</span></div>
 
 
 
@@ -176,17 +176,17 @@
 <a class="viewcode-back" href="../../../../codedocs/corpus.html#geniza.corpus.templatetags.corpus_extras.pgp_urlize">[docs]</a>
 <span class="nd">@register</span><span class="o">.</span><span class="n">filter</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">pgp_urlize</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Find all instances of \&quot;PGPID #\&quot; in the passed text, and convert</span>
-<span class="sd">    each to a link to the referenced document.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Find all instances of \"PGPID #\" in the passed text, and convert</span>
+<span class="sd">    each to a link to the referenced document."""</span>
     <span class="c1"># use an absolutized placeholder URL to use for each match, replacing the fake pgpid 000 with the regex</span>
-    <span class="n">placeholder_url</span> <span class="o">=</span> <span class="n">absolutize_url</span><span class="p">(</span><span class="n">reverse</span><span class="p">(</span><span class="s2">&quot;corpus:document&quot;</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;000&quot;</span><span class="p">]))</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span>
-        <span class="s2">&quot;000&quot;</span><span class="p">,</span> <span class="s2">&quot;\g&lt;pgpid&gt;&quot;</span>
+    <span class="n">placeholder_url</span> <span class="o">=</span> <span class="n">absolutize_url</span><span class="p">(</span><span class="n">reverse</span><span class="p">(</span><span class="s2">"corpus:document"</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">[</span><span class="s2">"000"</span><span class="p">]))</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span>
+        <span class="s2">"000"</span><span class="p">,</span> <span class="s2">"\g&lt;pgpid&gt;"</span>
     <span class="p">)</span>
-    <span class="n">placeholder_link</span> <span class="o">=</span> <span class="s1">&#39;&lt;a href=&quot;</span><span class="si">%s</span><span class="s1">&quot;&gt;\g&lt;text&gt;&lt;/a&gt;&#39;</span> <span class="o">%</span> <span class="n">placeholder_url</span>
+    <span class="n">placeholder_link</span> <span class="o">=</span> <span class="s1">'&lt;a href="</span><span class="si">%s</span><span class="s1">"&gt;\g&lt;text&gt;&lt;/a&gt;'</span> <span class="o">%</span> <span class="n">placeholder_url</span>
     <span class="c1"># match all instances of PGPID ### with a link to the document</span>
     <span class="k">return</span> <span class="n">mark_safe</span><span class="p">(</span>
         <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span>
-            <span class="sa">r</span><span class="s2">&quot;\b(?P&lt;text&gt;PGPID\b \b(?P&lt;pgpid&gt;\d+))\b&quot;</span><span class="p">,</span>
+            <span class="sa">r</span><span class="s2">"\b(?P&lt;text&gt;PGPID\b \b(?P&lt;pgpid&gt;\d+))\b"</span><span class="p">,</span>
             <span class="n">placeholder_link</span><span class="p">,</span>
             <span class="n">text</span><span class="p">,</span>
         <span class="p">)</span>
@@ -198,13 +198,13 @@
 <a class="viewcode-back" href="../../../../codedocs/corpus.html#geniza.corpus.templatetags.corpus_extras.shelfmark_wrap">[docs]</a>
 <span class="nd">@register</span><span class="o">.</span><span class="n">filter</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">shelfmark_wrap</span><span class="p">(</span><span class="n">shelfmark</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Wrap individual shelfmarks in a span within a combined shelfmark,</span>
-<span class="sd">    to avoid wrapping mid-shelfmark&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Wrap individual shelfmarks in a span within a combined shelfmark,</span>
+<span class="sd">    to avoid wrapping mid-shelfmark"""</span>
     <span class="k">return</span> <span class="n">mark_safe</span><span class="p">(</span>
-        <span class="s2">&quot; + &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+        <span class="s2">" + "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
             <span class="p">[</span>
-                <span class="sa">f</span><span class="s2">&quot;&lt;span&gt;</span><span class="si">{</span><span class="n">fragment</span><span class="si">}</span><span class="s2">&lt;/span&gt;&quot;</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">fragment</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">60</span> <span class="k">else</span> <span class="n">fragment</span>
-                <span class="k">for</span> <span class="n">fragment</span> <span class="ow">in</span> <span class="n">shelfmark</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot; + &quot;</span><span class="p">)</span>
+                <span class="sa">f</span><span class="s2">"&lt;span&gt;</span><span class="si">{</span><span class="n">fragment</span><span class="si">}</span><span class="s2">&lt;/span&gt;"</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">fragment</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">60</span> <span class="k">else</span> <span class="n">fragment</span>
+                <span class="k">for</span> <span class="n">fragment</span> <span class="ow">in</span> <span class="n">shelfmark</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">" + "</span><span class="p">)</span>
             <span class="p">]</span>
         <span class="p">)</span>
     <span class="p">)</span></div>
@@ -215,9 +215,9 @@
 <a class="viewcode-back" href="../../../../codedocs/corpus.html#geniza.corpus.templatetags.corpus_extras.get_document_label">[docs]</a>
 <span class="nd">@register</span><span class="o">.</span><span class="n">filter</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_document_label</span><span class="p">(</span><span class="n">result_doc</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Helper method to construct an appropriate aria-label for a document link</span>
-<span class="sd">    with a fallback in case of a missing shelfmark.&quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">result_doc</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;type&quot;</span><span class="p">)</span><span class="si">}</span><span class="s1">: </span><span class="si">{</span><span class="n">result_doc</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;shelfmark&quot;</span><span class="p">)</span><span class="w"> </span><span class="ow">or</span><span class="w"> </span><span class="s2">&quot;[unknown shelfmark]&quot;</span><span class="si">}</span><span class="s1">&#39;</span></div>
+<span class="w">    </span><span class="sd">"""Helper method to construct an appropriate aria-label for a document link</span>
+<span class="sd">    with a fallback in case of a missing shelfmark."""</span>
+    <span class="k">return</span> <span class="sa">f</span><span class="s1">'</span><span class="si">{</span><span class="n">result_doc</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"type"</span><span class="p">)</span><span class="si">}</span><span class="s1">: </span><span class="si">{</span><span class="n">result_doc</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"shelfmark"</span><span class="p">)</span><span class="w"> </span><span class="ow">or</span><span class="w"> </span><span class="s2">"[unknown shelfmark]"</span><span class="si">}</span><span class="s1">'</span></div>
 
 
 
@@ -225,9 +225,9 @@
 <a class="viewcode-back" href="../../../../codedocs/corpus.html#geniza.corpus.templatetags.corpus_extras.translate_url">[docs]</a>
 <span class="nd">@register</span><span class="o">.</span><span class="n">simple_tag</span><span class="p">(</span><span class="n">takes_context</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">translate_url</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">lang_code</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Translate current full path into requested language by code.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Translate current full path into requested language by code."""</span>
     <span class="c1"># thanks to https://stackoverflow.com/a/51974042</span>
-    <span class="n">path</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;current_path&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">context</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;request&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">get_full_path</span><span class="p">()</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"current_path"</span><span class="p">)</span> <span class="ow">or</span> <span class="n">context</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"request"</span><span class="p">)</span><span class="o">.</span><span class="n">get_full_path</span><span class="p">()</span>
     <span class="k">return</span> <span class="n">django_translate_url</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">lang_code</span><span class="p">)</span></div>
 
 
@@ -236,8 +236,8 @@
 <a class="viewcode-back" href="../../../../codedocs/corpus.html#geniza.corpus.templatetags.corpus_extras.has_location_or_url">[docs]</a>
 <span class="nd">@register</span><span class="o">.</span><span class="n">filter</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">has_location_or_url</span><span class="p">(</span><span class="n">footnotes</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;For scholarship records list: return True if any footnote in the list</span>
-<span class="sd">    has a URL or location.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""For scholarship records list: return True if any footnote in the list</span>
+<span class="sd">    has a URL or location."""</span>
     <span class="k">return</span> <span class="nb">any</span><span class="p">(</span><span class="n">fn</span><span class="o">.</span><span class="n">url</span> <span class="ow">or</span> <span class="n">fn</span><span class="o">.</span><span class="n">location</span> <span class="k">for</span> <span class="n">fn</span> <span class="ow">in</span> <span class="n">footnotes</span><span class="p">)</span></div>
 
 
@@ -246,14 +246,14 @@
 <a class="viewcode-back" href="../../../../codedocs/corpus.html#geniza.corpus.templatetags.corpus_extras.all_doc_relations">[docs]</a>
 <span class="nd">@register</span><span class="o">.</span><span class="n">filter</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">all_doc_relations</span><span class="p">(</span><span class="n">footnotes</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;For scholarship records list: list doc relations for all footnotes.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""For scholarship records list: list doc relations for all footnotes."""</span>
     <span class="n">relations</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
     <span class="k">for</span> <span class="n">fn</span> <span class="ow">in</span> <span class="n">footnotes</span><span class="p">:</span>
         <span class="n">relations</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
             <span class="nb">set</span><span class="p">(</span>
                 <span class="p">[</span>
                     <span class="n">doc_relation</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
-                    <span class="k">for</span> <span class="n">doc_relation</span> <span class="ow">in</span> <span class="n">fn</span><span class="o">.</span><span class="n">get_doc_relation_display</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)</span>
+                    <span class="k">for</span> <span class="n">doc_relation</span> <span class="ow">in</span> <span class="n">fn</span><span class="o">.</span><span class="n">get_doc_relation_display</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">","</span><span class="p">)</span>
                     <span class="k">if</span> <span class="n">doc_relation</span>
                 <span class="p">]</span>
             <span class="p">)</span>
@@ -267,9 +267,9 @@
 <a class="viewcode-back" href="../../../../codedocs/corpus.html#geniza.corpus.templatetags.corpus_extras.is_index_cards">[docs]</a>
 <span class="nd">@register</span><span class="o">.</span><span class="n">filter</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">is_index_cards</span><span class="p">(</span><span class="n">source</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;For scholarship records list: indicate whether or not a source record</span>
-<span class="sd">    relates to Goitein index cards.&quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="s2">&quot;unpublished index cards&quot;</span> <span class="ow">in</span> <span class="n">source</span><span class="o">.</span><span class="n">grouper</span><span class="o">.</span><span class="n">formatted_display</span><span class="p">(</span>
+<span class="w">    </span><span class="sd">"""For scholarship records list: indicate whether or not a source record</span>
+<span class="sd">    relates to Goitein index cards."""</span>
+    <span class="k">return</span> <span class="s2">"unpublished index cards"</span> <span class="ow">in</span> <span class="n">source</span><span class="o">.</span><span class="n">grouper</span><span class="o">.</span><span class="n">formatted_display</span><span class="p">(</span>
         <span class="n">format_index_cards</span><span class="o">=</span><span class="kc">True</span>
     <span class="p">)</span></div>
 
@@ -279,37 +279,37 @@
 <a class="viewcode-back" href="../../../../codedocs/corpus.html#geniza.corpus.templatetags.corpus_extras.process_citation">[docs]</a>
 <span class="nd">@register</span><span class="o">.</span><span class="n">filter</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">process_citation</span><span class="p">(</span><span class="n">source</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;For scholarship records list: handle grouped citations by passing to</span>
-<span class="sd">    Footnote.display_multiple class method.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""For scholarship records list: handle grouped citations by passing to</span>
+<span class="sd">    Footnote.display_multiple class method."""</span>
     <span class="k">return</span> <span class="n">mark_safe</span><span class="p">(</span><span class="n">Footnote</span><span class="o">.</span><span class="n">display_multiple</span><span class="p">(</span><span class="n">source</span><span class="o">.</span><span class="n">list</span><span class="p">))</span></div>
 
 
 
-<span class="n">DIR_MAP</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;en&quot;</span><span class="p">:</span> <span class="s2">&quot;ltr&quot;</span><span class="p">,</span> <span class="s2">&quot;he&quot;</span><span class="p">:</span> <span class="s2">&quot;rtl&quot;</span><span class="p">,</span> <span class="s2">&quot;ar&quot;</span><span class="p">:</span> <span class="s2">&quot;rtl&quot;</span><span class="p">}</span>
+<span class="n">DIR_MAP</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"en"</span><span class="p">:</span> <span class="s2">"ltr"</span><span class="p">,</span> <span class="s2">"he"</span><span class="p">:</span> <span class="s2">"rtl"</span><span class="p">,</span> <span class="s2">"ar"</span><span class="p">:</span> <span class="s2">"rtl"</span><span class="p">}</span>
 
 
 <div class="viewcode-block" id="translate_highlight">
 <a class="viewcode-back" href="../../../../codedocs/corpus.html#geniza.corpus.templatetags.corpus_extras.translate_highlight">[docs]</a>
 <span class="nd">@register</span><span class="o">.</span><span class="n">filter</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">translate_highlight</span><span class="p">(</span><span class="n">highlights</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Find a highlight in the description of a solr Document result,</span>
-<span class="sd">    preferring the user&#39;s current language, then English, then any match.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Find a highlight in the description of a solr Document result,</span>
+<span class="sd">    preferring the user's current language, then English, then any match."""</span>
     <span class="k">if</span> <span class="n">highlights</span><span class="p">:</span>
         <span class="n">hl_map</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="s2">&quot;en&quot;</span><span class="p">:</span> <span class="n">highlights</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;description&quot;</span><span class="p">),</span>
-            <span class="s2">&quot;he&quot;</span><span class="p">:</span> <span class="n">highlights</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;description_he&quot;</span><span class="p">),</span>
-            <span class="s2">&quot;ar&quot;</span><span class="p">:</span> <span class="n">highlights</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;description_ar&quot;</span><span class="p">),</span>
+            <span class="s2">"en"</span><span class="p">:</span> <span class="n">highlights</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"description"</span><span class="p">),</span>
+            <span class="s2">"he"</span><span class="p">:</span> <span class="n">highlights</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"description_he"</span><span class="p">),</span>
+            <span class="s2">"ar"</span><span class="p">:</span> <span class="n">highlights</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"description_ar"</span><span class="p">),</span>
         <span class="p">}</span>
 
         <span class="c1"># prefer current language if a match was found in it</span>
         <span class="n">lang</span> <span class="o">=</span> <span class="n">get_language</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">hl_map</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">lang</span><span class="p">):</span>
-            <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;snippets&quot;</span><span class="p">:</span> <span class="n">hl_map</span><span class="p">[</span><span class="n">lang</span><span class="p">],</span> <span class="s2">&quot;lang&quot;</span><span class="p">:</span> <span class="n">lang</span><span class="p">,</span> <span class="s2">&quot;dir&quot;</span><span class="p">:</span> <span class="n">DIR_MAP</span><span class="p">[</span><span class="n">lang</span><span class="p">]}</span>
+            <span class="k">return</span> <span class="p">{</span><span class="s2">"snippets"</span><span class="p">:</span> <span class="n">hl_map</span><span class="p">[</span><span class="n">lang</span><span class="p">],</span> <span class="s2">"lang"</span><span class="p">:</span> <span class="n">lang</span><span class="p">,</span> <span class="s2">"dir"</span><span class="p">:</span> <span class="n">DIR_MAP</span><span class="p">[</span><span class="n">lang</span><span class="p">]}</span>
 
         <span class="c1"># then English or any other match</span>
         <span class="k">for</span> <span class="n">code</span> <span class="ow">in</span> <span class="n">hl_map</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
             <span class="k">if</span> <span class="n">hl_map</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">code</span><span class="p">):</span>
-                <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;snippets&quot;</span><span class="p">:</span> <span class="n">hl_map</span><span class="p">[</span><span class="n">code</span><span class="p">],</span> <span class="s2">&quot;lang&quot;</span><span class="p">:</span> <span class="n">code</span><span class="p">,</span> <span class="s2">&quot;dir&quot;</span><span class="p">:</span> <span class="n">DIR_MAP</span><span class="p">[</span><span class="n">code</span><span class="p">]}</span>
+                <span class="k">return</span> <span class="p">{</span><span class="s2">"snippets"</span><span class="p">:</span> <span class="n">hl_map</span><span class="p">[</span><span class="n">code</span><span class="p">],</span> <span class="s2">"lang"</span><span class="p">:</span> <span class="n">code</span><span class="p">,</span> <span class="s2">"dir"</span><span class="p">:</span> <span class="n">DIR_MAP</span><span class="p">[</span><span class="n">code</span><span class="p">]}</span>
 
     <span class="k">return</span> <span class="kc">None</span></div>
 
@@ -319,21 +319,21 @@
 <a class="viewcode-back" href="../../../../codedocs/corpus.html#geniza.corpus.templatetags.corpus_extras.translate_description">[docs]</a>
 <span class="nd">@register</span><span class="o">.</span><span class="n">filter</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">translate_description</span><span class="p">(</span><span class="n">result_document</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;In solr Document search results, use the description in the current</span>
-<span class="sd">    language if available, and fallback to English&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""In solr Document search results, use the description in the current</span>
+<span class="sd">    language if available, and fallback to English"""</span>
     <span class="n">desc_map</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s2">&quot;en&quot;</span><span class="p">:</span> <span class="n">result_document</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;description&quot;</span><span class="p">),</span>
-        <span class="s2">&quot;he&quot;</span><span class="p">:</span> <span class="n">result_document</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;description_he&quot;</span><span class="p">),</span>
-        <span class="s2">&quot;ar&quot;</span><span class="p">:</span> <span class="n">result_document</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;description_ar&quot;</span><span class="p">),</span>
+        <span class="s2">"en"</span><span class="p">:</span> <span class="n">result_document</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"description"</span><span class="p">),</span>
+        <span class="s2">"he"</span><span class="p">:</span> <span class="n">result_document</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"description_he"</span><span class="p">),</span>
+        <span class="s2">"ar"</span><span class="p">:</span> <span class="n">result_document</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"description_ar"</span><span class="p">),</span>
     <span class="p">}</span>
 
     <span class="c1"># prefer current language if a description exists in it</span>
     <span class="n">lang</span> <span class="o">=</span> <span class="n">get_language</span><span class="p">()</span>
     <span class="k">if</span> <span class="n">desc_map</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">lang</span><span class="p">):</span>
-        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="n">desc_map</span><span class="p">[</span><span class="n">lang</span><span class="p">],</span> <span class="s2">&quot;lang&quot;</span><span class="p">:</span> <span class="n">lang</span><span class="p">,</span> <span class="s2">&quot;dir&quot;</span><span class="p">:</span> <span class="n">DIR_MAP</span><span class="p">[</span><span class="n">lang</span><span class="p">]}</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">"text"</span><span class="p">:</span> <span class="n">desc_map</span><span class="p">[</span><span class="n">lang</span><span class="p">],</span> <span class="s2">"lang"</span><span class="p">:</span> <span class="n">lang</span><span class="p">,</span> <span class="s2">"dir"</span><span class="p">:</span> <span class="n">DIR_MAP</span><span class="p">[</span><span class="n">lang</span><span class="p">]}</span>
 
     <span class="c1"># then English</span>
-    <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="n">desc_map</span><span class="p">[</span><span class="s2">&quot;en&quot;</span><span class="p">],</span> <span class="s2">&quot;lang&quot;</span><span class="p">:</span> <span class="s2">&quot;en&quot;</span><span class="p">,</span> <span class="s2">&quot;dir&quot;</span><span class="p">:</span> <span class="n">DIR_MAP</span><span class="p">[</span><span class="s2">&quot;en&quot;</span><span class="p">]}</span></div>
+    <span class="k">return</span> <span class="p">{</span><span class="s2">"text"</span><span class="p">:</span> <span class="n">desc_map</span><span class="p">[</span><span class="s2">"en"</span><span class="p">],</span> <span class="s2">"lang"</span><span class="p">:</span> <span class="s2">"en"</span><span class="p">,</span> <span class="s2">"dir"</span><span class="p">:</span> <span class="n">DIR_MAP</span><span class="p">[</span><span class="s2">"en"</span><span class="p">]}</span></div>
 
 </pre></div>
 
