@@ -1,6 +1,18 @@
 Change Log
 ==========
 
+4.31
+----
+
+- As an admin site user, I would like to be able to filter for transcriptions on placeholder images, so that they can be easily updated
+- bugfix: "Related Documents" page only shows up to 10 documents
+- bugfix: Styling on excluded related document links causes extra arrows to appear
+- bugfix: People CSV download does not include inferred date range
+- bugfix: Document date validation can cause 500 error on non-convertible historical calendars, misspellings or bad dates
+- chore: Link the correct geniza license in the notes
+- chore: Ingest new IIIF links from CUDL
+- chore: Ingest new Posen Library footnotes and attach to correct sources
+
 4.30
 ----
 
