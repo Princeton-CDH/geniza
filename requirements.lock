@@ -13,7 +13,7 @@ certifi==2025.8.3
 cfgv==3.4.0
 charset-normalizer==3.4.3
 click==8.2.1
-convertdate==2.4.0
+convertdate==2.4.1
 coverage==7.10.6
 defusedxml==0.7.1
 distlib==0.4.0
@@ -44,14 +44,14 @@ django-treebeard==4.7.1
 django-webpack-loader==3.2.1
 django-widget-tweaks==1.5.0
 djangorestframework==3.16.1
-djiffy==1.0.1
+djiffy==1.0.2
 docutils==0.21.2
 draftjs_exporter==5.1.0
 et_xmlfile==2.0.0
 filelock==3.19.1
 filetype==1.2.0
 future==1.0.0
--e git+ssh://git@github.com/Princeton-CDH/geniza.git@564e2b3d1f134e3d5f9d27aa1db41b2e4892ddee#egg=geniza
+-e git+https://github.com/Princeton-CDH/geniza.git@1424f5f43610ec198c9da406537994d848fd8e73#egg=geniza
 gitdb==4.0.12
 GitPython==3.1.45
 google-api-core==2.25.1
