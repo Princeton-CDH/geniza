@@ -1057,7 +1057,7 @@ class PlaceListView(ListView, SolrDownMixin, FormMixin, SolrDateRangeMixin):
 
     # sort options mapped to solr fields
     sort_fields = {
-        "name": "slug_s",
+        "name": "sort_name_s",
         "documents": "documents_i",
         "people": "people_i",
         "relevance": "score",
@@ -1170,7 +1170,7 @@ class PlaceListSnippetView(View):
                 f"{{!join from=places_ids_ss to=id}}item_type_s:document AND document_date_dr:[{start_date or '*'} TO {end_date or '*'}]"
             )
 
-        order_by = self.request.GET.get("sort", "slug_s")
+        order_by = self.request.GET.get("sort", "sort_name_s")
         places = places.order_by(order_by)
 
         count = places.count()
