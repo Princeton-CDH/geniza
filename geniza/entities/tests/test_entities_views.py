@@ -1345,7 +1345,7 @@ class TestPlaceListView:
             placelist_view.request.GET = {"sort": "name", "sort_dir": "desc"}
             context_data = placelist_view.get_context_data()
             assert "order_by" in context_data["search_opts"]
-            assert context_data["search_opts"]["order_by"] == "-slug_s"
+            assert context_data["search_opts"]["order_by"] == "-sort_name_s"
             assert "query" not in context_data["search_opts"]
 
             # should pass query to search opts
