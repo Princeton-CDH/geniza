@@ -155,7 +155,7 @@ export default class extends Controller {
             navigatorOpacity: 0.5,
             showFullPageControl: false,
             showSequenceControl: false,
-            crossOriginPolicy: "Anonymous",
+            crossOriginPolicy: false,
             gestureSettingsTouch: {
                 pinchRotate: true,
             },
