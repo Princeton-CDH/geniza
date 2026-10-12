@@ -187,6 +187,24 @@ main.document {
                 white-space: pre-line;
                 padding-left: 1.25rem;
             }
+            // named entities from marked description
+            mark[class^="entity-"] {
+                color: inherit;
+                border-radius: 2px;
+                padding: 0 0.1em;
+            }
+            mark.entity-per {
+                background-color: var(--entity-per-bg);
+            }
+            mark.entity-loc {
+                background-color: var(--entity-loc-bg);
+            }
+            mark.entity-org {
+                background-color: var(--entity-org-bg);
+            }
+            mark.entity-misc {
+                background-color: var(--entity-misc-bg);
+            }
             div.description-header {
                 display: flex;
                 flex-flow: row;

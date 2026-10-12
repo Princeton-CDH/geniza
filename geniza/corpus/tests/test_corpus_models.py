@@ -1789,6 +1789,30 @@ class TestDocument:
         assert ar_entry is not None
         assert ar_entry["content"] == document.description_ar
 
+    def test_marked_description_html(self):
+        document = Document(
+            description="Letter from Abū Zikrī Kohen, in Fustat",
+            marked_description='<?xml version="1.0" encoding="UTF-8"?>\n'
+            '<doc id="pgpid_1">Letter from <PER>Abū Zikrī Kohen</PER>, '
+            "in <LOC>Fustat</LOC> &lt;b&gt;Recto&lt;/b&gt;</doc>",
+        )
+        # xml declaration and doc wrapper removed; entities marked by type
+        assert document.marked_description_html == (
+            'Letter from <mark class="entity-per">Abū Zikrī Kohen</mark>, '
+            'in <mark class="entity-loc">Fustat</mark> <b>Recto</b>'
+        )
+        # used in place of english description for display
+        assert (
+            document.description_translations[0]["content"]
+            == document.marked_description_html
+        )
+
+        # empty or unparseable marked description falls back to description
+        for marked in [None, "<doc>broken"]:
+            document = Document(description="plain", marked_description=marked)
+            assert document.marked_description_html == ""
+            assert document.description_translations[0]["content"] == "plain"
+
 
 def test_document_merge_with(document, join):
     doc_id = document.id
