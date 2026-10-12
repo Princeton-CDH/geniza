@@ -1801,17 +1801,22 @@ class TestDocument:
             'Letter from <mark class="entity-per">Abū Zikrī Kohen</mark>, '
             'in <mark class="entity-loc">Fustat</mark> <b>Recto</b>'
         )
-        # used in place of english description for display
+        # used in place of english description when marked is requested
         assert (
-            document.description_translations[0]["content"]
+            document.get_description_translations(marked=True)[0]["content"]
             == document.marked_description_html
         )
+        # plain description used by default
+        assert document.description_translations[0]["content"] == document.description
 
         # empty or unparseable marked description falls back to description
         for marked in [None, "<doc>broken"]:
             document = Document(description="plain", marked_description=marked)
             assert document.marked_description_html == ""
-            assert document.description_translations[0]["content"] == "plain"
+            assert (
+                document.get_description_translations(marked=True)[0]["content"]
+                == "plain"
+            )
 
 
 def test_document_merge_with(document, join):

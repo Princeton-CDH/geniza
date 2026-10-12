@@ -559,7 +559,10 @@ class DocumentDetailView(DocumentDetailBase, DetailView):
                 "related_places": self.object.documentplacerelation_set.order_by(
                     "type__order", "type__name", "place__slug"
                 ),
-                "descriptions": self.object.description_translations,
+                # NER-marked description only for logged-in users
+                "descriptions": self.object.get_description_translations(
+                    marked=self.request.user.is_authenticated
+                ),
             }
         )
         return context_data

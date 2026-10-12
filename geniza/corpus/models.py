@@ -925,13 +925,20 @@ class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin, TaggableMixin)
         ex. [{'lang': 'he', 'content': 'he description'},
             {'lang': 'en', 'content': 'en description'}]
         """
+        return self.get_description_translations()
+
+    def get_description_translations(self, marked=False):
+        """list of dictionaries of translated descriptions, as in
+        :attr:`description_translations`. When ``marked`` is True, the
+        English description is replaced by :attr:`marked_description_html`
+        when available (e.g. for authenticated users)."""
         descriptions = []
         # check all languages we have configured
         for lang, _ in settings.LANGUAGES:
             field_name = f"description_{lang}"
             content = getattr(self, field_name, "")
             # use the NER-marked description for English when available
-            if lang == "en" and self.marked_description_html:
+            if marked and lang == "en" and self.marked_description_html:
                 content = self.marked_description_html
             # only include if it has content in this language
             if content and content.strip():
