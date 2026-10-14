@@ -85,6 +85,12 @@ class Annotation(TrackChangesModel):
     #: to others in the same block or canvas; and "textGranularity", which indicates whether this
     #: is a block- or line-level annotation
     content = models.JSONField()
+    #: annotation content with named entities marked up as XML
+    marked_content = models.TextField(
+        blank=True,
+        null=True,
+        help_text="Annotation content with named entities marked up as XML",
+    )
     #: optional canonical identifier, for annotations imported from another source
     canonical = models.CharField(max_length=255, blank=True)
     #: uri of annotation when imported from another copy (optional)
