@@ -148,6 +148,8 @@ class TestAnnotationExporter(TestCase):
         anno_ex.commit_changed_files(files, [])
         # called without base dir prefix path
         mock_repo.index.add.assert_called_with(["anno/pgp23/1.json"])
+        # only staged changes should be checked
+        mock_repo.is_dirty.assert_called_with(working_tree=False)
         assert mock_repo.index.commit.call_count == 0
 
     @patch("geniza.corpus.annotation_export.Repo")
@@ -376,6 +378,34 @@ def test_annotation_export(mock_repo, annotation, tmp_path):
         anno_ex.repo.index.add.assert_called()
         # should not call remove
         anno_ex.repo.index.remove.assert_not_called()
+
+
+@pytest.mark.django_db
+@patch("geniza.corpus.annotation_export.Repo")
+def test_annotation_export_non_utf8_locale(mock_repo, annotation, tmp_path):
+    # export should write utf-8 regardless of system locale;
+    # simulate a server where the default encoding is latin-1
+    hebrew_text = "בשמך רחמן"
+    annotation.content["body"][0]["value"] = hebrew_text
+    annotation.save()
+
+    def latin1_open(*args, **kwargs):
+        kwargs.setdefault("encoding", "latin-1")
+        return open(*args, **kwargs)
+
+    with override_settings(
+        ANNOTATION_BACKUP_PATH=str(tmp_path), ANNOTATION_BACKUP_GITREPO="git:foo"
+    ):
+        doc_id = document_id_from_manifest_uri(annotation.target_source_manifest_id)
+        anno_ex = AnnotationExporter(pgpids=[doc_id])
+        with patch("geniza.corpus.annotation_export.open", latin1_open, create=True):
+            anno_ex.export()
+
+        doc_transcription_dir = tmp_path.joinpath(anno_ex.document_path(doc_id))
+        txt_files = list(doc_transcription_dir.glob("*.txt"))
+        assert txt_files[0].read_text(encoding="utf-8") == hebrew_text
+        html_files = list(doc_transcription_dir.glob("*.html"))
+        assert hebrew_text in html_files[0].read_text(encoding="utf-8")
 
 
 @pytest.mark.django_db
