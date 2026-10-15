@@ -191,7 +191,7 @@ class AnnotationExporter:
                 # and use it as the uri for the saved annotation list
                 search_args = {"uri": canvas, "manifest": document.manifest_uri}
                 annolist_uri = "%s?%s" % (anno_search_uri, urlencode(search_args))
-                with open(annolist_out_path, "w") as outfile:
+                with open(annolist_out_path, "w", encoding="utf-8") as outfile:
                     json.dump(
                         # FIXME: correct this test uri
                         annotations_to_list(annotations, uri=annolist_uri),
@@ -220,7 +220,7 @@ class AnnotationExporter:
                         doc_transcription_dir,
                         "%s.%s" % (base_filename, output_format),
                     )
-                    with open(outfile_path, "w") as outfile:
+                    with open(outfile_path, "w", encoding="utf-8") as outfile:
                         if output_format == "html":
                             content = html_template[fn_type].render(
                                 {"document": document, "edition": footnote}
@@ -306,7 +306,9 @@ class AnnotationExporter:
             for old_file in remove_filenames:
                 os.remove(old_file)
 
-        if self.repo.is_dirty():
+        # only check staged changes, so unrelated modified files in the
+        # working tree don't result in empty commits
+        if self.repo.is_dirty(working_tree=False):
             self.repo.index.commit(self.get_commit_message())
             if self.push_changes:
                 self.sync_github()
@@ -379,9 +381,11 @@ class AnnotationExporter:
         # filename based on pgpid and source authors;
         # explicitly label as transcription/translation for context
         authors = [a.creator.last_name for a in source.authorship_set.all()] or [
-            "machine-generated"
-            if "model" in source.source_type.type
-            else "unknown author"
+            (
+                "machine-generated"
+                if "model" in source.source_type.type
+                else "unknown author"
+            )
         ]
 
         return "PGPID%(pgpid)s_s%(source_id)d_%(authors)s_%(text_type)s" % {
