@@ -749,6 +749,17 @@ class Footnote(TrackChangesModel):
     def content_html(self):
         """content as html, if available; returns a dictionary of lists.
         keys are canvas ids, list is html content."""
+        return self.get_content_html()
+
+    @cached_property
+    def marked_content_html(self):
+        """:attr:`content_html` with named entities from annotations'
+        marked content highlighted, where available"""
+        return self.get_content_html(marked=True)
+
+    def get_content_html(self, marked=False):
+        """content as html, as in :attr:`content_html`; when ``marked`` is
+        True, highlights named entities from annotations' marked content"""
         # NOTE: previously only returned if type was digital edition;
         # now that we're using foreign keys, return content from
         # any associated annotations, regardless of what doc relation.
@@ -765,7 +776,9 @@ class Footnote(TrackChangesModel):
             Q(content__textGranularity__isnull=False)
             & Q(content__textGranularity="line")
         ).order_by("content__schema:position", "created"):
-            html_content[a.target_source_id] += a.block_content_html
+            html_content[a.target_source_id] += (
+                a.marked_block_content_html if marked else a.block_content_html
+            )
         # cast to a regular dict to avoid weirdness in django templates
         return dict(html_content)
 

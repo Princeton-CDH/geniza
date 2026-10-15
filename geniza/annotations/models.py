@@ -1,5 +1,6 @@
 import hashlib
 import json
+import logging
 import re
 import uuid
 from collections import defaultdict
@@ -15,6 +16,78 @@ from django.urls import reverse
 from geniza.common.models import TrackChangesModel
 from geniza.common.utils import absolutize_url
 from geniza.corpus.annotation_utils import document_id_from_manifest_uri
+
+logger = logging.getLogger(__name__)
+
+#: named entity types highlighted in marked annotation content, mapped to
+#: private-use sentinel characters used while converting to HTML
+ENTITY_SENTINELS = {"PER": "", "LOC": ""}
+#: sentinel marking the end of an entity
+ENTITY_END = ""
+SENTINEL_RE = re.compile("[-]")
+#: entity tags added by the NER model to annotation body html
+ENTITY_TAG_RE = re.compile(r"<(/?)(PER|LOC|ORG|MISC)>")
+
+
+def _sentinels_to_html(html):
+    """Replace entity sentinels in html with ``<mark class="entity-<type>">``
+    elements. Sentinels within html tags are dropped; entities spanning html
+    tags are closed before and reopened after the tag, so output stays
+    well-formed."""
+    classes = {s: f"entity-{t.lower()}" for t, s in ENTITY_SENTINELS.items()}
+    output = []
+    current = None  # entity class currently open (logically)
+    mark_open = False  # whether a <mark> is currently emitted
+    for segment in re.split(r"(<[^>]*>)", html):
+        if segment.startswith("<"):
+            if mark_open:
+                output.append("</mark>")
+                mark_open = False
+            output.append(SENTINEL_RE.sub("", segment))
+            continue
+        for char in segment:
+            if char in classes:
+                if mark_open:
+                    output.append("</mark>")
+                    mark_open = False
+                current = classes[char]
+            elif char == ENTITY_END:
+                if mark_open:
+                    output.append("</mark>")
+                    mark_open = False
+                current = None
+            elif SENTINEL_RE.match(char):
+                continue
+            else:
+                # open mark lazily so empty marks are never emitted
+                if current and not mark_open:
+                    output.append(f'<mark class="{current}">')
+                    mark_open = True
+                output.append(char)
+    if mark_open:
+        output.append("</mark>")
+    return "".join(output)
+
+
+def marked_content_html(marked_content):
+    """Convert NER output for an annotation (the annotation JSON, with entity
+    tags such as ``<PER>`` and ``<LOC>`` in the body html) to the annotation
+    body HTML, with PER and LOC entities wrapped in
+    ``<mark class="entity-per">`` / ``<mark class="entity-loc">``; other
+    entity tags are dropped, keeping their text. Returns None if content
+    cannot be parsed."""
+    try:
+        html = json.loads(marked_content)["body"][0]["value"]
+    except (ValueError, KeyError, IndexError, TypeError):
+        return None
+
+    def entity_sentinel(match):
+        if match.group(2) not in ENTITY_SENTINELS:
+            return ""
+        return ENTITY_END if match.group(1) else ENTITY_SENTINELS[match.group(2)]
+
+    # replace entity tags with sentinels so they are not treated as html tags
+    return _sentinels_to_html(ENTITY_TAG_RE.sub(entity_sentinel, html))
 
 
 def annotations_to_list(annotations, uri):
@@ -171,9 +244,45 @@ class Annotation(TrackChangesModel):
             pass
 
     @cached_property
+    def marked_body_content(self):
+        """annotation body content with named entities from
+        :attr:`marked_content` highlighted; falls back to :attr:`body_content`
+        when there is no marked content or it cannot be parsed"""
+        if self.marked_content:
+            html = marked_content_html(self.marked_content)
+            if html is None:
+                logger.warning(
+                    "Could not parse marked content for annotation %s", self.pk
+                )
+            # NER output may normalize whitespace; only use it if the text
+            # otherwise matches the current transcription
+            elif self._strip_ws(re.sub(r"</?mark[^>]*>", "", html)) == self._strip_ws(
+                self.body_content or ""
+            ):
+                return html
+        return self.body_content
+
+    @staticmethod
+    def _strip_ws(html):
+        """remove whitespace (including non-breaking spaces) for comparison"""
+        return re.sub(r"\s|\xa0|&nbsp;", "", html)
+
+    @cached_property
     def block_content_html(self):
         """convenience method to get HTML content, including label and any associated lines,
         of a block-level annotation, as a list of HTML strings"""
+        return self.get_block_content_html()
+
+    @cached_property
+    def marked_block_content_html(self):
+        """:attr:`block_content_html` with named entities highlighted"""
+        return self.get_block_content_html(marked=True)
+
+    def get_block_content_html(self, marked=False):
+        """HTML content of a block-level annotation as in
+        :attr:`block_content_html`; when ``marked`` is True, uses
+        :attr:`marked_body_content` to highlight named entities"""
+        body_attr = "marked_body_content" if marked else "body_content"
         content = []
         if self.label:
             content.append(f"<h3>{self.label}</h3>")
@@ -181,10 +290,10 @@ class Annotation(TrackChangesModel):
             # if this block annotation has separate line annotations, serialize as ordered list
             content.append("<ol>")
             for l in self.lines.all().order_by("content__schema:position"):
-                content.append(f"<li>{l.body_content}</li>")
+                content.append(f"<li>{getattr(l, body_attr)}</li>")
             content.append("</ol>")
-        elif self.body_content:
-            content.append(self.body_content)
+        elif getattr(self, body_attr):
+            content.append(getattr(self, body_attr))
         return content
 
     @cached_property
