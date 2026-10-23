@@ -5,6 +5,7 @@ from unittest.mock import patch
 import pytest
 from django.contrib.admin.models import ADDITION, LogEntry
 from django.core.management import call_command
+from django.core.management.base import CommandError
 
 from geniza.annotations.models import Annotation
 from geniza.corpus.management.commands.add_translation import Command, tokenize
@@ -227,18 +228,25 @@ class TestAddTranslation:
         assert not Source.objects.filter(title_en="Test MT model 1.0").exists()
 
     @patch.object(Document, "index")
-    def test_handle_pgpid_filter(self, mock_index, document, tmp_path):
+    def test_handle_limit(self, mock_index, document, tmp_path):
         csv_path = write_csv(
-            tmp_path / "t.csv", [(0, "יא", "يا"), (document.pk, "יא", "يا")]
+            tmp_path / "t.csv",
+            [(document.pk, "יא", "يا"), (0, "יא", "يا"), (0, "יא", "يا")],
         )
-        output = add_translation(csv_path, "-p", str(document.pk))
-        assert "Added 1 translation(s); skipped 0" in output
+        # only the first two rows are read
+        output = add_translation(csv_path, "-n", "2")
+        assert "Added 1 translation(s); skipped 1" in output
+        assert "Added PGPIDs: %d\n" % document.pk in output
+        assert "Skipped PGPIDs: 0\n" in output
+        with pytest.raises(CommandError, match="positive"):
+            add_translation(csv_path, "-n", "0")
 
     @patch.object(Document, "index")
     def test_handle_dry_run(self, mock_index, document, edition, translation_csv):
         output = add_translation(translation_csv, "--dry-run")
         assert "[margin] <ol><li>تمنع عن يع</li></ol>" in output
         assert "Would add 1 translation(s)" in output
+        assert "Would add PGPIDs: %d" % document.pk in output
         assert not document.digital_translations().exists()
         assert not Source.objects.filter(title_en="Test MT model 1.0").exists()
         mock_index.assert_not_called()

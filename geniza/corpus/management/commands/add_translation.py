@@ -15,6 +15,8 @@ first image (or a placeholder canvas if the document has no images).
 
 Intended to be run manually from the shell as follows:
 ./manage.py add_translation transliterations.csv -m "Model name" --model-version 1.0
+
+Use -n N to ingest only the first N rows, and --dry-run to preview without saving.
 """
 
 import csv
@@ -23,6 +25,7 @@ import re
 import unicodedata
 from copy import deepcopy
 from difflib import SequenceMatcher
+from itertools import islice
 
 from bs4 import BeautifulSoup, NavigableString
 from django.conf import settings
@@ -75,11 +78,10 @@ class Command(BaseCommand):
             help="Version number of the model that generated the transliterations",
         )
         parser.add_argument(
-            "-p",
-            "--pgpid",
+            "-n",
+            "--limit",
             type=int,
-            action="append",
-            help="Only ingest rows for this PGPID; repeat for multiple documents",
+            help="Only ingest the first N rows of the CSV",
         )
         parser.add_argument(
             "--dry-run",
@@ -91,29 +93,28 @@ class Command(BaseCommand):
         self.script_user = User.objects.get(username=settings.SCRIPT_USERNAME)
         self.language = SourceLanguage.objects.get(code=self.language_code)
 
+        if options["limit"] is not None and options["limit"] < 1:
+            raise CommandError("--limit must be a positive number")
+
         with open(options["csv"], encoding="utf-8", newline="") as csvfile:
             reader = csv.DictReader(csvfile)
             missing = {"PGPID", "JA", "Transliterated"} - set(reader.fieldnames or [])
             if missing:
                 raise CommandError("CSV is missing columns: %s" % ", ".join(missing))
-            rows = [
-                row
-                for row in reader
-                if not options["pgpid"] or int(row["PGPID"]) in options["pgpid"]
-            ]
+            rows = list(islice(reader, options["limit"]))
 
         # disconnect solr indexing signals; this script will index documents manually
         IndexableSignalHandler.disconnect()
 
         self.source = None
-        added, skipped = 0, []
+        added, skipped = [], []
         for row in rows:
             try:
                 with transaction.atomic():
                     doc = self.ingest_row(row, options)
                     if options["dry_run"]:
                         transaction.set_rollback(True)
-                added += 1
+                added.append(row["PGPID"])
                 if not options["dry_run"]:
                     self.index(doc)
             except CommandError as err:
@@ -123,9 +124,18 @@ class Command(BaseCommand):
         self.stdout.write(
             self.style.SUCCESS(
                 "%s %d translation(s); skipped %d"
-                % ("Would add" if options["dry_run"] else "Added", added, len(skipped))
+                % (
+                    "Would add" if options["dry_run"] else "Added",
+                    len(added),
+                    len(skipped),
+                )
             )
         )
+        if added:
+            self.stdout.write(
+                "%s PGPIDs: %s"
+                % ("Would add" if options["dry_run"] else "Added", ", ".join(added))
+            )
         if skipped:
             self.stdout.write("Skipped PGPIDs: %s" % ", ".join(skipped))
 

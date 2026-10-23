@@ -270,9 +270,15 @@ class Source(SlugMixin, models.Model):
             elif self.source_type.type in doublequoted_types:
                 stripped_title = self.title.strip("\"'")
                 work_title = '"%s%s"' % (stripped_title, ltr_mark)
-            # if this is a machine learning model, format appropriately
+            # if this is a machine learning model, format appropriately;
+            # models used for digital translations produce transliterations
             elif "model" in self.source_type.type:
-                work_title = "Machine-generated transcription (%s)" % self.title
+                if self.footnote_set.filter(
+                    doc_relation__contains=Footnote.DIGITAL_TRANSLATION
+                ).exists():
+                    work_title = "Machine-transliterated text (%s)" % self.title
+                else:
+                    work_title = "Machine-generated transcription (%s)" % self.title
             elif (
                 format_index_cards
                 and "Goitein" in author

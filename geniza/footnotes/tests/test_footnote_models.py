@@ -261,6 +261,23 @@ class TestSource:
             == "Machine-generated transcription (%s)." % source.title_en
         )
 
+    @pytest.mark.django_db
+    def test_formatted_mlmodel_transliteration(self, document):
+        (model, _) = SourceType.objects.get_or_create(type="Machine learning model")
+        source = Source.objects.create(
+            title_en="Transliteration model 1.0", source_type=model
+        )
+        # model source used for a digital translation is a transliteration
+        Footnote.objects.create(
+            source=source,
+            content_object=document,
+            doc_relation=[Footnote.DIGITAL_TRANSLATION],
+        )
+        assert (
+            source.formatted_display()
+            == "Machine-transliterated text (%s)." % source.title_en
+        )
+
     def test_formatted_indexcard(self, index_cards):
         assert "unpublished index cards (1950–85)" in index_cards.formatted_display(
             format_index_cards=True
