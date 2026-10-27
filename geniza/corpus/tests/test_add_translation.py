@@ -122,10 +122,30 @@ class TestAddTranslation:
 
         footnote = document.digital_translations().get()
         source = footnote.source
-        assert source.source_type.type == "Machine learning model"
-        assert source.title == "Test MT model 1.0"
+        # source is the article describing the model, with the model noted
+        assert source.source_type.type == "Article"
+        assert source.title == Command.article["title_en"]
+        assert source.journal == Command.article["journal"]
+        assert source.volume == "NLP4DH"
+        assert source.year == 2025
+        assert source.url == "https://doi.org/10.46298/jdmdh.15020"
+        assert (
+            source.notes
+            == "Machine-generated transliterations by model Test MT model 1.0"
+        )
         assert list(source.languages.values_list("code", flat=True)) == ["ar"]
-        assert not source.authorship_set.exists()
+        assert [str(a.creator) for a in source.authorship_set.all()] == [
+            "Abdellatif, Mohamed",
+            "Bretheim, Joel",
+            "Rustow, Marina",
+        ]
+        # cited like any other article (with LTR marks, since the language is RTL)
+        assert source.display() == (
+            "Mohamed Abdellatif, Joel Bretheim and Marina Rustow, "
+            + '"Machine Transliteration of Long Text with Error '
+            + 'Detection and Correction‎" (in Arabic), Journal of Data Mining & '
+            + "Digital Humanities‎ NLP4DH (2025)."
+        )
 
         main, margin = footnote.annotation_set.order_by("content__schema:position")
         # same canvas, zone, label, and position as the transcription blocks
@@ -202,7 +222,7 @@ class TestAddTranslation:
         assert "/iiif/textblock/" in anno.target_source_id
         assert "single block on placeholder canvas" in output
         # same source for both documents
-        assert Source.objects.filter(title_en="Test MT model 1.0").count() == 1
+        assert Source.objects.filter(title_en=Command.article["title_en"]).count() == 1
 
     @patch.object(Document, "index")
     def test_handle_poor_match(self, mock_index, document, edition, tmp_path):
@@ -225,7 +245,7 @@ class TestAddTranslation:
         assert "Added 0 translation(s); skipped 3" in output
         # nothing should have been created
         assert not document.digital_translations().exists()
-        assert not Source.objects.filter(title_en="Test MT model 1.0").exists()
+        assert not Source.objects.filter(title_en=Command.article["title_en"]).exists()
 
     @patch.object(Document, "index")
     def test_handle_limit(self, mock_index, document, tmp_path):
@@ -248,7 +268,7 @@ class TestAddTranslation:
         assert "Would add 1 translation(s)" in output
         assert "Would add PGPIDs: %d" % document.pk in output
         assert not document.digital_translations().exists()
-        assert not Source.objects.filter(title_en="Test MT model 1.0").exists()
+        assert not Source.objects.filter(title_en=Command.article["title_en"]).exists()
         mock_index.assert_not_called()
 
     @patch.object(Document, "index", side_effect=ConnectionError("no solr"))

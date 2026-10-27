@@ -4,8 +4,9 @@ documents as digital translations, from a CSV with columns PGPID, JA (the
 Judaeo-Arabic text the transliteration was generated from) and Transliterated
 (the Arabic-script transliteration, aligned word for word with JA).
 
-Gets or creates a single source for the model (shared across all documents
-ingested with the same model name and version) and a digital translation
+Gets or creates a single source for the article describing the transliteration
+model (shared across all ingested documents, and cited like any other article),
+with the model name and version recorded in its notes, and a digital translation
 footnote for that source on each document. When the document has a digital
 edition, the transliteration is split to mirror it: one annotation per
 transcription block, on the same canvas, with the same label, position and
@@ -38,7 +39,14 @@ from parasolr.django.signals import IndexableSignalHandler
 
 from geniza.annotations.models import Annotation
 from geniza.corpus.models import Document
-from geniza.footnotes.models import Footnote, Source, SourceLanguage, SourceType
+from geniza.footnotes.models import (
+    Authorship,
+    Creator,
+    Footnote,
+    Source,
+    SourceLanguage,
+    SourceType,
+)
 
 #: editorial marks in transcriptions that are not part of the words
 EDITORIAL_MARKS_RE = re.compile(r"[\[\]/.?!()]")
@@ -58,6 +66,22 @@ class Command(BaseCommand):
     #: language code of the transliterations
     language_code = "ar"
 
+    #: article describing the transliteration model, used as the source
+    #: (https://jdmdh.episciences.org/15327)
+    article = {
+        "title_en": "Machine Transliteration of Long Text with Error Detection and Correction",
+        "journal": "Journal of Data Mining & Digital Humanities",
+        "volume": "NLP4DH",
+        "year": 2025,
+        "url": "https://doi.org/10.46298/jdmdh.15020",
+    }
+    #: authors of the article, in order, as (last name, first name)
+    article_authors = [
+        ("Abdellatif", "Mohamed"),
+        ("Bretheim", "Joel"),
+        ("Rustow", "Marina"),
+    ]
+
     #: minimum share of CSV words that must match the transcription words
     #: for a document's transliteration to be split along transcription lines
     min_match = 0.8
@@ -70,7 +94,8 @@ class Command(BaseCommand):
             "-m",
             "--model-name",
             required=True,
-            help="Name of the model that generated the transliterations",
+            help="Name of the model that generated the transliterations "
+            + "(recorded in the source notes)",
         )
         parser.add_argument(
             "--model-version",
@@ -328,15 +353,29 @@ class Command(BaseCommand):
         # same format as placeholder canvases in the annotation editor
         return f"{doc.permalink}iiif/textblock/{textblock.pk}/canvas/1/", True
 
-    def get_source(self, title):
-        """Get or create the machine learning model source with the given title"""
-        (model, _) = SourceType.objects.get_or_create(type="Machine learning model")
+    def get_source(self, model):
+        """Get or create the article source for the transliteration model,
+        with its authors and language; the model name and version are noted
+        when the source is created."""
         (source, created) = Source.objects.get_or_create(
-            title_en=title,
-            source_type=model,
+            title_en=self.article["title_en"],
+            source_type=SourceType.objects.get(type="Article"),
+            defaults={
+                **self.article,
+                "notes": "Machine-generated transliterations by model %s" % model,
+            },
         )
         if created:
             source.languages.add(self.language)
+            for sort_order, (last_name, first_name) in enumerate(
+                self.article_authors, start=1
+            ):
+                creator, _ = Creator.objects.get_or_create(
+                    last_name=last_name, first_name=first_name
+                )
+                Authorship.objects.create(
+                    creator=creator, source=source, sort_order=sort_order
+                )
             self.log_addition(
                 source, "Created new source for machine-generated digital translation"
             )
