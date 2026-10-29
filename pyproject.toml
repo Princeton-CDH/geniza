@@ -32,7 +32,8 @@ dependencies = [
     "rich",
     "wagtail>=7.1,<7.2",
     "wagtail-localize>=1.12,<1.13",
-    "djiffy>=1.0.2,<1.1",
+    # NOTE: switch to djiffy>=1.0.3,<1.1 once released
+    "djiffy @ git+https://github.com/Princeton-CDH/djiffy.git@599ffa5772949bbac323f48d1fad9ac82ae5114c",
     "natsort",
     "django-widget-tweaks",
     "django-csp-helpers",

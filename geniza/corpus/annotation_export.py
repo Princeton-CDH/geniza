@@ -12,7 +12,7 @@ from django.template.defaultfilters import pluralize
 from django.template.loader import get_template
 from django.urls import reverse
 from django.utils.text import slugify
-from git import GitCommandError, Repo
+from git import Repo
 
 from geniza.annotations.models import Annotation, annotations_to_list
 from geniza.common.utils import absolutize_url
@@ -220,19 +220,20 @@ class AnnotationExporter:
                         doc_transcription_dir,
                         "%s.%s" % (base_filename, output_format),
                     )
-                    with open(outfile_path, "w", encoding="utf-8") as outfile:
-                        if output_format == "html":
-                            content = html_template[fn_type].render(
-                                {"document": document, "edition": footnote}
-                            )
-                        else:
-                            # text version is meant for corpus analytics,
-                            # so should be minimal and content only
-                            content = footnote.content_text
-                        if content:
-                            # don't write/add to updated if no content
+                    if output_format == "html":
+                        content = html_template[fn_type].render(
+                            {"document": document, "edition": footnote}
+                        )
+                    else:
+                        # text version is meant for corpus analytics,
+                        # so should be minimal and content only
+                        content = footnote.content_text
+                    # don't create the file or add to updated if no content;
+                    # an empty untracked file would be flagged for removal later
+                    if content:
+                        with open(outfile_path, "w", encoding="utf-8") as outfile:
                             outfile.write(content)
-                            doc_updated_files.append(outfile_path)
+                        doc_updated_files.append(outfile_path)
 
             # add all updated files for this document to the updated list
             updated_filenames.extend(doc_updated_files)
@@ -295,12 +296,9 @@ class AnnotationExporter:
         ]
         # remove obsolete files, if any
         if remove_filenames:
-            # if file is not in git index, this will error
-            try:
-                self.repo.index.remove(git_remove_filenames)
-            except GitCommandError:
-                # ignore; file was not in git index, will be removed
-                pass
+            # ignore any files not in the git index; otherwise git rm fails
+            # for the whole batch and tracked files are left unstaged
+            self.repo.index.remove(git_remove_filenames, ignore_unmatch=True)
 
             # remove from file system as well
             for old_file in remove_filenames:

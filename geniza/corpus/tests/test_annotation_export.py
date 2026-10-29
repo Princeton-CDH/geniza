@@ -7,7 +7,6 @@ import pytest
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.test import TestCase, override_settings
-from git import GitCommandError
 
 from geniza.common.models import UserProfile
 from geniza.corpus.annotation_export import AnnotationExporter
@@ -179,16 +178,14 @@ class TestAnnotationExporter(TestCase):
         anno_ex.repo.is_dirty.return_value = True
 
         anno_ex.commit_changed_files([], files)
-        # called without base dir prefix path
-        mock_repo.index.remove.assert_called_with(["anno/pgp23/1.json"])
+        # called without base dir prefix path; ignore files not in git index
+        # so one untracked file doesn't prevent removing the rest
+        mock_repo.index.remove.assert_called_with(
+            ["anno/pgp23/1.json"], ignore_unmatch=True
+        )
         # file removed using full path
         mock_remove.assert_called_with(files[0])
         # commit and sync logic is same as add
-
-        # handle (ignore) error when file is not in git index
-        mock_repo.index.remove.side_effect = GitCommandError("not in index")
-        # should not raise an exception
-        anno_ex.commit_changed_files([], files)
 
     def test_output_message_stdout(self):
         stdout = Mock()
@@ -406,6 +403,25 @@ def test_annotation_export_non_utf8_locale(mock_repo, annotation, tmp_path):
         assert txt_files[0].read_text(encoding="utf-8") == hebrew_text
         html_files = list(doc_transcription_dir.glob("*.html"))
         assert hebrew_text in html_files[0].read_text(encoding="utf-8")
+
+
+@pytest.mark.django_db
+@patch("geniza.corpus.annotation_export.Repo")
+def test_annotation_export_no_text_content(mock_repo, annotation, tmp_path):
+    # no text content: should not create an empty txt file
+    annotation.content["body"][0]["value"] = ""
+    annotation.save()
+    with override_settings(
+        ANNOTATION_BACKUP_PATH=str(tmp_path), ANNOTATION_BACKUP_GITREPO="git:foo"
+    ):
+        doc_id = document_id_from_manifest_uri(annotation.target_source_manifest_id)
+        anno_ex = AnnotationExporter(pgpids=[doc_id])
+        anno_ex.export()
+
+        doc_transcription_dir = tmp_path.joinpath(anno_ex.document_path(doc_id))
+        assert not list(doc_transcription_dir.glob("*.txt"))
+        # html version is still generated
+        assert len(list(doc_transcription_dir.glob("*.html"))) == 1
 
 
 @pytest.mark.django_db

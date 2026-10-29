@@ -74,3 +74,9 @@ sed -i '' 's|http://0.0.0.0:8001/bodleian/|https://princetongenizalab.github.io/
 Sometimes, Bodleian TEI skips folios even though they have images, such as MS Heb. c 13/3. In these cases, you can add them to `skipped_folio_shelfmarks` in `bodleian_iiif.py` and provide the range of folio numbers that should actually be included for a given Bodleian shelfmark.
 
 In the case of MS Heb. c 13/3, that Bodleian shelfmark points to folio 4, but we also need folio 3, so its entry in `skipped_folio_shelfmarks` is `[3, 4]`.
+
+## Data cleanup
+
+One-off scripts to run from the Django shell (`python manage.py shell < scripts/<script>.py`).
+
+-   rename_upenn_rar.py: rename UPenn RAR MS fragments to CAJS RAR MS and move them to a CAJS collection

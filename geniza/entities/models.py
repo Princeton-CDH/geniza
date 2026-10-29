@@ -1271,7 +1271,8 @@ class PersonDocumentRelationType(MergeRelationTypesMixin, models.Model):
         }
 
     def relation_set(self):
-        # own relationships QuerySet as required by MergeRelationTypesMixin
+        """Queryset of all relationships of this type, as required by
+        :class:`MergeRelationTypesMixin`"""
         return self.persondocumentrelation_set.all()
 
 
@@ -1360,7 +1361,8 @@ class PersonPersonRelationType(MergeRelationTypesMixin, models.Model):
         return self.name
 
     def relation_set(self):
-        # own relationships QuerySet as required by MergeRelationTypesMixin
+        """Queryset of all relationships of this type, as required by
+        :class:`MergeRelationTypesMixin`"""
         return self.personpersonrelation_set.all()
 
 

@@ -1,5 +1,7 @@
+import os
 from unittest.mock import Mock
 
+import pytest
 from addict import Dict
 from django.utils.translation import activate
 
@@ -47,6 +49,32 @@ def test_manifestimporter_canvas_id():
 
     canvas = Mock(id="https://example.co/iiif/c12345")
     assert gmi.canvas_short_id(canvas) == "c12345"
+
+    # penn canvas ids end with /canvas
+    penn_canvas = Mock(
+        id="https://digitalrepository.library.upenn.edu/iiif/2/assets/d7c9082e-76d1-4c4e-97eb-25baf0406fa5/canvas"
+    )
+    assert gmi.canvas_short_id(penn_canvas) == "d7c9082e-76d1-4c4e-97eb-25baf0406fa5"
+
+
+@pytest.mark.django_db
+def test_manifestimporter_penn_manifest():
+    # penn manifest; canvas ids all end with /canvas
+    fixture = os.path.join(
+        os.path.dirname(__file__), "fixtures", "penn_halper_337_manifest.json"
+    )
+
+    # should not encounter duplicate canvas short id IntegrityError
+    manifest = GenizaManifestImporter().import_paths([fixture])[0]
+    canvases = manifest.canvases.all()
+    assert canvases.count() == 2
+    assert [c.short_id for c in canvases] == [
+        "d7c9082e-76d1-4c4e-97eb-25baf0406fa5",
+        "c117ca7f-66d2-42ca-b847-22f3c99637e1",
+    ]
+    assert canvases[0].iiif_image_id == (
+        "https://iiif-images.library.upenn.edu/iiif/2/d7c9082e-76d1-4c4e-97eb-25baf0406fa5"
+    )
 
 
 def test_convert_attrdict():
