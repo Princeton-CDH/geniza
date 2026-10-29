@@ -238,15 +238,25 @@ class Command(BaseCommand):
         digital edition. Returns a list of annotation contents, one per transcription
         block, and the share of words matched; or None if there is no digital edition
         that matches well enough."""
+        # collect canvases in order
+        canvases = list(doc.iiif_images(with_placeholders=True))
         best = None
         for edition in doc.digital_editions():
             blocks = [
                 (block, *self.block_lines(block))
-                for block in edition.annotation_set.filter(block__isnull=True).order_by(
-                    "content__schema:position", "created"
+                for block in sorted(
+                    # inner ordering: use `schema:position` and `created`
+                    edition.annotation_set.filter(block__isnull=True).order_by(
+                        "content__schema:position", "created"
+                    ),
+                    # outer ordering: use the position in `canvases`
+                    key=lambda block: (
+                        canvases.index(block.target_source_id)
+                        if block.target_source_id in canvases
+                        else len(canvases)
+                    ),
                 )
-            ]
-            # each transcription word, with the (block, line) index it belongs to
+            ]  # each transcription word, with the (block, line) index it belongs to
             words = [
                 (word, (b, l))
                 for b, (_, _, lines) in enumerate(blocks)
