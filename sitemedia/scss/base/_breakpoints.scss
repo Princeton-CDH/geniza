@@ -23,3 +23,10 @@
         @content;
     }
 }
+
+@mixin for-widescreen {
+    /* 4K UHD */
+    @media (min-width: 3840px) {
+        @content;
+    }
+}
