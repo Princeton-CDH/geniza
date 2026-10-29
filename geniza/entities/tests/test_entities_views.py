@@ -772,7 +772,7 @@ class TestPersonListView:
         form = Mock()
         form.get_translated_label.return_value = "פקיד המדינה"
         social_role_filters = PersonListView.get_applied_filter_labels(
-            None, form, "social_role", ["State\ official"]
+            None, form, "social_role", [r"State\ official"]
         )
         assert social_role_filters == [
             {"field": "social_role", "value": "State official", "label": "פקיד המדינה"}

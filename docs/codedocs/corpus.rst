@@ -38,6 +38,9 @@ template tags
 .. automodule:: geniza.corpus.templatetags.corpus_extras
     :members:
 
+.. automodule:: geniza.corpus.templatetags.admin_extras
+    :members:
+
 manage commands
 ---------------
 

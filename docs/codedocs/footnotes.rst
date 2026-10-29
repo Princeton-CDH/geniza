@@ -13,4 +13,10 @@ models
 .. automodule:: geniza.footnotes.models
     :members:
 
+metadata export
+---------------
+
+.. automodule:: geniza.footnotes.metadata_export
+    :members:
+
 
