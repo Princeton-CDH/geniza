@@ -1,0 +1,1049 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>geniza.entities.metadata_export &#8212; Princeton Geniza Project 4.32.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=5ecbeea2" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/basic.css?v=b08954a9" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=27fed22d" />
+    <script src="../../../_static/documentation_options.js?v=54d9916e"></script>
+    <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for geniza.entities.metadata_export</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">itertools</span><span class="w"> </span><span class="kn">import</span> <span class="n">groupby</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">operator</span><span class="w"> </span><span class="kn">import</span> <span class="n">itemgetter</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">django.contrib.contenttypes.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">ContentType</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">django.db.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">F</span><span class="p">,</span> <span class="n">Value</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">django.db.models.query</span><span class="w"> </span><span class="kn">import</span> <span class="n">Prefetch</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">django.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">timezone</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">django.utils.text</span><span class="w"> </span><span class="kn">import</span> <span class="n">slugify</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">geniza.common.metadata_export</span><span class="w"> </span><span class="kn">import</span> <span class="n">Exporter</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">geniza.corpus.dates</span><span class="w"> </span><span class="kn">import</span> <span class="n">standard_date_display</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">geniza.corpus.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">Document</span><span class="p">,</span> <span class="n">DocumentEventRelation</span><span class="p">,</span> <span class="n">TextBlock</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">geniza.entities.models</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">DocumentPlaceRelation</span><span class="p">,</span>
+    <span class="n">DocumentPlaceRelationType</span><span class="p">,</span>
+    <span class="n">Event</span><span class="p">,</span>
+    <span class="n">Name</span><span class="p">,</span>
+    <span class="n">Person</span><span class="p">,</span>
+    <span class="n">PersonDocumentRelation</span><span class="p">,</span>
+    <span class="n">PersonDocumentRelationType</span><span class="p">,</span>
+    <span class="n">PersonPersonRelationType</span><span class="p">,</span>
+    <span class="n">PersonPlaceRelation</span><span class="p">,</span>
+    <span class="n">PersonPlaceRelationType</span><span class="p">,</span>
+    <span class="n">Place</span><span class="p">,</span>
+    <span class="n">PlaceEventRelation</span><span class="p">,</span>
+    <span class="n">PlacePlaceRelationType</span><span class="p">,</span>
+<span class="p">)</span>
+
+
+<div class="viewcode-block" id="PublicPersonExporter">
+<a class="viewcode-back" href="../../../codedocs/entities.html#geniza.entities.metadata_export.PublicPersonExporter">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">PublicPersonExporter</span><span class="p">(</span><span class="n">Exporter</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    A subclass of :class:`geniza.common.metadata_export.Exporter` that</span>
+<span class="sd">    exports information relating to :class:`~geniza.entities.models.Person`.</span>
+<span class="sd">    Extends :meth:`get_queryset` and :meth:`get_export_data_dict`.</span>
+<span class="sd">    """</span>
+
+    <span class="n">model</span> <span class="o">=</span> <span class="n">Person</span>
+    <span class="n">csv_fields</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s2">"name"</span><span class="p">,</span>
+        <span class="s2">"name_variants"</span><span class="p">,</span>
+        <span class="s2">"gender"</span><span class="p">,</span>
+        <span class="s2">"social_roles"</span><span class="p">,</span>
+        <span class="c1"># TODO: floruit vs mentioned as dead date columns</span>
+        <span class="s2">"active_date_range"</span><span class="p">,</span>
+        <span class="s2">"manual_date_range"</span><span class="p">,</span>
+        <span class="s2">"description"</span><span class="p">,</span>
+        <span class="s2">"tags"</span><span class="p">,</span>
+        <span class="s2">"related_people_count"</span><span class="p">,</span>
+        <span class="s2">"related_documents_count"</span><span class="p">,</span>
+        <span class="s2">"url"</span><span class="p">,</span>
+    <span class="p">]</span>
+
+    <span class="c1"># queryset filter for content types included in this export</span>
+    <span class="n">content_type_filter</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">"content_type__app_label__in"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"entities"</span><span class="p">,</span> <span class="s2">"corpus"</span><span class="p">],</span>
+        <span class="s2">"content_type__model__in"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"document"</span><span class="p">,</span> <span class="s2">"person"</span><span class="p">,</span> <span class="s2">"place"</span><span class="p">],</span>
+    <span class="p">}</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">queryset</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">progress</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Adds fields to the export based on PersonPlaceRelationType names"""</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">csv_fields</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">csv_fields</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">csv_fields</span><span class="p">[</span><span class="mi">9</span><span class="p">:</span><span class="mi">9</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">slugify</span><span class="p">(</span><span class="n">ppr_type</span><span class="o">.</span><span class="n">name</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"-"</span><span class="p">,</span> <span class="s2">"_"</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">ppr_type</span> <span class="ow">in</span> <span class="n">PersonPlaceRelationType</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">order_by</span><span class="p">(</span><span class="s2">"name"</span><span class="p">)</span>
+        <span class="p">]</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">queryset</span><span class="p">,</span> <span class="n">progress</span><span class="p">)</span>
+
+<div class="viewcode-block" id="PublicPersonExporter.get_queryset">
+<a class="viewcode-back" href="../../../codedocs/entities.html#geniza.entities.metadata_export.PublicPersonExporter.get_queryset">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_queryset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Applies some prefetching to the base Exporter's get_queryset functionality.</span>
+
+<span class="sd">        :return: Custom-given query set or query set of all people</span>
+<span class="sd">        :rtype: QuerySet</span>
+<span class="sd">        """</span>
+        <span class="n">qset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">queryset</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+        <span class="c1"># clear existing prefetches and then add the ones we need</span>
+        <span class="n">qset</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">qset</span><span class="o">.</span><span class="n">prefetch_related</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">prefetch_related</span><span class="p">(</span>
+                <span class="s2">"names"</span><span class="p">,</span>
+                <span class="s2">"roles"</span><span class="p">,</span>
+                <span class="s2">"relationships"</span><span class="p">,</span>
+                <span class="s2">"from_person"</span><span class="p">,</span>
+                <span class="s2">"to_person"</span><span class="p">,</span>
+                <span class="s2">"personplacerelation_set"</span><span class="p">,</span>
+                <span class="s2">"tags"</span><span class="p">,</span>
+                <span class="n">Prefetch</span><span class="p">(</span>
+                    <span class="s2">"persondocumentrelation_set"</span><span class="p">,</span>
+                    <span class="n">queryset</span><span class="o">=</span><span class="n">PersonDocumentRelation</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">select_related</span><span class="p">(</span><span class="s2">"type"</span><span class="p">),</span>
+                <span class="p">),</span>
+                <span class="n">Prefetch</span><span class="p">(</span>
+                    <span class="s2">"documents"</span><span class="p">,</span>
+                    <span class="n">queryset</span><span class="o">=</span><span class="n">Document</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">prefetch_related</span><span class="p">(</span><span class="s2">"dating_set"</span><span class="p">),</span>
+                <span class="p">),</span>
+            <span class="p">)</span>
+            <span class="o">.</span><span class="n">order_by</span><span class="p">(</span><span class="s2">"slug"</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">qset</span></div>
+
+
+<div class="viewcode-block" id="PublicPersonExporter.get_export_data_dict">
+<a class="viewcode-back" href="../../../codedocs/entities.html#geniza.entities.metadata_export.PublicPersonExporter.get_export_data_dict">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_export_data_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">person</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Get back data about a person in dictionary format.</span>
+
+<span class="sd">        :param person: A given Person object</span>
+<span class="sd">        :type person: Person</span>
+
+<span class="sd">        :return: Dictionary of data about the person</span>
+<span class="sd">        :rtype: dict</span>
+<span class="sd">        """</span>
+        <span class="n">outd</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">"name"</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">person</span><span class="p">),</span>
+            <span class="s2">"name_variants"</span><span class="p">:</span> <span class="s2">", "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                <span class="nb">sorted</span><span class="p">([</span><span class="n">n</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">person</span><span class="o">.</span><span class="n">names</span><span class="o">.</span><span class="n">non_primary</span><span class="p">()])</span>
+            <span class="p">),</span>
+            <span class="s2">"gender"</span><span class="p">:</span> <span class="n">person</span><span class="o">.</span><span class="n">get_gender_display</span><span class="p">(),</span>
+            <span class="s2">"social_roles"</span><span class="p">:</span> <span class="s2">", "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                <span class="n">person</span><span class="o">.</span><span class="n">roles</span><span class="o">.</span><span class="n">order_by</span><span class="p">(</span><span class="s2">"name"</span><span class="p">)</span><span class="o">.</span><span class="n">values_list</span><span class="p">(</span><span class="s2">"name"</span><span class="p">,</span> <span class="n">flat</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="p">),</span>
+            <span class="s2">"active_date_range"</span><span class="p">:</span> <span class="n">standard_date_display</span><span class="p">(</span><span class="n">person</span><span class="o">.</span><span class="n">active_date_range</span><span class="p">),</span>
+            <span class="s2">"deceased_date_range"</span><span class="p">:</span> <span class="n">standard_date_display</span><span class="p">(</span><span class="n">person</span><span class="o">.</span><span class="n">deceased_date_range</span><span class="p">),</span>
+            <span class="s2">"manual_date_range"</span><span class="p">:</span> <span class="n">person</span><span class="o">.</span><span class="n">date</span><span class="p">,</span>
+            <span class="s2">"description"</span><span class="p">:</span> <span class="n">person</span><span class="o">.</span><span class="n">description</span><span class="p">,</span>
+            <span class="s2">"related_people_count"</span><span class="p">:</span> <span class="n">person</span><span class="o">.</span><span class="n">related_people_count</span><span class="p">,</span>
+            <span class="s2">"related_documents_count"</span><span class="p">:</span> <span class="n">person</span><span class="o">.</span><span class="n">documents</span><span class="o">.</span><span class="n">count</span><span class="p">(),</span>
+            <span class="s2">"tags"</span><span class="p">:</span> <span class="n">person</span><span class="o">.</span><span class="n">all_tags</span><span class="p">(),</span>
+        <span class="p">}</span>
+
+        <span class="c1"># add url if present</span>
+        <span class="k">if</span> <span class="n">person</span><span class="o">.</span><span class="n">get_absolute_url</span><span class="p">():</span>
+            <span class="n">outd</span><span class="p">[</span><span class="s2">"url"</span><span class="p">]</span> <span class="o">=</span> <span class="n">person</span><span class="o">.</span><span class="n">permalink</span>
+
+        <span class="c1"># group related places by relation type name</span>
+        <span class="n">related_places</span> <span class="o">=</span> <span class="n">PersonPlaceRelation</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span>
+            <span class="n">person__id</span><span class="o">=</span><span class="n">person</span><span class="o">.</span><span class="n">pk</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="p">(</span><span class="s2">"place__id"</span><span class="p">,</span> <span class="s2">"type__name"</span><span class="p">)</span>
+        <span class="n">rel_types</span> <span class="o">=</span> <span class="n">related_places</span><span class="o">.</span><span class="n">values_list</span><span class="p">(</span><span class="s2">"type__name"</span><span class="p">,</span> <span class="n">flat</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">distinct</span><span class="p">()</span>
+        <span class="n">related_place_ids</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">type_name</span> <span class="ow">in</span> <span class="n">rel_types</span><span class="p">:</span>
+            <span class="n">related_place_ids</span><span class="p">[</span><span class="n">type_name</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">related_places</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">type__name</span><span class="o">=</span><span class="n">type_name</span><span class="p">)</span>
+                <span class="o">.</span><span class="n">values_list</span><span class="p">(</span><span class="s2">"place__id"</span><span class="p">,</span> <span class="n">flat</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                <span class="o">.</span><span class="n">distinct</span><span class="p">()</span>
+            <span class="p">)</span>
+
+        <span class="c1"># get names of related places (grouped by type name) and set on output dict</span>
+        <span class="k">for</span> <span class="p">[</span><span class="n">type_name</span><span class="p">,</span> <span class="n">place_ids</span><span class="p">]</span> <span class="ow">in</span> <span class="n">related_place_ids</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">outd</span><span class="p">[</span><span class="n">slugify</span><span class="p">(</span><span class="n">type_name</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"-"</span><span class="p">,</span> <span class="s2">"_"</span><span class="p">)]</span> <span class="o">=</span> <span class="s2">", "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                <span class="nb">sorted</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">place</span><span class="p">)</span> <span class="k">for</span> <span class="n">place</span> <span class="ow">in</span> <span class="n">Place</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">id__in</span><span class="o">=</span><span class="n">place_ids</span><span class="p">)])</span>
+            <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">outd</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="AdminPersonExporter">
+<a class="viewcode-back" href="../../../codedocs/entities.html#geniza.entities.metadata_export.AdminPersonExporter">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">AdminPersonExporter</span><span class="p">(</span><span class="n">PublicPersonExporter</span><span class="p">):</span>
+    <span class="n">csv_fields</span> <span class="o">=</span> <span class="n">PublicPersonExporter</span><span class="o">.</span><span class="n">csv_fields</span> <span class="o">+</span> <span class="p">[</span><span class="s2">"url_admin"</span><span class="p">]</span>
+
+<div class="viewcode-block" id="AdminPersonExporter.get_export_data_dict">
+<a class="viewcode-back" href="../../../codedocs/entities.html#geniza.entities.metadata_export.AdminPersonExporter.get_export_data_dict">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_export_data_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">person</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Adding certain fields to PublicPersonExporter.get_export_data_dict that are admin-only.</span>
+<span class="sd">        """</span>
+
+        <span class="n">outd</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">get_export_data_dict</span><span class="p">(</span><span class="n">person</span><span class="p">)</span>
+        <span class="n">outd</span><span class="p">[</span><span class="s2">"url_admin"</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">url_scheme</span><span class="si">}{</span><span class="bp">self</span><span class="o">.</span><span class="n">site_domain</span><span class="si">}</span><span class="s2">/admin/entities/person/</span><span class="si">{</span><span class="n">person</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2">/change/"</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">outd</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="RelationsExporter">
+<a class="viewcode-back" href="../../../codedocs/entities.html#geniza.entities.metadata_export.RelationsExporter">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">RelationsExporter</span><span class="p">(</span><span class="n">Exporter</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    A subclass of :class:`geniza.common.metadata_export.Exporter` to extract</span>
+<span class="sd">    reused logic for an export of related objects. Extends</span>
+<span class="sd">    :meth:`get_export_data_dict` and :meth:`csv_filename`.</span>
+<span class="sd">    """</span>
+
+    <span class="n">csv_fields</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s2">"related_object_type"</span><span class="p">,</span>
+        <span class="s2">"related_object_id"</span><span class="p">,</span>
+        <span class="s2">"related_object_name"</span><span class="p">,</span>
+        <span class="s2">"relationship_type"</span><span class="p">,</span>
+        <span class="s2">"shared_documents"</span><span class="p">,</span>
+    <span class="p">]</span>
+
+<div class="viewcode-block" id="RelationsExporter.csv_filename">
+<a class="viewcode-back" href="../../../codedocs/entities.html#geniza.entities.metadata_export.RelationsExporter.csv_filename">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">csv_filename</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Generate the appropriate CSV filename for model and time</span>
+
+<span class="sd">        :return: Filename string</span>
+<span class="sd">        :rtype: str</span>
+<span class="sd">        """</span>
+        <span class="n">str_time</span> <span class="o">=</span> <span class="n">timezone</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">"%Y%m</span><span class="si">%d</span><span class="s2">T%H%M%S"</span><span class="p">)</span>
+        <span class="n">obj</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">get_queryset</span><span class="p">()</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
+        <span class="n">model_name</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">"geniza-</span><span class="si">{</span><span class="n">slugify</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">obj</span><span class="p">))</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">model_name</span><span class="si">}</span><span class="s2">-relations-</span><span class="si">{</span><span class="n">str_time</span><span class="si">}</span><span class="s2">.csv"</span></div>
+
+
+<div class="viewcode-block" id="RelationsExporter.get_export_data_dict">
+<a class="viewcode-back" href="../../../codedocs/entities.html#geniza.entities.metadata_export.RelationsExporter.get_export_data_dict">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_export_data_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        For efficiency, the dict is populated in :meth:`get_queryset`,</span>
+<span class="sd">        via :meth`populate_relation_fields`, as that method allows us to</span>
+<span class="sd">        retrieve values for multiple related objects of the same type in bulk.</span>
+<span class="sd">        """</span>
+        <span class="n">data_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+        <span class="n">model_name</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+        <span class="n">data_dict</span><span class="p">[</span><span class="sa">f</span><span class="s2">"source_</span><span class="si">{</span><span class="n">model_name</span><span class="si">}</span><span class="s2">"</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">get_queryset</span><span class="p">()</span><span class="o">.</span><span class="n">first</span><span class="p">())</span>
+        <span class="k">return</span> <span class="n">data_dict</span></div>
+
+
+<div class="viewcode-block" id="RelationsExporter.dedupe_related_objects">
+<a class="viewcode-back" href="../../../codedocs/entities.html#geniza.entities.metadata_export.RelationsExporter.dedupe_related_objects">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">dedupe_related_objects</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">relations</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Deduplicate related objects, in case of multiple relationships</span>
+<span class="sd">        involving the same object; combine into a single row."""</span>
+        <span class="n">prev</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">for</span> <span class="n">rel</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span>
+            <span class="n">relations</span><span class="p">,</span>
+            <span class="c1"># sort for easy deduplication</span>
+            <span class="n">key</span><span class="o">=</span><span class="n">itemgetter</span><span class="p">(</span>
+                <span class="s2">"related_object_type"</span><span class="p">,</span>
+                <span class="s2">"related_object_id"</span><span class="p">,</span>
+                <span class="s2">"relationship_type_id"</span><span class="p">,</span>
+            <span class="p">),</span>
+        <span class="p">):</span>
+            <span class="c1"># dedupe items and combine relationship types</span>
+            <span class="k">if</span> <span class="p">(</span>
+                <span class="n">prev</span>
+                <span class="ow">and</span> <span class="n">prev</span><span class="p">[</span><span class="s2">"related_object_type"</span><span class="p">]</span> <span class="o">==</span> <span class="n">rel</span><span class="p">[</span><span class="s2">"related_object_type"</span><span class="p">]</span>
+                <span class="ow">and</span> <span class="n">prev</span><span class="p">[</span><span class="s2">"related_object_id"</span><span class="p">]</span> <span class="o">==</span> <span class="n">rel</span><span class="p">[</span><span class="s2">"related_object_id"</span><span class="p">]</span>
+            <span class="p">):</span>
+                <span class="c1"># dedupe type by string matching since we can't match reverse relations by id</span>
+                <span class="k">if</span> <span class="p">(</span>
+                    <span class="n">rel</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"relationship_type"</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+                    <span class="ow">not</span> <span class="ow">in</span> <span class="n">prev</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"relationship_type"</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+                <span class="p">):</span>
+                    <span class="n">prev</span><span class="p">[</span><span class="s2">"relationship_type"</span><span class="p">]</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">", </span><span class="si">{</span><span class="n">rel</span><span class="p">[</span><span class="s1">'relationship_type'</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+                <span class="n">relations</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">rel</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">prev</span> <span class="o">=</span> <span class="n">rel</span>
+
+        <span class="k">return</span> <span class="n">relations</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="PersonRelationsExporter">
+<a class="viewcode-back" href="../../../codedocs/entities.html#geniza.entities.metadata_export.PersonRelationsExporter">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">PersonRelationsExporter</span><span class="p">(</span><span class="n">RelationsExporter</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    A subclass of :class:`RelationsExporter` that exports information relating</span>
+<span class="sd">    to :class:`~geniza.entities.models.Person`, in particular, the related</span>
+<span class="sd">    objects for a single model instance. Extends :meth:`get_queryset`.</span>
+<span class="sd">    """</span>
+
+    <span class="n">model</span> <span class="o">=</span> <span class="n">Person</span>
+    <span class="n">csv_fields</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"source_person"</span><span class="p">]</span> <span class="o">+</span> <span class="n">RelationsExporter</span><span class="o">.</span><span class="n">csv_fields</span> <span class="o">+</span> <span class="p">[</span><span class="s2">"url"</span><span class="p">,</span> <span class="s2">"admin_url"</span><span class="p">]</span>
+
+<div class="viewcode-block" id="PersonRelationsExporter.get_queryset">
+<a class="viewcode-back" href="../../../codedocs/entities.html#geniza.entities.metadata_export.PersonRelationsExporter.get_queryset">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_queryset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Override get_queryset to get related items for the single item"""</span>
+        <span class="n">person</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">get_queryset</span><span class="p">()</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
+        <span class="c1"># union querysets to coalesce and normalize heterogenous data types</span>
+        <span class="n">relations</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">person</span><span class="o">.</span><span class="n">from_person</span><span class="o">.</span><span class="n">values</span><span class="p">(</span>
+                <span class="n">related_object_id</span><span class="o">=</span><span class="n">F</span><span class="p">(</span><span class="s2">"from_person"</span><span class="p">),</span>
+                <span class="n">related_object_type</span><span class="o">=</span><span class="n">Value</span><span class="p">(</span><span class="s2">"Person"</span><span class="p">),</span>
+                <span class="n">relationship_type_id</span><span class="o">=</span><span class="n">F</span><span class="p">(</span><span class="s2">"type"</span><span class="p">),</span>
+                <span class="n">use_converse_typename</span><span class="o">=</span><span class="n">Value</span><span class="p">(</span><span class="kc">True</span><span class="p">),</span>
+                <span class="n">is_uncertain</span><span class="o">=</span><span class="n">Value</span><span class="p">(</span><span class="kc">False</span><span class="p">),</span>
+            <span class="p">)</span>
+            <span class="o">.</span><span class="n">union</span><span class="p">(</span>
+                <span class="n">person</span><span class="o">.</span><span class="n">to_person</span><span class="o">.</span><span class="n">values</span><span class="p">(</span>
+                    <span class="n">related_object_id</span><span class="o">=</span><span class="n">F</span><span class="p">(</span><span class="s2">"to_person"</span><span class="p">),</span>
+                    <span class="n">related_object_type</span><span class="o">=</span><span class="n">Value</span><span class="p">(</span><span class="s2">"Person"</span><span class="p">),</span>
+                    <span class="n">relationship_type_id</span><span class="o">=</span><span class="n">F</span><span class="p">(</span><span class="s2">"type"</span><span class="p">),</span>
+                    <span class="n">use_converse_typename</span><span class="o">=</span><span class="n">Value</span><span class="p">(</span><span class="kc">False</span><span class="p">),</span>
+                    <span class="n">is_uncertain</span><span class="o">=</span><span class="n">Value</span><span class="p">(</span><span class="kc">False</span><span class="p">),</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+            <span class="o">.</span><span class="n">union</span><span class="p">(</span>
+                <span class="n">person</span><span class="o">.</span><span class="n">personplacerelation_set</span><span class="o">.</span><span class="n">values</span><span class="p">(</span>
+                    <span class="n">related_object_id</span><span class="o">=</span><span class="n">F</span><span class="p">(</span><span class="s2">"place"</span><span class="p">),</span>
+                    <span class="n">related_object_type</span><span class="o">=</span><span class="n">Value</span><span class="p">(</span><span class="s2">"Place"</span><span class="p">),</span>
+                    <span class="n">relationship_type_id</span><span class="o">=</span><span class="n">F</span><span class="p">(</span><span class="s2">"type"</span><span class="p">),</span>
+                    <span class="n">use_converse_typename</span><span class="o">=</span><span class="n">Value</span><span class="p">(</span><span class="kc">False</span><span class="p">),</span>
+                    <span class="n">is_uncertain</span><span class="o">=</span><span class="n">Value</span><span class="p">(</span><span class="kc">False</span><span class="p">),</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+            <span class="o">.</span><span class="n">union</span><span class="p">(</span>
+                <span class="n">person</span><span class="o">.</span><span class="n">persondocumentrelation_set</span><span class="o">.</span><span class="n">values</span><span class="p">(</span>
+                    <span class="n">related_object_id</span><span class="o">=</span><span class="n">F</span><span class="p">(</span><span class="s2">"document"</span><span class="p">),</span>
+                    <span class="n">related_object_type</span><span class="o">=</span><span class="n">Value</span><span class="p">(</span><span class="s2">"Document"</span><span class="p">),</span>
+                    <span class="n">relationship_type_id</span><span class="o">=</span><span class="n">F</span><span class="p">(</span><span class="s2">"type"</span><span class="p">),</span>
+                    <span class="n">use_converse_typename</span><span class="o">=</span><span class="n">Value</span><span class="p">(</span><span class="kc">False</span><span class="p">),</span>
+                    <span class="n">is_uncertain</span><span class="o">=</span><span class="n">F</span><span class="p">(</span><span class="s2">"uncertain"</span><span class="p">),</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+            <span class="o">.</span><span class="n">union</span><span class="p">(</span>
+                <span class="n">person</span><span class="o">.</span><span class="n">personeventrelation_set</span><span class="o">.</span><span class="n">values</span><span class="p">(</span>
+                    <span class="n">related_object_id</span><span class="o">=</span><span class="n">F</span><span class="p">(</span><span class="s2">"event"</span><span class="p">),</span>
+                    <span class="n">related_object_type</span><span class="o">=</span><span class="n">Value</span><span class="p">(</span><span class="s2">"Event"</span><span class="p">),</span>
+                    <span class="c1"># use -1 as this must be int, but there is no relationship</span>
+                    <span class="c1"># type for event relations</span>
+                    <span class="n">relationship_type_id</span><span class="o">=</span><span class="n">Value</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span>
+                    <span class="n">use_converse_typename</span><span class="o">=</span><span class="n">Value</span><span class="p">(</span><span class="kc">False</span><span class="p">),</span>
+                    <span class="n">is_uncertain</span><span class="o">=</span><span class="n">Value</span><span class="p">(</span><span class="kc">False</span><span class="p">),</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+        <span class="c1"># populate additional data</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">populate_relation_fields</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">relations</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="PersonRelationsExporter.populate_relation_fields">
+<a class="viewcode-back" href="../../../codedocs/entities.html#geniza.entities.metadata_export.PersonRelationsExporter.populate_relation_fields">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">populate_relation_fields</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">relations</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Helper method called by :meth:`get_queryset` that prefetches</span>
+<span class="sd">        various fields on related objects, efficiently retrieving their</span>
+<span class="sd">        data for export in bulk"""</span>
+
+        <span class="c1"># the general rule here is: fetch all the related data with a values()</span>
+        <span class="c1"># queryset, cast as dict (keyed on id) to compute each queryset ahead</span>
+        <span class="c1"># of time, and access each field value from the dict by id in a loop.</span>
+
+        <span class="c1"># use constants for column names for code readability</span>
+        <span class="n">ID</span> <span class="o">=</span> <span class="s2">"related_object_id"</span>
+        <span class="n">TYPE</span> <span class="o">=</span> <span class="s2">"related_object_type"</span>
+        <span class="n">RTID</span> <span class="o">=</span> <span class="s2">"relationship_type_id"</span>
+
+        <span class="c1"># use single query to get names for people and places</span>
+        <span class="n">related_people</span> <span class="o">=</span> <span class="p">[</span><span class="n">r</span><span class="p">[</span><span class="n">ID</span><span class="p">]</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">relations</span> <span class="k">if</span> <span class="n">r</span><span class="p">[</span><span class="n">TYPE</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"Person"</span><span class="p">]</span>
+        <span class="n">related_places</span> <span class="o">=</span> <span class="p">[</span><span class="n">r</span><span class="p">[</span><span class="n">ID</span><span class="p">]</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">relations</span> <span class="k">if</span> <span class="n">r</span><span class="p">[</span><span class="n">TYPE</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"Place"</span><span class="p">]</span>
+        <span class="n">names</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span>
+            <span class="n">Name</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span>
+                <span class="n">object_id__in</span><span class="o">=</span><span class="p">[</span><span class="o">*</span><span class="n">related_people</span><span class="p">,</span> <span class="o">*</span><span class="n">related_places</span><span class="p">],</span>
+                <span class="n">primary</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="p">(</span><span class="s2">"object_id"</span><span class="p">,</span> <span class="s2">"name"</span><span class="p">,</span> <span class="s2">"content_type"</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">pers_contenttype_id</span> <span class="o">=</span> <span class="n">ContentType</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get_for_model</span><span class="p">(</span><span class="n">Person</span><span class="p">)</span><span class="o">.</span><span class="n">pk</span>
+        <span class="n">place_contenttype_id</span> <span class="o">=</span> <span class="n">ContentType</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get_for_model</span><span class="p">(</span><span class="n">Place</span><span class="p">)</span><span class="o">.</span><span class="n">pk</span>
+
+        <span class="c1"># for people, places, documents: use single query each to get relation type names</span>
+        <span class="n">person_relation_types</span> <span class="o">=</span> <span class="n">PersonPersonRelationType</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span>
+            <span class="n">id__in</span><span class="o">=</span><span class="p">[</span><span class="n">r</span><span class="p">[</span><span class="n">RTID</span><span class="p">]</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">relations</span> <span class="k">if</span> <span class="n">r</span><span class="p">[</span><span class="n">TYPE</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"Person"</span><span class="p">]</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="p">(</span><span class="s2">"id"</span><span class="p">,</span> <span class="s2">"name"</span><span class="p">,</span> <span class="s2">"converse_name"</span><span class="p">)</span>
+        <span class="n">person_relation_typedict</span> <span class="o">=</span> <span class="p">{</span><span class="n">t</span><span class="p">[</span><span class="s2">"id"</span><span class="p">]:</span> <span class="n">t</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">person_relation_types</span><span class="p">}</span>
+        <span class="n">place_relation_types</span> <span class="o">=</span> <span class="n">PersonPlaceRelationType</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span>
+            <span class="n">id__in</span><span class="o">=</span><span class="p">[</span><span class="n">r</span><span class="p">[</span><span class="n">RTID</span><span class="p">]</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">relations</span> <span class="k">if</span> <span class="n">r</span><span class="p">[</span><span class="n">TYPE</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"Place"</span><span class="p">]</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="p">(</span><span class="s2">"id"</span><span class="p">,</span> <span class="s2">"name"</span><span class="p">)</span>
+        <span class="n">place_relation_typedict</span> <span class="o">=</span> <span class="p">{</span><span class="n">t</span><span class="p">[</span><span class="s2">"id"</span><span class="p">]:</span> <span class="n">t</span><span class="p">[</span><span class="s2">"name"</span><span class="p">]</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">place_relation_types</span><span class="p">}</span>
+        <span class="n">doc_relation_types</span> <span class="o">=</span> <span class="n">PersonDocumentRelationType</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span>
+            <span class="n">id__in</span><span class="o">=</span><span class="p">[</span><span class="n">r</span><span class="p">[</span><span class="n">RTID</span><span class="p">]</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">relations</span> <span class="k">if</span> <span class="n">r</span><span class="p">[</span><span class="n">TYPE</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"Document"</span><span class="p">]</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="p">(</span><span class="s2">"id"</span><span class="p">,</span> <span class="s2">"name"</span><span class="p">)</span>
+        <span class="n">doc_relation_typedict</span> <span class="o">=</span> <span class="p">{</span><span class="n">t</span><span class="p">[</span><span class="s2">"id"</span><span class="p">]:</span> <span class="n">t</span><span class="p">[</span><span class="s2">"name"</span><span class="p">]</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">doc_relation_types</span><span class="p">}</span>
+
+        <span class="c1"># get shared documents with People, Places, and Events</span>
+        <span class="n">related_docs</span> <span class="o">=</span> <span class="p">[</span><span class="n">r</span><span class="p">[</span><span class="n">ID</span><span class="p">]</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">relations</span> <span class="k">if</span> <span class="n">r</span><span class="p">[</span><span class="n">TYPE</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"Document"</span><span class="p">]</span>
+        <span class="n">related_events</span> <span class="o">=</span> <span class="p">[</span><span class="n">r</span><span class="p">[</span><span class="n">ID</span><span class="p">]</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">relations</span> <span class="k">if</span> <span class="n">r</span><span class="p">[</span><span class="n">TYPE</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"Event"</span><span class="p">]</span>
+        <span class="n">shared_person_docs</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span>
+            <span class="n">PersonDocumentRelation</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span>
+                <span class="n">document__id__in</span><span class="o">=</span><span class="n">related_docs</span><span class="p">,</span> <span class="n">person__id__in</span><span class="o">=</span><span class="n">related_people</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="p">(</span><span class="s2">"document__id"</span><span class="p">,</span> <span class="s2">"person__id"</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">shared_person_docs</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">shared_person_docs</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="n">itemgetter</span><span class="p">(</span><span class="s2">"person__id"</span><span class="p">))</span>
+        <span class="n">persondocs_dict</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">k</span><span class="p">:</span> <span class="p">[</span><span class="n">d</span><span class="p">[</span><span class="s2">"document__id"</span><span class="p">]</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">v</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">groupby</span><span class="p">(</span><span class="n">shared_person_docs</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="n">itemgetter</span><span class="p">(</span><span class="s2">"person__id"</span><span class="p">))</span>
+        <span class="p">}</span>
+        <span class="n">shared_place_docs</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span>
+            <span class="n">DocumentPlaceRelation</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span>
+                <span class="n">document__id__in</span><span class="o">=</span><span class="n">related_docs</span><span class="p">,</span> <span class="n">place__id__in</span><span class="o">=</span><span class="n">related_places</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="p">(</span><span class="s2">"document__id"</span><span class="p">,</span> <span class="s2">"place__id"</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">shared_place_docs</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">shared_place_docs</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="n">itemgetter</span><span class="p">(</span><span class="s2">"place__id"</span><span class="p">))</span>
+        <span class="n">placedocs_dict</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">k</span><span class="p">:</span> <span class="p">[</span><span class="n">d</span><span class="p">[</span><span class="s2">"document__id"</span><span class="p">]</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">v</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">groupby</span><span class="p">(</span><span class="n">shared_place_docs</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="n">itemgetter</span><span class="p">(</span><span class="s2">"place__id"</span><span class="p">))</span>
+        <span class="p">}</span>
+        <span class="n">shared_event_docs</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span>
+            <span class="n">DocumentEventRelation</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span>
+                <span class="n">document__id__in</span><span class="o">=</span><span class="n">related_docs</span><span class="p">,</span> <span class="n">event__id__in</span><span class="o">=</span><span class="n">related_events</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="p">(</span><span class="s2">"document__id"</span><span class="p">,</span> <span class="s2">"event__id"</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">shared_event_docs</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">shared_event_docs</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="n">itemgetter</span><span class="p">(</span><span class="s2">"event__id"</span><span class="p">))</span>
+        <span class="n">eventdocs_dict</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">k</span><span class="p">:</span> <span class="p">[</span><span class="n">d</span><span class="p">[</span><span class="s2">"document__id"</span><span class="p">]</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">v</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">groupby</span><span class="p">(</span><span class="n">shared_event_docs</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="n">itemgetter</span><span class="p">(</span><span class="s2">"event__id"</span><span class="p">))</span>
+        <span class="p">}</span>
+
+        <span class="c1"># to get Document names, need TextBlocks and Fragments</span>
+        <span class="n">docs</span> <span class="o">=</span> <span class="n">Document</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">prefetch_related</span><span class="p">(</span>
+            <span class="n">Prefetch</span><span class="p">(</span>
+                <span class="s2">"textblock_set"</span><span class="p">,</span>
+                <span class="n">queryset</span><span class="o">=</span><span class="n">TextBlock</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">select_related</span><span class="p">(</span>
+                    <span class="s2">"fragment"</span><span class="p">,</span>
+                <span class="p">)</span><span class="o">.</span><span class="n">prefetch_related</span><span class="p">(</span>
+                    <span class="s2">"fragment__textblock_set"</span><span class="p">,</span>
+                    <span class="s2">"fragment__textblock_set__document"</span><span class="p">,</span>
+                <span class="p">),</span>
+            <span class="p">)</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">id__in</span><span class="o">=</span><span class="n">related_docs</span><span class="p">)</span>
+        <span class="n">docs_dict</span> <span class="o">=</span> <span class="p">{</span><span class="n">d</span><span class="o">.</span><span class="n">id</span><span class="p">:</span> <span class="n">d</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">docs</span><span class="p">}</span>
+
+        <span class="c1"># get Event names</span>
+        <span class="n">events</span> <span class="o">=</span> <span class="n">Event</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">id__in</span><span class="o">=</span><span class="n">related_events</span><span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="p">(</span><span class="s2">"id"</span><span class="p">,</span> <span class="s2">"name"</span><span class="p">)</span>
+        <span class="n">events_dict</span> <span class="o">=</span> <span class="p">{</span><span class="n">e</span><span class="p">[</span><span class="s2">"id"</span><span class="p">]:</span> <span class="n">e</span><span class="p">[</span><span class="s2">"name"</span><span class="p">]</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">events</span><span class="p">}</span>
+
+        <span class="c1"># loop through all relations, update with additional data, and dedupe</span>
+        <span class="c1"># use all precomputed query results to populate additional data per obj</span>
+        <span class="k">for</span> <span class="n">rel</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span>
+            <span class="n">relations</span><span class="p">,</span>
+            <span class="c1"># sort for deduplication</span>
+            <span class="n">key</span><span class="o">=</span><span class="n">itemgetter</span><span class="p">(</span><span class="n">TYPE</span><span class="p">,</span> <span class="n">ID</span><span class="p">,</span> <span class="n">RTID</span><span class="p">),</span>
+        <span class="p">):</span>
+            <span class="k">if</span> <span class="n">rel</span><span class="p">[</span><span class="n">TYPE</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"Person"</span><span class="p">:</span>
+                <span class="c1"># get person name, relationship type from precomputed querysets</span>
+                <span class="n">filtered_names</span> <span class="o">=</span> <span class="nb">filter</span><span class="p">(</span>
+                    <span class="k">lambda</span> <span class="n">n</span><span class="p">:</span> <span class="n">n</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"object_id"</span><span class="p">)</span> <span class="o">==</span> <span class="n">rel</span><span class="p">[</span><span class="n">ID</span><span class="p">]</span>
+                    <span class="ow">and</span> <span class="n">n</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"content_type"</span><span class="p">)</span> <span class="o">==</span> <span class="n">pers_contenttype_id</span><span class="p">,</span>
+                    <span class="n">names</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="n">rel_type</span> <span class="o">=</span> <span class="n">person_relation_typedict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">rel</span><span class="p">[</span><span class="n">RTID</span><span class="p">])</span>
+                <span class="n">people_qs</span> <span class="o">=</span> <span class="n">Person</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">id__in</span><span class="o">=</span><span class="n">related_people</span><span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="p">(</span>
+                    <span class="s2">"id"</span><span class="p">,</span> <span class="s2">"slug"</span>
+                <span class="p">)</span>
+                <span class="n">people_slug_dict</span> <span class="o">=</span> <span class="p">{</span><span class="n">p</span><span class="p">[</span><span class="s2">"id"</span><span class="p">]:</span> <span class="n">p</span><span class="p">[</span><span class="s2">"slug"</span><span class="p">]</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">people_qs</span><span class="p">}</span>
+                <span class="n">rel</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+                    <span class="p">{</span>
+                        <span class="s2">"related_object_name"</span><span class="p">:</span> <span class="nb">next</span><span class="p">(</span><span class="n">filtered_names</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"name"</span><span class="p">),</span>
+                        <span class="s2">"relationship_type"</span><span class="p">:</span> <span class="p">(</span>
+                            <span class="c1"># handle converse type names for self-referential relationships</span>
+                            <span class="n">rel_type</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"converse_name"</span><span class="p">)</span>
+                            <span class="k">if</span> <span class="n">rel</span><span class="p">[</span><span class="s2">"use_converse_typename"</span><span class="p">]</span>
+                            <span class="ow">and</span> <span class="n">rel_type</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"converse_name"</span><span class="p">)</span>
+                            <span class="c1"># use name if should use name, or converse does not exist</span>
+                            <span class="k">else</span> <span class="n">rel_type</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"name"</span><span class="p">)</span>
+                        <span class="p">),</span>
+                        <span class="s2">"shared_documents"</span><span class="p">:</span> <span class="s2">", "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                            <span class="p">[</span>
+                                <span class="nb">str</span><span class="p">(</span><span class="n">docs_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">doc_id</span><span class="p">))</span>
+                                <span class="k">for</span> <span class="n">doc_id</span> <span class="ow">in</span> <span class="n">persondocs_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">rel</span><span class="p">[</span><span class="n">ID</span><span class="p">],</span> <span class="p">[])</span>
+                            <span class="p">]</span>
+                        <span class="p">),</span>
+                        <span class="s2">"url"</span><span class="p">:</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">url_scheme</span><span class="si">}{</span><span class="bp">self</span><span class="o">.</span><span class="n">site_domain</span><span class="si">}</span><span class="s2">/en/people/</span><span class="si">{</span><span class="n">people_slug_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">rel</span><span class="p">[</span><span class="n">ID</span><span class="p">])</span><span class="si">}</span><span class="s2">/"</span><span class="p">,</span>
+                        <span class="s2">"admin_url"</span><span class="p">:</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">url_scheme</span><span class="si">}{</span><span class="bp">self</span><span class="o">.</span><span class="n">site_domain</span><span class="si">}</span><span class="s2">/admin/entities/person/</span><span class="si">{</span><span class="n">rel</span><span class="p">[</span><span class="n">ID</span><span class="p">]</span><span class="si">}</span><span class="s2">/change/"</span><span class="p">,</span>
+                    <span class="p">}</span>
+                <span class="p">)</span>
+            <span class="k">elif</span> <span class="n">rel</span><span class="p">[</span><span class="n">TYPE</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"Place"</span><span class="p">:</span>
+                <span class="c1"># get place name, relationship type from precomputed querysets</span>
+                <span class="n">filtered_names</span> <span class="o">=</span> <span class="nb">filter</span><span class="p">(</span>
+                    <span class="k">lambda</span> <span class="n">n</span><span class="p">:</span> <span class="n">n</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"object_id"</span><span class="p">)</span> <span class="o">==</span> <span class="n">rel</span><span class="p">[</span><span class="n">ID</span><span class="p">]</span>
+                    <span class="ow">and</span> <span class="n">n</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"content_type"</span><span class="p">)</span> <span class="o">==</span> <span class="n">place_contenttype_id</span><span class="p">,</span>
+                    <span class="n">names</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="n">places_qs</span> <span class="o">=</span> <span class="n">Place</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">id__in</span><span class="o">=</span><span class="n">related_places</span><span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="p">(</span>
+                    <span class="s2">"id"</span><span class="p">,</span> <span class="s2">"slug"</span>
+                <span class="p">)</span>
+                <span class="n">places_slug_dict</span> <span class="o">=</span> <span class="p">{</span><span class="n">p</span><span class="p">[</span><span class="s2">"id"</span><span class="p">]:</span> <span class="n">p</span><span class="p">[</span><span class="s2">"slug"</span><span class="p">]</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">places_qs</span><span class="p">}</span>
+                <span class="n">rel</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+                    <span class="p">{</span>
+                        <span class="s2">"related_object_name"</span><span class="p">:</span> <span class="nb">next</span><span class="p">(</span><span class="n">filtered_names</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"name"</span><span class="p">),</span>
+                        <span class="s2">"relationship_type"</span><span class="p">:</span> <span class="n">place_relation_typedict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">rel</span><span class="p">[</span><span class="n">RTID</span><span class="p">]),</span>
+                        <span class="s2">"shared_documents"</span><span class="p">:</span> <span class="s2">", "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                            <span class="p">[</span>
+                                <span class="nb">str</span><span class="p">(</span><span class="n">docs_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">doc_id</span><span class="p">))</span>
+                                <span class="k">for</span> <span class="n">doc_id</span> <span class="ow">in</span> <span class="n">placedocs_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">rel</span><span class="p">[</span><span class="n">ID</span><span class="p">],</span> <span class="p">[])</span>
+                            <span class="p">]</span>
+                        <span class="p">),</span>
+                        <span class="s2">"url"</span><span class="p">:</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">url_scheme</span><span class="si">}{</span><span class="bp">self</span><span class="o">.</span><span class="n">site_domain</span><span class="si">}</span><span class="s2">/en/places/</span><span class="si">{</span><span class="n">places_slug_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">rel</span><span class="p">[</span><span class="n">ID</span><span class="p">])</span><span class="si">}</span><span class="s2">/"</span><span class="p">,</span>
+                        <span class="s2">"admin_url"</span><span class="p">:</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">url_scheme</span><span class="si">}{</span><span class="bp">self</span><span class="o">.</span><span class="n">site_domain</span><span class="si">}</span><span class="s2">/admin/entities/place/</span><span class="si">{</span><span class="n">rel</span><span class="p">[</span><span class="n">ID</span><span class="p">]</span><span class="si">}</span><span class="s2">/change/"</span><span class="p">,</span>
+                    <span class="p">}</span>
+                <span class="p">)</span>
+            <span class="k">elif</span> <span class="n">rel</span><span class="p">[</span><span class="n">TYPE</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"Document"</span><span class="p">:</span>
+                <span class="c1"># get doc name, doc relation type name from precomputed querysets</span>
+                <span class="n">rel</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+                    <span class="p">{</span>
+                        <span class="s2">"related_object_name"</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">docs_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">rel</span><span class="p">[</span><span class="n">ID</span><span class="p">])),</span>
+                        <span class="s2">"relationship_type"</span><span class="p">:</span> <span class="n">doc_relation_typedict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">rel</span><span class="p">[</span><span class="n">RTID</span><span class="p">])</span>
+                        <span class="o">+</span> <span class="p">(</span><span class="s2">" (uncertain)"</span> <span class="k">if</span> <span class="n">rel</span><span class="p">[</span><span class="s2">"is_uncertain"</span><span class="p">]</span> <span class="k">else</span> <span class="s2">""</span><span class="p">),</span>
+                        <span class="s2">"url"</span><span class="p">:</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">url_scheme</span><span class="si">}{</span><span class="bp">self</span><span class="o">.</span><span class="n">site_domain</span><span class="si">}</span><span class="s2">/en/documents/</span><span class="si">{</span><span class="n">rel</span><span class="p">[</span><span class="n">ID</span><span class="p">]</span><span class="si">}</span><span class="s2">/"</span><span class="p">,</span>
+                        <span class="s2">"admin_url"</span><span class="p">:</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">url_scheme</span><span class="si">}{</span><span class="bp">self</span><span class="o">.</span><span class="n">site_domain</span><span class="si">}</span><span class="s2">/admin/corpus/document/</span><span class="si">{</span><span class="n">rel</span><span class="p">[</span><span class="n">ID</span><span class="p">]</span><span class="si">}</span><span class="s2">/change/"</span><span class="p">,</span>
+                    <span class="p">}</span>
+                <span class="p">)</span>
+            <span class="k">elif</span> <span class="n">rel</span><span class="p">[</span><span class="n">TYPE</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"Event"</span><span class="p">:</span>
+                <span class="c1"># get event name from precomputed names queryset; relation type</span>
+                <span class="n">rel</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+                    <span class="p">{</span>
+                        <span class="s2">"related_object_name"</span><span class="p">:</span> <span class="n">events_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">rel</span><span class="p">[</span><span class="n">ID</span><span class="p">]),</span>
+                        <span class="s2">"shared_documents"</span><span class="p">:</span> <span class="s2">", "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                            <span class="p">[</span>
+                                <span class="nb">str</span><span class="p">(</span><span class="n">docs_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">doc_id</span><span class="p">))</span>
+                                <span class="k">for</span> <span class="n">doc_id</span> <span class="ow">in</span> <span class="n">eventdocs_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">rel</span><span class="p">[</span><span class="n">ID</span><span class="p">],</span> <span class="p">[])</span>
+                            <span class="p">]</span>
+                        <span class="p">),</span>
+                        <span class="s2">"admin_url"</span><span class="p">:</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">url_scheme</span><span class="si">}{</span><span class="bp">self</span><span class="o">.</span><span class="n">site_domain</span><span class="si">}</span><span class="s2">/admin/entities/event/</span><span class="si">{</span><span class="n">rel</span><span class="p">[</span><span class="n">ID</span><span class="p">]</span><span class="si">}</span><span class="s2">/change/"</span><span class="p">,</span>
+                    <span class="p">}</span>
+                <span class="p">)</span>
+                <span class="c1"># relationship type is not used for events</span>
+
+        <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dedupe_related_objects</span><span class="p">(</span><span class="n">relations</span><span class="p">),</span>
+            <span class="c1"># sort by object type, then name</span>
+            <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">r</span><span class="p">:</span> <span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="n">TYPE</span><span class="p">],</span> <span class="n">slugify</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="s2">"related_object_name"</span><span class="p">])),</span>
+        <span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="PublicPlaceExporter">
+<a class="viewcode-back" href="../../../codedocs/entities.html#geniza.entities.metadata_export.PublicPlaceExporter">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">PublicPlaceExporter</span><span class="p">(</span><span class="n">Exporter</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    A subclass of :class:`geniza.common.metadata_export.Exporter` that</span>
+<span class="sd">    exports information relating to :class:`~geniza.entities.models.Place`.</span>
+<span class="sd">    Extends :meth:`get_queryset` and :meth:`get_export_data_dict`.</span>
+<span class="sd">    """</span>
+
+    <span class="n">model</span> <span class="o">=</span> <span class="n">Place</span>
+    <span class="n">csv_fields</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s2">"name"</span><span class="p">,</span>
+        <span class="s2">"name_variants"</span><span class="p">,</span>
+        <span class="s2">"is_region"</span><span class="p">,</span>
+        <span class="s2">"coordinates"</span><span class="p">,</span>
+        <span class="s2">"geographic_area"</span><span class="p">,</span>
+        <span class="s2">"notes"</span><span class="p">,</span>
+        <span class="s2">"related_documents_count"</span><span class="p">,</span>
+        <span class="s2">"related_people_count"</span><span class="p">,</span>
+        <span class="s2">"related_events_count"</span><span class="p">,</span>
+        <span class="s2">"url"</span><span class="p">,</span>
+    <span class="p">]</span>
+
+    <span class="c1"># queryset filter for content types included in this export</span>
+    <span class="n">content_type_filter</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">"content_type__app_label__in"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"entities"</span><span class="p">,</span> <span class="s2">"corpus"</span><span class="p">],</span>
+        <span class="s2">"content_type__model__in"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"document"</span><span class="p">,</span> <span class="s2">"person"</span><span class="p">,</span> <span class="s2">"place"</span><span class="p">,</span> <span class="s2">"event"</span><span class="p">],</span>
+    <span class="p">}</span>
+
+<div class="viewcode-block" id="PublicPlaceExporter.get_queryset">
+<a class="viewcode-back" href="../../../codedocs/entities.html#geniza.entities.metadata_export.PublicPlaceExporter.get_queryset">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_queryset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Applies some prefetching to the base Exporter's get_queryset functionality.</span>
+
+<span class="sd">        :return: Custom-given query set or query set of all people</span>
+<span class="sd">        :rtype: QuerySet</span>
+<span class="sd">        """</span>
+        <span class="n">qset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">queryset</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+        <span class="c1"># clear existing prefetches and then add the ones we need</span>
+        <span class="n">qset</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">qset</span><span class="o">.</span><span class="n">prefetch_related</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">prefetch_related</span><span class="p">(</span>
+                <span class="s2">"names"</span><span class="p">,</span>
+                <span class="s2">"events"</span><span class="p">,</span>
+                <span class="s2">"personplacerelation_set"</span><span class="p">,</span>
+                <span class="s2">"documentplacerelation_set"</span><span class="p">,</span>
+                <span class="s2">"placeeventrelation_set"</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="o">.</span><span class="n">select_related</span><span class="p">(</span><span class="s2">"containing_region"</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">order_by</span><span class="p">(</span><span class="s2">"slug"</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">qset</span></div>
+
+
+<div class="viewcode-block" id="PublicPlaceExporter.get_export_data_dict">
+<a class="viewcode-back" href="../../../codedocs/entities.html#geniza.entities.metadata_export.PublicPlaceExporter.get_export_data_dict">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_export_data_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">place</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Get back data about a place in dictionary format.</span>
+
+<span class="sd">        :param place: A given Place object</span>
+<span class="sd">        :type place: Place</span>
+
+<span class="sd">        :return: Dictionary of data about the place</span>
+<span class="sd">        :rtype: dict</span>
+<span class="sd">        """</span>
+        <span class="c1"># get number of related documents</span>
+        <span class="n">related_docs_count</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">DocumentPlaceRelation</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">place__id</span><span class="o">=</span><span class="n">place</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">values_list</span><span class="p">(</span><span class="s2">"document__id"</span><span class="p">,</span> <span class="n">flat</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">distinct</span><span class="p">()</span>
+            <span class="o">.</span><span class="n">count</span><span class="p">()</span>
+        <span class="p">)</span>
+        <span class="c1"># get number of related people</span>
+        <span class="n">related_people_count</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">PersonPlaceRelation</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">place__id</span><span class="o">=</span><span class="n">place</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">values_list</span><span class="p">(</span><span class="s2">"person__id"</span><span class="p">,</span> <span class="n">flat</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">distinct</span><span class="p">()</span>
+            <span class="o">.</span><span class="n">count</span><span class="p">()</span>
+        <span class="p">)</span>
+        <span class="c1"># get number of related events</span>
+        <span class="n">related_events_count</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">PlaceEventRelation</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">place__id</span><span class="o">=</span><span class="n">place</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">values_list</span><span class="p">(</span><span class="s2">"event__id"</span><span class="p">,</span> <span class="n">flat</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">distinct</span><span class="p">()</span>
+            <span class="o">.</span><span class="n">count</span><span class="p">()</span>
+        <span class="p">)</span>
+
+        <span class="n">outd</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">"name"</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">place</span><span class="p">),</span>
+            <span class="s2">"name_variants"</span><span class="p">:</span> <span class="s2">", "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                <span class="nb">sorted</span><span class="p">([</span><span class="n">n</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">place</span><span class="o">.</span><span class="n">names</span><span class="o">.</span><span class="n">non_primary</span><span class="p">()])</span>
+            <span class="p">),</span>
+            <span class="s2">"is_region"</span><span class="p">:</span> <span class="n">place</span><span class="o">.</span><span class="n">is_region</span><span class="p">,</span>
+            <span class="s2">"coordinates"</span><span class="p">:</span> <span class="n">place</span><span class="o">.</span><span class="n">coordinates</span><span class="p">,</span>
+            <span class="s2">"geographic_area"</span><span class="p">:</span> <span class="n">place</span><span class="o">.</span><span class="n">containing_region</span><span class="p">,</span>
+            <span class="s2">"notes"</span><span class="p">:</span> <span class="n">place</span><span class="o">.</span><span class="n">notes</span><span class="p">,</span>
+            <span class="s2">"related_documents_count"</span><span class="p">:</span> <span class="n">related_docs_count</span><span class="p">,</span>
+            <span class="s2">"related_people_count"</span><span class="p">:</span> <span class="n">related_people_count</span><span class="p">,</span>
+            <span class="s2">"related_events_count"</span><span class="p">:</span> <span class="n">related_events_count</span><span class="p">,</span>
+            <span class="s2">"url"</span><span class="p">:</span> <span class="n">place</span><span class="o">.</span><span class="n">permalink</span><span class="p">,</span>
+        <span class="p">}</span>
+
+        <span class="k">return</span> <span class="n">outd</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="AdminPlaceExporter">
+<a class="viewcode-back" href="../../../codedocs/entities.html#geniza.entities.metadata_export.AdminPlaceExporter">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">AdminPlaceExporter</span><span class="p">(</span><span class="n">PublicPlaceExporter</span><span class="p">):</span>
+    <span class="n">csv_fields</span> <span class="o">=</span> <span class="n">PublicPlaceExporter</span><span class="o">.</span><span class="n">csv_fields</span> <span class="o">+</span> <span class="p">[</span>
+        <span class="s2">"url_admin"</span><span class="p">,</span>
+    <span class="p">]</span>
+
+<div class="viewcode-block" id="AdminPlaceExporter.get_export_data_dict">
+<a class="viewcode-back" href="../../../codedocs/entities.html#geniza.entities.metadata_export.AdminPlaceExporter.get_export_data_dict">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_export_data_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">place</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Adding certain fields to PublicPlaceExporter.get_export_data_dict that are admin-only.</span>
+<span class="sd">        """</span>
+        <span class="n">outd</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">get_export_data_dict</span><span class="p">(</span><span class="n">place</span><span class="p">)</span>
+
+        <span class="c1"># add admin url</span>
+        <span class="n">outd</span><span class="p">[</span><span class="s2">"url_admin"</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">url_scheme</span><span class="si">}{</span><span class="bp">self</span><span class="o">.</span><span class="n">site_domain</span><span class="si">}</span><span class="s2">/admin/entities/place/</span><span class="si">{</span><span class="n">place</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2">/change/"</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">outd</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="PlaceRelationsExporter">
+<a class="viewcode-back" href="../../../codedocs/entities.html#geniza.entities.metadata_export.PlaceRelationsExporter">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">PlaceRelationsExporter</span><span class="p">(</span><span class="n">RelationsExporter</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    A subclass of :class:`RelationsExporter` that exports information relating</span>
+<span class="sd">    to :class:`~geniza.entities.models.Place`, in particular, the related</span>
+<span class="sd">    objects for a single model instance. Extends :meth:`get_queryset`.</span>
+<span class="sd">    """</span>
+
+    <span class="n">model</span> <span class="o">=</span> <span class="n">Place</span>
+    <span class="n">csv_fields</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="p">[</span><span class="s2">"source_place"</span><span class="p">]</span>
+        <span class="o">+</span> <span class="n">RelationsExporter</span><span class="o">.</span><span class="n">csv_fields</span>
+        <span class="o">+</span> <span class="p">[</span>
+            <span class="s2">"related_object_date"</span><span class="p">,</span>  <span class="c1"># only events and documents should get dates</span>
+            <span class="s2">"relationship_notes"</span><span class="p">,</span>
+        <span class="p">]</span>
+    <span class="p">)</span>
+
+<div class="viewcode-block" id="PlaceRelationsExporter.get_queryset">
+<a class="viewcode-back" href="../../../codedocs/entities.html#geniza.entities.metadata_export.PlaceRelationsExporter.get_queryset">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_queryset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Override get_queryset to get related items for the single item"""</span>
+        <span class="n">place</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">get_queryset</span><span class="p">()</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
+        <span class="c1"># union querysets to coalesce and normalize heterogenous data types</span>
+        <span class="n">relations</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">place</span><span class="o">.</span><span class="n">place_a</span><span class="o">.</span><span class="n">values</span><span class="p">(</span>
+                <span class="n">related_object_id</span><span class="o">=</span><span class="n">F</span><span class="p">(</span><span class="s2">"place_a"</span><span class="p">),</span>
+                <span class="n">related_object_type</span><span class="o">=</span><span class="n">Value</span><span class="p">(</span><span class="s2">"Place"</span><span class="p">),</span>
+                <span class="n">relationship_type_id</span><span class="o">=</span><span class="n">F</span><span class="p">(</span><span class="s2">"type"</span><span class="p">),</span>
+                <span class="n">relationship_notes</span><span class="o">=</span><span class="n">F</span><span class="p">(</span><span class="s2">"notes"</span><span class="p">),</span>
+                <span class="n">use_converse_typename</span><span class="o">=</span><span class="n">Value</span><span class="p">(</span><span class="kc">True</span><span class="p">),</span>
+            <span class="p">)</span>
+            <span class="o">.</span><span class="n">union</span><span class="p">(</span>
+                <span class="n">place</span><span class="o">.</span><span class="n">place_b</span><span class="o">.</span><span class="n">values</span><span class="p">(</span>
+                    <span class="n">related_object_id</span><span class="o">=</span><span class="n">F</span><span class="p">(</span><span class="s2">"place_b"</span><span class="p">),</span>
+                    <span class="n">related_object_type</span><span class="o">=</span><span class="n">Value</span><span class="p">(</span><span class="s2">"Place"</span><span class="p">),</span>
+                    <span class="n">relationship_type_id</span><span class="o">=</span><span class="n">F</span><span class="p">(</span><span class="s2">"type"</span><span class="p">),</span>
+                    <span class="n">relationship_notes</span><span class="o">=</span><span class="n">F</span><span class="p">(</span><span class="s2">"notes"</span><span class="p">),</span>
+                    <span class="n">use_converse_typename</span><span class="o">=</span><span class="n">Value</span><span class="p">(</span><span class="kc">False</span><span class="p">),</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+            <span class="o">.</span><span class="n">union</span><span class="p">(</span>
+                <span class="n">place</span><span class="o">.</span><span class="n">personplacerelation_set</span><span class="o">.</span><span class="n">values</span><span class="p">(</span>
+                    <span class="n">related_object_id</span><span class="o">=</span><span class="n">F</span><span class="p">(</span><span class="s2">"person"</span><span class="p">),</span>
+                    <span class="n">related_object_type</span><span class="o">=</span><span class="n">Value</span><span class="p">(</span><span class="s2">"Person"</span><span class="p">),</span>
+                    <span class="n">relationship_type_id</span><span class="o">=</span><span class="n">F</span><span class="p">(</span><span class="s2">"type"</span><span class="p">),</span>
+                    <span class="n">relationship_notes</span><span class="o">=</span><span class="n">F</span><span class="p">(</span><span class="s2">"notes"</span><span class="p">),</span>
+                    <span class="n">use_converse_typename</span><span class="o">=</span><span class="n">Value</span><span class="p">(</span><span class="kc">False</span><span class="p">),</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+            <span class="o">.</span><span class="n">union</span><span class="p">(</span>
+                <span class="n">place</span><span class="o">.</span><span class="n">documentplacerelation_set</span><span class="o">.</span><span class="n">values</span><span class="p">(</span>
+                    <span class="n">related_object_id</span><span class="o">=</span><span class="n">F</span><span class="p">(</span><span class="s2">"document"</span><span class="p">),</span>
+                    <span class="n">related_object_type</span><span class="o">=</span><span class="n">Value</span><span class="p">(</span><span class="s2">"Document"</span><span class="p">),</span>
+                    <span class="n">relationship_type_id</span><span class="o">=</span><span class="n">F</span><span class="p">(</span><span class="s2">"type"</span><span class="p">),</span>
+                    <span class="n">relationship_notes</span><span class="o">=</span><span class="n">F</span><span class="p">(</span><span class="s2">"notes"</span><span class="p">),</span>
+                    <span class="n">use_converse_typename</span><span class="o">=</span><span class="n">Value</span><span class="p">(</span><span class="kc">False</span><span class="p">),</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+            <span class="o">.</span><span class="n">union</span><span class="p">(</span>
+                <span class="n">place</span><span class="o">.</span><span class="n">placeeventrelation_set</span><span class="o">.</span><span class="n">values</span><span class="p">(</span>
+                    <span class="n">related_object_id</span><span class="o">=</span><span class="n">F</span><span class="p">(</span><span class="s2">"event"</span><span class="p">),</span>
+                    <span class="n">related_object_type</span><span class="o">=</span><span class="n">Value</span><span class="p">(</span><span class="s2">"Event"</span><span class="p">),</span>
+                    <span class="c1"># use -1 as this must be int, but there is no relationship</span>
+                    <span class="c1"># type for event relations</span>
+                    <span class="n">relationship_type_id</span><span class="o">=</span><span class="n">Value</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span>
+                    <span class="n">relationship_notes</span><span class="o">=</span><span class="n">F</span><span class="p">(</span><span class="s2">"notes"</span><span class="p">),</span>
+                    <span class="n">use_converse_typename</span><span class="o">=</span><span class="n">Value</span><span class="p">(</span><span class="kc">False</span><span class="p">),</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+        <span class="c1"># populate additional data</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">populate_relation_fields</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">relations</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="PlaceRelationsExporter.populate_relation_fields">
+<a class="viewcode-back" href="../../../codedocs/entities.html#geniza.entities.metadata_export.PlaceRelationsExporter.populate_relation_fields">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">populate_relation_fields</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">relations</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Helper method called by :meth:`get_queryset` that prefetches</span>
+<span class="sd">        various fields on related objects, efficiently retrieving their</span>
+<span class="sd">        data for export in bulk"""</span>
+
+        <span class="c1"># the general rule here is: fetch all the related data with a values()</span>
+        <span class="c1"># queryset, cast as dict (keyed on id) to compute each queryset ahead</span>
+        <span class="c1"># of time, and access each field value from the dict by id in a loop.</span>
+
+        <span class="c1"># use constants for column names for code readability</span>
+        <span class="n">ID</span> <span class="o">=</span> <span class="s2">"related_object_id"</span>
+        <span class="n">TYPE</span> <span class="o">=</span> <span class="s2">"related_object_type"</span>
+        <span class="n">RTID</span> <span class="o">=</span> <span class="s2">"relationship_type_id"</span>
+
+        <span class="c1"># use single query to get names for people and places</span>
+        <span class="n">related_people</span> <span class="o">=</span> <span class="p">[</span><span class="n">r</span><span class="p">[</span><span class="n">ID</span><span class="p">]</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">relations</span> <span class="k">if</span> <span class="n">r</span><span class="p">[</span><span class="n">TYPE</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"Person"</span><span class="p">]</span>
+        <span class="n">related_places</span> <span class="o">=</span> <span class="p">[</span><span class="n">r</span><span class="p">[</span><span class="n">ID</span><span class="p">]</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">relations</span> <span class="k">if</span> <span class="n">r</span><span class="p">[</span><span class="n">TYPE</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"Place"</span><span class="p">]</span>
+        <span class="n">names</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span>
+            <span class="n">Name</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span>
+                <span class="n">object_id__in</span><span class="o">=</span><span class="p">[</span><span class="o">*</span><span class="n">related_people</span><span class="p">,</span> <span class="o">*</span><span class="n">related_places</span><span class="p">],</span>
+                <span class="n">primary</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="p">(</span><span class="s2">"object_id"</span><span class="p">,</span> <span class="s2">"name"</span><span class="p">,</span> <span class="s2">"content_type"</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">pers_contenttype_id</span> <span class="o">=</span> <span class="n">ContentType</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get_for_model</span><span class="p">(</span><span class="n">Person</span><span class="p">)</span><span class="o">.</span><span class="n">pk</span>
+        <span class="n">place_contenttype_id</span> <span class="o">=</span> <span class="n">ContentType</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get_for_model</span><span class="p">(</span><span class="n">Place</span><span class="p">)</span><span class="o">.</span><span class="n">pk</span>
+
+        <span class="c1"># for people, places, documents: use single query each to get relation type names</span>
+        <span class="n">person_relation_types</span> <span class="o">=</span> <span class="n">PersonPlaceRelationType</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span>
+            <span class="n">id__in</span><span class="o">=</span><span class="p">[</span><span class="n">r</span><span class="p">[</span><span class="n">RTID</span><span class="p">]</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">relations</span> <span class="k">if</span> <span class="n">r</span><span class="p">[</span><span class="n">TYPE</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"Person"</span><span class="p">]</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="p">(</span><span class="s2">"id"</span><span class="p">,</span> <span class="s2">"name"</span><span class="p">)</span>
+        <span class="n">person_relation_typedict</span> <span class="o">=</span> <span class="p">{</span><span class="n">t</span><span class="p">[</span><span class="s2">"id"</span><span class="p">]:</span> <span class="n">t</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">person_relation_types</span><span class="p">}</span>
+        <span class="n">place_relation_types</span> <span class="o">=</span> <span class="n">PlacePlaceRelationType</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span>
+            <span class="n">id__in</span><span class="o">=</span><span class="p">[</span><span class="n">r</span><span class="p">[</span><span class="n">RTID</span><span class="p">]</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">relations</span> <span class="k">if</span> <span class="n">r</span><span class="p">[</span><span class="n">TYPE</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"Place"</span><span class="p">]</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="p">(</span><span class="s2">"id"</span><span class="p">,</span> <span class="s2">"name"</span><span class="p">)</span>
+        <span class="n">place_relation_typedict</span> <span class="o">=</span> <span class="p">{</span><span class="n">t</span><span class="p">[</span><span class="s2">"id"</span><span class="p">]:</span> <span class="n">t</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">place_relation_types</span><span class="p">}</span>
+        <span class="n">doc_relation_types</span> <span class="o">=</span> <span class="n">DocumentPlaceRelationType</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span>
+            <span class="n">id__in</span><span class="o">=</span><span class="p">[</span><span class="n">r</span><span class="p">[</span><span class="n">RTID</span><span class="p">]</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">relations</span> <span class="k">if</span> <span class="n">r</span><span class="p">[</span><span class="n">TYPE</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"Document"</span><span class="p">]</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="p">(</span><span class="s2">"id"</span><span class="p">,</span> <span class="s2">"name"</span><span class="p">)</span>
+        <span class="n">doc_relation_typedict</span> <span class="o">=</span> <span class="p">{</span><span class="n">t</span><span class="p">[</span><span class="s2">"id"</span><span class="p">]:</span> <span class="n">t</span><span class="p">[</span><span class="s2">"name"</span><span class="p">]</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">doc_relation_types</span><span class="p">}</span>
+
+        <span class="c1"># get shared documents with People, Places, and Events</span>
+        <span class="n">related_docs</span> <span class="o">=</span> <span class="p">[</span><span class="n">r</span><span class="p">[</span><span class="n">ID</span><span class="p">]</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">relations</span> <span class="k">if</span> <span class="n">r</span><span class="p">[</span><span class="n">TYPE</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"Document"</span><span class="p">]</span>
+        <span class="n">related_events</span> <span class="o">=</span> <span class="p">[</span><span class="n">r</span><span class="p">[</span><span class="n">ID</span><span class="p">]</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">relations</span> <span class="k">if</span> <span class="n">r</span><span class="p">[</span><span class="n">TYPE</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"Event"</span><span class="p">]</span>
+        <span class="n">shared_person_docs</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span>
+            <span class="n">PersonDocumentRelation</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span>
+                <span class="n">document__id__in</span><span class="o">=</span><span class="n">related_docs</span><span class="p">,</span> <span class="n">person__id__in</span><span class="o">=</span><span class="n">related_people</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="p">(</span><span class="s2">"document__id"</span><span class="p">,</span> <span class="s2">"person__id"</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">shared_person_docs</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">shared_person_docs</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="n">itemgetter</span><span class="p">(</span><span class="s2">"person__id"</span><span class="p">))</span>
+        <span class="n">persondocs_dict</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">k</span><span class="p">:</span> <span class="p">[</span><span class="n">d</span><span class="p">[</span><span class="s2">"document__id"</span><span class="p">]</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">v</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">groupby</span><span class="p">(</span><span class="n">shared_person_docs</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="n">itemgetter</span><span class="p">(</span><span class="s2">"person__id"</span><span class="p">))</span>
+        <span class="p">}</span>
+        <span class="n">shared_place_docs</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span>
+            <span class="n">DocumentPlaceRelation</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span>
+                <span class="n">document__id__in</span><span class="o">=</span><span class="n">related_docs</span><span class="p">,</span> <span class="n">place__id__in</span><span class="o">=</span><span class="n">related_places</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="p">(</span><span class="s2">"document__id"</span><span class="p">,</span> <span class="s2">"place__id"</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">shared_place_docs</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">shared_place_docs</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="n">itemgetter</span><span class="p">(</span><span class="s2">"place__id"</span><span class="p">))</span>
+        <span class="n">placedocs_dict</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">k</span><span class="p">:</span> <span class="p">[</span><span class="n">d</span><span class="p">[</span><span class="s2">"document__id"</span><span class="p">]</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">v</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">groupby</span><span class="p">(</span><span class="n">shared_place_docs</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="n">itemgetter</span><span class="p">(</span><span class="s2">"place__id"</span><span class="p">))</span>
+        <span class="p">}</span>
+        <span class="n">shared_event_docs</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span>
+            <span class="n">DocumentEventRelation</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span>
+                <span class="n">document__id__in</span><span class="o">=</span><span class="n">related_docs</span><span class="p">,</span> <span class="n">event__id__in</span><span class="o">=</span><span class="n">related_events</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="p">(</span><span class="s2">"document__id"</span><span class="p">,</span> <span class="s2">"event__id"</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">shared_event_docs</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">shared_event_docs</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="n">itemgetter</span><span class="p">(</span><span class="s2">"event__id"</span><span class="p">))</span>
+        <span class="n">eventdocs_dict</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">k</span><span class="p">:</span> <span class="p">[</span><span class="n">d</span><span class="p">[</span><span class="s2">"document__id"</span><span class="p">]</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">v</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">groupby</span><span class="p">(</span><span class="n">shared_event_docs</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="n">itemgetter</span><span class="p">(</span><span class="s2">"event__id"</span><span class="p">))</span>
+        <span class="p">}</span>
+
+        <span class="c1"># to get Document names, need TextBlocks and Fragments.</span>
+        <span class="c1"># to get Document dates, need Datings.</span>
+        <span class="n">docs</span> <span class="o">=</span> <span class="n">Document</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">prefetch_related</span><span class="p">(</span>
+            <span class="s2">"dating_set"</span><span class="p">,</span>
+            <span class="n">Prefetch</span><span class="p">(</span>
+                <span class="s2">"textblock_set"</span><span class="p">,</span>
+                <span class="n">queryset</span><span class="o">=</span><span class="n">TextBlock</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">select_related</span><span class="p">(</span>
+                    <span class="s2">"fragment"</span><span class="p">,</span>
+                <span class="p">)</span><span class="o">.</span><span class="n">prefetch_related</span><span class="p">(</span>
+                    <span class="s2">"fragment__textblock_set"</span><span class="p">,</span>
+                    <span class="s2">"fragment__textblock_set__document"</span><span class="p">,</span>
+                <span class="p">),</span>
+            <span class="p">),</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">id__in</span><span class="o">=</span><span class="n">related_docs</span><span class="p">)</span>
+
+        <span class="c1"># use standard date display for full possible document date range</span>
+        <span class="n">docs_dict</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">d</span><span class="o">.</span><span class="n">id</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">"name"</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">d</span><span class="p">),</span>
+                <span class="s2">"date"</span><span class="p">:</span> <span class="n">standard_date_display</span><span class="p">(</span>
+                    <span class="s2">"/"</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">dr</span><span class="o">.</span><span class="n">isoformat</span><span class="p">()</span> <span class="k">for</span> <span class="n">dr</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">dating_range</span><span class="p">()</span> <span class="k">if</span> <span class="n">dr</span><span class="p">])</span>
+                <span class="p">),</span>
+            <span class="p">}</span>
+            <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">docs</span>
+        <span class="p">}</span>
+
+        <span class="c1"># get Event names</span>
+        <span class="n">events</span> <span class="o">=</span> <span class="n">Event</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">id__in</span><span class="o">=</span><span class="n">related_events</span><span class="p">)</span>
+        <span class="n">events_dict</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">e</span><span class="o">.</span><span class="n">id</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">"name"</span><span class="p">:</span> <span class="n">e</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                <span class="s2">"date"</span><span class="p">:</span> <span class="n">standard_date_display</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">documents_date_range</span><span class="p">),</span>
+            <span class="p">}</span>
+            <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">events</span>
+        <span class="p">}</span>
+
+        <span class="c1"># loop through all relations, update with additional data, and dedupe</span>
+        <span class="c1"># use all precomputed query results to populate additional data per obj</span>
+        <span class="k">for</span> <span class="n">rel</span> <span class="ow">in</span> <span class="n">relations</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">rel</span><span class="p">[</span><span class="n">TYPE</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"Person"</span><span class="p">:</span>
+                <span class="c1"># get person name, relationship type from precomputed querysets</span>
+                <span class="n">filtered_names</span> <span class="o">=</span> <span class="nb">filter</span><span class="p">(</span>
+                    <span class="k">lambda</span> <span class="n">n</span><span class="p">:</span> <span class="n">n</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"object_id"</span><span class="p">)</span> <span class="o">==</span> <span class="n">rel</span><span class="p">[</span><span class="n">ID</span><span class="p">]</span>
+                    <span class="ow">and</span> <span class="n">n</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"content_type"</span><span class="p">)</span> <span class="o">==</span> <span class="n">pers_contenttype_id</span><span class="p">,</span>
+                    <span class="n">names</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="n">rel_type</span> <span class="o">=</span> <span class="n">person_relation_typedict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">rel</span><span class="p">[</span><span class="n">RTID</span><span class="p">])</span>
+                <span class="n">rel</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+                    <span class="p">{</span>
+                        <span class="s2">"related_object_name"</span><span class="p">:</span> <span class="nb">next</span><span class="p">(</span><span class="n">filtered_names</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"name"</span><span class="p">),</span>
+                        <span class="s2">"relationship_type"</span><span class="p">:</span> <span class="n">rel_type</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"name"</span><span class="p">),</span>
+                        <span class="s2">"shared_documents"</span><span class="p">:</span> <span class="s2">", "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                            <span class="p">[</span>
+                                <span class="n">docs_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">doc_id</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"name"</span><span class="p">)</span>
+                                <span class="k">for</span> <span class="n">doc_id</span> <span class="ow">in</span> <span class="n">persondocs_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">rel</span><span class="p">[</span><span class="n">ID</span><span class="p">],</span> <span class="p">[])</span>
+                            <span class="p">]</span>
+                        <span class="p">),</span>
+                    <span class="p">}</span>
+                <span class="p">)</span>
+            <span class="k">elif</span> <span class="n">rel</span><span class="p">[</span><span class="n">TYPE</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"Place"</span><span class="p">:</span>
+                <span class="c1"># get place name, relationship type from precomputed querysets</span>
+                <span class="n">filtered_names</span> <span class="o">=</span> <span class="nb">filter</span><span class="p">(</span>
+                    <span class="k">lambda</span> <span class="n">n</span><span class="p">:</span> <span class="n">n</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"object_id"</span><span class="p">)</span> <span class="o">==</span> <span class="n">rel</span><span class="p">[</span><span class="n">ID</span><span class="p">]</span>
+                    <span class="ow">and</span> <span class="n">n</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"content_type"</span><span class="p">)</span> <span class="o">==</span> <span class="n">place_contenttype_id</span><span class="p">,</span>
+                    <span class="n">names</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="n">rel_type</span> <span class="o">=</span> <span class="n">place_relation_typedict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">rel</span><span class="p">[</span><span class="n">RTID</span><span class="p">])</span>
+                <span class="n">rel</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+                    <span class="p">{</span>
+                        <span class="s2">"related_object_name"</span><span class="p">:</span> <span class="nb">next</span><span class="p">(</span><span class="n">filtered_names</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"name"</span><span class="p">),</span>
+                        <span class="s2">"relationship_type"</span><span class="p">:</span> <span class="p">(</span>
+                            <span class="c1"># handle converse type names for self-referential relationships</span>
+                            <span class="n">rel_type</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"converse_name"</span><span class="p">)</span>
+                            <span class="k">if</span> <span class="n">rel</span><span class="p">[</span><span class="s2">"use_converse_typename"</span><span class="p">]</span>
+                            <span class="ow">and</span> <span class="n">rel_type</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"converse_name"</span><span class="p">)</span>
+                            <span class="c1"># use name if should use name, or converse does not exist</span>
+                            <span class="k">else</span> <span class="n">rel_type</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"name"</span><span class="p">)</span>
+                        <span class="p">),</span>
+                        <span class="s2">"shared_documents"</span><span class="p">:</span> <span class="s2">", "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                            <span class="p">[</span>
+                                <span class="n">docs_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">doc_id</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"name"</span><span class="p">)</span>
+                                <span class="k">for</span> <span class="n">doc_id</span> <span class="ow">in</span> <span class="n">placedocs_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">rel</span><span class="p">[</span><span class="n">ID</span><span class="p">],</span> <span class="p">[])</span>
+                            <span class="p">]</span>
+                        <span class="p">),</span>
+                    <span class="p">}</span>
+                <span class="p">)</span>
+            <span class="k">elif</span> <span class="n">rel</span><span class="p">[</span><span class="n">TYPE</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"Document"</span><span class="p">:</span>
+                <span class="c1"># get doc name, doc relation type, date from precomputed querysets</span>
+                <span class="n">doc</span> <span class="o">=</span> <span class="n">docs_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">rel</span><span class="p">[</span><span class="n">ID</span><span class="p">],</span> <span class="p">{})</span>
+                <span class="n">rel</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+                    <span class="p">{</span>
+                        <span class="s2">"related_object_name"</span><span class="p">:</span> <span class="n">doc</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"name"</span><span class="p">),</span>
+                        <span class="s2">"relationship_type"</span><span class="p">:</span> <span class="n">doc_relation_typedict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">rel</span><span class="p">[</span><span class="n">RTID</span><span class="p">]),</span>
+                        <span class="s2">"related_object_date"</span><span class="p">:</span> <span class="n">doc</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"date"</span><span class="p">),</span>
+                    <span class="p">}</span>
+                <span class="p">)</span>
+            <span class="k">elif</span> <span class="n">rel</span><span class="p">[</span><span class="n">TYPE</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"Event"</span><span class="p">:</span>
+                <span class="c1"># get event name, date from precomputed queryset</span>
+                <span class="n">evt</span> <span class="o">=</span> <span class="n">events_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">rel</span><span class="p">[</span><span class="n">ID</span><span class="p">],</span> <span class="p">{})</span>
+                <span class="n">rel</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+                    <span class="p">{</span>
+                        <span class="s2">"related_object_name"</span><span class="p">:</span> <span class="n">evt</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"name"</span><span class="p">),</span>
+                        <span class="s2">"related_object_date"</span><span class="p">:</span> <span class="n">evt</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"date"</span><span class="p">),</span>
+                        <span class="s2">"shared_documents"</span><span class="p">:</span> <span class="s2">", "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                            <span class="p">[</span>
+                                <span class="n">docs_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">doc_id</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"name"</span><span class="p">)</span>
+                                <span class="k">for</span> <span class="n">doc_id</span> <span class="ow">in</span> <span class="n">eventdocs_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">rel</span><span class="p">[</span><span class="n">ID</span><span class="p">],</span> <span class="p">{})</span>
+                            <span class="p">]</span>
+                        <span class="p">),</span>
+                    <span class="p">}</span>
+                <span class="p">)</span>
+
+        <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dedupe_related_objects</span><span class="p">(</span><span class="n">relations</span><span class="p">),</span>
+            <span class="c1"># sort by object type, then name</span>
+            <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">r</span><span class="p">:</span> <span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="s2">"related_object_type"</span><span class="p">],</span> <span class="n">slugify</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="s2">"related_object_name"</span><span class="p">])),</span>
+        <span class="p">)</span></div>
+</div>
+
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">Princeton Geniza Project</a></h1>
+
+
+
+<p class="blurb">Django web application and other code for Princeton Geniza Project v4.x</p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=Princeton-CDH&repo=geniza&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+
+
+    
+
+<p>
+<a class="badge" href="https://codecov.io/github/Princeton-CDH/geniza">
+    <img
+    alt="https://codecov.io/github/Princeton-CDH/geniza/coverage.svg?branch=master"
+    src="https://codecov.io/github/Princeton-CDH/geniza/coverage.svg?branch=master"
+    />
+</a>
+</p>
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../architecture.html">Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../codedocs/index.html">Code Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../devnotes.html">Developer Instructions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../changelog.html">Change Log</a></li>
+</ul>
+
+
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><div class="powered_by">
+    <p>Powered by:</p>
+    <a href="http://cdh.princeton.edu/">
+        <img src="https://cdh.princeton.edu/static/img/CDH_logo.svg"
+            alt="Center for Digital Humanities @ Princeton" />
+    </a>
+</div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2022, Center for Digital Humanities @ Princeton.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 9.1.1</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -1,0 +1,1539 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>geniza.entities.views &#8212; Princeton Geniza Project 4.32.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=5ecbeea2" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/basic.css?v=b08954a9" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=27fed22d" />
+    <script src="../../../_static/documentation_options.js?v=54d9916e"></script>
+    <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for geniza.entities.views</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ast</span><span class="w"> </span><span class="kn">import</span> <span class="n">literal_eval</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections</span><span class="w"> </span><span class="kn">import</span> <span class="n">defaultdict</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">urllib.parse</span><span class="w"> </span><span class="kn">import</span> <span class="n">urlparse</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">dal</span><span class="w"> </span><span class="kn">import</span> <span class="n">autocomplete</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">django.conf</span><span class="w"> </span><span class="kn">import</span> <span class="n">settings</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">django.contrib</span><span class="w"> </span><span class="kn">import</span> <span class="n">messages</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">django.contrib.auth.mixins</span><span class="w"> </span><span class="kn">import</span> <span class="n">PermissionRequiredMixin</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">django.contrib.postgres.aggregates</span><span class="w"> </span><span class="kn">import</span> <span class="n">ArrayAgg</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">django.core.paginator</span><span class="w"> </span><span class="kn">import</span> <span class="n">EmptyPage</span><span class="p">,</span> <span class="n">Paginator</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">django.db.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">Count</span><span class="p">,</span> <span class="n">Prefetch</span><span class="p">,</span> <span class="n">Q</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">django.forms</span><span class="w"> </span><span class="kn">import</span> <span class="n">ValidationError</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">django.http</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Http404</span><span class="p">,</span>
+    <span class="n">HttpResponsePermanentRedirect</span><span class="p">,</span>
+    <span class="n">HttpResponseRedirect</span><span class="p">,</span>
+    <span class="n">JsonResponse</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">django.template.loader</span><span class="w"> </span><span class="kn">import</span> <span class="n">render_to_string</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">django.urls</span><span class="w"> </span><span class="kn">import</span> <span class="n">resolve</span><span class="p">,</span> <span class="n">reverse</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">django.utils.safestring</span><span class="w"> </span><span class="kn">import</span> <span class="n">mark_safe</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">django.utils.text</span><span class="w"> </span><span class="kn">import</span> <span class="n">Truncator</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">django.utils.translation</span><span class="w"> </span><span class="kn">import</span> <span class="n">gettext</span> <span class="k">as</span> <span class="n">_</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">django.utils.translation</span><span class="w"> </span><span class="kn">import</span> <span class="n">ngettext</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">django.views.generic</span><span class="w"> </span><span class="kn">import</span> <span class="n">DetailView</span><span class="p">,</span> <span class="n">FormView</span><span class="p">,</span> <span class="n">ListView</span><span class="p">,</span> <span class="n">View</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">django.views.generic.edit</span><span class="w"> </span><span class="kn">import</span> <span class="n">FormMixin</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">natsort</span><span class="w"> </span><span class="kn">import</span> <span class="n">natsort_key</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">geniza.common.views</span><span class="w"> </span><span class="kn">import</span> <span class="n">SolrDownMixin</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">geniza.corpus.dates</span><span class="w"> </span><span class="kn">import</span> <span class="n">DocumentDateMixin</span><span class="p">,</span> <span class="n">standard_date_display</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">geniza.corpus.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">Dating</span><span class="p">,</span> <span class="n">Document</span><span class="p">,</span> <span class="n">DocumentType</span><span class="p">,</span> <span class="n">TextBlock</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">geniza.corpus.solr_queryset</span><span class="w"> </span><span class="kn">import</span> <span class="n">DocumentSolrQuerySet</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">geniza.corpus.views</span><span class="w"> </span><span class="kn">import</span> <span class="n">SolrDateRangeMixin</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">geniza.entities.forms</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">PersonDocumentRelationTypeMergeForm</span><span class="p">,</span>
+    <span class="n">PersonListForm</span><span class="p">,</span>
+    <span class="n">PersonMergeForm</span><span class="p">,</span>
+    <span class="n">PersonPersonRelationTypeMergeForm</span><span class="p">,</span>
+    <span class="n">PlaceListForm</span><span class="p">,</span>
+    <span class="n">PlaceMergeForm</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">geniza.entities.models</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">DocumentPlaceRelationType</span><span class="p">,</span>
+    <span class="n">PastPersonSlug</span><span class="p">,</span>
+    <span class="n">PastPlaceSlug</span><span class="p">,</span>
+    <span class="n">Person</span><span class="p">,</span>
+    <span class="n">PersonDocumentRelationType</span><span class="p">,</span>
+    <span class="n">PersonPersonRelationType</span><span class="p">,</span>
+    <span class="n">PersonSolrQuerySet</span><span class="p">,</span>
+    <span class="n">Place</span><span class="p">,</span>
+    <span class="n">PlaceSolrQuerySet</span><span class="p">,</span>
+<span class="p">)</span>
+
+
+<div class="viewcode-block" id="PersonMerge">
+<a class="viewcode-back" href="../../../codedocs/entities.html#geniza.entities.views.PersonMerge">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">PersonMerge</span><span class="p">(</span><span class="n">PermissionRequiredMixin</span><span class="p">,</span> <span class="n">FormView</span><span class="p">):</span>
+    <span class="n">permission_required</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"entities.change_person"</span><span class="p">,</span> <span class="s2">"entities.delete_person"</span><span class="p">)</span>
+    <span class="n">form_class</span> <span class="o">=</span> <span class="n">PersonMergeForm</span>
+    <span class="n">template_name</span> <span class="o">=</span> <span class="s2">"admin/entities/person/merge.html"</span>
+
+<div class="viewcode-block" id="PersonMerge.get_success_url">
+<a class="viewcode-back" href="../../../codedocs/entities.html#geniza.entities.views.PersonMerge.get_success_url">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_success_url</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">reverse</span><span class="p">(</span><span class="s2">"admin:entities_person_change"</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">primary_person</span><span class="o">.</span><span class="n">pk</span><span class="p">])</span></div>
+
+
+<div class="viewcode-block" id="PersonMerge.get_form_kwargs">
+<a class="viewcode-back" href="../../../codedocs/entities.html#geniza.entities.views.PersonMerge.get_form_kwargs">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_form_kwargs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">form_kwargs</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">get_form_kwargs</span><span class="p">()</span>
+        <span class="n">form_kwargs</span><span class="p">[</span><span class="s2">"person_ids"</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">person_ids</span>
+        <span class="k">return</span> <span class="n">form_kwargs</span></div>
+
+
+<div class="viewcode-block" id="PersonMerge.get_initial">
+<a class="viewcode-back" href="../../../codedocs/entities.html#geniza.entities.views.PersonMerge.get_initial">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_initial</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># Default to first person selected</span>
+        <span class="n">person_ids</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"ids"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">person_ids</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">person_ids</span> <span class="o">=</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">pid</span><span class="p">)</span> <span class="k">for</span> <span class="n">pid</span> <span class="ow">in</span> <span class="n">person_ids</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">","</span><span class="p">)]</span>
+            <span class="c1"># by default, prefer the first record created</span>
+            <span class="k">return</span> <span class="p">{</span><span class="s2">"primary_person"</span><span class="p">:</span> <span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">person_ids</span><span class="p">)[</span><span class="mi">0</span><span class="p">]}</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">person_ids</span> <span class="o">=</span> <span class="p">[]</span></div>
+
+
+<div class="viewcode-block" id="PersonMerge.form_valid">
+<a class="viewcode-back" href="../../../codedocs/entities.html#geniza.entities.views.PersonMerge.form_valid">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">form_valid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">form</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Merge the selected people into the primary person."""</span>
+        <span class="n">primary_person</span> <span class="o">=</span> <span class="n">form</span><span class="o">.</span><span class="n">cleaned_data</span><span class="p">[</span><span class="s2">"primary_person"</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">primary_person</span> <span class="o">=</span> <span class="n">primary_person</span>
+
+        <span class="n">secondary_ids</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">person_id</span> <span class="k">for</span> <span class="n">person_id</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">person_ids</span> <span class="k">if</span> <span class="n">person_id</span> <span class="o">!=</span> <span class="n">primary_person</span><span class="o">.</span><span class="n">pk</span>
+        <span class="p">]</span>
+        <span class="n">secondary_people</span> <span class="o">=</span> <span class="n">Person</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">pk__in</span><span class="o">=</span><span class="n">secondary_ids</span><span class="p">)</span>
+
+        <span class="c1"># Get string representations before they are merged</span>
+        <span class="n">primary_person_str</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">primary_person</span><span class="p">)</span><span class="si">}</span><span class="s2"> (id = </span><span class="si">{</span><span class="n">primary_person</span><span class="o">.</span><span class="n">pk</span><span class="si">}</span><span class="s2">)"</span>
+        <span class="n">secondary_people_str</span> <span class="o">=</span> <span class="s2">", "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+            <span class="p">[</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">person</span><span class="p">)</span><span class="si">}</span><span class="s2"> (id = </span><span class="si">{</span><span class="n">person</span><span class="o">.</span><span class="n">pk</span><span class="si">}</span><span class="s2">)"</span> <span class="k">for</span> <span class="n">person</span> <span class="ow">in</span> <span class="n">secondary_people</span><span class="p">]</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Merge secondary people into the selected primary person</span>
+        <span class="n">user</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="s2">"user"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">primary_person</span><span class="o">.</span><span class="n">merge_with</span><span class="p">(</span><span class="n">secondary_people</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="n">user</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">ValidationError</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+            <span class="c1"># in case the merge resulted in an error, display error to user</span>
+            <span class="n">messages</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="n">err</span><span class="o">.</span><span class="n">message</span><span class="p">)</span>
+            <span class="c1"># redirect to this form page instead of one of the people</span>
+            <span class="k">return</span> <span class="n">HttpResponseRedirect</span><span class="p">(</span>
+                <span class="s2">"</span><span class="si">%s</span><span class="s2">?ids=</span><span class="si">%s</span><span class="s2">"</span>
+                <span class="o">%</span> <span class="p">(</span><span class="n">reverse</span><span class="p">(</span><span class="s2">"admin:person-merge"</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"ids"</span><span class="p">,</span> <span class="s2">""</span><span class="p">)),</span>
+            <span class="p">)</span>
+
+        <span class="c1"># Display info about the merge to the user</span>
+        <span class="n">messages</span><span class="o">.</span><span class="n">success</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span>
+            <span class="n">mark_safe</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"Successfully merged </span><span class="si">{</span><span class="n">secondary_people_str</span><span class="si">}</span><span class="s2"> with </span><span class="si">{</span><span class="n">primary_person_str</span><span class="si">}</span><span class="s2">."</span>
+            <span class="p">),</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">form_valid</span><span class="p">(</span><span class="n">form</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="PlaceMerge">
+<a class="viewcode-back" href="../../../codedocs/entities.html#geniza.entities.views.PlaceMerge">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">PlaceMerge</span><span class="p">(</span><span class="n">PermissionRequiredMixin</span><span class="p">,</span> <span class="n">FormView</span><span class="p">):</span>
+    <span class="n">permission_required</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"entities.change_place"</span><span class="p">,</span> <span class="s2">"entities.delete_place"</span><span class="p">)</span>
+    <span class="n">form_class</span> <span class="o">=</span> <span class="n">PlaceMergeForm</span>
+    <span class="n">template_name</span> <span class="o">=</span> <span class="s2">"admin/entities/place/merge.html"</span>
+
+<div class="viewcode-block" id="PlaceMerge.get_success_url">
+<a class="viewcode-back" href="../../../codedocs/entities.html#geniza.entities.views.PlaceMerge.get_success_url">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_success_url</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">reverse</span><span class="p">(</span><span class="s2">"admin:entities_place_change"</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">primary_place</span><span class="o">.</span><span class="n">pk</span><span class="p">])</span></div>
+
+
+<div class="viewcode-block" id="PlaceMerge.get_form_kwargs">
+<a class="viewcode-back" href="../../../codedocs/entities.html#geniza.entities.views.PlaceMerge.get_form_kwargs">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_form_kwargs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">form_kwargs</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">get_form_kwargs</span><span class="p">()</span>
+        <span class="n">form_kwargs</span><span class="p">[</span><span class="s2">"place_ids"</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">place_ids</span>
+        <span class="k">return</span> <span class="n">form_kwargs</span></div>
+
+
+<div class="viewcode-block" id="PlaceMerge.get_initial">
+<a class="viewcode-back" href="../../../codedocs/entities.html#geniza.entities.views.PlaceMerge.get_initial">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_initial</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># Default to first place selected</span>
+        <span class="n">place_ids</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"ids"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">place_ids</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">place_ids</span> <span class="o">=</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">pid</span><span class="p">)</span> <span class="k">for</span> <span class="n">pid</span> <span class="ow">in</span> <span class="n">place_ids</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">","</span><span class="p">)]</span>
+            <span class="c1"># by default, prefer the first record created</span>
+            <span class="k">return</span> <span class="p">{</span><span class="s2">"primary_place"</span><span class="p">:</span> <span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">place_ids</span><span class="p">)[</span><span class="mi">0</span><span class="p">]}</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">place_ids</span> <span class="o">=</span> <span class="p">[]</span></div>
+
+
+<div class="viewcode-block" id="PlaceMerge.form_valid">
+<a class="viewcode-back" href="../../../codedocs/entities.html#geniza.entities.views.PlaceMerge.form_valid">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">form_valid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">form</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Merge the selected people into the primary place."""</span>
+        <span class="n">primary_place</span> <span class="o">=</span> <span class="n">form</span><span class="o">.</span><span class="n">cleaned_data</span><span class="p">[</span><span class="s2">"primary_place"</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">primary_place</span> <span class="o">=</span> <span class="n">primary_place</span>
+
+        <span class="n">secondary_ids</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">place_id</span> <span class="k">for</span> <span class="n">place_id</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">place_ids</span> <span class="k">if</span> <span class="n">place_id</span> <span class="o">!=</span> <span class="n">primary_place</span><span class="o">.</span><span class="n">pk</span>
+        <span class="p">]</span>
+        <span class="n">secondary_people</span> <span class="o">=</span> <span class="n">Place</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">pk__in</span><span class="o">=</span><span class="n">secondary_ids</span><span class="p">)</span>
+
+        <span class="c1"># Get string representations before they are merged</span>
+        <span class="n">primary_place_str</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">primary_place</span><span class="p">)</span><span class="si">}</span><span class="s2"> (id = </span><span class="si">{</span><span class="n">primary_place</span><span class="o">.</span><span class="n">pk</span><span class="si">}</span><span class="s2">)"</span>
+        <span class="n">secondary_people_str</span> <span class="o">=</span> <span class="s2">", "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+            <span class="p">[</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">place</span><span class="p">)</span><span class="si">}</span><span class="s2"> (id = </span><span class="si">{</span><span class="n">place</span><span class="o">.</span><span class="n">pk</span><span class="si">}</span><span class="s2">)"</span> <span class="k">for</span> <span class="n">place</span> <span class="ow">in</span> <span class="n">secondary_people</span><span class="p">]</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Merge secondary people into the selected primary place</span>
+        <span class="n">user</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="s2">"user"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">primary_place</span><span class="o">.</span><span class="n">merge_with</span><span class="p">(</span><span class="n">secondary_people</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="n">user</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">ValidationError</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+            <span class="c1"># in case the merge resulted in an error, display error to user</span>
+            <span class="n">messages</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="n">err</span><span class="o">.</span><span class="n">message</span><span class="p">)</span>
+            <span class="c1"># redirect to this form page instead of one of the people</span>
+            <span class="k">return</span> <span class="n">HttpResponseRedirect</span><span class="p">(</span>
+                <span class="s2">"</span><span class="si">%s</span><span class="s2">?ids=</span><span class="si">%s</span><span class="s2">"</span>
+                <span class="o">%</span> <span class="p">(</span><span class="n">reverse</span><span class="p">(</span><span class="s2">"admin:place-merge"</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"ids"</span><span class="p">,</span> <span class="s2">""</span><span class="p">)),</span>
+            <span class="p">)</span>
+
+        <span class="c1"># Display info about the merge to the user</span>
+        <span class="n">messages</span><span class="o">.</span><span class="n">success</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span>
+            <span class="n">mark_safe</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"Successfully merged </span><span class="si">{</span><span class="n">secondary_people_str</span><span class="si">}</span><span class="s2"> with </span><span class="si">{</span><span class="n">primary_place_str</span><span class="si">}</span><span class="s2">."</span>
+            <span class="p">),</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">form_valid</span><span class="p">(</span><span class="n">form</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="RelationTypeMergeViewMixin">
+<a class="viewcode-back" href="../../../codedocs/entities.html#geniza.entities.views.RelationTypeMergeViewMixin">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">RelationTypeMergeViewMixin</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Mixin for views that allow admins to merge relation types; views must</span>
+<span class="sd">    set ``relation_type_class`` to the relation type model to merge."""</span>
+
+<div class="viewcode-block" id="RelationTypeMergeViewMixin.get_form_kwargs">
+<a class="viewcode-back" href="../../../codedocs/entities.html#geniza.entities.views.RelationTypeMergeViewMixin.get_form_kwargs">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_form_kwargs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Pass the selected relation type ids to the merge form"""</span>
+        <span class="n">form_kwargs</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">get_form_kwargs</span><span class="p">()</span>
+        <span class="n">form_kwargs</span><span class="p">[</span><span class="s2">"ids"</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ids</span>
+        <span class="k">return</span> <span class="n">form_kwargs</span></div>
+
+
+<div class="viewcode-block" id="RelationTypeMergeViewMixin.get_initial">
+<a class="viewcode-back" href="../../../codedocs/entities.html#geniza.entities.views.RelationTypeMergeViewMixin.get_initial">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_initial</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Set selected relation type ids from the request, and default</span>
+<span class="sd">        the primary relation type to the first one created"""</span>
+        <span class="n">ids</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"ids"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">ids</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ids</span> <span class="o">=</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="nb">id</span><span class="p">)</span> <span class="k">for</span> <span class="nb">id</span> <span class="ow">in</span> <span class="n">ids</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">","</span><span class="p">)]</span>
+            <span class="c1"># by default, prefer the first record created</span>
+            <span class="k">return</span> <span class="p">{</span><span class="s2">"primary_relation_type"</span><span class="p">:</span> <span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ids</span><span class="p">)[</span><span class="mi">0</span><span class="p">]}</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ids</span> <span class="o">=</span> <span class="p">[]</span></div>
+
+
+<div class="viewcode-block" id="RelationTypeMergeViewMixin.form_valid">
+<a class="viewcode-back" href="../../../codedocs/entities.html#geniza.entities.views.RelationTypeMergeViewMixin.form_valid">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">form_valid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">form</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Merge the selected relation types into the primary one."""</span>
+        <span class="n">primary_relation_type</span> <span class="o">=</span> <span class="n">form</span><span class="o">.</span><span class="n">cleaned_data</span><span class="p">[</span><span class="s2">"primary_relation_type"</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">primary_relation_type</span> <span class="o">=</span> <span class="n">primary_relation_type</span>
+
+        <span class="n">secondary_ids</span> <span class="o">=</span> <span class="p">[</span><span class="nb">id</span> <span class="k">for</span> <span class="nb">id</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ids</span> <span class="k">if</span> <span class="nb">id</span> <span class="o">!=</span> <span class="n">primary_relation_type</span><span class="o">.</span><span class="n">pk</span><span class="p">]</span>
+        <span class="n">secondary_relation_types</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">relation_type_class</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span>
+            <span class="n">pk__in</span><span class="o">=</span><span class="n">secondary_ids</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Get string representations before they are merged</span>
+        <span class="n">primary_relation_str</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">primary_relation_type</span><span class="p">)</span><span class="si">}</span><span class="s2"> (id = </span><span class="si">{</span><span class="n">primary_relation_type</span><span class="o">.</span><span class="n">pk</span><span class="si">}</span><span class="s2">)"</span>
+        <span class="p">)</span>
+        <span class="n">secondary_relation_str</span> <span class="o">=</span> <span class="s2">", "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+            <span class="p">[</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">rel</span><span class="p">)</span><span class="si">}</span><span class="s2"> (id = </span><span class="si">{</span><span class="n">rel</span><span class="o">.</span><span class="n">pk</span><span class="si">}</span><span class="s2">)"</span> <span class="k">for</span> <span class="n">rel</span> <span class="ow">in</span> <span class="n">secondary_relation_types</span><span class="p">]</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Merge secondary relation types into the selected primary relation type</span>
+        <span class="n">user</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="s2">"user"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">primary_relation_type</span><span class="o">.</span><span class="n">merge_with</span><span class="p">(</span><span class="n">secondary_relation_types</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="n">user</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">ValidationError</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+            <span class="c1"># in case the merge resulted in an error, display error to user</span>
+            <span class="n">messages</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="n">err</span><span class="o">.</span><span class="n">message</span><span class="p">)</span>
+            <span class="c1"># redirect to this form page instead of one of the items</span>
+            <span class="k">return</span> <span class="n">HttpResponseRedirect</span><span class="p">(</span>
+                <span class="s2">"</span><span class="si">%s</span><span class="s2">?ids=</span><span class="si">%s</span><span class="s2">"</span>
+                <span class="o">%</span> <span class="p">(</span>
+                    <span class="n">reverse</span><span class="p">(</span><span class="sa">f</span><span class="s2">"admin:</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">merge_path_name</span><span class="si">}</span><span class="s2">"</span><span class="p">),</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"ids"</span><span class="p">,</span> <span class="s2">""</span><span class="p">),</span>
+                <span class="p">),</span>
+            <span class="p">)</span>
+
+        <span class="c1"># Display info about the merge to the user</span>
+        <span class="n">messages</span><span class="o">.</span><span class="n">success</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span>
+            <span class="n">mark_safe</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"Successfully merged </span><span class="si">{</span><span class="n">secondary_relation_str</span><span class="si">}</span><span class="s2"> with </span><span class="si">{</span><span class="n">primary_relation_str</span><span class="si">}</span><span class="s2">."</span>
+            <span class="p">),</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">form_valid</span><span class="p">(</span><span class="n">form</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="PersonDocumentRelationTypeMerge">
+<a class="viewcode-back" href="../../../codedocs/entities.html#geniza.entities.views.PersonDocumentRelationTypeMerge">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">PersonDocumentRelationTypeMerge</span><span class="p">(</span>
+    <span class="n">RelationTypeMergeViewMixin</span><span class="p">,</span> <span class="n">PermissionRequiredMixin</span><span class="p">,</span> <span class="n">FormView</span>
+<span class="p">):</span>
+    <span class="n">permission_required</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="s2">"entities.change_persondocumentrelationtype"</span><span class="p">,</span>
+        <span class="s2">"entities.delete_persondocumentrelationtype"</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">form_class</span> <span class="o">=</span> <span class="n">PersonDocumentRelationTypeMergeForm</span>
+    <span class="n">template_name</span> <span class="o">=</span> <span class="s2">"admin/entities/persondocumentrelationtype/merge.html"</span>
+    <span class="n">relation_type_class</span> <span class="o">=</span> <span class="n">PersonDocumentRelationType</span>
+    <span class="n">merge_path_name</span> <span class="o">=</span> <span class="s2">"person-document-relation-type-merge"</span>
+
+<div class="viewcode-block" id="PersonDocumentRelationTypeMerge.get_success_url">
+<a class="viewcode-back" href="../../../codedocs/entities.html#geniza.entities.views.PersonDocumentRelationTypeMerge.get_success_url">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_success_url</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">reverse</span><span class="p">(</span>
+            <span class="s2">"admin:entities_persondocumentrelationtype_change"</span><span class="p">,</span>
+            <span class="n">args</span><span class="o">=</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">primary_relation_type</span><span class="o">.</span><span class="n">pk</span><span class="p">],</span>
+        <span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="PersonPersonRelationTypeMerge">
+<a class="viewcode-back" href="../../../codedocs/entities.html#geniza.entities.views.PersonPersonRelationTypeMerge">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">PersonPersonRelationTypeMerge</span><span class="p">(</span>
+    <span class="n">RelationTypeMergeViewMixin</span><span class="p">,</span> <span class="n">PermissionRequiredMixin</span><span class="p">,</span> <span class="n">FormView</span>
+<span class="p">):</span>
+    <span class="n">permission_required</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="s2">"entities.change_personpersonrelationtype"</span><span class="p">,</span>
+        <span class="s2">"entities.delete_personpersonrelationtype"</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">form_class</span> <span class="o">=</span> <span class="n">PersonPersonRelationTypeMergeForm</span>
+    <span class="n">template_name</span> <span class="o">=</span> <span class="s2">"admin/entities/personpersonrelationtype/merge.html"</span>
+    <span class="n">relation_type_class</span> <span class="o">=</span> <span class="n">PersonPersonRelationType</span>
+    <span class="n">merge_path_name</span> <span class="o">=</span> <span class="s2">"person-person-relation-type-merge"</span>
+
+<div class="viewcode-block" id="PersonPersonRelationTypeMerge.get_success_url">
+<a class="viewcode-back" href="../../../codedocs/entities.html#geniza.entities.views.PersonPersonRelationTypeMerge.get_success_url">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_success_url</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">reverse</span><span class="p">(</span>
+            <span class="s2">"admin:entities_personpersonrelationtype_change"</span><span class="p">,</span>
+            <span class="n">args</span><span class="o">=</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">primary_relation_type</span><span class="o">.</span><span class="n">pk</span><span class="p">],</span>
+        <span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="UnaccentedNameAutocompleteView">
+<a class="viewcode-back" href="../../../codedocs/entities.html#geniza.entities.views.UnaccentedNameAutocompleteView">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">UnaccentedNameAutocompleteView</span><span class="p">(</span><span class="n">autocomplete</span><span class="o">.</span><span class="n">Select2QuerySetView</span><span class="p">):</span>
+<div class="viewcode-block" id="UnaccentedNameAutocompleteView.get_queryset">
+<a class="viewcode-back" href="../../../codedocs/entities.html#geniza.entities.views.UnaccentedNameAutocompleteView.get_queryset">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_queryset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""entities filtered by entered query, or all entities, ordered by name"""</span>
+        <span class="n">q</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"q"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">qs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span>
+            <span class="c1"># ArrayAgg to group together related values from related model instances</span>
+            <span class="n">name_unaccented</span><span class="o">=</span><span class="n">ArrayAgg</span><span class="p">(</span><span class="s2">"names__name__unaccent"</span><span class="p">,</span> <span class="n">distinct</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">order_by</span><span class="p">(</span><span class="s2">"name_unaccented"</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">q</span><span class="p">:</span>
+            <span class="n">qs</span> <span class="o">=</span> <span class="n">qs</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span>
+                <span class="n">Q</span><span class="p">(</span><span class="n">name_unaccented__icontains</span><span class="o">=</span><span class="n">q</span><span class="p">)</span> <span class="o">|</span> <span class="n">Q</span><span class="p">(</span><span class="n">names__name__icontains</span><span class="o">=</span><span class="n">q</span><span class="p">)</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">distinct</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">qs</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="PersonAutocompleteView">
+<a class="viewcode-back" href="../../../codedocs/entities.html#geniza.entities.views.PersonAutocompleteView">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">PersonAutocompleteView</span><span class="p">(</span><span class="n">PermissionRequiredMixin</span><span class="p">,</span> <span class="n">UnaccentedNameAutocompleteView</span><span class="p">):</span>
+    <span class="n">permission_required</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"entities.change_person"</span><span class="p">,)</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">Person</span>
+
+<div class="viewcode-block" id="PersonAutocompleteView.get_queryset">
+<a class="viewcode-back" href="../../../codedocs/entities.html#geniza.entities.views.PersonAutocompleteView.get_queryset">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_queryset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Exclude self from queryset if in person-person form."""</span>
+        <span class="n">qs</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">get_queryset</span><span class="p">()</span>
+        <span class="c1"># use forwarded constant is_person_person_form to determine if we are in the</span>
+        <span class="c1"># person-person form, and therefore should exclude self</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"forwarded"</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">forwarded</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+            <span class="s2">"is_person_person_form"</span><span class="p">,</span> <span class="kc">False</span>
+        <span class="p">):</span>
+            <span class="n">ref_url</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">META</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"HTTP_REFERER"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">ref_url</span><span class="p">:</span>
+                <span class="c1"># parse HTTP_REFERER url, i.e. the current page url</span>
+                <span class="n">resolver_match</span> <span class="o">=</span> <span class="n">resolve</span><span class="p">(</span><span class="n">urlparse</span><span class="p">(</span><span class="n">ref_url</span><span class="p">)[</span><span class="mi">2</span><span class="p">])</span>
+                <span class="k">if</span> <span class="n">resolver_match</span> <span class="ow">and</span> <span class="s2">"object_id"</span> <span class="ow">in</span> <span class="n">resolver_match</span><span class="o">.</span><span class="n">kwargs</span><span class="p">:</span>
+                    <span class="c1"># exclude self from inline Person queryset</span>
+                    <span class="n">qs</span> <span class="o">=</span> <span class="n">qs</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="n">pk</span><span class="o">=</span><span class="n">resolver_match</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s2">"object_id"</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">qs</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="PlaceAutocompleteView">
+<a class="viewcode-back" href="../../../codedocs/entities.html#geniza.entities.views.PlaceAutocompleteView">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">PlaceAutocompleteView</span><span class="p">(</span><span class="n">PermissionRequiredMixin</span><span class="p">,</span> <span class="n">UnaccentedNameAutocompleteView</span><span class="p">):</span>
+    <span class="n">permission_required</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"entities.change_place"</span><span class="p">,)</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">Place</span></div>
+
+
+
+<div class="viewcode-block" id="SlugDetailMixin">
+<a class="viewcode-back" href="../../../codedocs/entities.html#geniza.entities.views.SlugDetailMixin">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">SlugDetailMixin</span><span class="p">(</span><span class="n">DetailView</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Mixin for redirecting on past slugs, to be used on all Person and Place pages (detail</span>
+<span class="sd">    and related objects lists)"""</span>
+
+    <span class="c1"># NOTE: past_slug_model and past_slug_relatedfield are required for each inheriting model.</span>
+    <span class="c1"># past_slug_relatedfield must be the inheriting model's related name from past_slug_model, i.e.</span>
+    <span class="c1"># if past_slug_model = PastPersonSlug, then past_slug_relatedfield must be "person", because</span>
+    <span class="c1"># PastPersonSlug.person is the field that relates back to the Person model.</span>
+
+<div class="viewcode-block" id="SlugDetailMixin.get">
+<a class="viewcode-back" href="../../../codedocs/entities.html#geniza.entities.views.SlugDetailMixin.get">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""extend GET to check for old slug and redirect on 404"""</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">Http404</span><span class="p">:</span>
+            <span class="c1"># if not found, check for a match on a past slug</span>
+            <span class="n">past_slug</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">past_slug_model</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span>
+                <span class="n">slug</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s2">"slug"</span><span class="p">]</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
+            <span class="c1"># if found, redirect to the correct url for this view</span>
+            <span class="k">if</span> <span class="n">past_slug</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s2">"slug"</span><span class="p">]</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span>
+                    <span class="n">past_slug</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">past_slug_relatedfield</span>
+                <span class="p">)</span><span class="o">.</span><span class="n">slug</span>
+                <span class="k">return</span> <span class="n">HttpResponsePermanentRedirect</span><span class="p">(</span>
+                    <span class="nb">getattr</span><span class="p">(</span><span class="n">past_slug</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">past_slug_relatedfield</span><span class="p">)</span><span class="o">.</span><span class="n">get_absolute_url</span><span class="p">()</span>
+                <span class="p">)</span>
+            <span class="c1"># otherwise, continue raising the 404</span>
+            <span class="k">raise</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="PersonDetailView">
+<a class="viewcode-back" href="../../../codedocs/entities.html#geniza.entities.views.PersonDetailView">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">PersonDetailView</span><span class="p">(</span><span class="n">SlugDetailMixin</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""public display of a single :class:`~geniza.entities.models.Person`"""</span>
+
+    <span class="n">model</span> <span class="o">=</span> <span class="n">Person</span>
+    <span class="n">context_object_name</span> <span class="o">=</span> <span class="s2">"person"</span>
+    <span class="n">MIN_DOCUMENTS</span> <span class="o">=</span> <span class="mi">10</span>
+    <span class="n">past_slug_model</span> <span class="o">=</span> <span class="n">PastPersonSlug</span>
+    <span class="n">past_slug_relatedfield</span> <span class="o">=</span> <span class="s2">"person"</span>
+
+<div class="viewcode-block" id="PersonDetailView.page_title">
+<a class="viewcode-back" href="../../../codedocs/entities.html#geniza.entities.views.PersonDetailView.page_title">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">page_title</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""page title, for metadata; uses Person primary name"""</span>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_object</span><span class="p">())</span></div>
+
+
+<div class="viewcode-block" id="PersonDetailView.page_description">
+<a class="viewcode-back" href="../../../codedocs/entities.html#geniza.entities.views.PersonDetailView.page_description">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">page_description</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""page description, for metadata; uses truncated description"""</span>
+        <span class="k">return</span> <span class="n">Truncator</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_object</span><span class="p">()</span><span class="o">.</span><span class="n">description</span><span class="p">)</span><span class="o">.</span><span class="n">words</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="PersonDetailView.get_context_data">
+<a class="viewcode-back" href="../../../codedocs/entities.html#geniza.entities.views.PersonDetailView.get_context_data">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_context_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""extend context data to add page metadata"""</span>
+        <span class="n">context_data</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">get_context_data</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="n">context_data</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+            <span class="p">{</span>
+                <span class="s2">"page_title"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">page_title</span><span class="p">(),</span>
+                <span class="s2">"page_description"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">page_description</span><span class="p">(),</span>
+                <span class="s2">"page_type"</span><span class="p">:</span> <span class="s2">"person"</span><span class="p">,</span>
+            <span class="p">}</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">context_data</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="RelatedDocumentsMixin">
+<a class="viewcode-back" href="../../../codedocs/entities.html#geniza.entities.views.RelatedDocumentsMixin">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">RelatedDocumentsMixin</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Mixin for entity "related documents" views; views must set</span>
+<span class="sd">    ``relation_field`` and ``relation_type_class`` for the entity's</span>
+<span class="sd">    document relations."""</span>
+
+    <span class="n">_page_description</span> <span class="o">=</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="RelatedDocumentsMixin.page_title">
+<a class="viewcode-back" href="../../../codedocs/entities.html#geniza.entities.views.RelatedDocumentsMixin.page_title">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">page_title</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""The title of the entity related documents page"""</span>
+        <span class="c1"># Translators: title of entity "related documents" page</span>
+        <span class="k">return</span> <span class="n">_</span><span class="p">(</span><span class="s2">"Related documents for </span><span class="si">%(p)s</span><span class="s2">"</span><span class="p">)</span> <span class="o">%</span> <span class="p">{</span><span class="s2">"p"</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_object</span><span class="p">())}</span></div>
+
+
+<div class="viewcode-block" id="RelatedDocumentsMixin.set_page_description">
+<a class="viewcode-back" href="../../../codedocs/entities.html#geniza.entities.views.RelatedDocumentsMixin.set_page_description">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_page_description</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">count</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Set description for an entity related documents page, with count"""</span>
+        <span class="c1"># Translators: description of related documents page, for search engines</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_page_description</span> <span class="o">=</span> <span class="n">ngettext</span><span class="p">(</span>
+            <span class="s2">"</span><span class="si">%(count)d</span><span class="s2"> related document"</span><span class="p">,</span>
+            <span class="s2">"</span><span class="si">%(count)d</span><span class="s2"> related documents"</span><span class="p">,</span>
+            <span class="n">count</span><span class="p">,</span>
+        <span class="p">)</span> <span class="o">%</span> <span class="p">{</span>
+            <span class="s2">"count"</span><span class="p">:</span> <span class="n">count</span><span class="p">,</span>
+        <span class="p">}</span></div>
+
+
+<div class="viewcode-block" id="RelatedDocumentsMixin.get_related">
+<a class="viewcode-back" href="../../../codedocs/entities.html#geniza.entities.views.RelatedDocumentsMixin.get_related">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_related</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Get and process the queryset of related documents"""</span>
+        <span class="n">obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_object</span><span class="p">()</span>
+
+        <span class="c1"># values() fields we want, including uncertain if person-doc relation</span>
+        <span class="n">fields</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="s2">"document"</span><span class="p">,</span>
+            <span class="s2">"document__shelfmark_override"</span><span class="p">,</span>
+            <span class="s2">"document__doctype"</span><span class="p">,</span>
+            <span class="s2">"document__doc_date_original"</span><span class="p">,</span>
+            <span class="s2">"document__doc_date_standard"</span><span class="p">,</span>
+            <span class="s2">"document__doc_date_calendar"</span><span class="p">,</span>
+            <span class="s2">"type"</span><span class="p">,</span>
+            <span class="s2">"uncertain"</span> <span class="k">if</span> <span class="s2">"person"</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">relation_field</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="p">]</span>
+        <span class="n">doc_relations</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">relation_field</span><span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="p">(</span>
+            <span class="o">*</span><span class="p">[</span><span class="n">f</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">fields</span> <span class="k">if</span> <span class="n">f</span><span class="p">]</span>
+        <span class="p">)</span>
+
+        <span class="c1"># get needed related items in batch queries</span>
+        <span class="n">doc_pks</span> <span class="o">=</span> <span class="n">doc_relations</span><span class="o">.</span><span class="n">values_list</span><span class="p">(</span><span class="s2">"document"</span><span class="p">,</span> <span class="n">flat</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="c1"># get textblocks so we can get all shelfmarks per document</span>
+        <span class="n">textblocks</span> <span class="o">=</span> <span class="n">TextBlock</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span>
+            <span class="n">certain</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">document__pk__in</span><span class="o">=</span><span class="n">doc_pks</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="p">(</span><span class="s2">"document__pk"</span><span class="p">,</span> <span class="s2">"fragment__shelfmark"</span><span class="p">)</span>
+        <span class="n">shelfmarks_by_doc</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">set</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">tb</span> <span class="ow">in</span> <span class="n">textblocks</span><span class="p">:</span>
+            <span class="n">shelfmarks_by_doc</span><span class="p">[</span><span class="n">tb</span><span class="p">[</span><span class="s2">"document__pk"</span><span class="p">]]</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">tb</span><span class="p">[</span><span class="s2">"fragment__shelfmark"</span><span class="p">])</span>
+
+        <span class="c1"># just for thumbnail generation, use prefetching on Document instances</span>
+        <span class="n">thumbnail_docs</span> <span class="o">=</span> <span class="n">Document</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">pk__in</span><span class="o">=</span><span class="n">doc_pks</span><span class="p">)</span><span class="o">.</span><span class="n">prefetch_related</span><span class="p">(</span>
+            <span class="n">Prefetch</span><span class="p">(</span>
+                <span class="s2">"textblock_set"</span><span class="p">,</span>
+                <span class="n">queryset</span><span class="o">=</span><span class="n">TextBlock</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">certain</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                <span class="o">.</span><span class="n">select_related</span><span class="p">(</span><span class="s2">"fragment__manifest"</span><span class="p">)</span>
+                <span class="o">.</span><span class="n">prefetch_related</span><span class="p">(</span><span class="s2">"fragment__manifest__canvases"</span><span class="p">),</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">thumbnail_docs_by_pk</span> <span class="o">=</span> <span class="p">{</span><span class="n">doc</span><span class="o">.</span><span class="n">pk</span><span class="p">:</span> <span class="n">doc</span> <span class="k">for</span> <span class="n">doc</span> <span class="ow">in</span> <span class="n">thumbnail_docs</span><span class="p">}</span>
+
+        <span class="c1"># get document types</span>
+        <span class="n">doctypes</span> <span class="o">=</span> <span class="n">DocumentType</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">document__pk__in</span><span class="o">=</span><span class="n">doc_pks</span><span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="p">(</span>
+            <span class="s2">"document__pk"</span><span class="p">,</span> <span class="s2">"name"</span><span class="p">,</span> <span class="s2">"display_label"</span>
+        <span class="p">)</span>
+        <span class="n">doctypes_by_doc</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">d</span><span class="p">[</span><span class="s2">"document__pk"</span><span class="p">]:</span> <span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="s2">"display_label"</span><span class="p">]</span> <span class="ow">or</span> <span class="n">d</span><span class="p">[</span><span class="s2">"name"</span><span class="p">])</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">doctypes</span>
+        <span class="p">}</span>
+
+        <span class="c1"># get datings</span>
+        <span class="n">datings</span> <span class="o">=</span> <span class="n">Dating</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">document__pk__in</span><span class="o">=</span><span class="n">doc_pks</span><span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="p">(</span>
+            <span class="s2">"document__pk"</span><span class="p">,</span> <span class="s2">"display_date"</span><span class="p">,</span> <span class="s2">"standard_date"</span>
+        <span class="p">)</span>
+        <span class="n">datings_by_doc</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">datings</span><span class="p">:</span>
+            <span class="n">datings_by_doc</span><span class="p">[</span><span class="n">d</span><span class="p">[</span><span class="s2">"document__pk"</span><span class="p">]]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+
+        <span class="c1"># get relationship types</span>
+        <span class="n">reltype_pks</span> <span class="o">=</span> <span class="n">doc_relations</span><span class="o">.</span><span class="n">values_list</span><span class="p">(</span><span class="s2">"type"</span><span class="p">,</span> <span class="n">flat</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">reltypes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">relation_type_class</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">pk__in</span><span class="o">=</span><span class="n">reltype_pks</span><span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="p">(</span>
+            <span class="s2">"pk"</span><span class="p">,</span> <span class="s2">"name"</span>
+        <span class="p">)</span>
+        <span class="n">reltypes_by_pk</span> <span class="o">=</span> <span class="p">{</span><span class="n">r</span><span class="p">[</span><span class="s2">"pk"</span><span class="p">]:</span> <span class="n">r</span><span class="p">[</span><span class="s2">"name"</span><span class="p">]</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">reltypes</span><span class="p">}</span>
+
+        <span class="c1"># produce the set to render; use dict keyed on pk for deduplication</span>
+        <span class="n">related_documents</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">rel</span> <span class="ow">in</span> <span class="n">doc_relations</span><span class="p">:</span>
+            <span class="n">doc_pk</span> <span class="o">=</span> <span class="n">rel</span><span class="p">[</span><span class="s2">"document"</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">doc_pk</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">related_documents</span><span class="p">:</span>
+                <span class="c1"># get related items by doc pk</span>
+                <span class="c1"># translators: Label for unknown document type</span>
+                <span class="n">doctype_name</span> <span class="o">=</span> <span class="n">doctypes_by_doc</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">doc_pk</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s2">"Unknown type"</span><span class="p">))</span>
+                <span class="n">doc_datings</span> <span class="o">=</span> <span class="n">datings_by_doc</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">doc_pk</span><span class="p">,</span> <span class="p">[])</span>
+                <span class="n">shelfmarks</span> <span class="o">=</span> <span class="n">shelfmarks_by_doc</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">doc_pk</span><span class="p">,</span> <span class="nb">set</span><span class="p">())</span>
+                <span class="n">shelfmark</span> <span class="o">=</span> <span class="n">rel</span><span class="p">[</span><span class="s2">"document__shelfmark_override"</span><span class="p">]</span> <span class="ow">or</span> <span class="s2">" + "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                    <span class="n">shelfmarks</span>
+                <span class="p">)</span>
+                <span class="n">thumbnail_doc</span> <span class="o">=</span> <span class="n">thumbnail_docs_by_pk</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">doc_pk</span><span class="p">)</span>
+                <span class="n">thumbnail</span> <span class="o">=</span> <span class="n">thumbnail_doc</span><span class="o">.</span><span class="n">list_thumbnail</span><span class="p">()</span> <span class="k">if</span> <span class="n">thumbnail_doc</span> <span class="k">else</span> <span class="s2">""</span>
+
+                <span class="c1"># get default date display without loading entire Document into memory (as it creates sub-queries)</span>
+                <span class="n">original_date</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="s2">" "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                        <span class="p">[</span>
+                            <span class="n">rel</span><span class="p">[</span><span class="s2">"document__doc_date_original"</span><span class="p">],</span>
+                            <span class="nb">dict</span><span class="p">(</span><span class="n">DocumentDateMixin</span><span class="o">.</span><span class="n">CALENDAR_CHOICES</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+                                <span class="n">rel</span><span class="p">[</span><span class="s2">"document__doc_date_calendar"</span><span class="p">]</span>
+                            <span class="p">),</span>
+                        <span class="p">]</span>
+                    <span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+                    <span class="k">if</span> <span class="n">rel</span><span class="p">[</span><span class="s2">"document__doc_date_original"</span><span class="p">]</span>
+                    <span class="k">else</span> <span class="kc">None</span>
+                <span class="p">)</span>
+                <span class="n">document_date</span> <span class="o">=</span> <span class="n">DocumentDateMixin</span><span class="o">.</span><span class="n">get_document_date</span><span class="p">(</span>
+                    <span class="n">rel</span><span class="p">[</span><span class="s2">"document__doc_date_standard"</span><span class="p">],</span> <span class="n">original_date</span>
+                <span class="p">)</span>
+                <span class="k">if</span> <span class="n">document_date</span><span class="p">:</span>
+                    <span class="c1"># value for sorting, label for display</span>
+                    <span class="n">document_date</span> <span class="o">=</span> <span class="p">{</span>
+                        <span class="s2">"value"</span><span class="p">:</span> <span class="n">rel</span><span class="p">[</span><span class="s2">"document__doc_date_standard"</span><span class="p">],</span>
+                        <span class="s2">"label"</span><span class="p">:</span> <span class="n">document_date</span><span class="p">,</span>
+                    <span class="p">}</span>
+                <span class="k">elif</span> <span class="n">doc_datings</span><span class="p">:</span>
+                    <span class="c1"># use inferred date if one exists and no doc date</span>
+                    <span class="n">dating</span> <span class="o">=</span> <span class="n">doc_datings</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                    <span class="n">document_date</span> <span class="o">=</span> <span class="p">{</span>
+                        <span class="s2">"value"</span><span class="p">:</span> <span class="n">dating</span><span class="p">[</span><span class="s2">"standard_date"</span><span class="p">],</span>
+                        <span class="s2">"label"</span><span class="p">:</span> <span class="n">dating</span><span class="p">[</span><span class="s2">"display_date"</span><span class="p">]</span>
+                        <span class="ow">or</span> <span class="n">standard_date_display</span><span class="p">(</span><span class="n">dating</span><span class="p">[</span><span class="s2">"standard_date"</span><span class="p">]),</span>
+                    <span class="p">}</span>
+
+                <span class="c1"># build the initial dict for this doc</span>
+                <span class="n">related_documents</span><span class="p">[</span><span class="n">doc_pk</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="s2">"pk"</span><span class="p">:</span> <span class="n">doc_pk</span><span class="p">,</span>
+                    <span class="s2">"url"</span><span class="p">:</span> <span class="n">reverse</span><span class="p">(</span><span class="s2">"corpus:document"</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">doc_pk</span><span class="p">)]),</span>
+                    <span class="s2">"shelfmark"</span><span class="p">:</span> <span class="n">shelfmark</span><span class="p">,</span>
+                    <span class="s2">"doctype"</span><span class="p">:</span> <span class="n">doctype_name</span><span class="p">,</span>
+                    <span class="s2">"relations"</span><span class="p">:</span> <span class="p">[],</span>
+                    <span class="s2">"uncertain"</span><span class="p">:</span> <span class="n">rel</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"uncertain"</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+                    <span class="s2">"date"</span><span class="p">:</span> <span class="n">document_date</span><span class="p">,</span>
+                    <span class="s2">"thumbnail"</span><span class="p">:</span> <span class="n">thumbnail</span><span class="p">,</span>
+                <span class="p">}</span>
+
+            <span class="c1"># add this relationship type to the relations list, including uncertain</span>
+            <span class="n">relation_name</span> <span class="o">=</span> <span class="n">reltypes_by_pk</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">rel</span><span class="p">[</span><span class="s2">"type"</span><span class="p">])</span>
+            <span class="n">related_documents</span><span class="p">[</span><span class="n">doc_pk</span><span class="p">][</span><span class="s2">"relations"</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="p">{</span>
+                    <span class="s2">"name"</span><span class="p">:</span> <span class="n">relation_name</span><span class="p">,</span>
+                    <span class="s2">"uncertain"</span><span class="p">:</span> <span class="n">rel</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"uncertain"</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+                <span class="p">}</span>
+            <span class="p">)</span>
+            <span class="n">related_documents</span><span class="p">[</span><span class="n">doc_pk</span><span class="p">][</span><span class="s2">"relations"</span><span class="p">]</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span>
+                <span class="n">related_documents</span><span class="p">[</span><span class="n">doc_pk</span><span class="p">][</span><span class="s2">"relations"</span><span class="p">],</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">r</span><span class="p">:</span> <span class="n">r</span><span class="p">[</span><span class="s2">"name"</span><span class="p">]</span>
+            <span class="p">)</span>
+
+        <span class="n">sort</span><span class="p">,</span> <span class="nb">dir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"sort"</span><span class="p">,</span> <span class="s2">"shelfmark_asc"</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"_"</span><span class="p">)</span>
+        <span class="n">desc</span> <span class="o">=</span> <span class="nb">dir</span> <span class="o">==</span> <span class="s2">"desc"</span>
+
+        <span class="c1"># sort by passed sort, and fallback to shelfmark as tiebreaker</span>
+        <span class="k">if</span> <span class="s2">"date"</span> <span class="ow">in</span> <span class="n">sort</span><span class="p">:</span>
+            <span class="c1"># sort nones at the bottom, i.e., give them the lowest date if reversed,</span>
+            <span class="c1"># give them the highest date if not</span>
+            <span class="n">none_date</span> <span class="o">=</span> <span class="s2">"0"</span> <span class="k">if</span> <span class="n">desc</span> <span class="k">else</span> <span class="s2">"9999"</span>
+            <span class="n">sort_fn</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">doc</span><span class="p">:</span> <span class="p">(</span>
+                <span class="n">doc</span><span class="p">[</span><span class="s2">"date"</span><span class="p">][</span><span class="s2">"value"</span><span class="p">]</span> <span class="k">if</span> <span class="n">doc</span><span class="p">[</span><span class="s2">"date"</span><span class="p">]</span> <span class="k">else</span> <span class="n">none_date</span><span class="p">,</span>
+                <span class="n">natsort_key</span><span class="p">(</span><span class="n">doc</span><span class="p">[</span><span class="s2">"shelfmark"</span><span class="p">]),</span>
+            <span class="p">)</span>
+        <span class="k">elif</span> <span class="s2">"relation"</span> <span class="ow">in</span> <span class="n">sort</span><span class="p">:</span>
+            <span class="c1"># sort uncertains after relation name</span>
+            <span class="n">sort_fn</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">doc</span><span class="p">:</span> <span class="p">(</span>
+                <span class="s2">", "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">r</span><span class="p">[</span><span class="s1">'name'</span><span class="p">]</span><span class="si">}{</span><span class="s1">' (uncertain)'</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">r</span><span class="p">[</span><span class="s1">'uncertain'</span><span class="p">]</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="s1">''</span><span class="si">}</span><span class="s2">"</span>
+                    <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">doc</span><span class="p">[</span><span class="s2">"relations"</span><span class="p">]</span>
+                <span class="p">),</span>
+                <span class="n">natsort_key</span><span class="p">(</span><span class="n">doc</span><span class="p">[</span><span class="s2">"shelfmark"</span><span class="p">]),</span>
+            <span class="p">)</span>
+        <span class="k">elif</span> <span class="s2">"shelfmark"</span> <span class="ow">in</span> <span class="n">sort</span><span class="p">:</span>
+            <span class="n">sort_fn</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">doc</span><span class="p">:</span> <span class="n">natsort_key</span><span class="p">(</span><span class="n">doc</span><span class="p">[</span><span class="s2">"shelfmark"</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">sort_fn</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">doc</span><span class="p">:</span> <span class="p">(</span><span class="n">doc</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">sort</span><span class="p">,</span> <span class="s2">""</span><span class="p">),</span> <span class="n">natsort_key</span><span class="p">(</span><span class="n">doc</span><span class="p">[</span><span class="s2">"shelfmark"</span><span class="p">]))</span>
+        <span class="n">related_documents</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span>
+            <span class="n">related_documents</span><span class="o">.</span><span class="n">values</span><span class="p">(),</span> <span class="n">key</span><span class="o">=</span><span class="n">sort_fn</span><span class="p">,</span> <span class="n">reverse</span><span class="o">=</span><span class="n">desc</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_page_description</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">related_documents</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">related_documents</span></div>
+
+
+<div class="viewcode-block" id="RelatedDocumentsMixin.get_context_data">
+<a class="viewcode-back" href="../../../codedocs/entities.html#geniza.entities.views.RelatedDocumentsMixin.get_context_data">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_context_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Include list of documents and sort state in context"""</span>
+
+        <span class="n">obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_object</span><span class="p">()</span>
+        <span class="c1"># if there are no related documents, don't serve out this page</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">relation_field</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+            <span class="k">raise</span> <span class="n">Http404</span>
+
+        <span class="c1"># otherwise, add related documents queryset to context</span>
+        <span class="n">context</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">get_context_data</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">context</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+            <span class="p">{</span>
+                <span class="s2">"related_documents"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_related</span><span class="p">(),</span>
+                <span class="s2">"sort"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"sort"</span><span class="p">,</span> <span class="s2">"shelfmark_asc"</span><span class="p">),</span>
+                <span class="c1"># use an attribute set in get_related() to avoid extra queries for count</span>
+                <span class="s2">"page_description"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_page_description</span><span class="p">,</span>
+            <span class="p">}</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">context</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="RelatedPeopleMixin">
+<a class="viewcode-back" href="../../../codedocs/entities.html#geniza.entities.views.RelatedPeopleMixin">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">RelatedPeopleMixin</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Mixin for entity "related people" views; views must set</span>
+<span class="sd">    ``relation_field`` for the entity's person relations."""</span>
+
+<div class="viewcode-block" id="RelatedPeopleMixin.page_title">
+<a class="viewcode-back" href="../../../codedocs/entities.html#geniza.entities.views.RelatedPeopleMixin.page_title">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">page_title</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""The title of the entity related people page"""</span>
+        <span class="c1"># Translators: title of entity "related people" page</span>
+        <span class="k">return</span> <span class="n">_</span><span class="p">(</span><span class="s2">"Related people for </span><span class="si">%(p)s</span><span class="s2">"</span><span class="p">)</span> <span class="o">%</span> <span class="p">{</span><span class="s2">"p"</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_object</span><span class="p">())}</span></div>
+
+
+<div class="viewcode-block" id="RelatedPeopleMixin.page_description">
+<a class="viewcode-back" href="../../../codedocs/entities.html#geniza.entities.views.RelatedPeopleMixin.page_description">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">page_description</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Description of an entity related people page, with count"""</span>
+        <span class="n">obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_object</span><span class="p">()</span>
+        <span class="n">count</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">relation_field</span><span class="p">)</span><span class="o">.</span><span class="n">count</span><span class="p">()</span>
+        <span class="c1"># Translators: description of related people page, for search engines</span>
+        <span class="k">return</span> <span class="n">ngettext</span><span class="p">(</span>
+            <span class="s2">"</span><span class="si">%(count)d</span><span class="s2"> related person"</span><span class="p">,</span>
+            <span class="s2">"</span><span class="si">%(count)d</span><span class="s2"> related people"</span><span class="p">,</span>
+            <span class="n">count</span><span class="p">,</span>
+        <span class="p">)</span> <span class="o">%</span> <span class="p">{</span>
+            <span class="s2">"count"</span><span class="p">:</span> <span class="n">count</span><span class="p">,</span>
+        <span class="p">}</span></div>
+
+
+<div class="viewcode-block" id="RelatedPeopleMixin.get_related">
+<a class="viewcode-back" href="../../../codedocs/entities.html#geniza.entities.views.RelatedPeopleMixin.get_related">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_related</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Get and process the queryset of related people"""</span>
+        <span class="n">obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_object</span><span class="p">()</span>
+        <span class="n">related_people</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">relation_field</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+
+        <span class="n">sort</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"sort"</span><span class="p">,</span> <span class="s2">"name_asc"</span><span class="p">)</span>
+
+        <span class="n">sort_dir</span> <span class="o">=</span> <span class="s2">"-"</span> <span class="k">if</span> <span class="n">sort</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">"desc"</span><span class="p">)</span> <span class="k">else</span> <span class="s2">""</span>
+
+        <span class="k">if</span> <span class="s2">"name"</span> <span class="ow">in</span> <span class="n">sort</span><span class="p">:</span>
+            <span class="c1"># sort by slug (stand-in for name, but diacritic insensitive)</span>
+            <span class="n">related_people</span> <span class="o">=</span> <span class="n">related_people</span><span class="o">.</span><span class="n">order_by</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">sort_dir</span><span class="si">}</span><span class="s2">person__slug"</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="s2">"relation"</span> <span class="ow">in</span> <span class="n">sort</span><span class="p">:</span>
+            <span class="c1"># sort by person-entity relation type name</span>
+            <span class="n">related_people</span> <span class="o">=</span> <span class="n">related_people</span><span class="o">.</span><span class="n">order_by</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">sort_dir</span><span class="si">}</span><span class="s2">type__name"</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">related_people</span></div>
+
+
+<div class="viewcode-block" id="RelatedPeopleMixin.get_context_data">
+<a class="viewcode-back" href="../../../codedocs/entities.html#geniza.entities.views.RelatedPeopleMixin.get_context_data">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_context_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Include list of people and sort state in context"""</span>
+
+        <span class="n">obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_object</span><span class="p">()</span>
+        <span class="c1"># if there are no related people, don't serve out this page</span>
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"relation_field"</span><span class="p">)</span>
+            <span class="ow">and</span> <span class="ow">not</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">relation_field</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span>
+        <span class="p">):</span>
+            <span class="k">raise</span> <span class="n">Http404</span>
+
+        <span class="c1"># otherwise, add related people queryset to context</span>
+        <span class="n">context</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">get_context_data</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">context</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+            <span class="p">{</span>
+                <span class="s2">"related_people"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_related</span><span class="p">(),</span>
+                <span class="s2">"sort"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"sort"</span><span class="p">,</span> <span class="s2">"name_asc"</span><span class="p">),</span>
+            <span class="p">}</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">context</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="PersonDocumentsView">
+<a class="viewcode-back" href="../../../codedocs/entities.html#geniza.entities.views.PersonDocumentsView">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">PersonDocumentsView</span><span class="p">(</span><span class="n">RelatedDocumentsMixin</span><span class="p">,</span> <span class="n">PersonDetailView</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""List of :class:`~geniza.corpus.models.Document` objects that are related to a specific</span>
+<span class="sd">    :class:`~geniza.entities.models.Person` (e.g., by authorship)."""</span>
+
+    <span class="n">template_name</span> <span class="o">=</span> <span class="s2">"entities/person_related_documents.html"</span>
+    <span class="n">viewname</span> <span class="o">=</span> <span class="s2">"entities:person-documents"</span>
+    <span class="n">relation_field</span> <span class="o">=</span> <span class="s2">"persondocumentrelation_set"</span>
+    <span class="n">relation_type_class</span> <span class="o">=</span> <span class="n">PersonDocumentRelationType</span></div>
+
+
+
+<div class="viewcode-block" id="PersonPeopleView">
+<a class="viewcode-back" href="../../../codedocs/entities.html#geniza.entities.views.PersonPeopleView">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">PersonPeopleView</span><span class="p">(</span><span class="n">RelatedPeopleMixin</span><span class="p">,</span> <span class="n">PersonDetailView</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""List of :class:`~geniza.corpus.models.Document` objects that are related to a specific</span>
+<span class="sd">    :class:`~geniza.entities.models.Person` (e.g., by authorship)."""</span>
+
+    <span class="n">template_name</span> <span class="o">=</span> <span class="s2">"entities/person_related_people.html"</span>
+    <span class="n">viewname</span> <span class="o">=</span> <span class="s2">"entities:person-people"</span>
+
+<div class="viewcode-block" id="PersonPeopleView.page_description">
+<a class="viewcode-back" href="../../../codedocs/entities.html#geniza.entities.views.PersonPeopleView.page_description">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">page_description</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Description of a person related people page, with count"""</span>
+        <span class="n">obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_object</span><span class="p">()</span>
+        <span class="n">count</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">related_people_count</span>
+        <span class="c1"># Translators: description of related people page, for search engines</span>
+        <span class="k">return</span> <span class="n">ngettext</span><span class="p">(</span>
+            <span class="s2">"</span><span class="si">%(count)d</span><span class="s2"> related person"</span><span class="p">,</span>
+            <span class="s2">"</span><span class="si">%(count)d</span><span class="s2"> related people"</span><span class="p">,</span>
+            <span class="n">count</span><span class="p">,</span>
+        <span class="p">)</span> <span class="o">%</span> <span class="p">{</span>
+            <span class="s2">"count"</span><span class="p">:</span> <span class="n">count</span><span class="p">,</span>
+        <span class="p">}</span></div>
+
+
+<div class="viewcode-block" id="PersonPeopleView.get_related">
+<a class="viewcode-back" href="../../../codedocs/entities.html#geniza.entities.views.PersonPeopleView.get_related">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_related</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Get and process the queryset of related people"""</span>
+        <span class="n">obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_object</span><span class="p">()</span>
+        <span class="n">related_people</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">related_people</span><span class="p">()</span>
+
+        <span class="n">sort</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"sort"</span><span class="p">,</span> <span class="s2">"name_asc"</span><span class="p">)</span>
+        <span class="n">reverse</span> <span class="o">=</span> <span class="n">sort</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">"desc"</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="s2">"name"</span> <span class="ow">in</span> <span class="n">sort</span><span class="p">:</span>
+            <span class="c1"># sort by slug (stand-in for name, but diacritic insensitive)</span>
+            <span class="n">related_people</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span>
+                <span class="n">related_people</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">p</span><span class="p">:</span> <span class="n">p</span><span class="p">[</span><span class="s2">"slug"</span><span class="p">],</span> <span class="n">reverse</span><span class="o">=</span><span class="n">reverse</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="s2">"relation"</span> <span class="ow">in</span> <span class="n">sort</span><span class="p">:</span>
+            <span class="c1"># sort by person-entity relation type name</span>
+            <span class="n">related_people</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span>
+                <span class="n">related_people</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">p</span><span class="p">:</span> <span class="n">p</span><span class="p">[</span><span class="s2">"type"</span><span class="p">],</span> <span class="n">reverse</span><span class="o">=</span><span class="n">reverse</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="s2">"documents"</span> <span class="ow">in</span> <span class="n">sort</span><span class="p">:</span>
+            <span class="c1"># sort by count of shared documents</span>
+            <span class="n">related_people</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span>
+                <span class="n">related_people</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">p</span><span class="p">:</span> <span class="n">p</span><span class="p">[</span><span class="s2">"shared_documents"</span><span class="p">],</span> <span class="n">reverse</span><span class="o">=</span><span class="n">reverse</span>
+            <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">related_people</span></div>
+
+
+<div class="viewcode-block" id="PersonPeopleView.get_context_data">
+<a class="viewcode-back" href="../../../codedocs/entities.html#geniza.entities.views.PersonPeopleView.get_context_data">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_context_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Extend context data to include categories for each relationship type, in order</span>
+<span class="sd">        to make use of them in visualization"""</span>
+        <span class="n">relation_categories</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">rel_type</span> <span class="ow">in</span> <span class="n">PersonPersonRelationType</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span>
+            <span class="n">category</span><span class="o">=</span><span class="n">PersonPersonRelationType</span><span class="o">.</span><span class="n">AMBIGUITY</span>
+        <span class="p">):</span>
+            <span class="k">for</span> <span class="n">relname</span> <span class="ow">in</span> <span class="p">[</span><span class="n">rel_type</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">rel_type</span><span class="o">.</span><span class="n">converse_name</span><span class="p">]:</span>
+                <span class="n">relation_categories</span><span class="p">[</span><span class="n">relname</span><span class="p">]</span> <span class="o">=</span> <span class="n">rel_type</span><span class="o">.</span><span class="n">category</span>
+        <span class="n">context</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">get_context_data</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">context</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">"relation_categories"</span><span class="p">:</span> <span class="n">relation_categories</span><span class="p">})</span>
+        <span class="k">return</span> <span class="n">context</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="PersonPlacesView">
+<a class="viewcode-back" href="../../../codedocs/entities.html#geniza.entities.views.PersonPlacesView">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">PersonPlacesView</span><span class="p">(</span><span class="n">PersonDetailView</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""List of :class:`~geniza.entities.models.Place` objects that are related to a specific</span>
+<span class="sd">    :class:`~geniza.entities.models.Person`."""</span>
+
+    <span class="n">template_name</span> <span class="o">=</span> <span class="s2">"entities/person_related_places.html"</span>
+    <span class="n">viewname</span> <span class="o">=</span> <span class="s2">"entities:person-places"</span>
+
+<div class="viewcode-block" id="PersonPlacesView.page_title">
+<a class="viewcode-back" href="../../../codedocs/entities.html#geniza.entities.views.PersonPlacesView.page_title">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">page_title</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""The title of the person related places page"""</span>
+        <span class="c1"># Translators: title of person "related places" page</span>
+        <span class="k">return</span> <span class="n">_</span><span class="p">(</span><span class="s2">"Related places for </span><span class="si">%(p)s</span><span class="s2">"</span><span class="p">)</span> <span class="o">%</span> <span class="p">{</span><span class="s2">"p"</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_object</span><span class="p">())}</span></div>
+
+
+<div class="viewcode-block" id="PersonPlacesView.page_description">
+<a class="viewcode-back" href="../../../codedocs/entities.html#geniza.entities.views.PersonPlacesView.page_description">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">page_description</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Description of a person related places page, with count"""</span>
+        <span class="n">person</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_object</span><span class="p">()</span>
+        <span class="n">count</span> <span class="o">=</span> <span class="n">person</span><span class="o">.</span><span class="n">personplacerelation_set</span><span class="o">.</span><span class="n">count</span><span class="p">()</span>
+        <span class="c1"># Translators: description of related places page, for search engines</span>
+        <span class="k">return</span> <span class="n">ngettext</span><span class="p">(</span>
+            <span class="s2">"</span><span class="si">%(count)d</span><span class="s2"> related place"</span><span class="p">,</span>
+            <span class="s2">"</span><span class="si">%(count)d</span><span class="s2"> related places"</span><span class="p">,</span>
+            <span class="n">count</span><span class="p">,</span>
+        <span class="p">)</span> <span class="o">%</span> <span class="p">{</span>
+            <span class="s2">"count"</span><span class="p">:</span> <span class="n">count</span><span class="p">,</span>
+        <span class="p">}</span></div>
+
+
+<div class="viewcode-block" id="PersonPlacesView.get_related">
+<a class="viewcode-back" href="../../../codedocs/entities.html#geniza.entities.views.PersonPlacesView.get_related">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_related</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Get and process the queryset of related places"""</span>
+        <span class="n">person</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_object</span><span class="p">()</span>
+        <span class="n">related_places</span> <span class="o">=</span> <span class="n">person</span><span class="o">.</span><span class="n">personplacerelation_set</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+
+        <span class="n">sort</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"sort"</span><span class="p">,</span> <span class="s2">"name_asc"</span><span class="p">)</span>
+
+        <span class="n">sort_dir</span> <span class="o">=</span> <span class="s2">"-"</span> <span class="k">if</span> <span class="n">sort</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">"desc"</span><span class="p">)</span> <span class="k">else</span> <span class="s2">""</span>
+
+        <span class="k">if</span> <span class="s2">"name"</span> <span class="ow">in</span> <span class="n">sort</span><span class="p">:</span>
+            <span class="c1"># sort by place name (slug)</span>
+            <span class="n">related_places</span> <span class="o">=</span> <span class="n">related_places</span><span class="o">.</span><span class="n">order_by</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">sort_dir</span><span class="si">}</span><span class="s2">place__slug"</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="s2">"relation"</span> <span class="ow">in</span> <span class="n">sort</span><span class="p">:</span>
+            <span class="c1"># sort by person-place relation type name</span>
+            <span class="n">related_places</span> <span class="o">=</span> <span class="n">related_places</span><span class="o">.</span><span class="n">order_by</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">sort_dir</span><span class="si">}</span><span class="s2">type__name"</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">related_places</span></div>
+
+
+<div class="viewcode-block" id="PersonPlacesView.get_context_data">
+<a class="viewcode-back" href="../../../codedocs/entities.html#geniza.entities.views.PersonPlacesView.get_context_data">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_context_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Include list of places and sort state in context"""</span>
+
+        <span class="n">person</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_object</span><span class="p">()</span>
+        <span class="c1"># if there are no related places, don't serve out this page</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">person</span><span class="o">.</span><span class="n">personplacerelation_set</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+            <span class="k">raise</span> <span class="n">Http404</span>
+
+        <span class="c1"># otherwise, add related places queryset to context</span>
+        <span class="n">context</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">get_context_data</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">context</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+            <span class="p">{</span>
+                <span class="s2">"related_places"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_related</span><span class="p">(),</span>
+                <span class="s2">"sort"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"sort"</span><span class="p">,</span> <span class="s2">"name_asc"</span><span class="p">),</span>
+                <span class="s2">"maptiler_token"</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s2">"MAPTILER_API_TOKEN"</span><span class="p">,</span> <span class="s2">""</span><span class="p">),</span>
+            <span class="p">}</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">context</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="PlaceDetailView">
+<a class="viewcode-back" href="../../../codedocs/entities.html#geniza.entities.views.PlaceDetailView">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">PlaceDetailView</span><span class="p">(</span><span class="n">SlugDetailMixin</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""public display of a single :class:`~geniza.entities.models.Place`"""</span>
+
+    <span class="n">model</span> <span class="o">=</span> <span class="n">Place</span>
+    <span class="n">context_object_name</span> <span class="o">=</span> <span class="s2">"place"</span>
+    <span class="n">past_slug_model</span> <span class="o">=</span> <span class="n">PastPlaceSlug</span>
+    <span class="n">past_slug_relatedfield</span> <span class="o">=</span> <span class="s2">"place"</span>
+
+<div class="viewcode-block" id="PlaceDetailView.page_title">
+<a class="viewcode-back" href="../../../codedocs/entities.html#geniza.entities.views.PlaceDetailView.page_title">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">page_title</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""page title, for metadata; uses Place primary name"""</span>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_object</span><span class="p">())</span></div>
+
+
+<div class="viewcode-block" id="PlaceDetailView.page_description">
+<a class="viewcode-back" href="../../../codedocs/entities.html#geniza.entities.views.PlaceDetailView.page_description">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">page_description</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""page description, for metadata; uses truncated notes"""</span>
+        <span class="k">return</span> <span class="n">Truncator</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_object</span><span class="p">()</span><span class="o">.</span><span class="n">notes</span><span class="p">)</span><span class="o">.</span><span class="n">words</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="PlaceDetailView.get_context_data">
+<a class="viewcode-back" href="../../../codedocs/entities.html#geniza.entities.views.PlaceDetailView.get_context_data">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_context_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""extend context data to add page metadata"""</span>
+        <span class="n">context_data</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">get_context_data</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="n">context_data</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+            <span class="p">{</span>
+                <span class="s2">"page_title"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">page_title</span><span class="p">(),</span>
+                <span class="s2">"page_description"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">page_description</span><span class="p">(),</span>
+                <span class="s2">"page_type"</span><span class="p">:</span> <span class="s2">"place"</span><span class="p">,</span>
+                <span class="s2">"maptiler_token"</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s2">"MAPTILER_API_TOKEN"</span><span class="p">,</span> <span class="s2">""</span><span class="p">),</span>
+                <span class="s2">"related_places"</span><span class="p">:</span> <span class="nb">sorted</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">object</span><span class="o">.</span><span class="n">related_places</span><span class="p">(),</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">rp</span><span class="p">:</span> <span class="n">rp</span><span class="p">[</span><span class="s2">"type"</span><span class="p">]</span>
+                <span class="p">),</span>
+            <span class="p">}</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">context_data</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="PlaceDocumentsView">
+<a class="viewcode-back" href="../../../codedocs/entities.html#geniza.entities.views.PlaceDocumentsView">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">PlaceDocumentsView</span><span class="p">(</span><span class="n">RelatedDocumentsMixin</span><span class="p">,</span> <span class="n">PlaceDetailView</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""List of :class:`~geniza.corpus.models.Document` objects that are related to a specific</span>
+<span class="sd">    :class:`~geniza.entities.models.Place` (e.g., as a letter's destination)."""</span>
+
+    <span class="n">template_name</span> <span class="o">=</span> <span class="s2">"entities/place_related_documents.html"</span>
+    <span class="n">viewname</span> <span class="o">=</span> <span class="s2">"entities:place-documents"</span>
+    <span class="n">relation_field</span> <span class="o">=</span> <span class="s2">"documentplacerelation_set"</span>
+    <span class="n">relation_type_class</span> <span class="o">=</span> <span class="n">DocumentPlaceRelationType</span></div>
+
+
+
+<div class="viewcode-block" id="PlacePeopleView">
+<a class="viewcode-back" href="../../../codedocs/entities.html#geniza.entities.views.PlacePeopleView">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">PlacePeopleView</span><span class="p">(</span><span class="n">RelatedPeopleMixin</span><span class="p">,</span> <span class="n">PlaceDetailView</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""List of :class:`~geniza.entities.models.Person` objects that are related to a specific</span>
+<span class="sd">    :class:`~geniza.entities.models.Place`."""</span>
+
+    <span class="n">template_name</span> <span class="o">=</span> <span class="s2">"entities/place_related_people.html"</span>
+    <span class="n">viewname</span> <span class="o">=</span> <span class="s2">"entities:place-people"</span>
+    <span class="n">relation_field</span> <span class="o">=</span> <span class="s2">"personplacerelation_set"</span></div>
+
+
+
+<div class="viewcode-block" id="PersonListView">
+<a class="viewcode-back" href="../../../codedocs/entities.html#geniza.entities.views.PersonListView">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">PersonListView</span><span class="p">(</span><span class="n">ListView</span><span class="p">,</span> <span class="n">SolrDownMixin</span><span class="p">,</span> <span class="n">FormMixin</span><span class="p">,</span> <span class="n">SolrDateRangeMixin</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""A list view with faceted filtering and sorting using only the Django ORM/database."""</span>
+
+    <span class="n">model</span> <span class="o">=</span> <span class="n">Person</span>
+    <span class="n">context_object_name</span> <span class="o">=</span> <span class="s2">"people"</span>
+    <span class="n">template_name</span> <span class="o">=</span> <span class="s2">"entities/person_list.html"</span>
+    <span class="c1"># Translators: title of people list/browse page</span>
+    <span class="n">page_title</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">"People"</span><span class="p">)</span>
+    <span class="c1"># Translators: description of people list/browse page</span>
+    <span class="n">page_description</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">"Browse people present in Geniza documents."</span><span class="p">)</span>
+    <span class="n">paginate_by</span> <span class="o">=</span> <span class="mi">51</span>
+    <span class="n">form_class</span> <span class="o">=</span> <span class="n">PersonListForm</span>
+    <span class="n">applied_filter_labels</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="c1"># sort options mapped to solr fields</span>
+    <span class="n">sort_fields</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">"relevance"</span><span class="p">:</span> <span class="s2">"score"</span><span class="p">,</span>
+        <span class="s2">"name"</span><span class="p">:</span> <span class="s2">"slug_s"</span><span class="p">,</span>
+        <span class="s2">"documents"</span><span class="p">:</span> <span class="s2">"documents_i"</span><span class="p">,</span>
+        <span class="s2">"people"</span><span class="p">:</span> <span class="s2">"people_i"</span><span class="p">,</span>
+        <span class="s2">"places"</span><span class="p">:</span> <span class="s2">"places_i"</span><span class="p">,</span>
+        <span class="s2">"date_asc"</span><span class="p">:</span> <span class="s2">"start_dating_i"</span><span class="p">,</span>
+        <span class="s2">"date_desc"</span><span class="p">:</span> <span class="s2">"-end_dating_i"</span><span class="p">,</span>
+    <span class="p">}</span>
+    <span class="n">initial</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"sort"</span><span class="p">:</span> <span class="s2">"name"</span><span class="p">,</span> <span class="s2">"sort_dir"</span><span class="p">:</span> <span class="s2">"asc"</span><span class="p">}</span>
+
+    <span class="c1"># regex to fix problematic characters in names of roles, relations, etc</span>
+    <span class="n">qs_regex</span> <span class="o">=</span> <span class="sa">r</span><span class="s2">"([ \(\)])"</span>
+
+<div class="viewcode-block" id="PersonListView.get_applied_filter_labels">
+<a class="viewcode-back" href="../../../codedocs/entities.html#geniza.entities.views.PersonListView.get_applied_filter_labels">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_applied_filter_labels</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">form</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">filters</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""return a list of objects with field/value pairs, and translated labels,</span>
+<span class="sd">        one for each applied filter"""</span>
+        <span class="n">labels</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">filters</span><span class="p">:</span>
+            <span class="c1"># remove escape characters</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"</span><span class="se">\\</span><span class="s2">"</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span>
+            <span class="c1"># get translated label using form helper method</span>
+            <span class="n">label</span> <span class="o">=</span> <span class="n">form</span><span class="o">.</span><span class="n">get_translated_label</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+            <span class="c1"># return object with original field and value, so we can unapply programmatically</span>
+            <span class="n">labels</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s2">"field"</span><span class="p">:</span> <span class="n">field</span><span class="p">,</span> <span class="s2">"value"</span><span class="p">:</span> <span class="n">value</span><span class="p">,</span> <span class="s2">"label"</span><span class="p">:</span> <span class="n">label</span><span class="p">})</span>
+        <span class="k">return</span> <span class="n">labels</span></div>
+
+
+<div class="viewcode-block" id="PersonListView.get_queryset">
+<a class="viewcode-back" href="../../../codedocs/entities.html#geniza.entities.views.PersonListView.get_queryset">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_queryset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""modify queryset to sort and filter on people in the list"""</span>
+        <span class="n">people</span> <span class="o">=</span> <span class="n">PersonSolrQuerySet</span><span class="p">()</span><span class="o">.</span><span class="n">facet</span><span class="p">(</span>
+            <span class="s2">"gender"</span><span class="p">,</span>
+            <span class="s2">"roles"</span><span class="p">,</span>
+            <span class="s2">"document_relations"</span><span class="p">,</span>
+            <span class="s2">"certain_document_relations"</span><span class="p">,</span>
+            <span class="s2">"has_page"</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="n">form</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_form</span><span class="p">()</span>
+        <span class="c1"># bail out if form is invalid</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">form</span><span class="o">.</span><span class="n">is_valid</span><span class="p">():</span>
+            <span class="k">return</span> <span class="n">people</span><span class="o">.</span><span class="n">none</span><span class="p">()</span>
+
+        <span class="n">search_opts</span> <span class="o">=</span> <span class="n">form</span><span class="o">.</span><span class="n">cleaned_data</span>
+        <span class="k">if</span> <span class="n">search_opts</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"q"</span><span class="p">):</span>
+            <span class="c1"># keyword search query, highlighting, and relevance scoring.</span>
+            <span class="c1"># highlight non-primary names so that we know to show them in the</span>
+            <span class="c1"># result list if they match the query; by default they are hidden</span>
+            <span class="n">people</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">people</span><span class="o">.</span><span class="n">keyword_search</span><span class="p">(</span><span class="n">search_opts</span><span class="p">[</span><span class="s2">"q"</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"'"</span><span class="p">,</span> <span class="s2">""</span><span class="p">))</span>
+                <span class="o">.</span><span class="n">highlight</span><span class="p">(</span><span class="s2">"other_names_nostem"</span><span class="p">,</span> <span class="n">snippets</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">"unified"</span><span class="p">)</span>
+                <span class="o">.</span><span class="n">highlight</span><span class="p">(</span><span class="s2">"other_names_bigram"</span><span class="p">,</span> <span class="n">snippets</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">"unified"</span><span class="p">)</span>
+                <span class="o">.</span><span class="n">also</span><span class="p">(</span><span class="s2">"score"</span><span class="p">)</span>
+            <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">applied_filter_labels</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="n">search_opts</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"gender"</span><span class="p">):</span>
+            <span class="n">genders</span> <span class="o">=</span> <span class="n">literal_eval</span><span class="p">(</span><span class="n">search_opts</span><span class="p">[</span><span class="s2">"gender"</span><span class="p">])</span>
+            <span class="n">people</span> <span class="o">=</span> <span class="n">people</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">gender__in</span><span class="o">=</span><span class="n">genders</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">applied_filter_labels</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_applied_filter_labels</span><span class="p">(</span>
+                <span class="n">form</span><span class="p">,</span> <span class="s2">"gender"</span><span class="p">,</span> <span class="n">genders</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="n">search_opts</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"date_range"</span><span class="p">):</span>
+            <span class="c1"># date range filter; returns tuple of value or None for open-ended range</span>
+            <span class="n">start</span><span class="p">,</span> <span class="n">end</span> <span class="o">=</span> <span class="n">search_opts</span><span class="p">[</span><span class="s2">"date_range"</span><span class="p">]</span>
+            <span class="n">people</span> <span class="o">=</span> <span class="n">people</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">date_dr</span><span class="o">=</span><span class="s2">"[</span><span class="si">%s</span><span class="s2"> TO </span><span class="si">%s</span><span class="s2">]"</span> <span class="o">%</span> <span class="p">(</span><span class="n">start</span> <span class="ow">or</span> <span class="s2">"*"</span><span class="p">,</span> <span class="n">end</span> <span class="ow">or</span> <span class="s2">"*"</span><span class="p">))</span>
+            <span class="n">label</span> <span class="o">=</span> <span class="s2">"</span><span class="si">%s</span><span class="s2">–</span><span class="si">%s</span><span class="s2">"</span> <span class="o">%</span> <span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">start</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">end</span><span class="p">:</span>
+                <span class="n">label</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">"After </span><span class="si">%s</span><span class="s2">"</span><span class="p">)</span> <span class="o">%</span> <span class="n">start</span>
+            <span class="k">elif</span> <span class="n">end</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">start</span><span class="p">:</span>
+                <span class="n">label</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">"Before </span><span class="si">%s</span><span class="s2">"</span><span class="p">)</span> <span class="o">%</span> <span class="n">end</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">applied_filter_labels</span> <span class="o">+=</span> <span class="p">[</span>
+                <span class="p">{</span>
+                    <span class="s2">"field"</span><span class="p">:</span> <span class="s2">"date_range"</span><span class="p">,</span>
+                    <span class="s2">"value"</span><span class="p">:</span> <span class="n">search_opts</span><span class="p">[</span><span class="s2">"date_range"</span><span class="p">],</span>
+                    <span class="s2">"label"</span><span class="p">:</span> <span class="n">label</span><span class="p">,</span>
+                <span class="p">}</span>
+            <span class="p">]</span>
+        <span class="k">if</span> <span class="n">search_opts</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"has_page"</span><span class="p">)</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">people</span> <span class="o">=</span> <span class="n">people</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">has_page</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">applied_filter_labels</span> <span class="o">+=</span> <span class="p">[</span>
+                <span class="p">{</span>
+                    <span class="s2">"field"</span><span class="p">:</span> <span class="s2">"has_page"</span><span class="p">,</span>
+                    <span class="s2">"value"</span><span class="p">:</span> <span class="s2">"on"</span><span class="p">,</span>
+                    <span class="s2">"label"</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s2">"Detail page available"</span><span class="p">),</span>
+                <span class="p">}</span>
+            <span class="p">]</span>
+        <span class="k">if</span> <span class="n">search_opts</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"social_role"</span><span class="p">):</span>
+            <span class="n">roles</span> <span class="o">=</span> <span class="n">literal_eval</span><span class="p">(</span><span class="n">search_opts</span><span class="p">[</span><span class="s2">"social_role"</span><span class="p">])</span>
+            <span class="n">roles_escaped</span> <span class="o">=</span> <span class="p">[</span><span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">qs_regex</span><span class="p">,</span> <span class="sa">r</span><span class="s2">"</span><span class="se">\\</span><span class="s2">\1"</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">roles</span><span class="p">]</span>
+            <span class="n">people</span> <span class="o">=</span> <span class="n">people</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">roles__in</span><span class="o">=</span><span class="n">roles_escaped</span><span class="p">)</span>
+            <span class="c1"># boost multiple selected values</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">roles</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">roles_field</span> <span class="o">=</span> <span class="n">people</span><span class="o">.</span><span class="n">field_aliases</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"roles"</span><span class="p">)</span>
+                <span class="c1"># if no keyword query entered, need to use the filter values</span>
+                <span class="c1"># as an OR query, in order to get any relevance score</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">search_opts</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"q"</span><span class="p">):</span>
+                    <span class="n">roles_q</span> <span class="o">=</span> <span class="s2">" OR "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">roles_escaped</span><span class="p">)</span>
+                    <span class="n">people</span> <span class="o">=</span> <span class="n">people</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">roles_field</span><span class="si">}</span><span class="s2">:(</span><span class="si">{</span><span class="n">roles_q</span><span class="si">}</span><span class="s2">)"</span><span class="p">)</span>
+                <span class="c1"># use edismax boost, sum(termfreq) filter query to boost score</span>
+                <span class="c1"># when more than one of the selected terms appears</span>
+                <span class="n">term_freq_boosts</span> <span class="o">=</span> <span class="s2">","</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                    <span class="p">[</span><span class="sa">f</span><span class="s1">'termfreq(</span><span class="si">{</span><span class="n">roles_field</span><span class="si">}</span><span class="s1">,"</span><span class="si">{</span><span class="n">role</span><span class="si">}</span><span class="s1">")'</span> <span class="k">for</span> <span class="n">role</span> <span class="ow">in</span> <span class="n">roles</span><span class="p">]</span>
+                <span class="p">)</span>
+                <span class="n">people</span> <span class="o">=</span> <span class="n">people</span><span class="o">.</span><span class="n">raw_query_parameters</span><span class="p">(</span>
+                    <span class="n">boost</span><span class="o">=</span><span class="sa">f</span><span class="s2">"sum(</span><span class="si">{</span><span class="n">term_freq_boosts</span><span class="si">}</span><span class="s2">)"</span>
+                <span class="p">)</span><span class="o">.</span><span class="n">also</span><span class="p">(</span><span class="s2">"score"</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">applied_filter_labels</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_applied_filter_labels</span><span class="p">(</span>
+                <span class="n">form</span><span class="p">,</span> <span class="s2">"social_role"</span><span class="p">,</span> <span class="n">roles</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="n">search_opts</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"document_relation"</span><span class="p">):</span>
+            <span class="n">relations</span> <span class="o">=</span> <span class="n">literal_eval</span><span class="p">(</span><span class="n">search_opts</span><span class="p">[</span><span class="s2">"document_relation"</span><span class="p">])</span>
+            <span class="n">relations</span> <span class="o">=</span> <span class="p">[</span><span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">qs_regex</span><span class="p">,</span> <span class="sa">r</span><span class="s2">"</span><span class="se">\\</span><span class="s2">\1"</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">relations</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">search_opts</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"exclude_uncertain"</span><span class="p">):</span>
+                <span class="n">people</span> <span class="o">=</span> <span class="n">people</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">certain_document_relations__in</span><span class="o">=</span><span class="n">relations</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">people</span> <span class="o">=</span> <span class="n">people</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">document_relations__in</span><span class="o">=</span><span class="n">relations</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">applied_filter_labels</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_applied_filter_labels</span><span class="p">(</span>
+                <span class="n">form</span><span class="p">,</span> <span class="s2">"document_relation"</span><span class="p">,</span> <span class="n">relations</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="n">search_opts</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"sort"</span><span class="p">):</span>
+            <span class="n">sort_field</span> <span class="o">=</span> <span class="n">search_opts</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"sort"</span><span class="p">)</span>
+            <span class="k">if</span> <span class="s2">"date"</span> <span class="ow">in</span> <span class="n">sort_field</span><span class="p">:</span>
+                <span class="c1"># date asc and desc are different fields</span>
+                <span class="k">if</span> <span class="s2">"sort_dir"</span> <span class="ow">in</span> <span class="n">search_opts</span> <span class="ow">and</span> <span class="n">search_opts</span><span class="p">[</span><span class="s2">"sort_dir"</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"desc"</span><span class="p">:</span>
+                    <span class="n">sort_field</span> <span class="o">=</span> <span class="s2">"date_desc"</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">sort_field</span> <span class="o">=</span> <span class="s2">"date_asc"</span>
+
+            <span class="n">order_by</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sort_fields</span><span class="p">[</span><span class="n">sort_field</span><span class="p">]</span>
+            <span class="c1"># default is ascending; handle descending by appending a - in order_by</span>
+            <span class="k">if</span> <span class="p">(</span>
+                <span class="s2">"sort_dir"</span> <span class="ow">in</span> <span class="n">search_opts</span>
+                <span class="ow">and</span> <span class="n">search_opts</span><span class="p">[</span><span class="s2">"sort_dir"</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"desc"</span>
+                <span class="ow">and</span> <span class="s2">"date"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">sort_field</span>
+            <span class="p">):</span>
+                <span class="n">order_by</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"-</span><span class="si">{</span><span class="n">order_by</span><span class="si">}</span><span class="s2">"</span>
+            <span class="c1"># use name (slug_s ascending) as tiebreaker</span>
+            <span class="n">people</span> <span class="o">=</span> <span class="n">people</span><span class="o">.</span><span class="n">order_by</span><span class="p">(</span><span class="n">order_by</span><span class="p">,</span> <span class="s2">"slug_s"</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">queryset</span> <span class="o">=</span> <span class="n">people</span>
+
+        <span class="k">return</span> <span class="n">people</span></div>
+
+
+<div class="viewcode-block" id="PersonListView.get_form_kwargs">
+<a class="viewcode-back" href="../../../codedocs/entities.html#geniza.entities.views.PersonListView.get_form_kwargs">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_form_kwargs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""get form arguments from request and configured defaults"""</span>
+        <span class="n">kwargs</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">get_form_kwargs</span><span class="p">()</span>
+
+        <span class="c1"># use GET instead of default POST/PUT for form data</span>
+        <span class="n">form_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+        <span class="c1"># set all form values to default</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">initial</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">form_data</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span>
+
+        <span class="n">kwargs</span><span class="p">[</span><span class="s2">"data"</span><span class="p">]</span> <span class="o">=</span> <span class="n">form_data</span>
+        <span class="c1"># get min/max configuration for person date range field</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s2">"range_minmax"</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_range_stats</span><span class="p">(</span>
+            <span class="n">queryset_cls</span><span class="o">=</span><span class="n">PersonSolrQuerySet</span><span class="p">,</span> <span class="n">field_name</span><span class="o">=</span><span class="s2">"date_range"</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">kwargs</span></div>
+
+
+<div class="viewcode-block" id="PersonListView.get_context_data">
+<a class="viewcode-back" href="../../../codedocs/entities.html#geniza.entities.views.PersonListView.get_context_data">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_context_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""extend context data to add page metadata, facets"""</span>
+        <span class="n">context_data</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">get_context_data</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="c1"># set facet labels and counts on form</span>
+        <span class="n">facet_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">queryset</span><span class="o">.</span><span class="n">get_facets</span><span class="p">()</span>
+        <span class="c1"># populate choices for facet filter fields on the form</span>
+        <span class="n">context_data</span><span class="p">[</span><span class="s2">"form"</span><span class="p">]</span><span class="o">.</span><span class="n">set_choices_from_facets</span><span class="p">(</span><span class="n">facet_dict</span><span class="o">.</span><span class="n">facet_fields</span><span class="p">)</span>
+        <span class="c1"># get highlighting</span>
+        <span class="n">paged_result</span> <span class="o">=</span> <span class="n">context_data</span><span class="p">[</span><span class="s2">"page_obj"</span><span class="p">]</span><span class="o">.</span><span class="n">object_list</span>
+        <span class="n">highlights</span> <span class="o">=</span> <span class="n">paged_result</span><span class="o">.</span><span class="n">get_highlighting</span><span class="p">()</span> <span class="k">if</span> <span class="n">paged_result</span><span class="o">.</span><span class="n">count</span><span class="p">()</span> <span class="k">else</span> <span class="p">{}</span>
+
+        <span class="n">context_data</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+            <span class="p">{</span>
+                <span class="s2">"page_title"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">page_title</span><span class="p">,</span>
+                <span class="s2">"page_description"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">page_description</span><span class="p">,</span>
+                <span class="s2">"page_type"</span><span class="p">:</span> <span class="s2">"people"</span><span class="p">,</span>
+                <span class="s2">"applied_filters"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">applied_filter_labels</span><span class="p">,</span>
+                <span class="s2">"highlighting"</span><span class="p">:</span> <span class="n">highlights</span><span class="p">,</span>
+            <span class="p">}</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">context_data</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="PlaceListView">
+<a class="viewcode-back" href="../../../codedocs/entities.html#geniza.entities.views.PlaceListView">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">PlaceListView</span><span class="p">(</span><span class="n">ListView</span><span class="p">,</span> <span class="n">SolrDownMixin</span><span class="p">,</span> <span class="n">FormMixin</span><span class="p">,</span> <span class="n">SolrDateRangeMixin</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""A list view with faceted filtering and sorting using solr."""</span>
+
+    <span class="n">model</span> <span class="o">=</span> <span class="n">Place</span>
+    <span class="n">context_object_name</span> <span class="o">=</span> <span class="s2">"places"</span>
+    <span class="n">template_name</span> <span class="o">=</span> <span class="s2">"entities/place_list.html"</span>
+    <span class="c1"># Translators: title of places list/browse page</span>
+    <span class="n">page_title</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">"Places"</span><span class="p">)</span>
+    <span class="c1"># Translators: description of places list/browse page</span>
+    <span class="n">page_description</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">"Browse places present in Geniza documents."</span><span class="p">)</span>
+    <span class="n">form_class</span> <span class="o">=</span> <span class="n">PlaceListForm</span>
+    <span class="n">queryset</span> <span class="o">=</span> <span class="n">PlaceSolrQuerySet</span><span class="p">()</span><span class="o">.</span><span class="n">none</span><span class="p">()</span>
+
+    <span class="c1"># sort options mapped to solr fields</span>
+    <span class="n">sort_fields</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">"name"</span><span class="p">:</span> <span class="s2">"sort_name_s"</span><span class="p">,</span>
+        <span class="s2">"documents"</span><span class="p">:</span> <span class="s2">"documents_i"</span><span class="p">,</span>
+        <span class="s2">"people"</span><span class="p">:</span> <span class="s2">"people_i"</span><span class="p">,</span>
+        <span class="s2">"relevance"</span><span class="p">:</span> <span class="s2">"score"</span><span class="p">,</span>
+    <span class="p">}</span>
+    <span class="n">initial</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"sort"</span><span class="p">:</span> <span class="s2">"name"</span><span class="p">,</span> <span class="s2">"sort_dir"</span><span class="p">:</span> <span class="s2">"asc"</span><span class="p">}</span>
+
+<div class="viewcode-block" id="PlaceListView.get_form_kwargs">
+<a class="viewcode-back" href="../../../codedocs/entities.html#geniza.entities.views.PlaceListView.get_form_kwargs">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_form_kwargs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""get form arguments from request and configured defaults"""</span>
+        <span class="n">kwargs</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">get_form_kwargs</span><span class="p">()</span>
+
+        <span class="c1"># use GET instead of default POST/PUT for form data</span>
+        <span class="n">form_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+        <span class="c1"># set all form values to default</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">initial</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">form_data</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span>
+
+        <span class="n">kwargs</span><span class="p">[</span><span class="s2">"data"</span><span class="p">]</span> <span class="o">=</span> <span class="n">form_data</span>
+
+        <span class="c1"># get min/max configuration for document date range field</span>
+        <span class="c1"># (which is the origin of place dates, filtered by the join query)</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s2">"range_minmax"</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_range_stats</span><span class="p">(</span>
+            <span class="n">queryset_cls</span><span class="o">=</span><span class="n">DocumentSolrQuerySet</span><span class="p">,</span> <span class="n">field_name</span><span class="o">=</span><span class="s2">"date_range"</span>
+        <span class="p">)</span>
+        <span class="c1"># for the purposes of rendering a timeline, round to the nearest century</span>
+        <span class="n">dr</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">"range_minmax"</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"date_range"</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">dr</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">dr</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="n">kwargs</span><span class="p">[</span><span class="s2">"range_minmax"</span><span class="p">][</span><span class="s2">"date_range"</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">dr</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="p">(</span><span class="n">dr</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">%</span> <span class="mi">100</span><span class="p">),</span>  <span class="c1"># round the lower date down</span>
+                <span class="n">dr</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="p">(</span><span class="n">dr</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">%</span> <span class="o">-</span><span class="mi">100</span><span class="p">),</span>  <span class="c1"># round the upper date up</span>
+            <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">kwargs</span></div>
+
+
+<div class="viewcode-block" id="PlaceListView.get_context_data">
+<a class="viewcode-back" href="../../../codedocs/entities.html#geniza.entities.views.PlaceListView.get_context_data">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_context_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""extend context data to add page metadata, facets"""</span>
+        <span class="n">context_data</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">get_context_data</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="c1"># setup config to serialize as json in template and pass to PlaceListSnippetView</span>
+        <span class="n">search_opts</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">"form_valid"</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+            <span class="s2">"snippets_url"</span><span class="p">:</span> <span class="n">reverse</span><span class="p">(</span><span class="s2">"entities:place-list-snippets"</span><span class="p">),</span>
+        <span class="p">}</span>
+
+        <span class="c1"># can replace this with get_filter_labels if additional filters are added,</span>
+        <span class="c1"># and/or we need to display the labels themselves</span>
+        <span class="n">applied_filters</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="c1"># get form data to pass to snippet view</span>
+        <span class="n">form</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_form</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">form</span><span class="o">.</span><span class="n">is_valid</span><span class="p">():</span>
+            <span class="n">search_opts</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">"form_valid"</span><span class="p">:</span> <span class="kc">True</span><span class="p">})</span>
+            <span class="n">form_data</span> <span class="o">=</span> <span class="n">form</span><span class="o">.</span><span class="n">cleaned_data</span>
+            <span class="k">if</span> <span class="n">form_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"sort"</span><span class="p">):</span>
+                <span class="n">sort_field</span> <span class="o">=</span> <span class="n">form_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"sort"</span><span class="p">)</span>
+                <span class="n">order_by</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sort_fields</span><span class="p">[</span><span class="n">sort_field</span><span class="p">]</span>
+                <span class="c1"># default is ascending; handle descending by appending a - in order_by</span>
+                <span class="k">if</span> <span class="p">(</span>
+                    <span class="s2">"sort_dir"</span> <span class="ow">in</span> <span class="n">form_data</span>
+                    <span class="ow">and</span> <span class="n">form_data</span><span class="p">[</span><span class="s2">"sort_dir"</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"desc"</span>
+                    <span class="ow">and</span> <span class="s2">"date"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">sort_field</span>
+                <span class="p">):</span>
+                    <span class="n">order_by</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"-</span><span class="si">{</span><span class="n">order_by</span><span class="si">}</span><span class="s2">"</span>
+
+                <span class="n">search_opts</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">"order_by"</span><span class="p">:</span> <span class="n">order_by</span><span class="p">})</span>
+            <span class="k">if</span> <span class="n">form_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"q"</span><span class="p">):</span>
+                <span class="n">search_opts</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">"query"</span><span class="p">:</span> <span class="n">form_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"q"</span><span class="p">)})</span>
+            <span class="n">date_range</span> <span class="o">=</span> <span class="n">form_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"date_range"</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">date_range</span><span class="p">:</span>
+                <span class="c1"># add to applied_filters to show filter count</span>
+                <span class="n">applied_filters</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">date_range</span><span class="p">)</span>
+                <span class="n">search_opts</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">"date_range"</span><span class="p">:</span> <span class="n">date_range</span><span class="p">})</span>
+
+        <span class="n">context_data</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+            <span class="p">{</span>
+                <span class="s2">"search_opts"</span><span class="p">:</span> <span class="n">search_opts</span><span class="p">,</span>
+                <span class="s2">"page_title"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">page_title</span><span class="p">,</span>
+                <span class="s2">"page_description"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">page_description</span><span class="p">,</span>
+                <span class="s2">"applied_filters"</span><span class="p">:</span> <span class="n">applied_filters</span><span class="p">,</span>
+                <span class="s2">"total"</span><span class="p">:</span> <span class="n">PlaceSolrQuerySet</span><span class="p">()</span><span class="o">.</span><span class="n">count</span><span class="p">(),</span>
+                <span class="s2">"page_type"</span><span class="p">:</span> <span class="s2">"places"</span><span class="p">,</span>
+                <span class="s2">"maptiler_token"</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s2">"MAPTILER_API_TOKEN"</span><span class="p">,</span> <span class="s2">""</span><span class="p">),</span>
+            <span class="p">}</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">context_data</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="PlaceListSnippetView">
+<a class="viewcode-back" href="../../../codedocs/entities.html#geniza.entities.views.PlaceListSnippetView">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">PlaceListSnippetView</span><span class="p">(</span><span class="n">View</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""A view used in :class:`PlaceListView` to render snippets of paginated</span>
+<span class="sd">    place results asynchronously: markers to be displayed on the map, and search</span>
+<span class="sd">    results for the list."""</span>
+
+    <span class="n">paginate_by</span> <span class="o">=</span> <span class="mi">100</span>
+
+<div class="viewcode-block" id="PlaceListSnippetView.get">
+<a class="viewcode-back" href="../../../codedocs/entities.html#geniza.entities.views.PlaceListSnippetView.get">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Return a JSON response with the rendered snippets, based on the</span>
+<span class="sd">        modified queryset and pagination params in the GET request."""</span>
+        <span class="c1"># handle sorting and filtering on solr queryset</span>
+        <span class="n">places</span> <span class="o">=</span> <span class="n">PlaceSolrQuerySet</span><span class="p">()</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"q"</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">query</span><span class="p">:</span>
+            <span class="c1"># keyword search query and relevance scoring</span>
+            <span class="n">places</span> <span class="o">=</span> <span class="n">places</span><span class="o">.</span><span class="n">keyword_search</span><span class="p">(</span><span class="n">query</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"'"</span><span class="p">,</span> <span class="s2">""</span><span class="p">))</span><span class="o">.</span><span class="n">also</span><span class="p">(</span><span class="s2">"score"</span><span class="p">)</span>
+
+        <span class="c1"># handle date filter</span>
+        <span class="n">date_range</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"date_range"</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">date_range</span><span class="p">:</span>
+            <span class="n">start_date</span><span class="p">,</span> <span class="n">end_date</span> <span class="o">=</span> <span class="n">date_range</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">","</span><span class="p">)</span>
+            <span class="n">places</span> <span class="o">=</span> <span class="n">places</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"</span><span class="se">{{</span><span class="s2">!join from=places_ids_ss to=id</span><span class="se">}}</span><span class="s2">item_type_s:document AND document_date_dr:[</span><span class="si">{</span><span class="n">start_date</span><span class="w"> </span><span class="ow">or</span><span class="w"> </span><span class="s1">'*'</span><span class="si">}</span><span class="s2"> TO </span><span class="si">{</span><span class="n">end_date</span><span class="w"> </span><span class="ow">or</span><span class="w"> </span><span class="s1">'*'</span><span class="si">}</span><span class="s2">]"</span>
+            <span class="p">)</span>
+
+        <span class="n">order_by</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"sort"</span><span class="p">,</span> <span class="s2">"sort_name_s"</span><span class="p">)</span>
+        <span class="n">places</span> <span class="o">=</span> <span class="n">places</span><span class="o">.</span><span class="n">order_by</span><span class="p">(</span><span class="n">order_by</span><span class="p">)</span>
+
+        <span class="n">count</span> <span class="o">=</span> <span class="n">places</span><span class="o">.</span><span class="n">count</span><span class="p">()</span>
+        <span class="c1"># Translators: number of results</span>
+        <span class="n">count_str</span> <span class="o">=</span> <span class="n">ngettext</span><span class="p">(</span><span class="s2">"</span><span class="si">%(count)d</span><span class="s2"> result"</span><span class="p">,</span> <span class="s2">"</span><span class="si">%(count)d</span><span class="s2"> results"</span><span class="p">,</span> <span class="n">count</span><span class="p">)</span> <span class="o">%</span> <span class="p">{</span>
+            <span class="s2">"count"</span><span class="p">:</span> <span class="n">count</span>
+        <span class="p">}</span>
+        <span class="c1"># Translators: number of places</span>
+        <span class="n">button_count_str</span> <span class="o">=</span> <span class="n">ngettext</span><span class="p">(</span><span class="s2">"</span><span class="si">%(count)d</span><span class="s2"> place"</span><span class="p">,</span> <span class="s2">"</span><span class="si">%(count)d</span><span class="s2"> places"</span><span class="p">,</span> <span class="n">count</span><span class="p">)</span> <span class="o">%</span> <span class="p">{</span>
+            <span class="s2">"count"</span><span class="p">:</span> <span class="n">count</span>
+        <span class="p">}</span>  <span class="c1"># different verbiage for the "toggle to list mode" mobile button</span>
+
+        <span class="c1"># handle pagination</span>
+        <span class="n">paginator</span> <span class="o">=</span> <span class="n">Paginator</span><span class="p">(</span><span class="n">places</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">paginate_by</span><span class="p">)</span>
+        <span class="n">page_number</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"page"</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">page</span> <span class="o">=</span> <span class="n">paginator</span><span class="o">.</span><span class="n">get_page</span><span class="p">(</span><span class="n">page_number</span><span class="p">)</span>
+
+        <span class="c1"># render the snippets to HTML strings so we can asynchronously insert them</span>
+        <span class="c1"># with JS</span>
+        <span class="n">markers_snippet</span> <span class="o">=</span> <span class="n">render_to_string</span><span class="p">(</span>
+            <span class="s2">"entities/snippets/place_markers.html"</span><span class="p">,</span>
+            <span class="p">{</span>
+                <span class="s2">"places"</span><span class="p">:</span> <span class="p">[</span><span class="n">p</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">page</span> <span class="k">if</span> <span class="s2">"location"</span> <span class="ow">in</span> <span class="n">p</span><span class="p">],</span>
+                <span class="s2">"has_next"</span><span class="p">:</span> <span class="n">page</span><span class="o">.</span><span class="n">has_next</span><span class="p">(),</span>
+            <span class="p">},</span>
+        <span class="p">)</span>
+        <span class="n">results_snippet</span> <span class="o">=</span> <span class="n">render_to_string</span><span class="p">(</span>
+            <span class="s2">"entities/snippets/place_results.html"</span><span class="p">,</span> <span class="p">{</span><span class="s2">"places"</span><span class="p">:</span> <span class="n">page</span><span class="p">}</span>
+        <span class="p">)</span>
+
+        <span class="c1"># use JSON response since we don't need any additional template rendering,</span>
+        <span class="c1"># and this will allow Stimulus to work with the data easily</span>
+        <span class="k">return</span> <span class="n">JsonResponse</span><span class="p">(</span>
+            <span class="p">{</span>
+                <span class="s2">"markers_snippet"</span><span class="p">:</span> <span class="n">markers_snippet</span><span class="p">,</span>
+                <span class="s2">"results_snippet"</span><span class="p">:</span> <span class="n">results_snippet</span><span class="p">,</span>
+                <span class="s2">"has_next"</span><span class="p">:</span> <span class="n">page</span><span class="o">.</span><span class="n">has_next</span><span class="p">(),</span>
+                <span class="s2">"next_page_number"</span><span class="p">:</span> <span class="p">(</span>
+                    <span class="n">page</span><span class="o">.</span><span class="n">next_page_number</span><span class="p">()</span> <span class="k">if</span> <span class="n">page</span><span class="o">.</span><span class="n">has_next</span><span class="p">()</span> <span class="k">else</span> <span class="kc">None</span>
+                <span class="p">),</span>
+                <span class="s2">"results_count"</span><span class="p">:</span> <span class="n">count_str</span><span class="p">,</span>
+                <span class="s2">"places_count"</span><span class="p">:</span> <span class="n">button_count_str</span><span class="p">,</span>
+            <span class="p">}</span>
+        <span class="p">)</span></div>
+</div>
+
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">Princeton Geniza Project</a></h1>
+
+
+
+<p class="blurb">Django web application and other code for Princeton Geniza Project v4.x</p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=Princeton-CDH&repo=geniza&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+
+
+    
+
+<p>
+<a class="badge" href="https://codecov.io/github/Princeton-CDH/geniza">
+    <img
+    alt="https://codecov.io/github/Princeton-CDH/geniza/coverage.svg?branch=master"
+    src="https://codecov.io/github/Princeton-CDH/geniza/coverage.svg?branch=master"
+    />
+</a>
+</p>
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../architecture.html">Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../codedocs/index.html">Code Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../devnotes.html">Developer Instructions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../changelog.html">Change Log</a></li>
+</ul>
+
+
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><div class="powered_by">
+    <p>Powered by:</p>
+    <a href="http://cdh.princeton.edu/">
+        <img src="https://cdh.princeton.edu/static/img/CDH_logo.svg"
+            alt="Center for Digital Humanities @ Princeton" />
+    </a>
+</div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2022, Center for Digital Humanities @ Princeton.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 9.1.1</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

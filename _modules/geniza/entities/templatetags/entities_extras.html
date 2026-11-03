@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>geniza.entities.templatetags.entities_extras &#8212; Princeton Geniza Project 4.32.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=5ecbeea2" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/basic.css?v=b08954a9" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/alabaster.css?v=27fed22d" />
+    <script src="../../../../_static/documentation_options.js?v=54d9916e"></script>
+    <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for geniza.entities.templatetags.entities_extras</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">django</span><span class="w"> </span><span class="kn">import</span> <span class="n">template</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">geniza.entities.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">Person</span>
+
+<span class="n">register</span> <span class="o">=</span> <span class="n">template</span><span class="o">.</span><span class="n">Library</span><span class="p">()</span>
+
+
+<div class="viewcode-block" id="get_person">
+<a class="viewcode-back" href="../../../../codedocs/entities.html#geniza.entities.templatetags.entities_extras.get_person">[docs]</a>
+<span class="nd">@register</span><span class="o">.</span><span class="n">filter</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_person</span><span class="p">(</span><span class="n">related_slug</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Template filter to retrieve a :class:`~geniza.entities.models.Person`</span>
+<span class="sd">    by slug. Example use::</span>
+
+<span class="sd">        {{ person_slug|get_person }}</span>
+<span class="sd">    """</span>
+    <span class="k">return</span> <span class="n">Person</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">slug</span><span class="o">=</span><span class="n">related_slug</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="split">
+<a class="viewcode-back" href="../../../../codedocs/entities.html#geniza.entities.templatetags.entities_extras.split">[docs]</a>
+<span class="nd">@register</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">"split"</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">split</span><span class="p">(</span><span class="n">to_split</span><span class="p">,</span> <span class="n">split_on</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Template filter to split a string on a delimiter, e.g. to get latitude</span>
+<span class="sd">    and longitude from a place location. Example use::</span>
+
+<span class="sd">        {{ place.location|split:","|first }}</span>
+<span class="sd">    """</span>
+    <span class="k">return</span> <span class="n">to_split</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">split_on</span><span class="p">)</span></div>
+
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../../index.html">Princeton Geniza Project</a></h1>
+
+
+
+<p class="blurb">Django web application and other code for Princeton Geniza Project v4.x</p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=Princeton-CDH&repo=geniza&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+
+
+    
+
+<p>
+<a class="badge" href="https://codecov.io/github/Princeton-CDH/geniza">
+    <img
+    alt="https://codecov.io/github/Princeton-CDH/geniza/coverage.svg?branch=master"
+    src="https://codecov.io/github/Princeton-CDH/geniza/coverage.svg?branch=master"
+    />
+</a>
+</p>
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../architecture.html">Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../codedocs/index.html">Code Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../devnotes.html">Developer Instructions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../changelog.html">Change Log</a></li>
+</ul>
+
+
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><div class="powered_by">
+    <p>Powered by:</p>
+    <a href="http://cdh.princeton.edu/">
+        <img src="https://cdh.princeton.edu/static/img/CDH_logo.svg"
+            alt="Center for Digital Humanities @ Princeton" />
+    </a>
+</div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2022, Center for Digital Humanities @ Princeton.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 9.1.1</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>
