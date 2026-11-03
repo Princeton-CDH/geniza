@@ -116,5 +116,10 @@ class GenizaManifestImporter(ManifestImporter):
         if "Manchester" in canvas.id:
             return canvas.id.rsplit("servlet/iiif/m/", 1)[1].replace("/", "-")
 
+        # Penn canvas ids end with /canvas so the short id would be
+        # "canvas" for every canvas; use the asset id before it instead
+        if canvas.id.endswith("/canvas"):
+            return canvas.id.removesuffix("/canvas").rsplit("/", 1)[-1]
+
         # otherwise, use default behavior
         return super().canvas_short_id(canvas)

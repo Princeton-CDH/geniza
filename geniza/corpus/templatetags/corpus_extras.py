@@ -127,9 +127,9 @@ def pgp_urlize(text):
     each to a link to the referenced document."""
     # use an absolutized placeholder URL to use for each match, replacing the fake pgpid 000 with the regex
     placeholder_url = absolutize_url(reverse("corpus:document", args=["000"])).replace(
-        "000", "\g<pgpid>"
+        "000", r"\g<pgpid>"
     )
-    placeholder_link = '<a href="%s">\g<text></a>' % placeholder_url
+    placeholder_link = r'<a href="%s">\g<text></a>' % placeholder_url
     # match all instances of PGPID ### with a link to the document
     return mark_safe(
         re.sub(

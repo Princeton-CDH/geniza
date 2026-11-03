@@ -772,7 +772,7 @@ class TestPersonListView:
         form = Mock()
         form.get_translated_label.return_value = "פקיד המדינה"
         social_role_filters = PersonListView.get_applied_filter_labels(
-            None, form, "social_role", ["State\ official"]
+            None, form, "social_role", [r"State\ official"]
         )
         assert social_role_filters == [
             {"field": "social_role", "value": "State official", "label": "פקיד המדינה"}
@@ -1345,7 +1345,7 @@ class TestPlaceListView:
             placelist_view.request.GET = {"sort": "name", "sort_dir": "desc"}
             context_data = placelist_view.get_context_data()
             assert "order_by" in context_data["search_opts"]
-            assert context_data["search_opts"]["order_by"] == "-slug_s"
+            assert context_data["search_opts"]["order_by"] == "-sort_name_s"
             assert "query" not in context_data["search_opts"]
 
             # should pass query to search opts

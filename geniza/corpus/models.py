@@ -885,9 +885,10 @@ class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin, TaggableMixin)
     @property
     def description_translations(self):
         """list of dictionaries of translated descriptions, with one dict per
-        language present, for the Document detail view.
-        ex. [{'lang': 'he', 'content': 'he description'},
-            {'lang': 'en', 'content': 'en description'}]
+        language present, for the Document detail view. Example::
+
+            [{'lang': 'he', 'content': 'he description'},
+             {'lang': 'en', 'content': 'en description'}]
         """
         descriptions = []
         # check all languages we have configured

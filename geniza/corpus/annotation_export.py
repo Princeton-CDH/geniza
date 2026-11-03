@@ -12,7 +12,7 @@ from django.template.defaultfilters import pluralize
 from django.template.loader import get_template
 from django.urls import reverse
 from django.utils.text import slugify
-from git import GitCommandError, Repo
+from git import Repo
 
 from geniza.annotations.models import Annotation, annotations_to_list
 from geniza.common.utils import absolutize_url
@@ -191,7 +191,7 @@ class AnnotationExporter:
                 # and use it as the uri for the saved annotation list
                 search_args = {"uri": canvas, "manifest": document.manifest_uri}
                 annolist_uri = "%s?%s" % (anno_search_uri, urlencode(search_args))
-                with open(annolist_out_path, "w") as outfile:
+                with open(annolist_out_path, "w", encoding="utf-8") as outfile:
                     json.dump(
                         # FIXME: correct this test uri
                         annotations_to_list(annotations, uri=annolist_uri),
@@ -220,19 +220,20 @@ class AnnotationExporter:
                         doc_transcription_dir,
                         "%s.%s" % (base_filename, output_format),
                     )
-                    with open(outfile_path, "w") as outfile:
-                        if output_format == "html":
-                            content = html_template[fn_type].render(
-                                {"document": document, "edition": footnote}
-                            )
-                        else:
-                            # text version is meant for corpus analytics,
-                            # so should be minimal and content only
-                            content = footnote.content_text
-                        if content:
-                            # don't write/add to updated if no content
+                    if output_format == "html":
+                        content = html_template[fn_type].render(
+                            {"document": document, "edition": footnote}
+                        )
+                    else:
+                        # text version is meant for corpus analytics,
+                        # so should be minimal and content only
+                        content = footnote.content_text
+                    # don't create the file or add to updated if no content;
+                    # an empty untracked file would be flagged for removal later
+                    if content:
+                        with open(outfile_path, "w", encoding="utf-8") as outfile:
                             outfile.write(content)
-                            doc_updated_files.append(outfile_path)
+                        doc_updated_files.append(outfile_path)
 
             # add all updated files for this document to the updated list
             updated_filenames.extend(doc_updated_files)
@@ -295,18 +296,17 @@ class AnnotationExporter:
         ]
         # remove obsolete files, if any
         if remove_filenames:
-            # if file is not in git index, this will error
-            try:
-                self.repo.index.remove(git_remove_filenames)
-            except GitCommandError:
-                # ignore; file was not in git index, will be removed
-                pass
+            # ignore any files not in the git index; otherwise git rm fails
+            # for the whole batch and tracked files are left unstaged
+            self.repo.index.remove(git_remove_filenames, ignore_unmatch=True)
 
             # remove from file system as well
             for old_file in remove_filenames:
                 os.remove(old_file)
 
-        if self.repo.is_dirty():
+        # only check staged changes, so unrelated modified files in the
+        # working tree don't result in empty commits
+        if self.repo.is_dirty(working_tree=False):
             self.repo.index.commit(self.get_commit_message())
             if self.push_changes:
                 self.sync_github()
@@ -379,9 +379,11 @@ class AnnotationExporter:
         # filename based on pgpid and source authors;
         # explicitly label as transcription/translation for context
         authors = [a.creator.last_name for a in source.authorship_set.all()] or [
-            "machine-generated"
-            if "model" in source.source_type.type
-            else "unknown author"
+            (
+                "machine-generated"
+                if "model" in source.source_type.type
+                else "unknown author"
+            )
         ]
 
         return "PGPID%(pgpid)s_s%(source_id)d_%(authors)s_%(text_type)s" % {

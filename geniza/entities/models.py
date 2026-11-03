@@ -1271,7 +1271,8 @@ class PersonDocumentRelationType(MergeRelationTypesMixin, models.Model):
         }
 
     def relation_set(self):
-        # own relationships QuerySet as required by MergeRelationTypesMixin
+        """Queryset of all relationships of this type, as required by
+        :class:`MergeRelationTypesMixin`"""
         return self.persondocumentrelation_set.all()
 
 
@@ -1360,7 +1361,8 @@ class PersonPersonRelationType(MergeRelationTypesMixin, models.Model):
         return self.name
 
     def relation_set(self):
-        # own relationships QuerySet as required by MergeRelationTypesMixin
+        """Queryset of all relationships of this type, as required by
+        :class:`MergeRelationTypesMixin`"""
         return self.personpersonrelation_set.all()
 
 
@@ -1810,6 +1812,12 @@ class Place(ModelIndexable, EntityMergeMixin, SlugMixin, PermalinkMixin):
             action_flag=CHANGE,
         )
 
+    @property
+    def sort_name(self):
+        """slug with any leading "al-" removed, for alphabetical sorting"""
+        slug = self.slug or ""
+        return slug[3:] if slug.lower().startswith("al-") else slug
+
     def index_data(self):
         """data for indexing in Solr"""
         index_data = super().index_data()
@@ -1817,6 +1825,8 @@ class Place(ModelIndexable, EntityMergeMixin, SlugMixin, PermalinkMixin):
             {
                 # basic metadata
                 "slug_s": self.slug,
+                # sort by name ignoring a leading "al-"
+                "sort_name_s": self.sort_name,
                 "name_s": str(self),
                 "other_names_ss": sorted([n.name for n in self.names.non_primary()]),
                 "url_s": self.get_absolute_url(),
@@ -1865,6 +1875,7 @@ class PlaceSolrQuerySet(EntitySolrQuerySet):
     #: map readable field names to actual solr fields
     field_aliases = {
         "slug": "slug_s",
+        "sort_name": "sort_name_s",
         "name": "name_s",
         "other_names": "other_names_ss",
         # copies of other_names for improved search

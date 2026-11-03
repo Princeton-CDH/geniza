@@ -2,6 +2,7 @@
 Importing IIIF manifests to be cached in the database.
 
 """
+
 import urllib
 
 from django.core.management.base import BaseCommand
@@ -67,14 +68,38 @@ class Command(BaseCommand):
                 "%d IIIF urls associated with fragments to import" % len(iiif_urls)
             )
 
-        GenizaManifestImporter(
+        importer = GenizaManifestImporter(
             stdout=self.stdout,
             stderr=self.stderr,
             style=self.style,
             update=kwargs["update"],
-        ).import_paths(iiif_urls)
+        )
+        relinked = 0
+        # import one url at a time so we know which manifest each url resolved to
+        for iiif_url in iiif_urls:
+            imported = importer.import_paths([iiif_url])
+            if len(imported) == 1:
+                relinked += self.relink_fragments(iiif_url, imported[0])
+        if relinked:
+            self.stdout.write("Relinked %d fragments to updated manifests" % relinked)
 
         self.associate_manifests()
+
+    def relink_fragments(self, iiif_url, manifest):
+        """Link fragments with the specified iiif url to the imported manifest.
+        Manifest ids may not match the url they were loaded from (e.g., when
+        a provider moves manifests to a new server and the old url returns
+        the new manifest), in which case fragments would otherwise remain
+        linked to a previously cached, outdated manifest."""
+        fragments = Fragment.objects.filter(iiif_url=iiif_url).exclude(
+            manifest=manifest
+        )
+        updated = 0
+        for fragment in fragments:
+            fragment.manifest = manifest
+            fragment.save()
+            updated += 1
+        return updated
 
     def associate_manifests(self):
         """update fragments with iiif urls to add foreign keys to the new manifests"""

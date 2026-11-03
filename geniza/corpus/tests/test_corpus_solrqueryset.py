@@ -515,7 +515,7 @@ class TestDocumentSolrQuerySet:
         dqs.search_qs = ["transcription_regex:/.*[אלוא]צעין.*/"]
         highlight = dqs.get_regex_highlight(field, text)
         assert highlight is None
-        dqs.search_qs = ["transcription_regex:/.*\[אלוא\]צעין.*/"]
+        dqs.search_qs = [r"transcription_regex:/.*\[אלוא\]צעין.*/"]
         highlight = dqs.get_regex_highlight(field, text)
         assert "<em>[אלוא]צעין</em>" in highlight
 
@@ -535,7 +535,7 @@ class TestDocumentSolrQuerySet:
         hl_snippets[1].count("<em>מן</em>") == 2
 
         # multiple adjacent matches separated by space should get the .adjacent-em class
-        dqs.search_qs = ["transcription_regex:/.*\w.*/"]
+        dqs.search_qs = [r"transcription_regex:/.*\w.*/"]
         highlight = dqs.get_regex_highlight(field, "test one two three")
         assert '</em> <em class="adjacent-em">' in highlight
 
@@ -543,7 +543,7 @@ class TestDocumentSolrQuerySet:
         assert "<<em>em</em>>" not in highlight
 
         # same with the "br" in <br />
-        dqs.search_qs = ["transcription_regex:/.*(מן|\w).*/"]
+        dqs.search_qs = [r"transcription_regex:/.*(מן|\w).*/"]
         highlight = dqs.get_regex_highlight(field, text)
         assert separator in highlight
         hl_snippets = highlight.split(separator)

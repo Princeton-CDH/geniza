@@ -1354,6 +1354,15 @@ class TestPlace:
         places = Place.items_to_index()
         assert place in places
 
+    def test_sort_name(self):
+        # leading "al-" should be ignored
+        assert Place(slug="al-fustat").sort_name == "fustat"
+        # other names unchanged, including those starting with "al" without hyphen
+        assert Place(slug="alexandria").sort_name == "alexandria"
+        assert Place(slug="cairo").sort_name == "cairo"
+        # only strip at the start
+        assert Place(slug="qasr-al-sham").sort_name == "qasr-al-sham"
+
     def test_index_data(self, document, join):
         mosul = Place.objects.create(latitude=36.34, longitude=43.13)
         pname = Name.objects.create(content_object=mosul, name="Mosul", primary=True)
@@ -1366,6 +1375,7 @@ class TestPlace:
         index_data = mosul.index_data()
 
         assert index_data["slug_s"] == mosul.slug
+        assert index_data["sort_name_s"] == mosul.slug
         assert index_data["name_s"] == pname.name
         assert index_data["other_names_ss"] == [oname.name]
         assert index_data["url_s"] == mosul.get_absolute_url()

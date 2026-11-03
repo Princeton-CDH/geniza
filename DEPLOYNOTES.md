@@ -1,5 +1,12 @@
 # Deploy Notes
 
+## 4.32
+
+-   Sorting places now ignores the article "al-"
+    Needs solr-reindex to take effect:
+    `python manage.py index`.
+-   Ingest the new UPenn iiif v2 manifests
+
 ## 4.31
 
 -   Ingest the Posen spreadsheet's source and footnote records using the CSV downloaded from Google Drive, with the new management command: `python manage.py import_posen_translations /path/to/posen.csv`
