@@ -1,6 +1,16 @@
 Change Log
 ==========
 
+4.32
+----
+
+- UPenn iiif manifests fix
+- NLI iiif manifests fix
+- Adding UTF-8 to fix annotations export
+- Fill-in the missing Sphinx documentation
+- Ignoring the article definite "al-" when sorting English-transliterated Arabic names of places
+- Management commands to ingest machine-transliterated text
+
 4.31
 ----
 
