@@ -627,16 +627,19 @@ class RelatedDocumentView(DocumentDetailView):
     paginate_by = 50
 
     def page_title(self):
-        # Translators: title of related documents page
-        return _("Related documents for %(doc)s") % {"doc": self.get_object().title}
+        # Translators: title of page listing other documents on the same shelfmark
+        return _("Other documents on the same shelfmark as %(doc)s") % {
+            "doc": self.get_object().title
+        }
 
     def page_description(self):
         doc = self.get_object()
         count = doc.related_documents.count()
-        # Translators: description of related documents page, for search engines
+        # Translators: description of page listing other documents on the same
+        # shelfmark, for search engines
         return ngettext(
-            "%(count)d related document",
-            "%(count)d related documents",
+            "%(count)d other document on this shelfmark",
+            "%(count)d other documents on this shelfmark",
             count,
         ) % {
             "count": count,

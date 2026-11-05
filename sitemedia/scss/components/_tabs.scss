@@ -27,6 +27,10 @@ nav#tabs {
         border-radius: 5px;
         border: 1px solid var(--background-gray);
         padding: 0 1rem;
+        // leave room for the longest tab label on the narrowest phones
+        @include breakpoints.for-phone-only {
+            padding: 0 0.5rem;
+        }
     }
     @include breakpoints.for-tablet-landscape-up {
         box-sizing: content-box;
@@ -65,6 +69,14 @@ nav#tabs {
         @include breakpoints.for-tablet-landscape-up {
             padding-left: 5.5rem;
             padding-right: 5.5rem;
+        }
+    }
+    // longer third tab label needs more room to stay on two lines
+    li:nth-child(3) a,
+    li:nth-child(3) span {
+        @include breakpoints.for-tablet-landscape-up {
+            padding-left: 3rem;
+            padding-right: 3rem;
         }
     }
     // Link-specific tabs styling

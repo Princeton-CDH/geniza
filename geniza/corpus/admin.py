@@ -61,6 +61,10 @@ class FragmentTextBlockInline(admin.TabularInline):
     """The TextBlockInline class for the Fragment admin"""
 
     model = TextBlock
+    # this inline lists documents; the model's verbose name ("Related Fragment")
+    # only makes sense from the perspective of a document
+    verbose_name = "Document"
+    verbose_name_plural = "Documents on this shelfmark"
     fields = (
         "document_link",
         "document_description",
@@ -69,7 +73,12 @@ class FragmentTextBlockInline(admin.TabularInline):
         "region",
     )
     readonly_fields = ("document_link", "document_description", "side")
-    extra = 1
+    extra = 0
+
+    def has_add_permission(self, request, obj=None):
+        # no document field on this inline, so a new row could not be saved;
+        # associate a document and fragment from the Document admin instead
+        return False
 
     def document_link(self, obj):
         document_path = reverse("admin:corpus_document_change", args=[obj.document.id])

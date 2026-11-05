@@ -118,7 +118,8 @@
                         <dd>{{ document.related_places }}</dd>
                     {% endif %}
                     {% if document.related_documents %}
-                        <dt class="documents">{% translate "Related Documents" %}</dt>
+                        {# Translators: label for count of other documents on the same shelfmark as a document #}
+                        <dt class="documents">{% translate "Other documents on this shelfmark" context "search result label" %}</dt>
                         <dd>{{ document.related_documents }}</dd>
                     {% endif %}
                 </dl>
