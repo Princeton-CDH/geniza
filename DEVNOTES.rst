@@ -4,7 +4,7 @@ Developer Instructions
 Setup and installation (local environment)
 ------------------------------------------
 
-- Prepare a python environment with Python 3.12.10 and activate it
+- Prepare a python environment with Python 3.12.16 and activate it
 
 - Install required python dependencies::
 
