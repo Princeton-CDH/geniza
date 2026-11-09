@@ -396,7 +396,7 @@ class TestDocumentTabsSnippet:
         # uses span, not link
         assertContains(
             response,
-            "<span disabled aria-disabled='true'>Select Bibliography (0)</span>",
+            "<span disabled aria-disabled='true'>Select bibliography (0)</span>",
             html=True,
         )
 
@@ -410,13 +410,13 @@ class TestDocumentTabsSnippet:
             response, reverse("corpus:document-scholarship", args=[document.pk])
         )
         # count should be 1
-        assertContains(response, "Select Bibliography (1)")
+        assertContains(response, "Select bibliography (1)")
 
         Footnote.objects.create(content_object=document, source=twoauthor_source)
         response = client.get(document.get_absolute_url())
 
         # count should be 2
-        assertContains(response, "Select Bibliography (2)")
+        assertContains(response, "Select bibliography (2)")
 
     def test_no_related_docs(self, client, document, empty_solr):
         """document nav should render disabled related documents tab if no related documents"""
