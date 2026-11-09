@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: geniza\n"
 "Report-Msgid-Bugs-To: cdhdevteam@princeton.edu\n"
-"POT-Creation-Date: 2026-11-04 15:47-0500\n"
+"POT-Creation-Date: 2026-11-09 13:08-0500\n"
 "PO-Revision-Date: 2022-08-01 14:25\n"
 "Last-Translator: \n"
 "Language-Team: English\n"
@@ -348,12 +348,9 @@ msgstr[1] ""
 #. Translators: heading label for document related people
 #. Translators: label for sort by number of related people
 #. Translators: accessibility label for people list
-#: corpus/templates/corpus/document_detail.html:190
-#: corpus/templates/corpus/snippets/document_result.html:113
-#: entities/forms.py:260 entities/forms.py:397
-#: entities/templates/entities/person_list.html:207
+#: corpus/templates/corpus/document_detail.html:190 entities/forms.py:260
+#: entities/forms.py:397
 #: entities/templates/entities/place_related_people.html:28
-#: entities/templates/entities/snippets/place_results.html:32
 msgid "Related People"
 msgstr ""
 
@@ -367,9 +364,7 @@ msgstr ""
 #. Translators: label for sort by number of related places
 #. Translators: accessibility label for place list
 #. Translators: heading label for document related places
-#: corpus/templates/corpus/document_detail.html:210
-#: corpus/templates/corpus/snippets/document_result.html:117
-#: entities/forms.py:262 entities/templates/entities/person_list.html:211
+#: corpus/templates/corpus/document_detail.html:210 entities/forms.py:262
 #: entities/templates/entities/person_related_places.html:58
 #: entities/templates/entities/place_detail.html:94
 msgid "Related Places"
@@ -579,6 +574,21 @@ msgid_plural "Primary languages"
 msgstr[0] ""
 msgstr[1] ""
 
+#: corpus/templates/corpus/snippets/document_result.html:113
+#: entities/templates/entities/person_list.html:207
+#: entities/templates/entities/snippets/place_results.html:32
+#, fuzzy
+#| msgid "Search Documents"
+msgid "Related people"
+msgstr "Search Documents"
+
+#: corpus/templates/corpus/snippets/document_result.html:117
+#: entities/templates/entities/person_list.html:211
+#, fuzzy
+#| msgid "Search Documents"
+msgid "Related places"
+msgstr "Search Documents"
+
 #. Translators: label for count of other documents on the same shelfmark as a document
 #: corpus/templates/corpus/snippets/document_result.html:122
 msgctxt "search result label"
@@ -730,13 +740,15 @@ msgid "tabs"
 msgstr ""
 
 #: corpus/templates/corpus/snippets/document_tabs.html:8
-msgid "Document Details"
-msgstr ""
+#, fuzzy
+#| msgid "Input date"
+msgid "Document details"
+msgstr "Input date"
 
 #. Translators: n_records is number of scholarship records
 #: corpus/templates/corpus/snippets/document_tabs.html:11
 #, python-format
-msgid "Select Bibliography (%(n_records)s)"
+msgid "Select bibliography (%(n_records)s)"
 msgstr ""
 
 #. Translators: n_reldocs is number of other documents on the same shelfmark as this document
@@ -930,8 +942,6 @@ msgstr ""
 
 #. Translators: label for sort by number of related documents
 #: entities/forms.py:258 entities/forms.py:395
-#: entities/templates/entities/person_list.html:203
-#: entities/templates/entities/snippets/place_results.html:27
 #, fuzzy
 #| msgid "Search Documents"
 msgid "Related Documents"
@@ -1067,6 +1077,13 @@ msgstr ""
 msgid "Also known as: "
 msgstr ""
 
+#: entities/templates/entities/person_list.html:203
+#: entities/templates/entities/snippets/place_results.html:27
+#, fuzzy
+#| msgid "Search Documents"
+msgid "Related documents"
+msgstr "Search Documents"
+
 #. Translators: range of search results on the current page, out of total
 #: entities/templates/entities/person_list.html:222
 #, python-format
@@ -1144,27 +1161,28 @@ msgid "Back to People"
 msgstr ""
 
 #: entities/templates/entities/snippets/person_tabs.html:8
-msgid "Person Details"
+msgid "Person details"
 msgstr ""
 
 #. Translators: n_reldocs is number of related documents
 #: entities/templates/entities/snippets/person_tabs.html:13
 #: entities/templates/entities/snippets/place_tabs.html:12
-#, python-format
-msgid "Related Documents (%(n_reldocs)s)"
-msgstr ""
+#, fuzzy, python-format
+#| msgid "Search Documents"
+msgid "Related documents (%(n_reldocs)s)"
+msgstr "Search Documents"
 
 #. Translators: n_relpeople is number of related people
 #: entities/templates/entities/snippets/person_tabs.html:18
 #: entities/templates/entities/snippets/place_tabs.html:17
 #, python-format
-msgid "Related People (%(n_relpeople)s)"
+msgid "Related people (%(n_relpeople)s)"
 msgstr ""
 
 #. Translators: n_relplaces is number of related places
 #: entities/templates/entities/snippets/person_tabs.html:24
 #, python-format
-msgid "Related Places (%(n_relplaces)s)"
+msgid "Related places (%(n_relplaces)s)"
 msgstr ""
 
 #. Translators: Link to return to the list of places from a place page
@@ -1183,7 +1201,7 @@ msgid "Related entries"
 msgstr ""
 
 #: entities/templates/entities/snippets/place_tabs.html:8
-msgid "Place Details"
+msgid "Place details"
 msgstr ""
 
 #. Translators: table header for document name (shelfmark)
