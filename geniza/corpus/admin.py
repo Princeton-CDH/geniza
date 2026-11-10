@@ -30,11 +30,7 @@ from geniza.common.admin import (
 )
 from geniza.common.views import SolrDownError
 from geniza.corpus.dates import DocumentDateMixin, standard_date_display
-from geniza.corpus.forms import (
-    DocumentEventWidgetWrapper,
-    DocumentPersonForm,
-    DocumentPlaceForm,
-)
+from geniza.corpus.forms import   DocumentEventWidgetWrapper
 from geniza.corpus.metadata_export import AdminDocumentExporter, AdminFragmentExporter
 from geniza.corpus.models import (
     Collection,
@@ -52,6 +48,7 @@ from geniza.corpus.models import (
 from geniza.corpus.solr_queryset import DocumentSolrQuerySet
 from geniza.corpus.views import DocumentMerge
 from geniza.entities.admin import PersonInline, PlaceInline
+from geniza.entities.forms import DocumentPersonForm, DocumentPlaceForm
 from geniza.entities.models import DocumentPlaceRelation, PersonDocumentRelation
 from geniza.footnotes.admin import DocumentFootnoteInline
 from geniza.footnotes.models import Footnote

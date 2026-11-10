@@ -16,6 +16,7 @@ from geniza.entities.models import (
     Place,
     PlaceEventRelation,
     PlacePlaceRelation,
+    DocumentPlaceRelation, PersonDocumentRelation
 )
 
 
@@ -448,3 +449,37 @@ class PlaceListForm(RangeForm):
             raw_value = self.cleaned_data["sort"]
             return dict(self.SORT_CHOICES)[raw_value]
         return None
+
+
+
+class DocumentPersonForm(forms.ModelForm):
+    class Meta:
+        model = PersonDocumentRelation
+        fields = (
+            "person",
+            "type",
+            "uncertain",
+            "notes",
+        )
+        widgets = {
+            "notes": forms.Textarea(attrs={"rows": 4}),
+            "person": autocomplete.ModelSelect2(url="entities:person-autocomplete"),
+            "type": autocomplete.ModelSelect2(),
+        }
+
+
+
+
+class DocumentPlaceForm(forms.ModelForm):
+    class Meta:
+        model = DocumentPlaceRelation
+        fields = (
+            "place",
+            "type",
+            "notes",
+        )
+        widgets = {
+            "notes": forms.Textarea(attrs={"rows": 4}),
+            "place": autocomplete.ModelSelect2(url="entities:place-autocomplete"),
+            "type": autocomplete.ModelSelect2(),
+        }
