@@ -3,13 +3,14 @@ from django.utils.text import slugify
 
 from geniza.common.metadata_export import Exporter
 from geniza.corpus.models import Document, Fragment
-from geniza.entities.models import (
-    DocumentPlaceRelation,
-    DocumentPlaceRelationType,
-    Place,
-)
+# from geniza.entities.models import (
+#     DocumentPlaceRelation,
+#     DocumentPlaceRelationType,
+#     Place,
+# )
 from geniza.footnotes.models import Footnote
 
+DocumentPlaceRelationType = None
 
 class DocumentExporter(Exporter):
     """
@@ -70,10 +71,12 @@ class DocumentExporter(Exporter):
     def __init__(self, queryset=None, progress=False):
         """Adds fields to the export based on PersonPlaceRelationType names"""
         self.csv_fields = list(self.csv_fields)
-        self.csv_fields[31:31] = [
-            slugify(dpr_type.name).replace("-", "_")
-            for dpr_type in DocumentPlaceRelationType.objects.order_by("name")
-        ]
+        # what is this ?!
+        if DocumentPlaceRelationType is not None:
+            self.csv_fields[31:31] = [
+                slugify(dpr_type.name).replace("-", "_")
+                for dpr_type in DocumentPlaceRelationType.objects.order_by("name")
+            ]
         super().__init__(queryset, progress)
 
     def get_queryset(self):
@@ -212,24 +215,26 @@ class DocumentExporter(Exporter):
         outd["has_transcription"] = doc.has_transcription()
         outd["has_translation"] = doc.has_translation()
 
-        # group related places by relation type name
-        related_places = DocumentPlaceRelation.objects.filter(
-            document__id=doc.pk
-        ).values("place__id", "type__name")
-        rel_types = related_places.values_list("type__name", flat=True).distinct()
-        related_place_ids = {}
-        for type_name in rel_types:
-            related_place_ids[type_name] = (
-                related_places.filter(type__name=type_name)
-                .values_list("place__id", flat=True)
-                .distinct()
-            )
-
-        # get names of related places (grouped by type name) and set on output dict
-        for [type_name, place_ids] in related_place_ids.items():
-            outd[slugify(type_name).replace("-", "_")] = ", ".join(
-                sorted([str(place) for place in Place.objects.filter(id__in=place_ids)])
-            )
+#         # group related places by relation type name
+#       TODO: shift entity-specifix export logic to entities app and pulled in if appropriate
+#
+#         related_places = DocumentPlaceRelation.objects.filter(
+#             document__id=doc.pk
+#         ).values("place__id", "type__name")
+#         rel_types = related_places.values_list("type__name", flat=True).distinct()
+#         related_place_ids = {}
+#         for type_name in rel_types:
+#             related_place_ids[type_name] = (
+#                 related_places.filter(type__name=type_name)
+#                 .values_list("place__id", flat=True)
+#                 .distinct()
+#             )
+#
+#         # get names of related places (grouped by type name) and set on output dict
+#         for [type_name, place_ids] in related_place_ids.items():
+#             outd[slugify(type_name).replace("-", "_")] = ", ".join(
+#                 sorted([str(place) for place in Place.objects.filter(id__in=place_ids)])
+#             )
 
         return outd
 

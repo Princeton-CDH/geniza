@@ -695,12 +695,13 @@ class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin, TaggableMixin)
         default=PUBLIC,
         help_text="Decide whether a document should be publicly visible",
     )
-    events = models.ManyToManyField(
-        to="entities.Event",
-        related_name="documents",
-        verbose_name="Related Events",
-        through="DocumentEventRelation",
-    )
+    # circular! can it be defined on the other side?
+    # events = models.ManyToManyField(
+    #     to="entities.Event",
+    #     related_name="documents",
+    #     verbose_name="Related Events",
+    #     through="DocumentEventRelation",
+    # )
     footnotes = GenericRelation(Footnote, related_query_name="document")
     log_entries = GenericRelation(LogEntry, related_query_name="document")
     authors = models.ManyToManyField(
@@ -1439,7 +1440,7 @@ class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin, TaggableMixin)
         # filter by side so that search results only show the relevant side image(s)
         images = self.iiif_images(filter_side=True).values()
         # get related place IDs for join query on document dates
-        places = list(self.documentplacerelation_set.values_list("place", flat=True))
+        # places = list(self.documentplacerelation_set.values_list("place", flat=True))
         index_data.update(
             {
                 "pgpid_i": self.id,
@@ -1809,8 +1810,8 @@ class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin, TaggableMixin)
             self._merge_logentries(doc)
 
             # merge relationships with models from the entities module
-            self._merge_entities(doc, "person", "persondocumentrelation_set")
-            self._merge_entities(doc, "place", "documentplacerelation_set")
+            # self._merge_entities(doc, "person", "persondocumentrelation_set")
+            # self._merge_entities(doc, "place", "documentplacerelation_set")
             self._merge_entities(
                 # DocumentEventRelation doens't have a type field
                 doc,
@@ -2161,12 +2162,13 @@ class Dating(models.Model):
         return standard_date_display(self.standard_date)
 
 
-class DocumentEventRelation(models.Model):
-    """A relationship between a document and an event"""
-
-    document = models.ForeignKey(Document, on_delete=models.CASCADE)
-    event = models.ForeignKey("entities.Event", on_delete=models.CASCADE)
-    notes = models.TextField(blank=True)
-
-    def __str__(self):
-        return f"Document-Event relation: {self.document} and {self.event}"
+# circular! define on the other side
+# class DocumentEventRelation(models.Model):
+#     """A relationship between a document and an event"""
+#
+#     document = models.ForeignKey(Document, on_delete=models.CASCADE)
+#     event = models.ForeignKey("entities.Event", on_delete=models.CASCADE)
+#     notes = models.TextField(blank=True)
+#
+#     def __str__(self):
+#         return f"Document-Event relation: {self.document} and {self.event}"
