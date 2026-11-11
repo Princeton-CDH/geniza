@@ -110,15 +110,16 @@
             {% if document.related_documents or document.related_people or document.related_places %}
                 <dl class="related">
                     {% if document.related_people %}
-                        <dt class="people">{% translate "Related People" %}</dt>
+                        <dt class="people">{% translate "Related people" %}</dt>
                         <dd>{{ document.related_people }}</dd>
                     {% endif %}
                     {% if document.related_places %}
-                        <dt class="places">{% translate "Related Places" %}</dt>
+                        <dt class="places">{% translate "Related places" %}</dt>
                         <dd>{{ document.related_places }}</dd>
                     {% endif %}
                     {% if document.related_documents %}
-                        <dt class="documents">{% translate "Related Documents" %}</dt>
+                        {# Translators: label for count of other documents on the same shelfmark as a document #}
+                        <dt class="documents">{% translate "Other documents on this shelfmark" context "search result label" %}</dt>
                         <dd>{{ document.related_documents }}</dd>
                     {% endif %}
                 </dl>

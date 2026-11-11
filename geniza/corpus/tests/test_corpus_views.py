@@ -2145,7 +2145,8 @@ class TestRelatdDocumentview:
 
         response = client.get(reverse("corpus:related-documents", args=(document.id,)))
         assert (
-            response.context["page_title"] == f"Related documents for {document.title}"
+            response.context["page_title"]
+            == f"Other documents on the same shelfmark as {document.title}"
         )
 
     def test_page_description(self, client, document, join, fragment, empty_solr):
@@ -2155,7 +2156,9 @@ class TestRelatdDocumentview:
 
         # "join" fixture = 1 related document
         response = client.get(reverse("corpus:related-documents", args=(document.id,)))
-        assert response.context["page_description"] == "1 related document"
+        assert (
+            response.context["page_description"] == "1 other document on this shelfmark"
+        )
 
         # document on same fragment should add a related document to the other document
         new_doc = Document.objects.create(
@@ -2165,7 +2168,10 @@ class TestRelatdDocumentview:
         Document.index_items([document, join, new_doc])
         SolrClient().update.index([], commit=True)
         response = client.get(reverse("corpus:related-documents", args=(document.id,)))
-        assert response.context["page_description"] == "2 related documents"
+        assert (
+            response.context["page_description"]
+            == "2 other documents on this shelfmark"
+        )
 
     def test_get_context_data(self, document, join, client, empty_solr):
         """should raise 404 on no related, otherwise return inherited context data"""

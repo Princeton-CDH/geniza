@@ -498,6 +498,78 @@ class TestDocumentForm:
 
 @pytest.mark.django_db
 class TestFragmentTextBlockInline:
+    def test_heading(self, admin_client):
+        # inline lists documents, so should not use TextBlock "Related Fragment" label
+        fragment = Fragment.objects.create(shelfmark="CUL 123")
+        response = admin_client.get(
+            reverse("admin:corpus_fragment_change", args=(fragment.pk,))
+        )
+        content = response.content.decode()
+        assert "Documents on this shelfmark" in content
+        assert "Related Fragments" not in content
+
+    def _inline_post_data(self, fragment, rows, initial):
+        """POST data for the fragment admin form with the specified inline rows"""
+        data = {
+            "shelfmark": fragment.shelfmark,
+            "textblock_set-TOTAL_FORMS": len(rows),
+            "textblock_set-INITIAL_FORMS": initial,
+            "textblock_set-MIN_NUM_FORMS": 0,
+            "textblock_set-MAX_NUM_FORMS": 0,
+        }
+        for i, row in enumerate(rows):
+            for field, value in row.items():
+                data[f"textblock_set-{i}-{field}"] = value
+        return data
+
+    def test_no_blank_row_or_add_link(self, admin_client):
+        fragment = Fragment.objects.create(shelfmark="CUL 123")
+        TextBlock.objects.create(fragment=fragment, document=Document.objects.create())
+        response = admin_client.get(
+            reverse("admin:corpus_fragment_change", args=(fragment.pk,))
+        )
+        formset = response.context["inline_admin_formsets"][0]
+        # only the existing row; the add link is hidden when max_num is reached
+        assert len(formset.formset.forms) == 1
+        assert not formset.has_add_permission
+        assert formset.formset.max_num == 0
+
+    def test_cannot_add_row(self, admin_client):
+        fragment = Fragment.objects.create(shelfmark="CUL 123")
+        response = admin_client.post(
+            reverse("admin:corpus_fragment_change", args=(fragment.pk,)),
+            self._inline_post_data(
+                fragment, [{"id": "", "fragment": fragment.pk, "region": "r"}], 0
+            ),
+        )
+        # should not error by trying to save a row with no document
+        assert response.status_code in (200, 302)
+        assert not TextBlock.objects.filter(fragment=fragment).exists()
+
+    def test_edit_and_delete_existing_rows(self, admin_client):
+        fragment = Fragment.objects.create(shelfmark="CUL 123")
+        keep = TextBlock.objects.create(
+            fragment=fragment, document=Document.objects.create()
+        )
+        remove = TextBlock.objects.create(
+            fragment=fragment, document=Document.objects.create()
+        )
+        response = admin_client.post(
+            reverse("admin:corpus_fragment_change", args=(fragment.pk,)),
+            self._inline_post_data(
+                fragment,
+                [
+                    {"id": keep.pk, "fragment": fragment.pk, "region": "r"},
+                    {"id": remove.pk, "fragment": fragment.pk, "DELETE": "on"},
+                ],
+                2,
+            ),
+        )
+        assert response.status_code == 302
+        keep.refresh_from_db()
+        assert keep.region == "r"
+        assert not TextBlock.objects.filter(pk=remove.pk).exists()
+
     def test_document_link(self):
         fragment = Fragment.objects.create(shelfmark="CUL 123")
         doc = Document.objects.create()
