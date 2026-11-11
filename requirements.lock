@@ -36,7 +36,8 @@ django-modeltranslation==0.19.16
 django-multiselectfield==1.0.1
 django-permissionedforms==0.1
 django-split-settings==1.3.2
-django-stubs-ext==5.2.2
+django-stubs==6.0.6
+django-stubs-ext==6.0.6
 django-tabular-export==1.2.1
 django-taggit==6.1.0
 django-tasks==0.8.1
@@ -44,14 +45,15 @@ django-treebeard==4.7.1
 django-webpack-loader==3.2.1
 django-widget-tweaks==1.5.0
 djangorestframework==3.16.1
-djiffy==1.0.2
+djangorestframework-stubs==3.17.0
+djiffy==1.0.3
 docutils==0.21.2
 draftjs_exporter==5.1.0
 et_xmlfile==2.0.0
 filelock==3.19.1
 filetype==1.2.0
 future==1.0.0
--e git+https://github.com/Princeton-CDH/geniza.git@1424f5f43610ec198c9da406537994d848fd8e73#egg=geniza
+-e git+ssh://git@github.com/Princeton-CDH/geniza.git@30968e15366bfa71528db641aea4f8d54073d6d3#egg=geniza
 gitdb==4.0.12
 GitPython==3.1.45
 google-api-core==2.25.1
@@ -77,6 +79,7 @@ mdurl==0.1.2
 mypy_extensions==1.1.0
 natsort==8.4.0
 neuxml==1.0.0
+nltk==3.9.1
 nodeenv==1.9.1
 oauthlib==3.3.1
 openpyxl==3.1.5
@@ -112,6 +115,7 @@ python-dateutil==2.9.0.post0
 python-slugify==8.0.4
 python-utils==3.9.1
 PyYAML==6.0.2
+RapidFuzz==3.14.0
 rdflib==7.1.4
 regex==2025.9.1
 requests==2.32.5
@@ -136,9 +140,11 @@ sphinxcontrib-serializinghtml==2.0.0
 sqlparse==0.5.3
 telepath==0.3.1
 text-unidecode==1.3
+thefuzz==0.22.1
 tqdm==4.67.1
 trio==0.30.0
 trio-websocket==0.12.2
+types-PyYAML==6.0.12.20260518
 typing_extensions==4.14.1
 Unidecode==1.4.0
 uritemplate==4.2.0

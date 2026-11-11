@@ -5,6 +5,7 @@
 -   Sorting places now ignores the article "al-"
     Needs solr-reindex to take effect:
     `python manage.py index`.
+-   Ingest the new UPenn iiif v2 manifests
 
 ## 4.31
 

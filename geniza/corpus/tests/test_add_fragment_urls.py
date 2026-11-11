@@ -1,14 +1,15 @@
 from collections import defaultdict
+from io import StringIO
 from unittest.mock import Mock, mock_open, patch
 
 import pytest
 from addict import Dict
-from django.contrib.admin.models import CHANGE, LogEntry
+from django.contrib.admin.models import ADDITION, CHANGE, LogEntry
 from django.core.management import call_command
 from django.core.management.base import CommandError
 
 from geniza.corpus.management.commands import add_fragment_urls
-from geniza.corpus.models import Fragment
+from geniza.corpus.models import Collection, Fragment
 
 MockImporter = Mock()
 # as of djiffy 0.7.2, import paths returns a list of objects
@@ -214,3 +215,139 @@ def test_log_change(fragment):
     log_entry = LogEntry.objects.get(object_id=fragment.pk)
     assert log_entry.action_flag == CHANGE
     assert log_entry.change_message == "added url"
+
+
+@pytest.mark.django_db
+def test_handle_collection_option():
+    command = add_fragment_urls.Command()
+    # collection requires create
+    with pytest.raises(CommandError) as err:
+        command.handle(csv="foo.csv", collection=1)
+    assert "--collection can only be used with --create" in str(err)
+
+    # collection must exist
+    with pytest.raises(CommandError) as err:
+        command.handle(csv="foo.csv", create=True, collection=12345)
+    assert "Collection not found: 12345" in str(err)
+
+    # valid collection is used for new fragments
+    collection = Collection.objects.create(library="Katz Center", lib_abbrev="CAJS")
+    mockfile = mock_open(
+        read_data="shelfmark,iiif_url\nCAJS RAR MS 1,https://example.com/iiif/1/manifest"
+    )
+    with patch("geniza.corpus.management.commands.add_fragment_urls.open", mockfile):
+        with patch.object(command, "create_fragment") as mock_create:
+            command.handle(csv="foo.csv", create=True, collection=collection.pk)
+    assert command.collection == collection
+    mock_create.assert_called_once()
+
+
+@pytest.mark.django_db
+@patch("geniza.corpus.management.commands.add_fragment_urls.Command.log_change")
+@patch("geniza.corpus.models.GenizaManifestImporter")
+def test_create_fragment(mock_importer, mock_log_change, fragment):
+    collection = Collection.objects.create(library="Katz Center", lib_abbrev="CAJS")
+    mock_importer.return_value.import_paths.return_value = [fragment.manifest]
+    command = add_fragment_urls.Command()
+    command.create = True
+    command.collection = collection
+    command.dryrun = False
+    row = Dict(
+        {
+            "shelfmark": "CAJS RAR MS 82.313.1.3",
+            "url": "https://example.com/items/abc",
+            "iiif_url": "https://example.com/iiif/2/items/abc/manifest",
+        }
+    )
+    command.add_fragment_urls(row)
+    new_fragment = Fragment.objects.get(shelfmark=row.shelfmark)
+    assert new_fragment.collection == collection
+    assert new_fragment.url == row.url
+    assert new_fragment.iiif_url == row.iiif_url
+    assert new_fragment.manifest == fragment.manifest
+    assert command.stats["created"] == 1
+    assert not command.stats["not_found"]
+    assert not command.stats["manifest_failed"]
+    mock_log_change.assert_called_with(
+        new_fragment, "created with URLs", action_flag=ADDITION
+    )
+
+    # dry run: report but don't create
+    mock_log_change.reset_mock()
+    command.dryrun = True
+    command.add_fragment_urls(Dict({**row, "shelfmark": "CAJS RAR MS 82.313.1.4"}))
+    assert not Fragment.objects.filter(shelfmark="CAJS RAR MS 82.313.1.4").exists()
+    assert command.stats["created"] == 2
+    assert not mock_log_change.call_count
+
+    # shelfmark is a historical shelfmark of a renamed fragment: no duplicate
+    command.dryrun = False
+    new_fragment.shelfmark = "CAJS RAR MS 82.313.1.3a"
+    new_fragment.save()
+    command.add_fragment_urls(row)
+    assert (
+        Fragment.objects.filter(shelfmark__startswith="CAJS RAR MS 82.313.1.3").count()
+        == 1
+    )
+    assert command.stats["created"] == 2
+    # substring of a historical shelfmark is not a match
+    command.add_fragment_urls(Dict({**row, "shelfmark": "CAJS RAR MS 82.313.1"}))
+    assert Fragment.objects.filter(shelfmark="CAJS RAR MS 82.313.1").exists()
+
+    # manifest import failure is reported
+    mock_importer.return_value.import_paths.return_value = []
+    command.add_fragment_urls(Dict({**row, "shelfmark": "CAJS RAR MS 85.126.1"}))
+    assert command.stats["manifest_failed"] == 1
+
+
+@pytest.mark.django_db
+def test_log_change_addition(fragment):
+    command = add_fragment_urls.Command()
+    command.log_change(fragment, "created with URLs", action_flag=ADDITION)
+    log_entry = LogEntry.objects.get(object_id=fragment.pk)
+    assert log_entry.action_flag == ADDITION
+
+
+@pytest.mark.django_db
+@patch("geniza.corpus.management.commands.add_fragment_urls.Command.log_change")
+@patch("geniza.corpus.models.GenizaManifestImporter", MockImporter)
+def test_add_fragment_urls_old_shelfmark(mock_log_change):
+    # fragment renamed after the csv was prepared; match by historical shelfmark
+    fragment = Fragment.objects.create(shelfmark="UPenn RAR MS 82.313.1.2")
+    fragment.shelfmark = "CAJS RAR MS 82.313.1.2"
+    fragment.save()
+    command = add_fragment_urls.Command()
+    command.overwrite = False
+    command.dryrun = False
+    row = Dict(
+        {"shelfmark": "UPenn RAR MS 82.313.1.2", "url": "https://example.com/items/abc"}
+    )
+    command.add_fragment_urls(row)
+    fragment.refresh_from_db()
+    assert fragment.url == row.url
+    assert command.stats["url_added"] == 1
+    assert not command.stats["not_found"]
+    assert Fragment.objects.count() == 1
+
+
+@pytest.mark.django_db
+@patch("geniza.corpus.management.commands.add_fragment_urls.IndexableSignalHandler")
+def test_handle_skip_indexing(mock_signal_handler):
+    command = add_fragment_urls.Command()
+    mockfile = mock_open(read_data="shelfmark,url\na,b")
+    with patch("geniza.corpus.management.commands.add_fragment_urls.open", mockfile):
+        with patch.object(command, "add_fragment_urls"):
+            command.handle(csv="foo.csv", skip_indexing=True)
+    mock_signal_handler.disconnect.assert_called_once()
+
+
+@pytest.mark.django_db
+def test_add_fragment_urls_multiple_matches():
+    # shelfmark is unique but case-sensitive; case-insensitive lookup matches both
+    Fragment.objects.create(shelfmark="UPenn RAR MS A1")
+    Fragment.objects.create(shelfmark="Upenn RAR MS A1")
+    stdout = StringIO()
+    command = add_fragment_urls.Command(stdout=stdout)
+    command.add_fragment_urls(Dict({"shelfmark": "UPENN RAR MS A1", "url": "b"}))
+    assert command.stats["not_found"] == 1
+    assert "Found more than one fragment with shelfmark" in stdout.getvalue()

@@ -1,0 +1,96 @@
+{
+  "@context": "http://iiif.io/api/presentation/2/context.json",
+  "@id": "https://digitalrepository.library.upenn.edu/iiif/2/items/99f437f4-9e50-4572-8198-8cb5f9344900/manifest",
+  "@type": "sc:Manifest",
+  "label": "[Court document] : manuscript",
+  "attribution": "Provided by the University of Pennsylvania Libraries.",
+  "viewingHint": "individuals",
+  "viewingDirection": "left-to-right",
+  "metadata": [
+    {
+      "label": "Title",
+      "value": ["[Court document] : manuscript"]
+    },
+    {
+      "label": "Physical Location",
+      "value": ["Library at the Katz Center, Genizah Fragments, Halper 337"]
+    },
+    {
+      "label": "Provenance",
+      "value": [
+        "Cairo Genizah Collection (University of Pennsylvania. Center for Advanced Judaic Studies. Library).",
+        "Cairo Genizah Collection (Dropsie College. Library).",
+        "Amram."
+      ]
+    }
+  ],
+  "thumbnail": {
+    "@id": "https://iiif-images.library.upenn.edu/iiif/2/d7c9082e-76d1-4c4e-97eb-25baf0406fa5/full/!600,600/0/default.jpg",
+    "service": {
+      "@context": "http://iiif.io/api/image/2/context.json",
+      "@id": "https://iiif-images.library.upenn.edu/iiif/2/d7c9082e-76d1-4c4e-97eb-25baf0406fa5",
+      "profile": "http://iiif.io/api/image/2/level2.json"
+    }
+  },
+  "sequences": [
+    {
+      "@id": "https://digitalrepository.library.upenn.edu/iiif/2/items/99f437f4-9e50-4572-8198-8cb5f9344900/sequence/normal",
+      "@type": "sc:Sequence",
+      "label": "Current order",
+      "canvases": [
+        {
+          "@id": "https://digitalrepository.library.upenn.edu/iiif/2/assets/d7c9082e-76d1-4c4e-97eb-25baf0406fa5/canvas",
+          "@type": "sc:Canvas",
+          "label": "p. 1",
+          "height": 4424,
+          "width": 4224,
+          "images": [
+            {
+              "@type": "oa:Annotation",
+              "motivation": "sc:painting",
+              "resource": {
+                "@id": "https://iiif-images.library.upenn.edu/iiif/2/d7c9082e-76d1-4c4e-97eb-25baf0406fa5/full/!200,200/0/default.jpg",
+                "@type": "dctypes:Image",
+                "format": "image/jpeg",
+                "width": 4224,
+                "height": 4424,
+                "service": {
+                  "@context": "http://iiif.io/api/image/2/context.json",
+                  "@id": "https://iiif-images.library.upenn.edu/iiif/2/d7c9082e-76d1-4c4e-97eb-25baf0406fa5",
+                  "profile": "http://iiif.io/api/image/2/level2.json"
+                }
+              },
+              "on": "https://digitalrepository.library.upenn.edu/iiif/2/assets/d7c9082e-76d1-4c4e-97eb-25baf0406fa5/canvas"
+            }
+          ]
+        },
+        {
+          "@id": "https://digitalrepository.library.upenn.edu/iiif/2/assets/c117ca7f-66d2-42ca-b847-22f3c99637e1/canvas",
+          "@type": "sc:Canvas",
+          "label": "p. 2",
+          "height": 4424,
+          "width": 4224,
+          "images": [
+            {
+              "@type": "oa:Annotation",
+              "motivation": "sc:painting",
+              "resource": {
+                "@id": "https://iiif-images.library.upenn.edu/iiif/2/c117ca7f-66d2-42ca-b847-22f3c99637e1/full/!200,200/0/default.jpg",
+                "@type": "dctypes:Image",
+                "format": "image/jpeg",
+                "width": 4224,
+                "height": 4424,
+                "service": {
+                  "@context": "http://iiif.io/api/image/2/context.json",
+                  "@id": "https://iiif-images.library.upenn.edu/iiif/2/c117ca7f-66d2-42ca-b847-22f3c99637e1",
+                  "profile": "http://iiif.io/api/image/2/level2.json"
+                }
+              },
+              "on": "https://digitalrepository.library.upenn.edu/iiif/2/assets/c117ca7f-66d2-42ca-b847-22f3c99637e1/canvas"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

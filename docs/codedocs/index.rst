@@ -7,6 +7,7 @@ Code Documentation
 
    corpus
    footnotes
+   entities
    common
    pages
    annotations

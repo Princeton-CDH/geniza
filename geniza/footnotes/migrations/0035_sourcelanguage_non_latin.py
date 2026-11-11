@@ -14,6 +14,8 @@ def set_non_latin(apps, schema_editor):
     for lang, code in NON_LATIN_SOURCE_LANGUAGES:
         sl, _ = SourceLanguage.objects.get_or_create(name=lang, code=code)
         sl.non_latin = True
+        # languages created here (rather than before 0028) need direction set too
+        sl.direction = "rtl"
         sl.save()
 
 

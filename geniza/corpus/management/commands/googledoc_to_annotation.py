@@ -296,7 +296,7 @@ class Command(tei_to_annotation.Command):
         (pgpid, source_id, location) = (td.get_text() for td in metadata[3:])
 
         # check if doc name mismatched with pgpid in metadata table; use doc name if so
-        pgpid_match = re.search("PGPID (?P<pgpid>\d+)", name)
+        pgpid_match = re.search(r"PGPID (?P<pgpid>\d+)", name)
         if pgpid_match and pgpid_match.group("pgpid") != pgpid:
             pgpid = pgpid_match.group("pgpid")
 
