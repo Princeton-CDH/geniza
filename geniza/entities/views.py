@@ -363,7 +363,6 @@ class PersonDetailView(SlugDetailMixin):
 
     model = Person
     context_object_name = "person"
-    MIN_DOCUMENTS = 10
     past_slug_model = PastPersonSlug
     past_slug_relatedfield = "person"
 
