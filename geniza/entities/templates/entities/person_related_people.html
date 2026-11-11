@@ -62,18 +62,13 @@
                         data-persongraph-target="person"
                         data-id="{{ rel.id }}"
                         data-category="{{ rel.category }}"
-                        data-gender="{{ rel.gender }}"{% if rel.can_link %}
-                            data-href="{% url "entities:person" rel.slug %}"{% endif %}
+                        data-gender="{{ rel.gender }}"
+                        data-href="{% url "entities:person" rel.slug %}"
                     >
                         <td>
-                            {% if rel.can_link %}
-                                {% url "entities:person" rel.slug as person_url %}
-                                <a href="{{ person_url }}" title="{{ rel.name }}">
-                                    {{ rel.name }}
-                                </a>
-                            {% else %}
+                            <a href="{% url "entities:person" rel.slug %}" title="{{ rel.name }}">
                                 {{ rel.name }}
-                            {% endif %}
+                            </a>
                         </td>
                         <td>{{ rel.type }}</td>
                         <td>

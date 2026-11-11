@@ -7,6 +7,7 @@ from django.test import TestCase, override_settings
 from django.urls import resolve, reverse
 from django.utils.text import Truncator
 from parasolr.django import SolrClient
+from pytest_django.asserts import assertContains
 
 from geniza.corpus.dates import Calendar
 from geniza.corpus.models import Dating, Document, DocumentType, TextBlock
@@ -1105,6 +1106,15 @@ class TestPersonPeopleView:
         assert response.context["related_people"][0]["id"] == person_multiname.pk
         assert response.context["related_people"][0]["shared_documents"] == 1
         assert response.context["related_people"][1]["shared_documents"] == 0
+
+        # should link every related person, in the table and graph data, even
+        # with has_page unchecked and fewer than 10 documents
+        person_diacritic.has_page = False
+        person_diacritic.save()
+        response = client.get(reverse("entities:person-people", args=(person.slug,)))
+        diacritic_url = reverse("entities:person", args=(person_diacritic.slug,))
+        assertContains(response, f'data-href="{diacritic_url}"')
+        assertContains(response, f'<a href="{diacritic_url}"')
 
     def test_get_context_data(self, client, person, person_diacritic):
         # test relation categories context variable
