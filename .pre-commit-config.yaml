@@ -1,3 +1,5 @@
+default_language_version:
+  node: 22.17.0
 repos:
   - repo: https://github.com/psf/black
     rev: 25.1.0 # Replace by any tag/version: https://github.com/psf/black/tags
@@ -20,3 +22,10 @@ repos:
     rev: 3.0.6
     hooks:
       - id: djhtml
+  - repo: local
+    hooks:
+      - id: no-entities-in-corpus
+        name: geniza.corpus must not depend on geniza.entities
+        language: pygrep
+        entry: '^(from|import) geniza\.entities|"entities",'
+        files: ^geniza/corpus/.*\.py$
