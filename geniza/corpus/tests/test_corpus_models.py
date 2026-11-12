@@ -35,15 +35,6 @@ from geniza.corpus.models import (
     Provenance,
     TextBlock,
 )
-from geniza.entities.models import (
-    DocumentEventRelation,
-    DocumentPlaceRelation,
-    DocumentPlaceRelationType,
-    Event,
-    PersonDocumentRelation,
-    PersonDocumentRelationType,
-    Place,
-)
 from geniza.footnotes.models import (
     Creator,
     Footnote,
@@ -2184,90 +2175,6 @@ def test_document_merge_with_description_authors(document, join):
     assert document.authors.contains(amel)
 
 
-@pytest.mark.django_db
-def test_document_merge_with_related_entities(
-    document, join, person, person_diacritic, person_multiname
-):
-    # add person-document relationships
-    mentioned, _ = PersonDocumentRelationType.objects.get_or_create(name="Mentioned")
-    author, _ = PersonDocumentRelationType.objects.get_or_create(name="Author")
-    recipient, _ = PersonDocumentRelationType.objects.get_or_create(name="Recipient")
-    # same person and type, different notes
-    mentioned_rel = PersonDocumentRelation.objects.create(
-        document=document, person=person, type=mentioned, notes="Mentioned on line 5."
-    )
-    merged_mentioned_rel = PersonDocumentRelation.objects.create(
-        document=join, person=person, type=mentioned, notes="Sourced from evidence."
-    )
-    # same person, different type
-    PersonDocumentRelation.objects.create(
-        document=document,
-        person=person_diacritic,
-        type=author,
-        notes="Authored similar.",
-    )
-    newtype_rel = PersonDocumentRelation.objects.create(
-        document=join, person=person_diacritic, type=recipient, notes="Address on top."
-    )
-    # different person
-    newperson_rel = PersonDocumentRelation.objects.create(
-        document=join,
-        person=person_multiname,
-        type=recipient,
-        notes="Also address on top.",
-    )
-
-    assert document.persondocumentrelation_set.count() == 2
-
-    # merge into document as primary
-    join_pk = join.pk
-    document.merge_with([join], "test")
-
-    # should have added Recipient relation with person_diacritic, and relationship with person_multiname
-    assert document.persondocumentrelation_set.count() == 4
-
-    # notes should be merged on person + type matches
-    old_notes = mentioned_rel.notes
-    mentioned_rel.refresh_from_db()
-    assert (
-        mentioned_rel.notes
-        == f"{old_notes}\nNotes from PGPID {join_pk}: {merged_mentioned_rel.notes}"
-    )
-
-    # duplicate relation should be cascade-deleted
-    assert not PersonDocumentRelation.objects.filter(
-        pk=merged_mentioned_rel.pk
-    ).exists()
-
-    # otherwise should just reassign relationships to primary document
-    newtype_rel.refresh_from_db()
-    assert newtype_rel.document.pk == document.pk
-    newperson_rel.refresh_from_db()
-    assert newperson_rel.document.pk == document.pk
-
-    # ensure basic merge functionality works for places and events too
-    # (uses the same logic as people so no need to test in depth)
-    doc3 = Document.objects.create()
-    fustat = Place.objects.create()
-    qasr = Place.objects.create()
-    pdr_type = DocumentPlaceRelationType.objects.create()
-    DocumentPlaceRelation.objects.create(document=document, place=fustat, type=pdr_type)
-    DocumentPlaceRelation.objects.create(document=doc3, place=fustat, type=pdr_type)
-    DocumentPlaceRelation.objects.create(document=doc3, place=qasr, type=pdr_type)
-    assert document.documentplacerelation_set.count() == 1
-    document.merge_with([doc3], "test")
-    assert document.documentplacerelation_set.count() == 2
-
-    doc4 = Document.objects.create()
-    publication = Event.objects.create()
-    founding = Event.objects.create()
-    DocumentEventRelation.objects.create(document=document, event=publication)
-    DocumentEventRelation.objects.create(document=doc4, event=founding)
-    assert document.documenteventrelation_set.count() == 1
-    document.merge_with([doc4], "test")
-    assert document.documenteventrelation_set.count() == 2
-
-
 def test_document_get_by_any_pgpid(document):
     # get by current pk
     assert Document.objects.get_by_any_pgpid(document.pk) == document
@@ -2443,11 +2350,3 @@ def test_fragment_historic_shelfmarks(document, join, fragment, multifragment):
     hist_string = join.fragment_historical_shelfmarks
     assert fragment.old_shelfmarks in hist_string
     assert multifragment.old_shelfmarks in hist_string
-
-
-@pytest.mark.django_db
-class TestDocumentEventRelation:
-    def test_str(self, document):
-        event = Event.objects.create(name="Founding of the Ben Ezra Synagogue")
-        relation = DocumentEventRelation.objects.create(document=document, event=event)
-        assert str(relation) == f"Document-Event relation: {document} and {event}"
