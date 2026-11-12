@@ -9,8 +9,9 @@ from django.utils.text import slugify
 
 from geniza.common.metadata_export import Exporter
 from geniza.corpus.dates import standard_date_display
-from geniza.corpus.models import Document, DocumentEventRelation, TextBlock
+from geniza.corpus.models import Document, TextBlock
 from geniza.entities.models import (
+    DocumentEventRelation,
     DocumentPlaceRelation,
     DocumentPlaceRelationType,
     Event,

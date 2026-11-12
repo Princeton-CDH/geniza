@@ -28,7 +28,6 @@ from geniza.common.admin import (
 )
 from geniza.common.views import SolrDownError
 from geniza.corpus.dates import standard_date_display
-from geniza.corpus.models import DocumentEventRelation
 from geniza.entities.forms import (
     EventForm,
     EventPersonForm,
@@ -45,6 +44,7 @@ from geniza.entities.metadata_export import (
     PlaceRelationsExporter,
 )
 from geniza.entities.models import (
+    DocumentEventRelation,
     DocumentPlaceRelation,
     DocumentPlaceRelationType,
     Event,

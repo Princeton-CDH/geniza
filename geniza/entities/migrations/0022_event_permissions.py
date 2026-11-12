@@ -11,10 +11,7 @@ event_perms = [
     "change_event",
     "delete_event",
     "view_event",
-    "add_documenteventrelation",
-    "change_documenteventrelation",
-    "delete_documenteventrelation",
-    "view_documenteventrelation",
+    # documenteventrelation permissions now assigned in 0037_documenteventrelation
     "add_personeventrelation",
     "change_personeventrelation",
     "delete_personeventrelation",

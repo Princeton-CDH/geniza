@@ -28,7 +28,6 @@ from geniza.corpus.models import (
     Collection,
     Dating,
     Document,
-    DocumentEventRelation,
     DocumentType,
     Fragment,
     LanguageScript,
@@ -37,6 +36,7 @@ from geniza.corpus.models import (
     TextBlock,
 )
 from geniza.entities.models import (
+    DocumentEventRelation,
     DocumentPlaceRelation,
     DocumentPlaceRelationType,
     Event,
