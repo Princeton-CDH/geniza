@@ -636,6 +636,11 @@ class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin, TaggableMixin)
 
     id = models.AutoField("PGPID", primary_key=True)
 
+    # extension points for optional apps (e.g. geniza.entities)
+    extra_prefetches = []
+    index_data_hooks = []
+    merge_hooks = []
+
     fragments = models.ManyToManyField(
         Fragment, through="TextBlock", related_name="documents"
     )
@@ -1388,8 +1393,7 @@ class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin, TaggableMixin)
             "languages",
             "log_entries",
             "dating_set",
-            "persondocumentrelation_set",
-            "documentplacerelation_set",
+            *cls.extra_prefetches,
             Prefetch(
                 "textblock_set",
                 queryset=TextBlock.objects.select_related(
@@ -1432,8 +1436,6 @@ class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin, TaggableMixin)
         related_document_pks = set(itertools.chain.from_iterable(other_textblocks_docs))
         # filter by side so that search results only show the relevant side image(s)
         images = self.iiif_images(filter_side=True).values()
-        # get related place IDs for join query on document dates
-        # places = list(self.documentplacerelation_set.values_list("place", flat=True))
         index_data.update(
             {
                 "pgpid_i": self.id,
@@ -1510,9 +1512,6 @@ class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin, TaggableMixin)
                 "iiif_labels_ss": [img["label"] for img in images],
                 "iiif_rotations_is": [img["rotation"] for img in images],
                 "has_image_b": len(images) > 0,
-                "people_count_i": self.persondocumentrelation_set.count(),
-                "places_count_i": len(places),
-                "places_ids_ss": [f"place.{id}" for id in places],
                 "documents_count_i": len(related_document_pks),
             }
         )
@@ -1637,6 +1636,9 @@ class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin, TaggableMixin)
             index_data["input_date_dt"] = self.created.isoformat().replace(
                 "+00:00", "Z"
             )
+
+        for hook in self.index_data_hooks:
+            index_data.update(hook(self))
 
         return index_data
 
@@ -1802,16 +1804,8 @@ class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin, TaggableMixin)
             self._merge_footnotes(doc)
             self._merge_logentries(doc)
 
-            # merge relationships with models from the entities module
-            # self._merge_entities(doc, "person", "persondocumentrelation_set")
-            # self._merge_entities(doc, "place", "documentplacerelation_set")
-            self._merge_entities(
-                # DocumentEventRelation doens't have a type field
-                doc,
-                "event",
-                "documenteventrelation_set",
-                has_type=False,
-            )
+            for hook in self.merge_hooks:
+                hook(self, doc)
 
         # combine aggregated content for text fields
         for lang_code in language_codes:
