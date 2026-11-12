@@ -27,8 +27,13 @@ from geniza.common.admin import (
     TypedRelationInline,
 )
 from geniza.common.views import SolrDownError
+from geniza.corpus.admin import DocumentAdmin
 from geniza.corpus.dates import standard_date_display
+from geniza.corpus.models import Document
 from geniza.entities.forms import (
+    DocumentEventWidgetWrapper,
+    DocumentPersonForm,
+    DocumentPlaceForm,
     EventForm,
     EventPersonForm,
     EventPlaceForm,
@@ -858,3 +863,67 @@ class RegionAdmin(SortableAdminBase, admin.ModelAdmin):
     fields = ("name",)
     search_fields = ("name",)
     ordering = ("name",)
+
+
+class DocumentPersonInline(TypedRelationInline, PersonInline):
+    """Inline for people related to a document"""
+
+    model = PersonDocumentRelation
+    form = DocumentPersonForm
+
+
+class DocumentRelatedPlaceInline(TypedRelationInline, PlaceInline):
+    """Inline for places related to a document"""
+
+    model = DocumentPlaceRelation
+    form = DocumentPlaceForm
+
+
+class DocumentEventInline(admin.TabularInline):
+    """Inline for events related to a document"""
+
+    autocomplete_fields = ("event",)
+    fields = ("event", "notes")
+    model = DocumentEventRelation
+    min_num = 0
+    extra = 1
+    show_change_link = True
+    verbose_name = "Related Event"
+    verbose_name_plural = "Related Events"
+    formfield_overrides = {
+        TextField: {"widget": Textarea(attrs={"rows": "4"})},
+    }
+
+    def get_formset(self, request, obj=None, **kwargs):
+        """Override the Event related field widget, so that the new Event form can be saved
+        without attaching a document in the popup."""
+        formset = super().get_formset(request, obj, **kwargs)
+        event_field = formset.form.base_fields["event"]
+        # these args/kwargs are usually populated automatically by django's related model field
+        # processing, but since we are overriding the wrapper we have to manually populate them
+        event_field.widget = DocumentEventWidgetWrapper(
+            autocomplete.ModelSelect2(),
+            rel=DocumentEventRelation._meta.get_field("event").remote_field,
+            admin_site=admin.site,
+        )
+        event_field.widget.can_change_related = True
+        return formset
+
+
+class EntitiesDocumentAdmin(DocumentAdmin):
+    """Document admin with inlines for related people, places, and events"""
+
+    inlines = DocumentAdmin.inlines + [
+        DocumentPersonInline,
+        DocumentRelatedPlaceInline,
+        DocumentEventInline,
+    ]
+    fieldsets_and_inlines_order = DocumentAdmin.fieldsets_and_inlines_order + (
+        "i",  # DocumentPersonInline
+        "i",  # DocumentRelatedPlaceInline
+        "i",  # DocumentEventInline
+    )
+
+
+admin.site.unregister(Document)
+admin.site.register(Document, EntitiesDocumentAdmin)

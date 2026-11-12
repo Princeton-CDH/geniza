@@ -1,5 +1,6 @@
 from dal import autocomplete, forward
 from django import forms
+from django.contrib.admin.widgets import RelatedFieldWidgetWrapper
 from django.template.loader import get_template
 from django.utils.translation import gettext_lazy as _
 
@@ -16,7 +17,8 @@ from geniza.entities.models import (
     Place,
     PlaceEventRelation,
     PlacePlaceRelation,
-    DocumentPlaceRelation, PersonDocumentRelation
+    DocumentPlaceRelation,
+    PersonDocumentRelation,
 )
 
 
@@ -451,7 +453,6 @@ class PlaceListForm(RangeForm):
         return None
 
 
-
 class DocumentPersonForm(forms.ModelForm):
     class Meta:
         model = PersonDocumentRelation
@@ -468,8 +469,6 @@ class DocumentPersonForm(forms.ModelForm):
         }
 
 
-
-
 class DocumentPlaceForm(forms.ModelForm):
     class Meta:
         model = DocumentPlaceRelation
@@ -483,3 +482,15 @@ class DocumentPlaceForm(forms.ModelForm):
             "place": autocomplete.ModelSelect2(url="entities:place-autocomplete"),
             "type": autocomplete.ModelSelect2(),
         }
+
+
+class DocumentEventWidgetWrapper(RelatedFieldWidgetWrapper):
+    """Override of RelatedFieldWidgetWrapper to insert custom url params into
+    'add new object' link"""
+
+    def get_context(self, name, value, attrs):
+        """Override get_context to insert an additional URL param, from_document,
+        in order to change min_num dynamically"""
+        context = super().get_context(name, value, attrs)
+        context["url_params"] += "&from_document=true"
+        return context
