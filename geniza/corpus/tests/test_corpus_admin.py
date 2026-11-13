@@ -48,7 +48,6 @@ from geniza.corpus.models import (
     Provenance,
     TextBlock,
 )
-from geniza.entities.models import Event
 from geniza.footnotes.models import Footnote, Source, SourceLanguage, SourceType
 
 
@@ -605,7 +604,7 @@ class TestDocumentTextBlockInline:
         assert inline.fragment_provenance_display(textblock) == ""
 
     def test_fragment_provenance_display(self):
-        (ng, _) = Provenance.objects.get_or_create(name="Not Geniza")
+        ng, _ = Provenance.objects.get_or_create(name="Not Geniza")
         fragment = Fragment.objects.create(shelfmark="CUL 123", provenance_display=ng)
         doc = Document.objects.create()
         textblock = TextBlock.objects.create(fragment=fragment, document=doc)
@@ -614,7 +613,7 @@ class TestDocumentTextBlockInline:
         assert inline.fragment_provenance_display(textblock) == str(ng)
 
     def test_fragment_material_support(self):
-        (ng, _) = MaterialSupport.objects.get_or_create(name="Paper")
+        ng, _ = MaterialSupport.objects.get_or_create(name="Paper")
         fragment = Fragment.objects.create(shelfmark="CUL 123", material_support=ng)
         doc = Document.objects.create()
         textblock = TextBlock.objects.create(fragment=fragment, document=doc)
@@ -1004,31 +1003,3 @@ class TestInferredDatingListFilter:
         filter = InferredDatingListFilter(Mock(), {}, Document, DocumentAdmin)
         filter.queryset(Mock(), queryset_mock)
         queryset_mock.filter.assert_not_called()
-
-
-class TestDocumentEventInline:
-    def test_get_formset(self, admin_client, document):
-        # get_formset substitutes DocumentEventWidgetWrapper in place of
-        # RelatedFieldWidgetWrapper around the Event related field widget;
-        # this adds a URL param to the add event link
-        url = reverse("admin:corpus_document_add")
-        response = admin_client.get(url)
-        content = str(response.content)
-        assert "Add another event" in content
-        assert "from_document=true" in content
-
-        # person edit page has an Event related field but does not use the custom wrapper,
-        # and thus should not have the from_document URL param
-        url = reverse("admin:entities_person_add")
-        response = admin_client.get(url)
-        content = str(response.content)
-        assert "Add another event" in content
-        assert "from_document=true" not in content
-
-        # document with an event already attached should have an edit link for that event
-        evt = Event.objects.create(name="test")
-        document.events.add(evt)
-        url = reverse("admin:corpus_document_change", args=(document.pk,))
-        response = admin_client.get(url)
-        content = str(response.content)
-        assert "Change selected event" in content

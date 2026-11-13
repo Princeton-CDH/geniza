@@ -1,15 +1,8 @@
 from django.db.models.query import Prefetch
-from django.utils.text import slugify
 
 from geniza.common.metadata_export import Exporter
 from geniza.corpus.models import Document, Fragment
-from geniza.entities.models import (
-    DocumentPlaceRelation,
-    DocumentPlaceRelationType,
-    Place,
-)
 from geniza.footnotes.models import Footnote
-
 
 class DocumentExporter(Exporter):
     """
@@ -67,13 +60,22 @@ class DocumentExporter(Exporter):
         ],
     }
 
+    #: prefetch names or objects added to :meth:`get_queryset`
+    extra_prefetches = []
+    #: callables returning a list of additional csv fields
+    extra_field_hooks = []
+    #: callables ``(doc) -> dict`` adding data to :meth:`get_export_data_dict`
+    export_data_hooks = []
+
     def __init__(self, queryset=None, progress=False):
-        """Adds fields to the export based on PersonPlaceRelationType names"""
+        """Adds fields to the export based on registered field hooks"""
         self.csv_fields = list(self.csv_fields)
-        self.csv_fields[31:31] = [
-            slugify(dpr_type.name).replace("-", "_")
-            for dpr_type in DocumentPlaceRelationType.objects.order_by("name")
-        ]
+        # insert after base document fields, before any subclass fields
+        insert_at = len(DocumentExporter.csv_fields)
+        for hook in self.extra_field_hooks:
+            extra_fields = hook()
+            self.csv_fields[insert_at:insert_at] = extra_fields
+            insert_at += len(extra_fields)
         super().__init__(queryset, progress)
 
     def get_queryset(self):
@@ -94,7 +96,7 @@ class DocumentExporter(Exporter):
                 "log_entries",
                 "log_entries__user",
                 "dating_set",
-                "documentplacerelation_set",
+                *self.extra_prefetches,
                 Prefetch(
                     "footnotes",
                     queryset=Footnote.objects.select_related(
@@ -212,24 +214,8 @@ class DocumentExporter(Exporter):
         outd["has_transcription"] = doc.has_transcription()
         outd["has_translation"] = doc.has_translation()
 
-        # group related places by relation type name
-        related_places = DocumentPlaceRelation.objects.filter(
-            document__id=doc.pk
-        ).values("place__id", "type__name")
-        rel_types = related_places.values_list("type__name", flat=True).distinct()
-        related_place_ids = {}
-        for type_name in rel_types:
-            related_place_ids[type_name] = (
-                related_places.filter(type__name=type_name)
-                .values_list("place__id", flat=True)
-                .distinct()
-            )
-
-        # get names of related places (grouped by type name) and set on output dict
-        for [type_name, place_ids] in related_place_ids.items():
-            outd[slugify(type_name).replace("-", "_")] = ", ".join(
-                sorted([str(place) for place in Place.objects.filter(id__in=place_ids)])
-            )
+        for hook in self.export_data_hooks:
+            outd.update(hook(doc))
 
         return outd
 

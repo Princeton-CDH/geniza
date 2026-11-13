@@ -1,5 +1,6 @@
 """geniza URL Configuration"""
 
+from django.apps import apps
 from django.conf import settings
 from django.conf.urls.i18n import i18n_patterns
 from django.conf.urls.static import static
@@ -58,7 +59,11 @@ urlpatterns = [
 urlpatterns += i18n_patterns(
     path("", include("geniza.common.urls", namespace="common")),
     path("", include("geniza.corpus.urls", namespace="corpus")),
-    path("", include("geniza.entities.urls", namespace="entities")),
+    *(
+        [path("", include("geniza.entities.urls", namespace="entities"))]
+        if apps.is_installed("geniza.entities")
+        else []
+    ),
     path("", include(wagtail_urls)),
 )
 

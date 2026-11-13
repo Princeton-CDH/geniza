@@ -1,3 +1,4 @@
+from django.apps import apps
 from django.conf import settings
 from wagtail.models import Site
 
@@ -17,6 +18,7 @@ def template_globals(request):
             settings, "PUBLIC_SITE_LANGUAGES", admin_language_codes
         ),
         "site": site,
+        "entities_enabled": apps.is_installed("geniza.entities"),
         "GTAGS_ANALYTICS_ID": getattr(settings, "GTAGS_ANALYTICS_ID", None),
         "IS_ARCHIVE_CRAWLER": "archive.org_bot"
         in request.META.get("HTTP_USER_AGENT", "")

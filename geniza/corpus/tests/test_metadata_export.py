@@ -20,12 +20,6 @@ from geniza.corpus.models import (
     Fragment,
     LanguageScript,
 )
-from geniza.entities.models import (
-    DocumentPlaceRelation,
-    DocumentPlaceRelationType,
-    Name,
-    Place,
-)
 from geniza.footnotes.models import Creator, Footnote, Source, SourceType
 
 
@@ -152,30 +146,6 @@ def test_doc_export_columns_unique():
     exp2 = AdminDocumentExporter()
     len2 = len(exp2.csv_fields)
     assert len1 == len2
-
-
-def test_export_doc_places(document):
-
-    mosul = Place.objects.create(slug="mosul")
-    Name.objects.create(content_object=mosul, name="Mosul", primary=True)
-    Name.objects.create(content_object=mosul, name="الموصل", primary=False)
-    fustat = Place.objects.create(slug="fustat")
-    Name.objects.create(content_object=fustat, name="Fustat", primary=True)
-
-    (dest, _) = DocumentPlaceRelationType.objects.get_or_create(name="Destination")
-    (ment, _) = DocumentPlaceRelationType.objects.get_or_create(
-        name="Possibly mentioned"
-    )
-
-    DocumentPlaceRelation.objects.create(place=mosul, type=dest, document=document)
-    DocumentPlaceRelation.objects.create(place=fustat, type=ment, document=document)
-
-    doc_qs = Document.objects.all().order_by("id")
-    exporter = DocumentExporter(queryset=doc_qs)
-    print(exporter.iter_dicts())
-    for export_data in exporter.iter_dicts():
-        assert "Mosul" in export_data.get("destination")
-        assert "Fustat" in export_data.get("possibly_mentioned")
 
 
 @pytest.mark.django_db
