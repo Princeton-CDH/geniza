@@ -10,7 +10,7 @@ Issue: [madad#1](https://github.com/Princeton-CDH/madad/issues/1) | PR: [geniza#
 
 The `madad` project has overlapping functionality needs with PGP and we want to reuse and adapt the existing codebase. In particular, we plan to use and extend Documents, Fragments, and related models included in the `geniza.corpus` corpus but the Madad project will not include Person/Place data, so we do not want to install the `geniza.entities` app.
 
-This is hindered by the fact that in the current version of the `geniza` codebase (4.33-dev) the `corpus` and `entities` apps have circular dependencies and mixed imports. (See **Details => Current state** below)
+This is hindered by the fact that in the current version of the `geniza` codebase (4.33-dev) the `corpus` and `entities` apps have circular dependencies and mixed imports. (See **Details => Current state** below for details)
 
 ### Constraints
 
@@ -22,12 +22,12 @@ This is hindered by the fact that in the current version of the `geniza` codebas
 
 Dependencies go in one direction only: **`entities` → `corpus`, never `corpus` → `entities`**. This applies to Python imports, migrations, templates and tests.
 
-`corpus` defines generic extension points. `entities` registers its behaviour into them when it is installed.
+`corpus` defines generic extension points. `entities` registers its behavior into them when it is installed.
 
 1. Dependencies should be one-directional; no circular imports. `entities` depends on `corpus`, but `corpus` should be written and tested to work without `entities`.
     - Move all entity-specific code out of `corpus` and into `entities`
     - Add hooks where necessary in the `corpus` code so that entity-specific integration can be applied when the `entities` application is installed.
-2. For constraint 1: the simplest solution is to preserve existing table names (`db_table`) in the current location as entity-specific models are moved from `corpus` to `entities. No tables or columns will be removed.
+2. For constraint 1: the simplest solution is to preserve existing table names (`db_table`) in the current location as entity-specific models are moved from `corpus` to `entities`. No tables or columns will be removed.
 3. For constraint 2: migrations will be revised so they can be run independently and work on an existing database and a fresh install.
 
 ## Details
@@ -51,7 +51,7 @@ Currently the `entities` and `corpus` apps depend on each other:
 -   The `DocumentEventRelation` model moves to `geniza/entities/models.py`. It sets a `Meta.db_table = "corpus_documenteventrelation"` so that the existing table name will be used; no data movement.
 -   The relation is declared from the `entities` side as `Event.documents`, a many-to-many field through `DocumentEventRelation` with `related_name="events"`. Because of this, `document.events` and `document.documenteventrelation_set` still work.
 -   **Migrations:**
-    -   `corpus/0046_document_events.py` is replaced with a no-op (`operations = []`) that depends only on `corpus.0045`, but drops the dependencie on `entities` migrations. This migration is preserved because it has already been applied in production to PGP.
+    -   `corpus/0046_document_events.py` is replaced with a no-op (`operations = []`) that depends only on `corpus.0045`, but drops the dependencies on `entities` migrations. This migration is preserved because it has already been applied in production to PGP.
     -   `entities/0022_event_permissions.py` no longer references the `documenteventrelation` permission codenames. On a fresh install, that model doesn't exist yet at that point in the migrations.
     -   A new migration, `entities/0037_documenteventrelation.py`:
         -   creates the table only if it doesn't exist yet (`CreateModelIfMissing`). Rolling back never drops the table.
@@ -80,7 +80,7 @@ They are registered in `EntitiesConfig.ready()` (`geniza/entities/apps.py`).
 
 #### 3. Admin
 
--   `DocumentEventInline`, and `DocumentEventWidgetWrapper` move from `corpus.admin` to `entities.admin`.
+-   `DocumentEventInline` and `DocumentEventWidgetWrapper` move from `corpus.admin` to `entities.admin`.
 -   `entities.admin` adds Person, Place and Event inlines to `DocumentAdmin`. It does this either by appending to `DocumentAdmin.inlines` or by re-registering a subclass of `DocumentAdmin`.
 
 #### 4. Metadata export, views and templates
@@ -110,10 +110,10 @@ They are registered in `EntitiesConfig.ready()` (`geniza/entities/apps.py`).
 
 ### Negative Consequences
 
--   Existing migrations (`corpus.0046`, `entities.0022`) have been modified. This should work for both existing and new databases since the new `entities.0037` migration has been written to be is idempotent about the table, but should be tested.
+-   Existing migrations (`corpus.0046`, `entities.0022`) have been modified. This should work for both existing and new databases since the new `entities.0037` migration has been written to be idempotent about the table, but should be tested.
 -   The `DocumentEventRelation` model overrides the database table name to preserve the existing `corpus_` prefix even though it has been moved into the `entities` app. This is potentially confusing in the long run, especially for new installations.
     -   This may be worth an additional migration to drop the override and rename the existing table.
--   Some behaviour now happens through hooks registered in `AppConfig.ready()`. This is less explicit than direct code: understanding the logic for indexing, merging, the admin or exports requires looking in both apps.
+-   Some behavior now happens through hooks registered in `AppConfig.ready()`. This is less explicit than direct code: understanding the logic for indexing, merging, the admin or exports requires looking in both apps.
 -   Hook registration is global class state. Tests that change the hooks need to restore them.
 
 ## Deployment
