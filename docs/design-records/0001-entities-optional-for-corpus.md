@@ -1,6 +1,6 @@
 # Make `geniza.corpus` usable without `geniza.entities`
 
--   Status: Implementation in progress
+-   Status: Draft Implementation
 -   Author: @rlskoeser;
     -   Supported by: OpenCode:claude-opus-5.5
 -   Reviewers: @laurejt
