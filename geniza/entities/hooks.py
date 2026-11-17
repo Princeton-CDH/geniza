@@ -2,8 +2,11 @@ from collections import defaultdict
 
 from django.utils.text import slugify
 
+from geniza.corpus.models import Document
+from geniza.entities.models import DocumentPlaceRelationType
 
-def document_entity_index_data(doc):
+
+def document_entity_index_data(doc: Document) -> dict:
     """Entity-related index data for a :class:`~geniza.corpus.models.Document`"""
     # get related place IDs for join query on document dates
     places = list(doc.documentplacerelation_set.values_list("place", flat=True))
@@ -26,8 +29,6 @@ def merge_document_entities(primary, merged):
 
 def document_place_export_fields():
     """Document export columns, one per :class:`DocumentPlaceRelationType`"""
-    from geniza.entities.models import DocumentPlaceRelationType
-
     return [
         slugify(dpr_type.name).replace("-", "_")
         for dpr_type in DocumentPlaceRelationType.objects.order_by("name")
