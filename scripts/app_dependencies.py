@@ -10,12 +10,14 @@ Use ``--find entities`` to list imports of that app from other apps, with source
 
 import argparse
 import ast
+import sys
 from importlib.util import resolve_name
 from pathlib import Path
 
 
 def main():
     root = Path(__file__).resolve().parent.parent / "geniza"
+    # Discover Django apps without importing them or configuring Django.
     apps = {path.parent.name for path in root.glob("*/apps.py")}
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
@@ -37,6 +39,7 @@ def main():
     for app in sorted(apps):
         for path in (root / app).rglob("*.py"):
             relative = path.relative_to(root.parent)
+            # Keep the chart focused on application code, not tests or schema history.
             if (
                 {"tests", "migrations"} & set(relative.parts)
                 or path.name.startswith("test_")
@@ -53,6 +56,7 @@ def main():
                 elif isinstance(node, ast.ImportFrom):
                     module = node.module or ""
                     if node.level:
+                        # Resolve relative imports to the same names as absolute imports.
                         module = resolve_name("." * node.level + module, package)
                     modules = [module]
                     # Also handle `from geniza import corpus`.
@@ -63,6 +67,7 @@ def main():
 
                 for module in modules:
                     parts = module.split(".")
+                    # Collapse module imports to cross-app edges within geniza only.
                     if (
                         len(parts) >= 2
                         and parts[0] == "geniza"
@@ -82,8 +87,18 @@ def main():
                             )
 
     if args.target:
+
+        def styled(text, code):
+            # Keep piped or redirected output free of ANSI escape sequences.
+            return f"\033[{code}m{text}\033[0m" if sys.stdout.isatty() else str(text)
+
         for path, lineno, source, statement in sorted(details):
-            print(f"{path}:{lineno}:\n\t{source} -> {args.target}: {statement}")
+            # Match ripgrep's filename, line-number, and search-match colors.
+            statement = statement.replace(args.target, styled(args.target, "1;31"))
+            print(
+                f"{styled(path, '35')}:{styled(lineno, '32')}:\n"
+                f"\t{source} -> {styled(args.target, '1;31')}: {statement}"
+            )
         return
 
     print("flowchart LR")
