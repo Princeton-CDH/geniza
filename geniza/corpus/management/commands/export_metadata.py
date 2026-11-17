@@ -44,6 +44,9 @@ class MetadataExportRepo(Timerable):
         self, local_path=None, remote_url=None, print_func=None, progress=True
     ):
         self.exports = dict(self.exports)
+
+        # TODO: needs to shift to app-registration / hooks
+
         if apps.is_installed("geniza.entities"):
             from geniza.entities.metadata_export import (
                 PublicPersonExporter,
