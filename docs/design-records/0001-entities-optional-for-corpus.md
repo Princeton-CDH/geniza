@@ -56,7 +56,7 @@ For `entities` to be optional, dependencies (→) must go in one direction: **`e
 
 ## Details
 
-### Current state {#current-state}
+### Current state
 
 Currently the `entities` and `corpus` apps depend on each other:
 
