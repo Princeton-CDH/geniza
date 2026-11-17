@@ -83,7 +83,7 @@ def main():
 
     if args.target:
         for path, lineno, source, statement in sorted(details):
-            print(f"{path}:{lineno}: {source} -> {args.target}: {statement}")
+            print(f"{path}:{lineno}:\n\t{source} -> {args.target}: {statement}")
         return
 
     print("flowchart LR")
