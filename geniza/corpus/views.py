@@ -4,6 +4,7 @@ from copy import deepcopy
 from random import randint
 
 from dal import autocomplete
+from django.apps import apps
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.admin.models import CHANGE, LogEntry
@@ -552,16 +553,21 @@ class DocumentDetailView(DocumentDetailBase, DetailView):
                     for panel in ["images", "translation", "transcription"]
                     if panel not in available_panels
                 ],
-                # related entities: sorted by type for grouping, and slug for alphabetization
-                "related_people": self.object.persondocumentrelation_set.order_by(
-                    "type__order", "type__name", "person__slug"
-                ),
-                "related_places": self.object.documentplacerelation_set.order_by(
-                    "type__order", "type__name", "place__slug"
-                ),
                 "descriptions": self.object.description_translations,
             }
         )
+        if apps.is_installed("geniza.entities"):
+            # related entities: sorted by type for grouping, and slug for alphabetization
+            context_data.update(
+                {
+                    "related_people": self.object.persondocumentrelation_set.order_by(
+                        "type__order", "type__name", "person__slug"
+                    ),
+                    "related_places": self.object.documentplacerelation_set.order_by(
+                        "type__order", "type__name", "place__slug"
+                    ),
+                }
+            )
         return context_data
 
     def get_absolute_url(self):

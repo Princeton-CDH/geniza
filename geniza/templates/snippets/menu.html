@@ -12,20 +12,22 @@
     </a>
 </li>
 
-<li class="menu-item" role="none">
-    {% url "entities:person-list" as people_url %}
-    <a href="{{ people_url }}"{% if request.path == people_url %} aria-current="page"{% endif %} role="menuitem">
-        {# Translators: label for link to people browse page in main navigation #}
-        <span>{% translate "People" %}</span>
-    </a>
-</li>
-<li class="menu-item" role="none">
-    {% url "entities:place-list" as places_url %}
-    <a href="{{ places_url }}"{% if request.path == places_url %} aria-current="page"{% endif %} role="menuitem">
-        {# Translators: label for link to places browse page in main navigation #}
-        <span>{% translate "Places" %}</span>
-    </a>
-</li>
+{% if entities_enabled %}
+    <li class="menu-item" role="none">
+        {% url "entities:person-list" as people_url %}
+        <a href="{{ people_url }}"{% if request.path == people_url %} aria-current="page"{% endif %} role="menuitem">
+            {# Translators: label for link to people browse page in main navigation #}
+            <span>{% translate "People" %}</span>
+        </a>
+    </li>
+    <li class="menu-item" role="none">
+        {% url "entities:place-list" as places_url %}
+        <a href="{{ places_url }}"{% if request.path == places_url %} aria-current="page"{% endif %} role="menuitem">
+            {# Translators: label for link to places browse page in main navigation #}
+            <span>{% translate "Places" %}</span>
+        </a>
+    </li>
+{% endif %}
 
 {% if not skip_nav %}
     {% for top_level_page in site.root_page.get_children.live.in_menu %}

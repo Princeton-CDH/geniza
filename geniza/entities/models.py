@@ -163,6 +163,12 @@ class Event(DocumentDatableMixin, models.Model):
         max_length=255,
         validators=[RegexValidator(DocumentDateMixin.re_date_format)],
     )
+    documents = models.ManyToManyField(
+        Document,
+        related_name="events",
+        verbose_name="Related Documents",
+        through="DocumentEventRelation",
+    )
 
     def __str__(self):
         """Use the name field for string representations"""
@@ -2079,3 +2085,18 @@ class PlaceEventRelation(models.Model):
 
     def __str__(self):
         return f"Place-Event relation: {self.place} and {self.event}"
+
+
+class DocumentEventRelation(models.Model):
+    """A relationship between a document and an event"""
+
+    document = models.ForeignKey(Document, on_delete=models.CASCADE)
+    event = models.ForeignKey(Event, on_delete=models.CASCADE)
+    notes = models.TextField(blank=True)
+
+    class Meta:
+        # originally defined in the corpus app; keep existing table
+        db_table = "corpus_documenteventrelation"
+
+    def __str__(self):
+        return f"Document-Event relation: {self.document} and {self.event}"

@@ -3,7 +3,11 @@
 # between modules - if you import just the top-level fixture (e.g. "events"),
 # it fails to find the fixture dependencies, and so on all the way down. For
 # now this does what we want, although it pollutes the namespace somewhat
+from django.apps import apps
+
 from geniza.annotations.conftest import *
 from geniza.corpus.tests.conftest import *
-from geniza.entities.conftest import *
 from geniza.footnotes.conftest import *
+
+if apps.is_installed("geniza.entities"):
+    from geniza.entities.conftest import *

@@ -25,23 +25,16 @@ from geniza.common.admin import (
     PreventLogEntryDeleteMixin,
     SolrDownAdminMixin,
     TagLogEntryMixin,
-    TypedRelationInline,
     custom_empty_field_list_filter,
 )
 from geniza.common.views import SolrDownError
 from geniza.corpus.dates import DocumentDateMixin, standard_date_display
-from geniza.corpus.forms import (
-    DocumentEventWidgetWrapper,
-    DocumentPersonForm,
-    DocumentPlaceForm,
-)
 from geniza.corpus.metadata_export import AdminDocumentExporter, AdminFragmentExporter
 from geniza.corpus.models import (
     Collection,
     Dating,
     DescriptionAuthorship,
     Document,
-    DocumentEventRelation,
     DocumentType,
     Fragment,
     LanguageScript,
@@ -51,8 +44,6 @@ from geniza.corpus.models import (
 )
 from geniza.corpus.solr_queryset import DocumentSolrQuerySet
 from geniza.corpus.views import DocumentMerge
-from geniza.entities.admin import PersonInline, PlaceInline
-from geniza.entities.models import DocumentPlaceRelation, PersonDocumentRelation
 from geniza.footnotes.admin import DocumentFootnoteInline
 from geniza.footnotes.models import Footnote
 
@@ -442,51 +433,6 @@ class DocumentDatingInline(admin.TabularInline):
     }
 
 
-class DocumentPersonInline(TypedRelationInline, PersonInline):
-    """Inline for people related to a document"""
-
-    model = PersonDocumentRelation
-    form = DocumentPersonForm
-
-
-class DocumentPlaceInline(TypedRelationInline, PlaceInline):
-    """Inline for places related to a document"""
-
-    model = DocumentPlaceRelation
-    form = DocumentPlaceForm
-
-
-class DocumentEventInline(admin.TabularInline):
-    """Inline for events related to a document"""
-
-    autocomplete_fields = ("event",)
-    fields = ("event", "notes")
-    model = DocumentEventRelation
-    min_num = 0
-    extra = 1
-    show_change_link = True
-    verbose_name = "Related Event"
-    verbose_name_plural = "Related Events"
-    formfield_overrides = {
-        TextField: {"widget": Textarea(attrs={"rows": "4"})},
-    }
-
-    def get_formset(self, request, obj=None, **kwargs):
-        """Override the Event related field widget, so that the new Event form can be saved
-        without attaching a document in the popup."""
-        formset = super().get_formset(request, obj, **kwargs)
-        event_field = formset.form.base_fields["event"]
-        # these args/kwargs are usually populated automatically by django's related model field
-        # processing, but since we are overriding the wrapper we have to manually populate them
-        event_field.widget = DocumentEventWidgetWrapper(
-            autocomplete.ModelSelect2(),
-            rel=DocumentEventRelation._meta.get_field("event").remote_field,
-            admin_site=admin.site,
-        )
-        event_field.widget.can_change_related = True
-        return formset
-
-
 class DocumentDescriptionAuthorshipInline(
     SortableInlineAdminMixin, admin.TabularInline
 ):
@@ -638,9 +584,6 @@ class DocumentAdmin(
         DocumentDatingInline,
         DocumentTextBlockInline,
         DocumentFootnoteInline,
-        DocumentPersonInline,
-        DocumentPlaceInline,
-        DocumentEventInline,
     ]
     # mixed fieldsets and inlines: /templates/admin/snippets/mixed_inlines_fieldsets.html
     fieldsets_and_inlines_order = (
@@ -652,9 +595,6 @@ class DocumentAdmin(
         "itt",  # images/transcription/translation panel
         "i",  # DocumentTextBlockInline
         "i",  # DocumentFootnoteInline
-        "i",  # DocumentPersonInline
-        "i",  # DocumentPlaceInline
-        "i",  # DocumentEventInline
     )
 
     class Media:

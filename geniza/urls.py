@@ -1,9 +1,11 @@
 """geniza URL Configuration"""
 
+from django.apps import apps
 from django.conf import settings
 from django.conf.urls.i18n import i18n_patterns
 from django.conf.urls.static import static
 from django.contrib import admin
+from django.template.context_processors import i18n
 from django.urls import include, path, re_path
 from django.views.generic.base import RedirectView, TemplateView
 from wagtail import urls as wagtail_urls
@@ -58,9 +60,17 @@ urlpatterns = [
 urlpatterns += i18n_patterns(
     path("", include("geniza.common.urls", namespace="common")),
     path("", include("geniza.corpus.urls", namespace="corpus")),
-    path("", include("geniza.entities.urls", namespace="entities")),
-    path("", include(wagtail_urls)),
 )
+
+# optional urls, depending on whether entities app is included in installed apps
+if apps.is_installed("geniza.entities"):
+    urlpatterns += i18n_patterns(
+        path("", include("geniza.entities.urls", namespace="entities"))
+    )
+
+# wagtail patterns should always come last, so they don't take precedence over any other configured URLs
+urlpatterns += i18n_patterns(path("", include(wagtail_urls)))
+
 
 if settings.DEBUG:
     try:
