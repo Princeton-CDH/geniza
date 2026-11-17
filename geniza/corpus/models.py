@@ -1918,6 +1918,7 @@ class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin, TaggableMixin)
             log_entry.content_type_id = ContentType.objects.get_for_model(Document)
             log_entry.save()
 
+    # TODO: move to a helper function in entities app
     def _merge_entities(
         self, doc, related_model_name, related_manager_name, has_type=True
     ):
