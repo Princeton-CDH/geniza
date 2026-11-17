@@ -5,8 +5,7 @@ appropriate path to this script). Excludes tests and migrations; arrows point
 from the importing app to the imported app. Dynamic imports and non-Python
 dependencies are not included. Does not require Django or third-party packages.
 
-Use ``--find entities`` (or ``--details geniza.entities``) to list imports of
-that app from other apps, with source paths and line numbers.
+Use ``--find entities`` to list imports of that app from other apps, with source paths and line numbers.
 """
 
 import argparse
@@ -21,7 +20,6 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--find",
-        "--details",
         dest="target",
         metavar="APP",
         help="show imports of APP from other apps instead of the Mermaid chart",
