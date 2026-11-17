@@ -68,6 +68,38 @@ Currently the `entities` and `corpus` apps depend on each other:
     -   **Metadata export, views and templates:** these include people and places columns, related entities on the document detail page, and links to entity admin pages and the People/Places pages.
     -   **Tests:** some corpus tests use entity models and fixtures.
 
+Chart of app-level dependencies generated from current `develop`:
+
+```mermaid
+flowchart LR
+    annotations
+    common
+    corpus
+    entities
+    footnotes
+    pages
+    resources
+    annotations --> common
+    annotations --> corpus
+    annotations --> footnotes
+    common --> corpus
+    corpus --> annotations
+    corpus --> common
+    corpus --> entities
+    corpus --> footnotes
+    entities --> common
+    entities --> corpus
+    entities --> footnotes
+    footnotes --> common
+    footnotes --> corpus
+```
+
+_Generated with `./scripts/app_dependencies.py` script._
+
+The chart for the draft implementation is currently the same, because there are still places with
+conditional imports or logic (`export_metadata` command, views, templates) where code needs to be shifted
+to the entities app and included via some kind of hook, registration, or similar.
+
 ### Changes
 
 #### 1. Move `DocumentEventRelation` into `entities`
