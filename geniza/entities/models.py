@@ -1,5 +1,6 @@
 import logging
 import re
+from collections import Counter
 from datetime import date, datetime
 from math import modf
 from operator import itemgetter
@@ -437,9 +438,6 @@ class Person(
         validators=[RegexValidator(DocumentDateMixin.re_date_format)],
     )
 
-    # minimum documents to show a page if has_page is False
-    MIN_DOCUMENTS = 10
-
     class Meta:
         verbose_name_plural = "People"
 
@@ -612,7 +610,6 @@ class Person(
                 # boolean to indicate if we should use converse or regular relation type name
                 gender=F("from_person__gender"),
                 use_converse_typename=Value(True),
-                has_page=F("from_person__has_page"),
                 related_slug=F("from_person__slug"),
                 related_id=F("from_person"),
             )
@@ -620,7 +617,6 @@ class Person(
                 self.to_person.annotate(
                     gender=F("to_person__gender"),
                     use_converse_typename=Value(False),
-                    has_page=F("to_person__has_page"),
                     related_slug=F("to_person__slug"),
                     related_id=F("to_person"),
                 )
@@ -628,7 +624,6 @@ class Person(
             .values_list(
                 "related_id",
                 "related_slug",
-                "has_page",
                 "use_converse_typename",
                 "gender",
                 "notes",
@@ -643,11 +638,10 @@ class Person(
             {
                 "id": r[0],
                 "slug": r[1],
-                "has_page": r[2],
-                "use_converse_typename": r[3],
-                "gender": r[4],
-                "notes": r[5],
-                "type_id": r[6],
+                "use_converse_typename": r[2],
+                "gender": r[3],
+                "notes": r[4],
+                "type_id": r[5],
             }
             for r in people_relations
         ]
@@ -670,45 +664,17 @@ class Person(
         # dict keyed on related person id
         types_dict = {t["pk"]: t for t in types}
 
-        # store each related person's documents to see if we can display their url
-        related_person_docs = PersonDocumentRelation.objects.filter(
-            person__id__in=[r["id"] for r in relation_list]
-        ).values("document__id", "person__id")
-
         # efficiently get shared document counts between people by filtering doc relations
         self_docs = PersonDocumentRelation.objects.filter(
             person__id=self.pk
         ).values_list("document__id", flat=True)
-        shared_docs = list(
-            related_person_docs.filter(document__id__in=list(self_docs)).values(
-                "document__id", "person__id"
-            )
+        # number of shared person-doc relations, keyed on related person id
+        shared_counts = Counter(
+            PersonDocumentRelation.objects.filter(
+                person__id__in=[r["id"] for r in relation_list],
+                document__id__in=list(self_docs),
+            ).values_list("person__id", flat=True)
         )
-        # dict keyed on related person id
-        docs_dict = {
-            r["person__id"]: {
-                # number of shared person-doc relations matching this person's id
-                "shared": len(
-                    list(
-                        filter(
-                            lambda shared: shared["person__id"] == r["person__id"],
-                            shared_docs,
-                        )
-                    )
-                ),
-                # number of total person-doc relations matching this person's id
-                "total": len(
-                    list(
-                        filter(
-                            lambda total: total["person__id"] == r["person__id"],
-                            related_person_docs,
-                        )
-                    )
-                ),
-            }
-            # only need to calculate these for people who have related documents
-            for r in related_person_docs
-        }
 
         # update with new data & dedupe
         prev_relation = None
@@ -725,25 +691,8 @@ class Person(
                     # fallback to type.name if converse_name doesn't exist
                     or types_dict[relation["type_id"]]["name"],
                     "category": types_dict[relation["type_id"]]["category"],
-                    # get count of shared documents from cached queryset dict
-                    "shared_documents": (
-                        docs_dict[relation["id"]]["shared"]
-                        if relation["id"] in docs_dict
-                        else 0
-                    ),
-                    # determine if this person can be linked (can if has_page is true or total docs
-                    # >= Person.MIN_DOCUMENTS constant)
-                    "can_link": (
-                        True
-                        if relation["has_page"]
-                        or (
-                            docs_dict[relation["id"]]["total"]
-                            if relation["id"] in docs_dict
-                            else 0
-                        )
-                        >= Person.MIN_DOCUMENTS
-                        else False
-                    ),
+                    # get count of shared documents from cached counter
+                    "shared_documents": shared_counts[relation["id"]],
                 }
             )
             # dedupe and combine type and notes

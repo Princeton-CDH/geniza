@@ -255,6 +255,16 @@ section#document-list {
                 border-left: 1px solid var(--disabled-on-background-light);
                 padding-left: spacing.$spacing-md;
             }
+            // too narrow on phones for a row: one label and count per line
+            @include breakpoints.for-phone-only {
+                display: grid;
+                grid-template-columns: minmax(0, max-content) 1fr;
+                gap: 0.25rem spacing.$spacing-md;
+                dd + dt {
+                    border-left: none;
+                    padding-left: 0;
+                }
+            }
         }
 
         // document tags
