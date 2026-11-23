@@ -15,7 +15,6 @@ from geniza.corpus.dates import (
     standard_date_display,
 )
 from geniza.corpus.models import Document
-from geniza.entities.models import Person
 
 
 class TestDocumentDateMixin:
@@ -221,63 +220,6 @@ class TestDocumentDateMixin:
         # end is beginning of date range
         doc.doc_date_standard = "1839-03-17/1840-03-04"
         assert doc.end_date == PartialDate("1840-03-04")
-
-
-class TestPerson:
-
-    def test_clean(self):
-        person = Person()
-        # no dates; no error
-        person.clean()
-
-        # full past date — no error
-        person.date = "2024-06-12"
-        person.clean()
-
-        # full past date range — no error
-        person.date = "2024-06-12/2025-06-12"
-        person.clean()
-
-        # full past date range with end earlier than start —  error
-        person.date = "2025-06-12/2024-06-12"
-        with pytest.raises(ValidationError):
-            person.clean()
-
-        # partial past date — no error
-        person.date = "2024"
-        person.clean()
-
-        # partial past date range — no error
-        person.date = "2024/2025"
-        person.clean()
-
-        # partial past date range with end earlier than start — error
-        person.date = "2025/2024"
-        with pytest.raises(ValidationError):
-            person.clean()
-
-        # future date - error
-        today = datetime.date.today()
-        tomorrow = today + datetime.timedelta(days=1)
-        person.date = tomorrow.strftime("%Y-%m-%d")
-        with pytest.raises(ValidationError):
-            person.clean()
-
-        # future date range - error
-        person.date = f"{today.strftime('%Y-%m-%d')}/{tomorrow.strftime('%Y-%m-%d')}"
-        with pytest.raises(ValidationError):
-            person.clean()
-
-        # date range with end earlier than start - error
-        yesterday = today - datetime.timedelta(days=1)
-        person.date = f"{today.strftime('%Y-%m-%d')}/{yesterday.strftime('%Y-%m-%d')}"
-        with pytest.raises(ValidationError):
-            person.clean()
-
-        # impossible date (invalid day) — form validation error, but not 500
-        person.date = "2021-02-30"
-        with pytest.raises(ValidationError):
-            person.clean()
 
 
 # test hebrew date conversion

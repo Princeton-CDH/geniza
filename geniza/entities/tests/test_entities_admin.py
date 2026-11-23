@@ -30,6 +30,7 @@ from geniza.entities.admin import (
     PlacePlaceReverseInline,
 )
 from geniza.entities.models import (
+    Event,
     Name,
     Person,
     PersonDocumentRelation,
@@ -82,7 +83,7 @@ class TestPersonPersonInline:
 class TestPersonPersonReverseInline:
     def test_relation(self):
         # should show converse relationship type when available
-        (parent, _) = PersonPersonRelationType.objects.get_or_create(
+        parent, _ = PersonPersonRelationType.objects.get_or_create(
             name="Parent",
             converse_name="Child",
             category=PersonPersonRelationType.IMMEDIATE_FAMILY,
@@ -98,7 +99,7 @@ class TestPersonPersonReverseInline:
         assert reverse_inline.relation(goitein_ayala) == "Child"
 
         # otherwise should just show relationship type
-        (sibilng, _) = PersonPersonRelationType.objects.get_or_create(
+        sibilng, _ = PersonPersonRelationType.objects.get_or_create(
             name="Sibling",
             category=PersonPersonRelationType.IMMEDIATE_FAMILY,
         )
@@ -289,7 +290,7 @@ class TestPersonAdmin:
 
     @pytest.mark.django_db
     def test_export_relations_to_csv(self, person, person_multiname):
-        (partner, _) = PersonPersonRelationType.objects.get_or_create(
+        partner, _ = PersonPersonRelationType.objects.get_or_create(
             name_en="Partner", category=PersonPersonRelationType.BUSINESS
         )
         PersonPersonRelation.objects.create(
@@ -313,11 +314,11 @@ class TestPersonAdmin:
     def test_date_ranges(self, person, document, join):
         document.doc_date_standard = "1200/1300"
         document.save()
-        (pdrtype, _) = PersonDocumentRelationType.objects.get_or_create(name="test")
+        pdrtype, _ = PersonDocumentRelationType.objects.get_or_create(name="test")
         PersonDocumentRelation.objects.create(
             person=person, document=document, type=pdrtype
         )
-        (deceased, _) = PersonDocumentRelationType.objects.get_or_create(
+        deceased, _ = PersonDocumentRelationType.objects.get_or_create(
             name="Mentioned (deceased)"
         )
         join.doc_date_standard = "1310/1312"
@@ -516,7 +517,7 @@ class TestEventDocumentInline:
 class TestPlacePlaceReverseInline:
     def test_relation(self):
         # should show converse relationship type when available
-        (neighborhood, _) = PlacePlaceRelationType.objects.get_or_create(
+        neighborhood, _ = PlacePlaceRelationType.objects.get_or_create(
             name="Neighborhood",
             converse_name="City",
         )
@@ -531,7 +532,7 @@ class TestPlacePlaceReverseInline:
         assert reverse_inline.relation(rel) == neighborhood.converse_name
 
         # otherwise should just show relationship type
-        (same, _) = PlacePlaceRelationType.objects.get_or_create(
+        same, _ = PlacePlaceRelationType.objects.get_or_create(
             name="Possibly the same as",
         )
         fust2 = Place.objects.create()
@@ -636,7 +637,7 @@ class TestPlaceAdmin:
     def test_export_relations_to_csv(self, person):
         fustat = Place.objects.create(slug="fustat")
         Name.objects.create(content_object=fustat, name="Fusṭāṭ", primary=True)
-        (home_base, _) = PersonPlaceRelationType.objects.get_or_create(name="Home base")
+        home_base, _ = PersonPlaceRelationType.objects.get_or_create(name="Home base")
         PersonPlaceRelation.objects.create(person=person, place=fustat, type=home_base)
         # adapted from document csv export tests
         place_admin = PlaceAdmin(model=Place, admin_site=admin.site)
@@ -694,3 +695,31 @@ class TestPersonDocumentRelationTypeAdmin:
         assert resp["location"] == reverse(
             "admin:entities_persondocumentrelationtype_changelist"
         )
+
+
+class TestDocumentEventInline:
+    def test_get_formset(self, admin_client, document):
+        # get_formset substitutes DocumentEventWidgetWrapper in place of
+        # RelatedFieldWidgetWrapper around the Event related field widget;
+        # this adds a URL param to the add event link
+        url = reverse("admin:corpus_document_add")
+        response = admin_client.get(url)
+        content = str(response.content)
+        assert "Add another event" in content
+        assert "from_document=true" in content
+
+        # person edit page has an Event related field but does not use the custom wrapper,
+        # and thus should not have the from_document URL param
+        url = reverse("admin:entities_person_add")
+        response = admin_client.get(url)
+        content = str(response.content)
+        assert "Add another event" in content
+        assert "from_document=true" not in content
+
+        # document with an event already attached should have an edit link for that event
+        evt = Event.objects.create(name="test")
+        document.events.add(evt)
+        url = reverse("admin:corpus_document_change", args=(document.pk,))
+        response = admin_client.get(url)
+        content = str(response.content)
+        assert "Change selected event" in content

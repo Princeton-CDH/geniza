@@ -2,7 +2,6 @@ import re
 
 from dal import autocomplete
 from django import forms
-from django.contrib.admin.widgets import RelatedFieldWidgetWrapper
 from django.db.models import Count
 from django.template.loader import get_template
 from django.utils.safestring import mark_safe
@@ -12,7 +11,6 @@ from taggit.models import Tag
 from geniza.common.fields import RangeField, RangeForm, RangeWidget
 from geniza.common.utils import simplify_quotes
 from geniza.corpus.models import Document, DocumentType
-from geniza.entities.models import DocumentPlaceRelation, PersonDocumentRelation
 
 
 class ChoiceLabel:
@@ -74,7 +72,7 @@ class WidgetCountMixin:
         for optgroup in context["widget"].get("optgroups", []):
             for option in optgroup[1]:
                 # each value of facet_counts is a tuple of label and count
-                (label, count) = self.facet_counts.get(
+                label, count = self.facet_counts.get(
                     option["value"], (option["value"], None)
                 )
                 # make facet count available as data-count attribute
@@ -187,7 +185,7 @@ class CheckboxInputWithCount(forms.CheckboxInput):
     def get_context(self, name, value, attrs):
         context = super().get_context(name, value, attrs)
         # each value of facet_counts is a tuple of label and count
-        (label, count) = self.facet_counts.get("true", ("true", None))
+        label, count = self.facet_counts.get("true", ("true", None))
         # make facet count available as data-count attribute
         if count:
             context["widget"]["attrs"]["data-count"] = f"{count:,}"
@@ -203,7 +201,7 @@ class BooleanFacetField(FacetFieldMixin, forms.BooleanField):
         """
         # each value of facet_counts is a tuple of label and count; boolean facet label is always
         # just "true" or "false"
-        (label, count) = facet_dict.get("true", ("true", 0))
+        label, count = facet_dict.get("true", ("true", 0))
         # use self.label for the actual label instead, so we use the field name and not true/false
         self.label = mark_safe(
             f'<span class="label">{self.label}</span><span class="count">{count:,}</span>'
@@ -619,46 +617,3 @@ class TagMergeForm(forms.Form):
         ).annotate(
             item_count=Count("taggit_taggeditem_items", distinct=True),
         )
-
-
-class DocumentPersonForm(forms.ModelForm):
-    class Meta:
-        model = PersonDocumentRelation
-        fields = (
-            "person",
-            "type",
-            "uncertain",
-            "notes",
-        )
-        widgets = {
-            "notes": forms.Textarea(attrs={"rows": 4}),
-            "person": autocomplete.ModelSelect2(url="entities:person-autocomplete"),
-            "type": autocomplete.ModelSelect2(),
-        }
-
-
-class DocumentPlaceForm(forms.ModelForm):
-    class Meta:
-        model = DocumentPlaceRelation
-        fields = (
-            "place",
-            "type",
-            "notes",
-        )
-        widgets = {
-            "notes": forms.Textarea(attrs={"rows": 4}),
-            "place": autocomplete.ModelSelect2(url="entities:place-autocomplete"),
-            "type": autocomplete.ModelSelect2(),
-        }
-
-
-class DocumentEventWidgetWrapper(RelatedFieldWidgetWrapper):
-    """Override of RelatedFieldWidgetWrapper to insert custom url params into
-    'add new object' link"""
-
-    def get_context(self, name, value, attrs):
-        """Override get_context to insert an additional URL param, from_document,
-        in order to change min_num dynamically"""
-        context = super().get_context(name, value, attrs)
-        context["url_params"] += "&from_document=true"
-        return context

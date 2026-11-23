@@ -15,8 +15,17 @@ env:
 
 jobs:
   python-unit:
-    name: Python unit tests
+    name: Python unit tests (${{ matrix.name }})
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: full
+            pytest_args: --cov=./ --cov-report=xml
+          # corpus must work without geniza.entities installed
+          - name: corpus only
+            pytest_args: --ignore=geniza/entities
     # We use service containers to avoid needing to set up a local copy of
     # mysql or postgres on the test runner instance. This syntax is similar to
     # the spec of a docker-compose file. For more, see:
@@ -75,6 +84,10 @@ jobs:
       - name: Setup local_settings.py
         run: python -c "import uuid; print('SECRET_KEY = \'%s\'' % uuid.uuid4())" >> geniza/settings/local_settings.py
 
+      - name: Remove geniza.entities from INSTALLED_APPS
+        if: ${{ matrix.name == 'corpus only' }}
+        run: echo 'INSTALLED_APPS.remove("geniza.entities")' >> geniza/settings/local_settings.py
+
       - name: Setup dummy webpack manifest
         run: cp sitemedia/webpack-stats-ci.json sitemedia/webpack-stats.json
 
@@ -98,10 +111,17 @@ jobs:
       - name: Recompile bundles
         run: npm run build
 
+      - name: Check corpus does not import entities
+        if: ${{ matrix.name == 'corpus only' }}
+        run: |
+          ! grep -rnE '^(from|import) geniza\.entities|"entities",' geniza/corpus
+
+      # test database is created by running all migrations
       - name: Run pytest
-        run: py.test --cov=./ --cov-report=xml
+        run: py.test ${{ matrix.pytest_args }}
 
       - name: Upload test coverage to Codecov
+        if: ${{ matrix.name == 'full' }}
         uses: codecov/codecov-action@v4
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
