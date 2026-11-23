@@ -28,6 +28,7 @@ from django.utils.safestring import mark_safe
 from django.utils.translation import get_language
 from django.utils.translation import gettext as _
 from djiffy.models import Manifest
+from lxml import etree
 from modeltranslation.manager import MultilingualQuerySet
 from parasolr.django.indexing import ModelIndexable
 from piffle.image import IIIFImageClient
@@ -649,6 +650,11 @@ class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin, TaggableMixin)
         help_text="Override default shelfmark display, e.g. to indicate a range of shelfmarks.",
     )
     description = models.TextField(blank=True)
+    marked_description = models.TextField(
+        blank=True,
+        null=True,
+        help_text="Description with named entities marked up as XML",
+    )
     doctype = models.ForeignKey(
         DocumentType,
         blank=True,
@@ -882,6 +888,36 @@ class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin, TaggableMixin)
             f"{long_name}. {available} {at_pgp} {permalink} (accessed {today})."
         )
 
+    #: named entity tags in :attr:`marked_description` to highlight
+    ENTITY_TAGS = ("PER", "LOC", "ORG", "MISC")
+
+    @cached_property
+    def marked_description_html(self):
+        """English description with named entities from
+        :attr:`marked_description`, converted to HTML for display. Entities
+        in :attr:`ENTITY_TAGS` are wrapped in ``<mark class="entity-<tag>">``
+        (e.g. ``entity-per``); any other tags are dropped, keeping their text."""
+        if not self.marked_description:
+            return ""
+        try:
+            # parsing skips the XML declaration; root is the <doc> wrapper
+            root = etree.fromstring(self.marked_description.encode("utf-8"))
+        except etree.XMLSyntaxError:
+            logger.warning("Could not parse marked description for %s", self.pk)
+            return ""
+        # text is not escaped, matching how description is rendered
+        # (descriptions may contain inline HTML such as <b> and <em>)
+        parts = [root.text or ""]
+        for el in root:
+            if el.tag in self.ENTITY_TAGS:
+                parts.append(
+                    f'<mark class="entity-{el.tag.lower()}">{el.text or ""}</mark>'
+                )
+            else:
+                parts.append(el.text or "")
+            parts.append(el.tail or "")
+        return "".join(parts)
+
     @property
     def description_translations(self):
         """list of dictionaries of translated descriptions, with one dict per
@@ -890,11 +926,21 @@ class Document(ModelIndexable, DocumentDateMixin, PermalinkMixin, TaggableMixin)
             [{'lang': 'he', 'content': 'he description'},
              {'lang': 'en', 'content': 'en description'}]
         """
+        return self.get_description_translations()
+
+    def get_description_translations(self, marked=False):
+        """list of dictionaries of translated descriptions, as in
+        :attr:`description_translations`. When ``marked`` is True, the
+        English description is replaced by :attr:`marked_description_html`
+        when available (e.g. for authenticated users)."""
         descriptions = []
         # check all languages we have configured
         for lang, _ in settings.LANGUAGES:
             field_name = f"description_{lang}"
             content = getattr(self, field_name, "")
+            # use the NER-marked description for English when available
+            if marked and lang == "en" and self.marked_description_html:
+                content = self.marked_description_html
             # only include if it has content in this language
             if content and content.strip():
                 descriptions.append({"lang": lang, "content": content})

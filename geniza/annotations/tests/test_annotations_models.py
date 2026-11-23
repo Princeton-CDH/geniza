@@ -1,9 +1,10 @@
+import json
 from unittest.mock import patch
 
 import pytest
 from django.urls import reverse
 
-from geniza.annotations.models import Annotation
+from geniza.annotations.models import Annotation, marked_content_html
 from geniza.common.utils import absolutize_url
 from geniza.footnotes.models import Footnote
 
@@ -245,6 +246,69 @@ class TestAnnotation:
         assert block_html[1] == "<ol>"
         assert block_html[2] == f"<li>{line_1.body_content}</li>"
         assert block_html[3] == f"<li>{line_2.body_content}</li>"
+
+    @pytest.mark.django_db
+    def test_marked_body_content(self):
+        anno = Annotation(content={"body": [{"value": "<p>from Musa in Misr</p>"}]})
+        # no marked content: falls back to body content
+        assert anno.marked_body_content == anno.body_content
+
+        anno.marked_content = marked_json(
+            "<p>from <PER>Musa</PER> in <LOC>Misr</LOC></p>"
+        )
+        del anno.marked_body_content
+        assert anno.marked_body_content == (
+            '<p>from <mark class="entity-per">Musa</mark> in '
+            '<mark class="entity-loc">Misr</mark></p>'
+        )
+        # marked block content uses marked body; unmarked block content does not
+        assert anno.marked_block_content_html == [anno.marked_body_content]
+        assert anno.block_content_html == [anno.body_content]
+
+        # text differing from current transcription: falls back to body content
+        anno.marked_content = marked_json("<p>from <PER>Musa</PER></p>")
+        del anno.marked_body_content
+        assert anno.marked_body_content == anno.body_content
+
+        # unparseable: falls back to body content
+        anno.marked_content = "not json"
+        del anno.marked_body_content
+        assert anno.marked_body_content == anno.body_content
+
+
+def marked_json(value):
+    """NER output format for an annotation with the given body value"""
+    return json.dumps(
+        {"body": [{"type": "TextualBody", "value": value, "format": "text/html"}]}
+    )
+
+
+class TestMarkedContentHtml:
+    def test_entities(self):
+        html = marked_content_html(
+            marked_json(
+                "<PER>Yosef b. Kulayb</PER> in <LOC>Fustat</LOC> "
+                "<MISC>Allah</MISC> <ORG>Dar</ORG>"
+            )
+        )
+        # only PER and LOC are highlighted; other entity text is kept
+        assert html == (
+            '<mark class="entity-per">Yosef b. Kulayb</mark> in '
+            '<mark class="entity-loc">Fustat</mark> Allah Dar'
+        )
+
+    def test_html_boundaries(self):
+        # entity spanning an html tag is closed and reopened around it
+        html = marked_content_html(marked_json("<li><PER>Abu</li><li>Sa'd</PER></li>"))
+        assert html == (
+            '<li><mark class="entity-per">Abu</mark></li>'
+            '<li><mark class="entity-per">Sa\'d</mark></li>'
+        )
+
+    def test_unparseable(self):
+        assert marked_content_html("not json") is None
+        assert marked_content_html('{"body": []}') is None
+        assert marked_content_html('{"body": [{}]}') is None
 
 
 @pytest.mark.django_db

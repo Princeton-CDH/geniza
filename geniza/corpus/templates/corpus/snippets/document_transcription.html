@@ -282,9 +282,16 @@
                                          {% if document.primary_script %}
                                              data-lang-script="{{ document.primary_script|lower }}"{% endif %}
                                     >
-                                        {% for html_section in edition.content_html|dict_item:canvas_uri %}
-                                            {{ html_section|safe }}
-                                        {% endfor %}
+                                        {# NER-highlighted transcription only for logged-in users #}
+                                        {% if user.is_authenticated %}
+                                            {% for html_section in edition.marked_content_html|dict_item:canvas_uri %}
+                                                {{ html_section|safe }}
+                                            {% endfor %}
+                                        {% else %}
+                                            {% for html_section in edition.content_html|dict_item:canvas_uri %}
+                                                {{ html_section|safe }}
+                                            {% endfor %}
+                                        {% endif %}
                                     </div>
                                 {% endfor %}
                             </div>

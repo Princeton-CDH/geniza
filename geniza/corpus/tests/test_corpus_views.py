@@ -74,6 +74,21 @@ class TestDocumentDetailView:
             document.description
         ).words(20)
 
+    def test_marked_description(self, document, client, admin_client):
+        """should show NER-marked description only to logged-in users"""
+        document.marked_description = (
+            f'<doc id="pgpid_{document.pk}">Letter from <PER>Ḥalfon</PER></doc>'
+        )
+        document.save()
+        url = reverse("corpus:document", args=(document.id,))
+        # anonymous: plain description
+        response = client.get(url)
+        assert response.context["descriptions"][0]["content"] == document.description
+        assertNotContains(response, '<mark class="entity-per">')
+        # logged in: marked description
+        response = admin_client.get(url)
+        assertContains(response, '<mark class="entity-per">Ḥalfon</mark>', html=True)
+
     def test_get_queryset(self, db, client):
         # Ensure page works normally when not suppressed
         doc = Document.objects.create()

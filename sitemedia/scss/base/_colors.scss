@@ -115,6 +115,11 @@ $off-white: #f7f7f7;
     --places-date-text: #161616;
     --timeline-bg: #9e9e9e;
     --timeline-fg: #4d4d4d;
+    // named entity highlights in document description
+    --entity-per-bg: rgba(86, 120, 86, 0.4);
+    --entity-loc-bg: rgba(52, 120, 220, 0.25);
+    --entity-org-bg: rgba(240, 160, 0, 0.35);
+    --entity-misc-bg: rgba(150, 60, 180, 0.22);
 }
 
 // Dark mode theme colors
@@ -213,6 +218,11 @@ $off-white: #f7f7f7;
     --places-date-border: #ebebeb;
     --places-date-fields: #ffffff;
     --places-date-text: #161616;
+    // named entity highlights in document description
+    --entity-per-bg: rgba(195, 127, 151, 0.4);
+    --entity-loc-bg: rgba(100, 160, 255, 0.35);
+    --entity-org-bg: rgba(255, 190, 40, 0.35);
+    --entity-misc-bg: rgba(180, 120, 230, 0.4);
 }
 
 html {

@@ -1670,3 +1670,19 @@ html[dir="rtl"] #itt-panel {
         font-size: typography.$text-size-xl;
     }
 }
+
+// named entities highlighted in NER-marked transcriptions
+#itt-panel .transcription {
+    mark.entity-per,
+    mark.entity-loc {
+        color: inherit;
+        border-radius: 2px;
+        padding: 0 0.1em;
+    }
+    mark.entity-per {
+        background-color: var(--entity-per-bg);
+    }
+    mark.entity-loc {
+        background-color: var(--entity-loc-bg);
+    }
+}
