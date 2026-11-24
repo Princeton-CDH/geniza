@@ -424,7 +424,7 @@ class TestDocumentTabsSnippet:
         # uses span, not link
         assertContains(
             response,
-            "<span disabled aria-disabled='true'>Other documents on this shelfmark (0)</span>",
+            "<span disabled aria-disabled='true'>Also on this shelfmark (0)</span>",
             html=True,
         )
 
@@ -435,7 +435,7 @@ class TestDocumentTabsSnippet:
         response = client.get(document.get_absolute_url())
 
         # count should be 1
-        assertContains(response, "Other documents on this shelfmark (1)")
+        assertContains(response, "Also on this shelfmark (1)")
 
 
 class TestDocumentResult:

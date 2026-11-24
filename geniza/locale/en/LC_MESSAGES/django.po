@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: geniza\n"
 "Report-Msgid-Bugs-To: cdhdevteam@princeton.edu\n"
-"POT-Creation-Date: 2026-11-09 13:08-0500\n"
+"POT-Creation-Date: 2026-11-24 15:04-0500\n"
 "PO-Revision-Date: 2022-08-01 14:25\n"
 "Last-Translator: \n"
 "Language-Team: English\n"
@@ -198,7 +198,7 @@ msgstr ""
 #: corpus/forms.py:402 corpus/models.py:1190 corpus/solr_queryset.py:348
 #: corpus/templates/corpus/snippets/document_header.html:17
 #: corpus/templates/corpus/snippets/document_transcription.html:243
-#: entities/views.py:486
+#: entities/views.py:485
 msgid "Unknown type"
 msgstr ""
 
@@ -589,10 +589,9 @@ msgstr "Search Documents"
 msgid "Related places"
 msgstr "Search Documents"
 
-#. Translators: label for count of other documents on the same shelfmark as a document
+#. Translators: label for count of other documents on the same shelfmark as this document
 #: corpus/templates/corpus/snippets/document_result.html:122
-msgctxt "search result label"
-msgid "Other documents on this shelfmark"
+msgid "Also on this shelfmark"
 msgstr ""
 
 #: corpus/templates/corpus/snippets/document_result.html:138
@@ -751,11 +750,12 @@ msgstr "Input date"
 msgid "Select bibliography (%(n_records)s)"
 msgstr ""
 
-#. Translators: n_reldocs is number of other documents on the same shelfmark as this document
+#. Translators: tab listing other documents on the same shelfmark as this document; n_reldocs is the number of them
 #: corpus/templates/corpus/snippets/document_tabs.html:15
-#, python-format
-msgid "Other documents on this shelfmark (%(n_reldocs)s)"
-msgstr ""
+#, fuzzy, python-format
+#| msgid "Search Documents"
+msgid "Also on this shelfmark (%(n_reldocs)s)"
+msgstr "Search Documents"
 
 #. Translators: accessibility text label for document navigation on mobile devices
 #. Translators: accessibility text label for person pages navigation on mobile devices
@@ -844,12 +844,12 @@ msgstr "Input date"
 msgid "Search and browse Geniza documents."
 msgstr ""
 
-#: corpus/views.py:376 entities/views.py:938
+#: corpus/views.py:376 entities/views.py:937
 #, python-format
 msgid "After %s"
 msgstr ""
 
-#: corpus/views.py:378 entities/views.py:940
+#: corpus/views.py:378 entities/views.py:939
 #, python-format
 msgid "Before %s"
 msgstr ""
@@ -898,7 +898,7 @@ msgstr ""
 msgid "Gender"
 msgstr ""
 
-#: entities/forms.py:243 entities/views.py:954
+#: entities/forms.py:243 entities/views.py:953
 msgid "Detail page available"
 msgstr ""
 
@@ -966,35 +966,35 @@ msgstr ""
 msgid "Filter by year"
 msgstr ""
 
-#: entities/models.py:424
+#: entities/models.py:425
 msgid "Male"
 msgstr ""
 
-#: entities/models.py:425
+#: entities/models.py:426
 msgid "Female"
 msgstr ""
 
-#: entities/models.py:426
+#: entities/models.py:427
 msgid "Unknown"
 msgstr ""
 
-#: entities/models.py:1341
+#: entities/models.py:1290
 msgid "Immediate family relations"
 msgstr ""
 
-#: entities/models.py:1342
+#: entities/models.py:1291
 msgid "Extended family"
 msgstr ""
 
-#: entities/models.py:1343
+#: entities/models.py:1292
 msgid "Relatives by marriage"
 msgstr ""
 
-#: entities/models.py:1344
+#: entities/models.py:1293
 msgid "Business and property relationships"
 msgstr ""
 
-#: entities/models.py:1345
+#: entities/models.py:1294
 msgid "Ambiguity"
 msgstr ""
 
@@ -1217,12 +1217,12 @@ msgid "Type"
 msgstr ""
 
 #. Translators: title of entity "related documents" page
-#: entities/views.py:402
+#: entities/views.py:401
 #, python-format
 msgid "Related documents for %(p)s"
 msgstr ""
 
-#: entities/views.py:408
+#: entities/views.py:407
 #, python-format
 msgid "%(count)d related document"
 msgid_plural "%(count)d related documents"
@@ -1230,12 +1230,12 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. Translators: title of entity "related people" page
-#: entities/views.py:611
+#: entities/views.py:610
 #, python-format
 msgid "Related people for %(p)s"
 msgstr ""
 
-#: entities/views.py:619 entities/views.py:690
+#: entities/views.py:618 entities/views.py:689
 #, python-format
 msgid "%(count)d related person"
 msgid_plural "%(count)d related people"
@@ -1243,12 +1243,12 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. Translators: title of person "related places" page
-#: entities/views.py:749
+#: entities/views.py:748
 #, python-format
 msgid "Related places for %(p)s"
 msgstr ""
 
-#: entities/views.py:757
+#: entities/views.py:756
 #, python-format
 msgid "%(count)d related place"
 msgid_plural "%(count)d related places"
@@ -1257,28 +1257,28 @@ msgstr[1] ""
 
 #. Translators: title of people list/browse page
 #. Translators: label for link to people browse page in main navigation
-#: entities/views.py:863 templates/snippets/menu.html:19
+#: entities/views.py:862 templates/snippets/menu.html:19
 msgid "People"
 msgstr ""
 
 #. Translators: description of people list/browse page
-#: entities/views.py:865
+#: entities/views.py:864
 msgid "Browse people present in Geniza documents."
 msgstr ""
 
 #. Translators: title of places list/browse page
 #. Translators: label for link to places browse page in main navigation
-#: entities/views.py:1064 templates/snippets/menu.html:26
+#: entities/views.py:1063 templates/snippets/menu.html:26
 msgid "Places"
 msgstr ""
 
 #. Translators: description of places list/browse page
-#: entities/views.py:1066
+#: entities/views.py:1065
 msgid "Browse places present in Geniza documents."
 msgstr ""
 
 #. Translators: number of results
-#: entities/views.py:1190
+#: entities/views.py:1189
 #, python-format
 msgid "%(count)d result"
 msgid_plural "%(count)d results"
@@ -1286,7 +1286,7 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. Translators: number of places
-#: entities/views.py:1194
+#: entities/views.py:1193
 #, python-format
 msgid "%(count)d place"
 msgid_plural "%(count)d places"
